@@ -57,8 +57,6 @@ export interface CommandClassification {
 }
 
 export function classifyCommand(cmd: IrCommandLike): CommandClassification {
-  const commandId = `${cmd.entity}.${cmd.name}`;
-
   if (READ_QUERY_PREFIX.test(cmd.name)) {
     return {
       bucket: "scenario_required",

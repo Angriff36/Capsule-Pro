@@ -1,18 +1,8 @@
 import "server-only";
 
 import { notFound } from "next/navigation";
+import { ADMIN_ROLES, MANAGER_ROLES } from "./roles";
 import { requireCurrentUser } from "./tenant";
-
-const ADMIN_ROLES = new Set(["super_admin", "tenant_admin", "admin"]);
-
-const MANAGER_ROLES = new Set([
-  "super_admin",
-  "tenant_admin",
-  "admin",
-  "finance_manager",
-  "operations_manager",
-  "staff_manager",
-]);
 
 export async function requireAdminUser() {
   const user = await requireCurrentUser();

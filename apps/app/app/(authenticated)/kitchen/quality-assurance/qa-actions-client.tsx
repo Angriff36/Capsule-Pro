@@ -521,6 +521,8 @@ export function CompleteCheckDialog({
                           setItemResults((prev) => ({
                             ...prev,
                             [item.id]: {
+                              value: "",
+                              notes: "",
                               ...prev[item.id],
                               passed: e.target.checked,
                             },
@@ -536,6 +538,8 @@ export function CompleteCheckDialog({
                         setItemResults((prev) => ({
                           ...prev,
                           [item.id]: {
+                            passed: false,
+                            notes: "",
                             ...prev[item.id],
                             value: e.target.value,
                           },
@@ -550,6 +554,8 @@ export function CompleteCheckDialog({
                         setItemResults((prev) => ({
                           ...prev,
                           [item.id]: {
+                            passed: false,
+                            value: "",
                             ...prev[item.id],
                             notes: e.target.value,
                           },

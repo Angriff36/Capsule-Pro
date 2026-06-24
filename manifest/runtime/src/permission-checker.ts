@@ -129,7 +129,7 @@ export function parsePermission(permission: Permission): {
     return { domain: "", action: permission, full: permission };
   }
   return {
-    domain: parts[0],
+    domain: parts[0] ?? "",
     action: parts.slice(1).join("."),
     full: permission,
   };

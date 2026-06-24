@@ -135,8 +135,7 @@ export class PrepTaskDependencyEngine {
 
       const successors = this.adjacencyList.get(taskId) ?? new Set();
       const successorsArray = Array.from(successors);
-      for (let i = 0; i < successorsArray.length; i++) {
-        const successor = successorsArray[i];
+      for (const successor of successorsArray) {
         if (!visited.has(successor)) {
           if (dfs(successor)) {
             return true;
@@ -160,8 +159,7 @@ export class PrepTaskDependencyEngine {
     };
 
     const tasksArray = Array.from(this.tasks.keys());
-    for (let i = 0; i < tasksArray.length; i++) {
-      const taskId = tasksArray[i];
+    for (const taskId of tasksArray) {
       if (!visited.has(taskId)) {
         dfs(taskId);
       }
@@ -189,8 +187,7 @@ export class PrepTaskDependencyEngine {
 
     // Categorize constraints
     const depsArray = Array.from(this.dependencies.values());
-    for (let i = 0; i < depsArray.length; i++) {
-      const dep = depsArray[i];
+    for (const dep of depsArray) {
       if (dep.status !== "active") {
         continue;
       }
@@ -213,8 +210,7 @@ export class PrepTaskDependencyEngine {
 
     // Initialize schedule nodes
     const nodes = new Map<string, ScheduleNode>();
-    for (let i = 0; i < eventTasks.length; i++) {
-      const { id, task } = eventTasks[i];
+    for (const { id } of eventTasks) {
       nodes.set(id, {
         taskId: id,
         earliestStart: 0,
@@ -229,16 +225,14 @@ export class PrepTaskDependencyEngine {
 
     // ===== FORWARD PASS: Calculate earliest times =====
     const inDegrees = new Map<string, number>();
-    for (let i = 0; i < eventTasks.length; i++) {
-      const { id } = eventTasks[i];
+    for (const { id } of eventTasks) {
       const reverseAdj = this.reverseAdjacencyList.get(id) ?? new Set();
       inDegrees.set(id, reverseAdj.size);
     }
 
     // Queue for topological sort (tasks with no incoming edges)
     const queue: string[] = [];
-    for (let i = 0; i < eventTasks.length; i++) {
-      const { id } = eventTasks[i];
+    for (const { id } of eventTasks) {
       if ((inDegrees.get(id) ?? 0) === 0) {
         queue.push(id);
       }
@@ -263,8 +257,7 @@ export class PrepTaskDependencyEngine {
       // Update successors
       const adjList = this.adjacencyList.get(taskId) ?? new Set();
       const successors = Array.from(adjList);
-      for (let i = 0; i < successors.length; i++) {
-        const successorId = successors[i];
+      for (const successorId of successors) {
         const successorNode = nodes.get(successorId);
         if (!successorNode) {
           continue; // Not in this event
@@ -317,14 +310,12 @@ export class PrepTaskDependencyEngine {
     // Find the maximum earliest finish (project end)
     let projectEnd = 0;
     const nodesArray = Array.from(nodes.values());
-    for (let i = 0; i < nodesArray.length; i++) {
-      const node = nodesArray[i];
+    for (const node of nodesArray) {
       projectEnd = Math.max(projectEnd, node.earliestFinish);
     }
 
     // Initialize latest finish times
-    for (let i = 0; i < nodesArray.length; i++) {
-      const node = nodesArray[i];
+    for (const node of nodesArray) {
       node.latestFinish =
         node.earliestFinish === projectEnd ? projectEnd : projectEnd;
       node.latestStart = node.latestFinish - node.duration;
@@ -332,17 +323,14 @@ export class PrepTaskDependencyEngine {
 
     // Process in reverse topological order
     const reverseTopoOrder = [...eventTasks].reverse();
-    for (let i = 0; i < reverseTopoOrder.length; i++) {
-      const { id: taskId } = reverseTopoOrder[i];
+    for (const { id: taskId } of reverseTopoOrder) {
       const node = nodes.get(taskId)!;
 
       // Find minimum latest start among predecessors
       const reverseAdj = this.reverseAdjacencyList.get(taskId) ?? new Set();
       const predecessors = Array.from(reverseAdj);
-      const _minPredecessorStart = node.latestFinish;
 
-      for (let j = 0; j < predecessors.length; j++) {
-        const predId = predecessors[j];
+      for (const predId of predecessors) {
         const predNode = nodes.get(predId);
         if (!predNode) {
           continue;
@@ -367,8 +355,7 @@ export class PrepTaskDependencyEngine {
     }
 
     // ===== CALCULATE SLACK AND IDENTIFY CRITICAL PATH =====
-    for (let i = 0; i < nodesArray.length; i++) {
-      const node = nodesArray[i];
+    for (const node of nodesArray) {
       node.slack = node.latestStart - node.earliestStart;
       node.isCritical = Math.abs(node.slack) < 1; // Essentially zero
     }
@@ -382,14 +369,12 @@ export class PrepTaskDependencyEngine {
     // Build slack time map
     const slackTime = new Map<string, number>();
     const nodesEntries = Array.from(nodes.entries());
-    for (let i = 0; i < nodesEntries.length; i++) {
-      const [taskId, node] = nodesEntries[i];
+    for (const [taskId, node] of nodesEntries) {
       slackTime.set(taskId, node.slack);
     }
 
     // Validate against hard constraints
-    for (let i = 0; i < hardConstraints.length; i++) {
-      const dep = hardConstraints[i];
+    for (const dep of hardConstraints) {
       const predNode = nodes.get(dep.predecessorTaskId);
       const succNode = nodes.get(dep.successorTaskId);
 
@@ -425,8 +410,7 @@ export class PrepTaskDependencyEngine {
     successorId: string
   ): PrepTaskDependency | null {
     const depsArray = Array.from(this.dependencies.values());
-    for (let i = 0; i < depsArray.length; i++) {
-      const dep = depsArray[i];
+    for (const dep of depsArray) {
       if (
         dep.predecessorTaskId === predecessorId &&
         dep.successorTaskId === successorId
@@ -443,8 +427,7 @@ export class PrepTaskDependencyEngine {
   private getDurations(): Map<string, number> {
     const durations = new Map<string, number>();
     const entries = Array.from(this.tasks.entries());
-    for (let i = 0; i < entries.length; i++) {
-      const [id, task] = entries[i];
+    for (const [id, task] of entries) {
       durations.set(id, task.estimatedMinutes ?? 30); // Default 30 minutes
     }
     return durations;
@@ -475,16 +458,16 @@ export class PrepTaskDependencyEngine {
 
       const adjList = this.adjacencyList.get(taskId) ?? new Set();
       const successors = Array.from(adjList);
-      for (let i = 0; i < successors.length; i++) {
-        visit(successors[i]);
+      for (const successorId of successors) {
+        visit(successorId);
       }
 
       result.push(taskId);
     };
 
     const keys = Array.from(this.tasks.keys());
-    for (let i = 0; i < keys.length; i++) {
-      visit(keys[i]);
+    for (const key of keys) {
+      visit(key);
     }
 
     return result.reverse();
@@ -503,11 +486,9 @@ export class PrepTaskDependencyEngine {
 
     // Check for tasks with missing dependencies
     const entries = Array.from(this.tasks.entries());
-    for (let i = 0; i < entries.length; i++) {
-      const [id, task] = entries[i];
+    for (const [id, task] of entries) {
       const predecessors = Array.from(task.predecessors);
-      for (let j = 0; j < predecessors.length; j++) {
-        const predId = predecessors[j];
+      for (const predId of predecessors) {
         if (!this.tasks.has(predId)) {
           conflicts.push({
             type: "impossible",
@@ -520,8 +501,7 @@ export class PrepTaskDependencyEngine {
 
     // Check for overdue tasks on critical path
     const now = Date.now();
-    for (let i = 0; i < entries.length; i++) {
-      const [id, task] = entries[i];
+    for (const [id, task] of entries) {
       if (task.dueByDate && new Date(task.dueByDate).getTime() < now) {
         warnings.push(`Task ${task.name} (${id}) is overdue`);
       }
@@ -550,8 +530,7 @@ export class PrepTaskDependencyEngine {
     const now = new Date();
 
     const nodesEntries = Array.from(result.allNodes.entries());
-    for (let i = 0; i < nodesEntries.length; i++) {
-      const [taskId, node] = nodesEntries[i];
+    for (const [taskId, node] of nodesEntries) {
       const startTime = new Date(now.getTime() + node.earliestStart * 60_000);
       const endTime = new Date(now.getTime() + node.earliestFinish * 60_000);
       schedule.set(taskId, { startTime, endTime });
@@ -567,8 +546,7 @@ export class PrepTaskDependencyEngine {
     const available: string[] = [];
 
     const entries = Array.from(this.tasks.entries());
-    for (let i = 0; i < entries.length; i++) {
-      const [id, task] = entries[i];
+    for (const [id, task] of entries) {
       if (task.eventId !== eventId) {
         continue;
       }
@@ -579,8 +557,7 @@ export class PrepTaskDependencyEngine {
       // Check if all predecessors are completed
       let allPredsComplete = true;
       const predecessors = Array.from(task.predecessors);
-      for (let j = 0; j < predecessors.length; j++) {
-        const predId = predecessors[j];
+      for (const predId of predecessors) {
         const pred = this.tasks.get(predId);
         if (pred && pred.status !== "completed") {
           allPredsComplete = false;
@@ -608,8 +585,7 @@ export class PrepTaskDependencyEngine {
     const criticalPath = result.criticalPath;
     const blocking: string[] = [];
 
-    for (let i = 0; i < criticalPath.length; i++) {
-      const id = criticalPath[i];
+    for (const id of criticalPath) {
       const task = this.tasks.get(id);
       if (task && task.status !== "completed") {
         blocking.push(id);
@@ -630,8 +606,7 @@ export class PrepTaskDependencyEngine {
 
     const taskNames: string[] = [];
     const criticalPath = result.criticalPath;
-    for (let i = 0; i < criticalPath.length; i++) {
-      const id = criticalPath[i];
+    for (const id of criticalPath) {
       const task = this.tasks.get(id);
       taskNames.push(task?.name ?? id);
     }

@@ -122,8 +122,8 @@ export const seedSampleData = async (
   if (unitRows.length === 0) {
     throw new Error("No units found in core.units");
   }
-  const unitId = unitRows[0].id;
-  const unitCode = unitRows[0].code;
+  const unitId = unitRows[0]!.id;
+  const unitCode = unitRows[0]!.code;
 
   // Create sample recipe with ingredients
   const ingredients = await Promise.all([

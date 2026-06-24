@@ -142,6 +142,7 @@ export function createProposalLifecycleLeadStatusMiddleware(
 
       for (const event of lifecycleEvents) {
         const spec = TRANSITIONS[event.name];
+        if (!spec) continue;
         const payload = event.payload as { tenantId?: unknown } | undefined;
         const proposalId =
           asNonEmptyString(event.subject?.id) ??

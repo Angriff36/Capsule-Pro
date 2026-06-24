@@ -117,16 +117,17 @@ export default function ExtrasStep({
           Rentals needed (select all that apply)
         </label>
         <div className="flex flex-wrap gap-2">
-          {RENTAL_OPTIONS.map((rental) => (
-            <ChipToggle
-              key={rental}
-              label={rental}
-              onClick={() =>
-                toggleArrayItem("rentalsNeeded", RENTAL_KEYS[rental])
-              }
-              selected={formData.rentalsNeeded.includes(RENTAL_KEYS[rental])}
-            />
-          ))}
+          {RENTAL_OPTIONS.map((rental) => {
+            const rentalKey = RENTAL_KEYS[rental] ?? rental;
+            return (
+              <ChipToggle
+                key={rental}
+                label={rental}
+                onClick={() => toggleArrayItem("rentalsNeeded", rentalKey)}
+                selected={formData.rentalsNeeded.includes(rentalKey)}
+              />
+            );
+          })}
         </div>
       </div>
 
@@ -135,14 +136,17 @@ export default function ExtrasStep({
           Add-on experiences
         </label>
         <div className="flex flex-wrap gap-2">
-          {ADDON_OPTIONS.map((addon) => (
-            <ChipToggle
-              key={addon}
-              label={addon}
-              onClick={() => toggleArrayItem("addOns", ADDON_KEYS[addon])}
-              selected={formData.addOns.includes(ADDON_KEYS[addon])}
-            />
-          ))}
+          {ADDON_OPTIONS.map((addon) => {
+            const addonKey = ADDON_KEYS[addon] ?? addon;
+            return (
+              <ChipToggle
+                key={addon}
+                label={addon}
+                onClick={() => toggleArrayItem("addOns", addonKey)}
+                selected={formData.addOns.includes(addonKey)}
+              />
+            );
+          })}
         </div>
       </div>
     </div>

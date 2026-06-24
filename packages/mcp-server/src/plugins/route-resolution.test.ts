@@ -33,9 +33,8 @@ function matchRoute(
   url: string,
   method: string
 ): (RouteEntry & { extractedParams: Record<string, string> }) | null {
-  const urlPath = url.split("?")[0].startsWith("/")
-    ? url.split("?")[0]
-    : `/${url.split("?")[0]}`;
+  const rawPath = url.split("?")[0] ?? "";
+  const urlPath = rawPath.startsWith("/") ? rawPath : `/${rawPath}`;
 
   for (const route of routes) {
     if (route.method !== method) {
@@ -54,7 +53,7 @@ function matchRoute(
     if (match) {
       const extractedParams: Record<string, string> = {};
       paramNames.forEach((name, i) => {
-        extractedParams[name] = match[i + 1];
+        extractedParams[name] = match[i + 1] ?? "";
       });
 
       return { ...route, extractedParams };

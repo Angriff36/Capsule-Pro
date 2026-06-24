@@ -97,7 +97,7 @@ Test Files  1 failed | 1 passed (2)`;
     FAILURE_PATTERN.lastIndex = 0;
     const match = FAILURE_PATTERN.exec(output);
     expect(match).not.toBeNull();
-    expect(match![1].trim()).toBe("src/lib/auth.test.ts");
+    expect(match![1]?.trim()).toBe("src/lib/auth.test.ts");
     expect(match![2]).toContain("AssertionError");
   });
 
@@ -115,7 +115,7 @@ Test Files  2 failed (2)`;
     const failures: string[] = [];
     let match = FAILURE_PATTERN.exec(output);
     while (match !== null) {
-      failures.push(match[1].trim());
+      failures.push(match[1]?.trim() ?? "");
       match = FAILURE_PATTERN.exec(output);
     }
 

@@ -106,7 +106,9 @@ const STATE_TAX_RATES: Record<
 };
 
 // Pay periods per year for annualization
-const PAY_PERIODS_PER_YEAR: Record<string, number> = {
+type PayPeriodFrequency = "weekly" | "biweekly" | "semimonthly" | "monthly";
+
+const PAY_PERIODS_PER_YEAR: Record<PayPeriodFrequency, number> = {
   weekly: 52,
   biweekly: 26,
   semimonthly: 24,
@@ -116,7 +118,7 @@ const PAY_PERIODS_PER_YEAR: Record<string, number> = {
 export interface TaxCalculationInput {
   employee: Employee;
   grossPay: Currency;
-  payPeriodFrequency?: "weekly" | "biweekly" | "semimonthly" | "monthly";
+  payPeriodFrequency?: PayPeriodFrequency;
   preTaxDeductions: Currency;
   ytdGrossPay?: Currency;
   ytdSocialSecurityWages?: Currency;

@@ -29,7 +29,7 @@ export function runStaticSmokeChecks(ir: IrBundle): StaticCheckResult {
   );
   if (duplicateCommandIds.length > 0) {
     failures.push({
-      commandId: duplicateCommandIds[0],
+      commandId: duplicateCommandIds[0]!,
       phase: "static",
       message: `Duplicate commandId entries: ${[...new Set(duplicateCommandIds)].slice(0, 5).join(", ")}`,
     });
@@ -53,7 +53,7 @@ export function runStaticSmokeChecks(ir: IrBundle): StaticCheckResult {
   }
   if (irRegistryDrift.length > 0) {
     failures.push({
-      commandId: irRegistryDrift[0],
+      commandId: irRegistryDrift[0]!,
       phase: "static",
       message: `Registry/IR drift (${irRegistryDrift.length}): ${irRegistryDrift.slice(0, 8).join(", ")}`,
     });
@@ -70,7 +70,7 @@ export function runStaticSmokeChecks(ir: IrBundle): StaticCheckResult {
   }
   if (resolverMisses.length > 0) {
     failures.push({
-      commandId: resolverMisses[0],
+      commandId: resolverMisses[0]!,
       phase: "static",
       message: `Resolver mismatch (${resolverMisses.length}): ${resolverMisses.slice(0, 8).join(", ")}`,
     });
@@ -87,7 +87,7 @@ export function runStaticSmokeChecks(ir: IrBundle): StaticCheckResult {
   }
   if (undefinedEvents.length > 0) {
     failures.push({
-      commandId: undefinedEvents[0].commandId,
+      commandId: undefinedEvents[0]!.commandId,
       phase: "static",
       message: `Commands emit undefined events (${undefinedEvents.length}): ${undefinedEvents
         .slice(0, 5)
@@ -107,7 +107,7 @@ export function runStaticSmokeChecks(ir: IrBundle): StaticCheckResult {
     .map(([name]) => name);
   if (duplicateEventNames.length > 0) {
     failures.push({
-      commandId: duplicateEventNames[0],
+      commandId: duplicateEventNames[0]!,
       phase: "static",
       message: `Duplicate event names (${duplicateEventNames.length}): ${duplicateEventNames.slice(0, 8).join(", ")}`,
     });

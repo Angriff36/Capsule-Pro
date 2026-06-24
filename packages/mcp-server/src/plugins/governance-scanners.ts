@@ -257,6 +257,9 @@ function scanDocumentationDrift(): ScanResult {
     for (const manifestFile of manifestFiles) {
       const relativePath = relative(specsDir, manifestFile);
       const domain = relativePath.split(/[/\\]/)[0];
+      if (!domain) {
+        continue;
+      }
       const irPath = join(
         projectRoot,
         "manifest/ir",

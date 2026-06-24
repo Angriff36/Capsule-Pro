@@ -157,8 +157,9 @@ export function VersionHistory({
   };
 
   const handleCompareClick = () => {
-    if (selectedVersions.length === 2 && onCompareVersions) {
-      onCompareVersions(selectedVersions[0], selectedVersions[1]);
+    const [first, second] = selectedVersions;
+    if (first && second && onCompareVersions) {
+      onCompareVersions(first, second);
     }
   };
 
@@ -168,7 +169,7 @@ export function VersionHistory({
         return prev.filter((id) => id !== versionId);
       }
       if (prev.length >= 2) {
-        return [prev[1], versionId];
+        return [...prev.slice(1), versionId];
       }
       return [...prev, versionId];
     });

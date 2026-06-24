@@ -37,9 +37,6 @@ import {
   CheckCircle2,
   Download,
   Lightbulb,
-  Minus,
-  TrendingDown,
-  TrendingUp,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 // NOTE: Keeping apiFetch for custom analytics endpoint (/api/analytics/events/advanced)
@@ -117,19 +114,6 @@ const formatCurrency = (value: number) =>
     style: "currency",
     currency: "USD",
   }).format(value);
-
-const _formatNumber = (value: number) =>
-  new Intl.NumberFormat("en-US").format(value);
-
-const _TrendIcon = ({ trend }: { trend: "up" | "down" | "stable" }) => {
-  if (trend === "up") {
-    return <TrendingUp className="h-4 w-4 text-green-500" />;
-  }
-  if (trend === "down") {
-    return <TrendingDown className="h-4 w-4 text-red-500" />;
-  }
-  return <Minus className="h-4 w-4 text-muted-foreground" />;
-};
 
 const ConfidenceBadge = ({
   confidence,

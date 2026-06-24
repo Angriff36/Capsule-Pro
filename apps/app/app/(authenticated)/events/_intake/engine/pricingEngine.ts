@@ -1,23 +1,25 @@
 import type { PricingRules } from "../types/pricing";
 import type { PriceEstimate, WizardFormData } from "../types/wizard";
 
+const DEFAULT_RANGE: { low: number; high: number } = { low: 0, high: 0 };
+
 function getBasePerPerson(
   rules: PricingRules,
   guestCount: number
 ): { low: number; high: number } {
   if (guestCount >= 500) {
-    return rules.basePerPerson[4];
+    return rules.basePerPerson[4] ?? DEFAULT_RANGE;
   }
   if (guestCount >= 200) {
-    return rules.basePerPerson[3];
+    return rules.basePerPerson[3] ?? DEFAULT_RANGE;
   }
   if (guestCount >= 100) {
-    return rules.basePerPerson[2];
+    return rules.basePerPerson[2] ?? DEFAULT_RANGE;
   }
   if (guestCount >= 50) {
-    return rules.basePerPerson[1];
+    return rules.basePerPerson[1] ?? DEFAULT_RANGE;
   }
-  return rules.basePerPerson[0];
+  return rules.basePerPerson[0] ?? DEFAULT_RANGE;
 }
 
 export function calculateEstimate(

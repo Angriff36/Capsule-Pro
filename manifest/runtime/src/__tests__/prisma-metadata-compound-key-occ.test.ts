@@ -46,6 +46,7 @@ describe("compound-key OCC is not opted into (silent-write-loss guard)", () => {
     for (const name of COMPOUND_VERSIONED_ENTITIES) {
       const meta = PRISMA_MODEL_METADATA[name];
       expect(meta, `${name} should exist in metadata`).toBeTruthy();
+      if (!meta) continue;
       expect(
         meta.pkFields.length,
         `${name} should be compound-key`

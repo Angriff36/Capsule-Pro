@@ -221,7 +221,8 @@ describe("Middleware conformance: EmployeeCertification lapse → Notification.c
     // THE PROOF: the middleware ran Notification.create against the same store.
     const rows = await notifications(provider);
     expect(rows).toHaveLength(1);
-    const notif = rows[0];
+    const notif = rows[0]!;
+    expect(notif).toBeDefined();
     expect(notif.recipientEmployeeId).toBe(EMPLOYEE_ID);
     expect(notif.notificationType).toBe("certification_expired");
     expect(notif.correlationId).toBe(CERT_ID);
@@ -250,7 +251,8 @@ describe("Middleware conformance: EmployeeCertification lapse → Notification.c
 
     const rows = await notifications(provider);
     expect(rows).toHaveLength(1);
-    const notif = rows[0];
+    const notif = rows[0]!;
+    expect(notif).toBeDefined();
     expect(notif.recipientEmployeeId).toBe(EMPLOYEE_ID);
     expect(notif.notificationType).toBe("certification_revoked");
     // `reason` is a genuine revoke param → rides the payload → folded into the body.

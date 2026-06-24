@@ -108,7 +108,9 @@ export function validateTemplateData(
   let match: RegExpExecArray | null;
 
   while ((match = placeholderRegex.exec(template)) !== null) {
-    requiredFields.add(match[1]);
+    if (match[1] !== undefined) {
+      requiredFields.add(match[1]);
+    }
   }
 
   const missingFields: string[] = [];

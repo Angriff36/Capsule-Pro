@@ -55,10 +55,13 @@ export type VendorCatalogCommandFn = (params: {
  * @param runCommand - Governed write callback that executes Manifest commands.
  */
 export class SupplierSyncService {
-  constructor(
-    private prisma: SupplierSyncDb,
-    private runCommand: VendorCatalogCommandFn
-  ) {}
+  private prisma: SupplierSyncDb;
+  private runCommand: VendorCatalogCommandFn;
+
+  constructor(prisma: SupplierSyncDb, runCommand: VendorCatalogCommandFn) {
+    this.prisma = prisma;
+    this.runCommand = runCommand;
+  }
 
   /**
    * Perform a full catalog sync from a supplier.

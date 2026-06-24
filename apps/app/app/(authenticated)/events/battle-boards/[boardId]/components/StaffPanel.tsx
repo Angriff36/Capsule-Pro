@@ -31,7 +31,11 @@ export function StaffPanel({ board, onChange }: StaffPanelProps) {
     value: string
   ) {
     const updated = [...board.staff];
-    updated[index] = { ...updated[index], [field]: value };
+    const existing = updated[index];
+    if (!existing) {
+      return;
+    }
+    updated[index] = { ...existing, [field]: value };
     onChange({ ...board, staff: updated });
   }
 

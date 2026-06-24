@@ -214,7 +214,7 @@ describe("Middleware conformance: QACheckFailed → QACorrectiveAction.create", 
     // THE PROOF: the middleware ran QACorrectiveAction.create against the store.
     const rows = await correctiveActions(provider);
     expect(rows).toHaveLength(1);
-    const action = rows[0];
+    const action = rows[0]!;
     expect(action.relatedCheckId).toBe(CHECK_ID);
     expect(action.assignedTo).toBe(INSPECTOR);
     expect(action.severity).toBe("high");
@@ -252,7 +252,7 @@ describe("Middleware conformance: QACheckFailed → QACorrectiveAction.create", 
 
     const rows = await correctiveActions(provider);
     expect(rows).toHaveLength(1);
-    const action = rows[0];
+    const action = rows[0]!;
     // Generated from the loaded check's type + location.
     expect(String(action.description)).toContain("temperature check failed");
     expect(String(action.description)).toContain("Walk-in cooler 2");

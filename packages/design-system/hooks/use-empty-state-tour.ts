@@ -68,6 +68,7 @@ export function useEmptyStateTour(
       }, delay);
       return () => clearTimeout(timer);
     }
+    return;
   }, [isEmpty, isDismissed, isActive, delay, setIsActive]);
 
   React.useEffect(() => {

@@ -154,7 +154,7 @@ export function sumCurrency(amounts: Currency[]): Currency {
 type DateFormat = "iso" | "us" | "qb";
 
 const dateFormatters: Record<DateFormat, (date: Date) => string> = {
-  iso: (date) => date.toISOString().split("T")[0],
+  iso: (date) => date.toISOString().split("T")[0]!,
   us: (date) =>
     `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
   qb: (date) =>

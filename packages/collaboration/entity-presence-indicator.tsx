@@ -112,7 +112,7 @@ function getInitials(name: string): string {
     return words[0]!.slice(0, 2).toUpperCase();
   }
   // Multiple words: use first letter of first two words
-  return (words[0]![0] + words[1]![0]).toUpperCase();
+  return (words[0]![0]! + words[1]![0]!).toUpperCase();
 }
 
 export const EntityPresenceIndicator = memo(EntityPresenceIndicatorComponent);

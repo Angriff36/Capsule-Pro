@@ -8,9 +8,6 @@ import {
   compileProjectToIR,
 } from "@angriff36/manifest/multi-compiler";
 
-
-const MANIFEST_EXTENSION_RE = /\.manifest$/;
-
 export interface ManifestFile {
   content: string;
   name: string;
@@ -108,6 +105,9 @@ function validateNoDuplicates(compiledIRs: IR[], manifestFiles: string[]) {
   for (let i = 0; i < compiledIRs.length; i++) {
     const ir = compiledIRs[i];
     const sourceFile = manifestFiles[i];
+    if (!ir || sourceFile === undefined) {
+      continue;
+    }
 
     for (const entity of ir.entities || []) {
       entities.push({ name: entity.name, source: sourceFile });

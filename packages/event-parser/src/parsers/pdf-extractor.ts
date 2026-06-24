@@ -4,11 +4,6 @@
  * Uses dynamic import to avoid Next.js bundling issues
  */
 
-const HEADER_PATTERN =
-  /^category item special, production notes, container quantity\/?unit$/;
-const LABEL_SPLIT_PATTERN = /\s+(?=[A-Za-z][A-Za-z0-9&/\-(),\s]{0,24}:\s)/;
-const LABEL_PATTERN = /^([A-Za-z][A-Za-z0-9&/\-(),\s]{0,24}):\s*(.*)$/;
-const P_LABEL_PATTERN = /^p$/i;
 const TPP_MARKERS = [
   { pattern: /invoice\s*#/i, weight: 20, name: "Invoice #" },
   {
@@ -30,16 +25,6 @@ const TPP_MARKERS = [
     name: "Service Location",
   },
 ];
-
-/**
- * PDF metadata info structure
- */
-interface PdfMetadataInfo {
-  Author?: string;
-  Creator?: string;
-  Subject?: string;
-  Title?: string;
-}
 
 export interface PdfExtractionResult {
   errors: string[];
@@ -280,48 +265,6 @@ export async function extractPdfText(
       errors,
     };
   }
-}
-
-/**
- * Emit a segment with label detection
- */
-function emitSegment(segment: string, rows: string[]) {
-  const trimmed = segment.trim();
-  if (!trimmed) {
-    return;
-  }
-
-  const headerCandidate = trimmed.replaceAll(/\s+/g, " ").toLowerCase();
-  if (HEADER_PATTERN.test(headerCandidate)) {
-    rows.push(
-      "Category",
-      "Item",
-      "Special, Production Notes, Container",
-      "Quantity/Unit"
-    );
-    return;
-  }
-
-  const labelMatch = LABEL_PATTERN.exec(trimmed);
-  if (labelMatch) {
-    const labelName = labelMatch[1].trim();
-    const remainder = labelMatch[2].trim();
-
-    if (P_LABEL_PATTERN.test(labelName)) {
-      const combined = remainder ? `P: ${remainder}` : "P:";
-      rows.push(combined.trim());
-      return;
-    }
-
-    const normalizedLabel = `${labelName}:`.trim();
-    rows.push(normalizedLabel);
-    if (remainder) {
-      emitSegment(remainder, rows);
-    }
-    return;
-  }
-
-  rows.push(trimmed);
 }
 
 /**

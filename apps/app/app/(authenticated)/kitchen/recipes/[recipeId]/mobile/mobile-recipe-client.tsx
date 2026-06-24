@@ -154,20 +154,6 @@ const clearRecipeCache = (recipeId: string): void => {
   }
 };
 
-const _isRecipeCached = (recipeId: string): boolean => {
-  try {
-    const timestamp = localStorage.getItem(`${CACHE_TIMESTAMP_KEY}${recipeId}`);
-    if (!timestamp) {
-      return false;
-    }
-
-    const age = Date.now() - Number.parseInt(timestamp, 10);
-    return age <= CACHE_EXPIRY_MS;
-  } catch {
-    return false;
-  }
-};
-
 const formatTime = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -189,7 +175,7 @@ const scaleQuantity = (quantity: number, scale: number): string => {
 
 export const MobileRecipeClient = ({
   recipeId,
-  tenantId,
+  tenantId: _tenantId,
 }: MobileRecipeClientProps) => {
   const [recipe, setRecipe] = useState<RecipeStepsResponse | null>(null);
   const [ingredients, setIngredients] = useState<RecipeIngredient[]>([]);
@@ -445,6 +431,13 @@ export const MobileRecipeClient = ({
   }
 
   const currentStepData = recipe.steps[currentStep];
+  if (!currentStepData) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <p className="text-muted-foreground">No steps available for this recipe</p>
+      </div>
+    );
+  }
   const progress = ((currentStep + 1) / recipe.steps.length) * 100;
 
   return (

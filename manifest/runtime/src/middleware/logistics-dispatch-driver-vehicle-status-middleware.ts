@@ -144,6 +144,7 @@ export function createLogisticsDispatchDriverVehicleStatusMiddleware(
 
       for (const event of legs) {
         const leg = LIFECYCLE_LEGS[event.name];
+        if (!leg) continue;
         const payload = event.payload as LogisticsDispatchPayload | undefined;
 
         const dispatchId =

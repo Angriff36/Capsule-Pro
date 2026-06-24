@@ -90,6 +90,7 @@ export function useMicroTourState(
       const timer = setTimeout(() => setIsActive(true), 500);
       return () => clearTimeout(timer);
     }
+    return;
   }, [tourId, options?.storageKeyPrefix]);
 
   const handleComplete = React.useCallback(() => {
@@ -150,11 +151,12 @@ export function MicroTour({
       return () => clearTimeout(timer);
     }
     setIsVisible(false);
+    return;
   }, [isActive]);
 
   // Calculate position based on target element
   React.useEffect(() => {
-    if (!(isActive && currentStepData.targetSelector)) {
+    if (!(isActive && currentStepData?.targetSelector)) {
       // Center position if no target
       setPosition({
         top: typeof window === "undefined" ? 200 : window.innerHeight / 2 - 100,
@@ -164,8 +166,9 @@ export function MicroTour({
       return;
     }
 
+    const targetSelector = currentStepData.targetSelector;
     const updatePosition = () => {
-      const target = document.querySelector(currentStepData.targetSelector!);
+      const target = document.querySelector(targetSelector);
       if (!target) {
         setPosition({
           top:
@@ -214,7 +217,7 @@ export function MicroTour({
       window.removeEventListener("resize", updatePosition);
       window.removeEventListener("scroll", updatePosition, true);
     };
-  }, [isActive, currentStepData.targetSelector, currentStep]);
+  }, [isActive, currentStepData?.targetSelector, currentStep]);
 
   // Auto-advance
   React.useEffect(() => {
@@ -276,7 +279,7 @@ export function MicroTour({
     onDontShowAgain?.();
   };
 
-  if (!isActive) {
+  if (!(isActive && currentStepData)) {
     return null;
   }
 

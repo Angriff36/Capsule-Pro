@@ -54,14 +54,16 @@ function makeTemplate(
   };
 }
 
+const GENERAL_TEMPLATE: EventBoardTemplate = makeTemplate("general", "General", {
+  staff: { requirement: "required", minNeeded: one },
+  menu: { requirement: "required" },
+  vehicles: { requirement: "optional" },
+  equipment: { requirement: "optional" },
+  battleboard: { requirement: "optional" },
+});
+
 const TEMPLATES: Record<string, EventBoardTemplate> = {
-  general: makeTemplate("general", "General", {
-    staff: { requirement: "required", minNeeded: one },
-    menu: { requirement: "required" },
-    vehicles: { requirement: "optional" },
-    equipment: { requirement: "optional" },
-    battleboard: { requirement: "optional" },
-  }),
+  general: GENERAL_TEMPLATE,
   plated_dinner: makeTemplate("plated_dinner", "Plated Dinner", {
     staff: { requirement: "required", minNeeded: staffPer20 },
     menu: { requirement: "required" },
@@ -79,7 +81,7 @@ const TEMPLATES: Record<string, EventBoardTemplate> = {
 };
 
 export function resolveTemplate(eventType: string): EventBoardTemplate {
-  return TEMPLATES[eventType] ?? TEMPLATES.general;
+  return TEMPLATES[eventType] ?? GENERAL_TEMPLATE;
 }
 
 export type BranchState =

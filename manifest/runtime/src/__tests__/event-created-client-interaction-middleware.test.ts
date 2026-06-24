@@ -189,7 +189,8 @@ describe("Middleware conformance: EventCreated → ClientInteraction.create", ()
     // store, so a timeline entry now exists for the client.
     const interactions = await interactionsOf(provider);
     expect(interactions).toHaveLength(1);
-    const interaction = interactions[0];
+    const interaction = interactions[0]!;
+    expect(interaction).toBeDefined();
     expect(interaction.clientId).toBe(CLIENT_ID);
     expect(interaction.tenantId).toBe(TENANT);
     // Attribution: the employee is the acting user who booked the event.
@@ -241,6 +242,6 @@ describe("Middleware conformance: EventCreated → ClientInteraction.create", ()
 
     const interactions = await interactionsOf(provider);
     expect(interactions).toHaveLength(1);
-    expect(interactions[0].id).toBe("ci-pre-existing");
+    expect(interactions[0]!.id).toBe("ci-pre-existing");
   });
 });

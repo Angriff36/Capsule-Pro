@@ -145,13 +145,14 @@ export function createScheduleShiftCountMiddleware(
       const triggers = ctx.emittedEvents.filter((event) =>
         TRIGGER_EVENTS.has(event.name)
       );
-      if (triggers.length === 0) {
+      const firstTrigger = triggers[0];
+      if (!firstTrigger) {
         return {};
       }
 
       const tenantId =
         asNonEmptyString(
-          (triggers[0].payload as ScheduleShiftCreatedPayload).tenantId
+          (firstTrigger.payload as ScheduleShiftCreatedPayload).tenantId
         ) ??
         asNonEmptyString(
           (ctx.runtimeContext.user as { tenantId?: unknown } | undefined)
@@ -256,7 +257,7 @@ export function createScheduleShiftCountMiddleware(
           {
             entityName: "Schedule",
             instanceId: scheduleId,
-            causationId: triggers[0].name,
+            causationId: firstTrigger.name,
             correlationId:
               asNonEmptyString(
                 (ctx as { correlationId?: unknown }).correlationId

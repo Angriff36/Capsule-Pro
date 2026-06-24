@@ -630,7 +630,11 @@ export const RecipeEditModal = ({
     value: string
   ) => {
     const updated = [...ingredients];
-    updated[index] = { ...updated[index], [field]: value };
+    const current = updated[index];
+    if (!current) {
+      return;
+    }
+    updated[index] = { ...current, [field]: value };
     setIngredients(updated);
   };
 
@@ -644,7 +648,12 @@ export const RecipeEditModal = ({
       return;
     }
     const updated = [...ingredients];
-    [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
+    const a = updated[index];
+    const b = updated[newIndex];
+    if (!(a && b)) {
+      return;
+    }
+    [updated[index], updated[newIndex]] = [b, a];
     setIngredients(updated);
   };
   const handleAddStep = () => {
@@ -688,20 +697,29 @@ export const RecipeEditModal = ({
     value: string | number | boolean | null
   ) => {
     const updated = [...steps];
-    updated[index] = { ...updated[index], [field]: value };
+    const current = updated[index];
+    if (!current) {
+      return;
+    }
+    const next: Step = { ...current, [field]: value };
     // Auto-set CCP flag when temperature is set above threshold
     if (field === "temperature_value" && typeof value === "number") {
-      updated[index].is_ccp = value >= CCP_TEMP_THRESHOLDS.min;
+      next.is_ccp = value >= CCP_TEMP_THRESHOLDS.min;
     }
+    updated[index] = next;
     setSteps(updated);
   };
 
   const handleAddEquipment = (index: number, equipment: string) => {
     const updated = [...steps];
-    const currentEquipment = updated[index].equipment_needed ?? [];
+    const current = updated[index];
+    if (!current) {
+      return;
+    }
+    const currentEquipment = current.equipment_needed ?? [];
     if (!currentEquipment.includes(equipment)) {
       updated[index] = {
-        ...updated[index],
+        ...current,
         equipment_needed: [...currentEquipment, equipment],
       };
       setSteps(updated);
@@ -710,9 +728,13 @@ export const RecipeEditModal = ({
 
   const handleRemoveEquipment = (index: number, equipment: string) => {
     const updated = [...steps];
-    const currentEquipment = updated[index].equipment_needed ?? [];
+    const current = updated[index];
+    if (!current) {
+      return;
+    }
+    const currentEquipment = current.equipment_needed ?? [];
     updated[index] = {
-      ...updated[index],
+      ...current,
       equipment_needed: currentEquipment.filter((eq) => eq !== equipment),
     };
     setSteps(updated);

@@ -148,7 +148,7 @@ export function generateChartSummary(
   // Trend requires at least two points and is derived from first vs last.
   let trend: TrendDirection = "unknown";
   if (points.length >= 2) {
-    const first = points[0].value;
+    const first = points[0]?.value ?? 0;
     const last = points.at(-1)?.value ?? first;
     if (first === last) {
       trend = "flat";

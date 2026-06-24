@@ -179,7 +179,6 @@ const EventStaffPage = async ({ params }: EventStaffPageProps) => {
   const assignedCount = serializedAssignments.length;
   const availableCount = serializedAvailable.length;
   const uniqueRoles = [...new Set(serializedAssignments.map((a) => a.role))];
-  const _unfilledRoles = uniqueRoles.length;
 
   // Detect conflicts: same employee assigned multiple roles
   const employeeRoleMap = new Map<string, string[]>();

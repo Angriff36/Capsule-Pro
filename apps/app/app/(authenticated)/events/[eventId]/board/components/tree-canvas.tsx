@@ -94,6 +94,9 @@ function BattleBoardLeafBody({
     );
   }
   const [first, ...rest] = battleBoards;
+  if (!first) {
+    return null;
+  }
   return (
     <div className="space-y-0.5 text-[11px]">
       <div className="flex items-center justify-between gap-2">
@@ -199,7 +202,11 @@ export function TreeCanvas({
   const slotted = status.branches
     .filter((b) => b.requirement !== "excluded" && b.key !== "battleboard")
     .slice(0, SLOTS.length)
-    .map((branch, i) => ({ branch, slot: SLOTS[i] }));
+    .map((branch, i) => ({ branch, slot: SLOTS[i] }))
+    .filter(
+      (entry): entry is { branch: (typeof entry)["branch"]; slot: Slot } =>
+        entry.slot !== undefined
+    );
   const excluded = status.branches.filter((b) => b.requirement === "excluded");
 
   const dateLabel = new Date(event.eventDate).toLocaleDateString(undefined, {

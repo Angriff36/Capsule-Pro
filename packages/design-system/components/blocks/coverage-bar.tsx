@@ -34,11 +34,13 @@ const heightClasses = {
   lg: "h-4",
 } as const;
 
+type CoverageZone = "good" | "warning" | "critical";
+
 export function getCoverageZone(
   pct: number,
   thresholdWarning: number,
   thresholdGood: number
-): "good" | "warning" | "critical" {
+): CoverageZone {
   if (pct >= thresholdGood) {
     return "good";
   }
@@ -48,13 +50,13 @@ export function getCoverageZone(
   return "critical";
 }
 
-const zoneBarClasses: Record<string, string> = {
+const zoneBarClasses: Record<CoverageZone, string> = {
   good: "bg-deep-green",
   warning: "bg-muted-foreground/40",
   critical: "bg-coral",
 };
 
-const zoneTextClasses: Record<string, string> = {
+const zoneTextClasses: Record<CoverageZone, string> = {
   good: "text-deep-green",
   warning: "text-muted-foreground",
   critical: "text-coral",

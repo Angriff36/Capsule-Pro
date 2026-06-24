@@ -83,7 +83,7 @@ export function FieldHint({
           />
         </TooltipTrigger>
         <TooltipContent side={side} className="max-w-xs whitespace-normal text-left">
-          {messages.length === 1 ? (
+          {messages.length === 1 && messages[0] ? (
             <HintLine hint={messages[0]} />
           ) : (
             <ul className="space-y-1">

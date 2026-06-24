@@ -143,8 +143,6 @@ const AnalyticsFinancePage = async () => {
     actualBudgetTotal,
     budgetVarianceTotal,
     budgetCount,
-    revenueAccountCount,
-    expenseAccountCount,
     collectionRate,
   } = overview;
 

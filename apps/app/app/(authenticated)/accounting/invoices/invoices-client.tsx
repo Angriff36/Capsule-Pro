@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -8,11 +7,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { FileText, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
+import {
+  BulkActionBar,
+  useBulkSelection,
+} from "@/app/components/bulk-actions";
+import { StatusTransitionBadge } from "@/app/components/status-transition-badge";
 
 interface Invoice {
   amountDue: number | string;
@@ -25,15 +30,26 @@ interface Invoice {
   total: number | string;
 }
 
-const statusColors: Record<string, string> = {
+type StatusVariant =
+  | "default"
+  | "secondary"
+  | "outline"
+  | "solid"
+  | "destructive"
+  | "success"
+  | "warning"
+  | "info"
+  | "coral";
+
+const statusColors: Record<string, StatusVariant> = {
   DRAFT: "secondary",
-  SENT: "default",
-  VIEWED: "default",
-  PAID: "default",
+  SENT: "info",
+  VIEWED: "info",
+  PAID: "success",
   OVERDUE: "destructive",
   VOID: "outline",
   WRITE_OFF: "outline",
-  PARTIALLY_PAID: "default",
+  PARTIALLY_PAID: "warning",
 };
 
 const formatDate = (date: string) =>
@@ -46,6 +62,16 @@ const formatDate = (date: string) =>
 export function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
   const posthog = usePostHog();
   const router = useRouter();
+
+  const {
+    selectedIds,
+    isSelected,
+    toggle,
+    toggleAll,
+    clear,
+    allSelected,
+    someSelected,
+  } = useBulkSelection(invoices.map((i) => i.id));
 
   useEffect(() => {
     posthog?.capture("billing:invoice_viewed", {
@@ -79,7 +105,16 @@ export function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>All Invoices ({invoices.length})</CardTitle>
+            <div className="flex items-center gap-3">
+              <Checkbox
+                aria-label="Select all invoices"
+                checked={
+                  allSelected ? true : someSelected ? "indeterminate" : false
+                }
+                onCheckedChange={() => toggleAll()}
+              />
+              <CardTitle>All Invoices ({invoices.length})</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -89,6 +124,11 @@ export function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
                   key={inv.id}
                 >
                   <div className="flex items-center gap-3">
+                    <Checkbox
+                      aria-label={`Select invoice ${inv.invoiceNumber}`}
+                      checked={isSelected(inv.id)}
+                      onCheckedChange={() => toggle(inv.id)}
+                    />
                     <FileText className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="font-medium">{inv.invoiceNumber}</p>
@@ -99,17 +139,13 @@ export function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <Badge
-                      variant={
-                        (statusColors[inv.status] as
-                          | "default"
-                          | "secondary"
-                          | "destructive"
-                          | "outline") || "default"
-                      }
-                    >
-                      {inv.status}
-                    </Badge>
+                    <StatusTransitionBadge
+                      entity="Invoice"
+                      id={inv.id}
+                      onChanged={() => router.refresh()}
+                      status={inv.status}
+                      variant={statusColors[inv.status] ?? "default"}
+                    />
                     <div className="text-right">
                       <p className="font-medium">{formatCurrency(inv.total)}</p>
                       {Number(inv.amountDue) > 0 && (
@@ -125,6 +161,23 @@ export function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
           </CardContent>
         </Card>
       )}
+
+      <BulkActionBar
+        actions={[
+          { command: "send", label: "Send" },
+          { command: "markOverdue", label: "Mark Overdue" },
+          {
+            command: "voidInvoice",
+            confirm: "Void {count} invoice(s)? This cannot be undone.",
+            label: "Void",
+            variant: "destructive",
+          },
+        ]}
+        entity="Invoice"
+        onClear={clear}
+        onDone={() => router.refresh()}
+        selectedIds={selectedIds}
+      />
     </div>
   );
 }

@@ -96,6 +96,9 @@ export async function getEventSummary(
   }
 
   const summary = existingSummary[0];
+  if (!summary) {
+    return { success: false, error: "No summary found" };
+  }
   return {
     success: true,
     summary: {

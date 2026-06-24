@@ -28,7 +28,11 @@ export function LayoutsPanel({ board, onChange }: LayoutsPanelProps) {
     value: string
   ) {
     const updated = [...board.layouts];
-    updated[index] = { ...updated[index], [field]: value };
+    const existing = updated[index];
+    if (!existing) {
+      return;
+    }
+    updated[index] = { ...existing, [field]: value };
     onChange({ ...board, layouts: updated });
   }
 

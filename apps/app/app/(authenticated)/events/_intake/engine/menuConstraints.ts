@@ -121,10 +121,9 @@ export function groupByCategory(
 ): Record<string, MenuCatalogItem[]> {
   const groups: Record<string, MenuCatalogItem[]> = {};
   for (const item of items) {
-    if (!groups[item.category]) {
-      groups[item.category] = [];
-    }
-    groups[item.category].push(item);
+    const group = groups[item.category] ?? [];
+    group.push(item);
+    groups[item.category] = group;
   }
   return groups;
 }

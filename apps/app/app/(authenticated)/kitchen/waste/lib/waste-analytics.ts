@@ -3,7 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import { invariant } from "@/app/lib/invariant";
 
-const { logger, captureException } = Sentry;
+const { logger } = Sentry;
 
 interface WasteTrendsSummary {
   avgCostPerEntry: number;

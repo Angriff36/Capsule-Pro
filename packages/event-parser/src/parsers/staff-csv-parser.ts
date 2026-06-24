@@ -26,7 +26,7 @@ export function parseStaffCsv(csvContent: string): StaffCsvParseResult {
     return { shifts, errors, totalShifts };
   }
 
-  const headerLine = lines[0];
+  const headerLine = lines[0]!;
   const headers = parseCSVRow(headerLine).map((h) => h.toLowerCase().trim());
 
   // Find column indices
@@ -82,7 +82,7 @@ export function parseStaffCsv(csvContent: string): StaffCsvParseResult {
 
   // Parse data rows
   for (let i = 1; i < lines.length; i++) {
-    const row = parseCSVRow(lines[i]);
+    const row = parseCSVRow(lines[i]!);
     if (row.length === 0) {
       continue;
     }
@@ -228,8 +228,8 @@ function parseTimeString(timeStr: string): { time: string; meridiem: string } {
     return { time: timeStr, meridiem: "" };
   }
 
-  let hours = Number.parseInt(match[1], 10);
-  const minutes = match[2];
+  let hours = Number.parseInt(match[1]!, 10);
+  const minutes = match[2]!;
   const meridiem = (match[4] || "").toLowerCase().replace(".", "");
 
   // Convert to 24-hour format
@@ -244,8 +244,8 @@ function parseTimeString(timeStr: string): { time: string; meridiem: string } {
 }
 
 function calculateHoursBetween(start: string, end: string): number {
-  const [startHours, startMins] = start.split(":").map(Number);
-  const [endHours, endMins] = end.split(":").map(Number);
+  const [startHours = 0, startMins = 0] = start.split(":").map(Number);
+  const [endHours = 0, endMins = 0] = end.split(":").map(Number);
 
   const startMinutes = startHours * 60 + startMins;
   let endMinutes = endHours * 60 + endMins;

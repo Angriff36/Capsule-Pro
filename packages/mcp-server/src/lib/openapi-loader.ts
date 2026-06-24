@@ -173,8 +173,9 @@ export function commandsForEntity(spec: OpenApiSpec, entity: string): string[] {
     }
     const segs = path.split("/").filter(Boolean);
     const idx = segs.indexOf("commands");
-    if (idx >= 0 && segs[idx + 1]) {
-      out.push(segs[idx + 1]);
+    const commandName = idx >= 0 ? segs[idx + 1] : undefined;
+    if (commandName) {
+      out.push(commandName);
     }
   }
   return out.sort();

@@ -50,10 +50,10 @@ export function AmbientAnimation({
   React.useEffect(() => {
     if (isVisible) {
       setShouldRender(true);
-    } else {
-      const timer = setTimeout(() => setShouldRender(false), 500);
-      return () => clearTimeout(timer);
+      return;
     }
+    const timer = setTimeout(() => setShouldRender(false), 500);
+    return () => clearTimeout(timer);
   }, [isVisible]);
 
   // Don't render if not visible and transition complete

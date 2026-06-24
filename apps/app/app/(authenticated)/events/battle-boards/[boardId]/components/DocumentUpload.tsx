@@ -322,10 +322,11 @@ function mergeStaff(
     const existingIdx = merged.findIndex(
       (m) => m.name.toLowerCase() === member.name.toLowerCase()
     );
-    if (existingIdx >= 0) {
+    const existingMember = existingIdx >= 0 ? merged[existingIdx] : undefined;
+    if (existingMember) {
       merged[existingIdx] = {
         ...member,
-        station: merged[existingIdx].station || member.station,
+        station: existingMember.station || member.station,
       };
     } else {
       merged.push(member);

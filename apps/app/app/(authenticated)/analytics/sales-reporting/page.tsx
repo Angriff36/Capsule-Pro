@@ -140,7 +140,7 @@ export default function SalesReportingPage() {
         };
       }
 
-      const header = lines[0].toLowerCase();
+      const header = (lines[0] ?? "").toLowerCase();
       const headerCells = header.split(",");
       const dateColumns = [
         "date",
@@ -164,7 +164,7 @@ export default function SalesReportingPage() {
 
       const dates: Date[] = [];
       for (let i = 1; i < lines.length; i++) {
-        const cells = lines[i].split(",");
+        const cells = (lines[i] ?? "").split(",");
         const dateStr = cells[dateColIndex]?.replace(/"/g, "").trim();
         if (dateStr) {
           const d = new Date(dateStr);
@@ -185,18 +185,19 @@ export default function SalesReportingPage() {
 
       const minDate = new Date(Math.min(...dates.map((d) => d.getTime())));
       const maxDate = new Date(Math.max(...dates.map((d) => d.getTime())));
-      const formatDate = (d: Date) => d.toISOString().split("T")[0];
+      const formatDate = (d: Date) => d.toISOString().split("T")[0] ?? "";
+      const detectedColumn = headerCells[dateColIndex] ?? "";
 
       return {
         dateRange: { min: formatDate(minDate), max: formatDate(maxDate) },
         columns: [
           {
-            name: headerCells[dateColIndex],
+            name: detectedColumn,
             coverage: dates.length / (lines.length - 1),
             isDetected: true,
           },
         ],
-        detectedDateColumn: headerCells[dateColIndex],
+        detectedDateColumn: detectedColumn,
         rowCount: lines.length - 1,
       };
     }
@@ -208,6 +209,9 @@ export default function SalesReportingPage() {
     const allRows: Record<string, unknown>[] = [];
     for (const sheetName of workbook.SheetNames) {
       const sheet = workbook.Sheets[sheetName];
+      if (!sheet) {
+        continue;
+      }
       const rows = XLSX.utils.sheet_to_json(sheet, {
         defval: null,
         raw: true,
@@ -335,7 +339,7 @@ export default function SalesReportingPage() {
       if (dates.length > 0) {
         const minDate = new Date(Math.min(...dates.map((d) => d.getTime())));
         const maxDate = new Date(Math.max(...dates.map((d) => d.getTime())));
-        const formatDate = (d: Date) => d.toISOString().split("T")[0];
+        const formatDate = (d: Date) => d.toISOString().split("T")[0] ?? "";
         dateRange = { min: formatDate(minDate), max: formatDate(maxDate) };
       }
     }
@@ -362,10 +366,11 @@ export default function SalesReportingPage() {
     setError(null);
     setParsedData(null);
 
-    if (newFiles && newFiles.length > 0) {
+    const firstFile = newFiles?.[0];
+    if (firstFile) {
       setIsAnalyzing(true);
       try {
-        const data = await analyzeFile(newFiles[0]);
+        const data = await analyzeFile(firstFile);
 
         if (!data.dateRange) {
           setError(
@@ -395,7 +400,7 @@ export default function SalesReportingPage() {
           const minDate = new Date(data.dateRange.min);
           setStartDate(
             start > minDate
-              ? start.toISOString().split("T")[0]
+              ? (start.toISOString().split("T")[0] ?? data.dateRange.min)
               : data.dateRange.min
           );
         }
@@ -501,7 +506,7 @@ export default function SalesReportingPage() {
       const minDate = new Date(parsedData.dateRange.min);
       setStartDate(
         start > minDate
-          ? start.toISOString().split("T")[0]
+          ? (start.toISOString().split("T")[0] ?? parsedData.dateRange.min)
           : parsedData.dateRange.min
       );
     }

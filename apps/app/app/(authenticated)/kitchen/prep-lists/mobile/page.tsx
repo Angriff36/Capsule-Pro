@@ -63,7 +63,6 @@ const stationColors: Record<string, string> = {
 
 function getPrepDateLabel(date: string): { label: string; isUrgent: boolean } {
   const prepDate = parseISO(date);
-  const _today = new Date();
 
   if (isToday(prepDate)) {
     return { label: "TODAY", isUrgent: true };
@@ -126,7 +125,7 @@ export default function PrepListsMobilePage() {
 
   // Sort items within each station by prep date
   Object.keys(itemsByStation).forEach((station) => {
-    itemsByStation[station].sort(
+    itemsByStation[station]?.sort(
       (a, b) => new Date(a.prepDate).getTime() - new Date(b.prepDate).getTime()
     );
   });

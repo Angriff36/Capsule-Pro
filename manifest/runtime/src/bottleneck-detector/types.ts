@@ -8,58 +8,64 @@
 /**
  * Bottleneck severity levels
  */
-export enum BottleneckSeverity {
-  Low = "low",
-  Medium = "medium",
-  High = "high",
-  Critical = "critical",
-}
+export const BottleneckSeverity = {
+  Low: "low",
+  Medium: "medium",
+  High: "high",
+  Critical: "critical",
+} as const;
+export type BottleneckSeverity =
+  (typeof BottleneckSeverity)[keyof typeof BottleneckSeverity];
 
 /**
  * Bottleneck categories
  */
-export enum BottleneckCategory {
-  Throughput = "throughput",
-  Capacity = "capacity",
-  Efficiency = "efficiency",
-  Quality = "quality",
-  Resource = "resource",
-  Process = "process",
-}
+export const BottleneckCategory = {
+  Throughput: "throughput",
+  Capacity: "capacity",
+  Efficiency: "efficiency",
+  Quality: "quality",
+  Resource: "resource",
+  Process: "process",
+} as const;
+export type BottleneckCategory =
+  (typeof BottleneckCategory)[keyof typeof BottleneckCategory];
 
 /**
  * Bottleneck types for specific operational areas
  */
-export enum BottleneckType {
+export const BottleneckType = {
   // Kitchen bottlenecks
-  StationOverload = "station_overload",
-  PrepTaskBacklog = "prep_task_backlog",
-  RecipeComplexity = "recipe_complexity",
-  StaffUnderutilization = "staff_underutilization",
-  EquipmentUnderutilization = "equipment_underutilization",
+  StationOverload: "station_overload",
+  PrepTaskBacklog: "prep_task_backlog",
+  RecipeComplexity: "recipe_complexity",
+  StaffUnderutilization: "staff_underutilization",
+  EquipmentUnderutilization: "equipment_underutilization",
 
   // Inventory bottlenecks
-  StockoutRisk = "stockout_risk",
-  Overstock = "overstock",
-  SlowTurnover = "slow_turnover",
-  SupplierDelay = "supplier_delay",
+  StockoutRisk: "stockout_risk",
+  Overstock: "overstock",
+  SlowTurnover: "slow_turnover",
+  SupplierDelay: "supplier_delay",
 
   // Scheduling bottlenecks
-  DoubleBooking = "double_booking",
-  InsufficientStaff = "insufficient_staff",
-  OvertimeSpike = "overtime_spike",
-  ShiftGap = "shift_gap",
+  DoubleBooking: "double_booking",
+  InsufficientStaff: "insufficient_staff",
+  OvertimeSpike: "overtime_spike",
+  ShiftGap: "shift_gap",
 
   // Event bottlenecks
-  LeadTimeOverflow = "lead_time_overflow",
-  VenueConstraint = "venue_constraint",
-  BudgetOverrun = "budget_overrun",
+  LeadTimeOverflow: "lead_time_overflow",
+  VenueConstraint: "venue_constraint",
+  BudgetOverrun: "budget_overrun",
 
   // General operational
-  ProcessDelay = "process_delay",
-  CommunicationGap = "communication_gap",
-  ApprovalBlockage = "approval_blockage",
-}
+  ProcessDelay: "process_delay",
+  CommunicationGap: "communication_gap",
+  ApprovalBlockage: "approval_blockage",
+} as const;
+export type BottleneckType =
+  (typeof BottleneckType)[keyof typeof BottleneckType];
 
 /**
  * Detected bottleneck
@@ -92,26 +98,30 @@ export interface Bottleneck {
 /**
  * Improvement suggestion type
  */
-export enum SuggestionType {
-  ProcessChange = "process_change",
-  ResourceReallocation = "resource_reallocation",
-  CapacityExpansion = "capacity_expansion",
-  TechnologyAdoption = "technology_adoption",
-  Training = "training",
-  SchedulingAdjustment = "scheduling_adjustment",
-  PolicyChange = "policy_change",
-  Automation = "automation",
-}
+export const SuggestionType = {
+  ProcessChange: "process_change",
+  ResourceReallocation: "resource_reallocation",
+  CapacityExpansion: "capacity_expansion",
+  TechnologyAdoption: "technology_adoption",
+  Training: "training",
+  SchedulingAdjustment: "scheduling_adjustment",
+  PolicyChange: "policy_change",
+  Automation: "automation",
+} as const;
+export type SuggestionType =
+  (typeof SuggestionType)[keyof typeof SuggestionType];
 
 /**
  * Priority for suggestions
  */
-export enum SuggestionPriority {
-  Low = "low",
-  Medium = "medium",
-  High = "high",
-  Urgent = "urgent",
-}
+export const SuggestionPriority = {
+  Low: "low",
+  Medium: "medium",
+  High: "high",
+  Urgent: "urgent",
+} as const;
+export type SuggestionPriority =
+  (typeof SuggestionPriority)[keyof typeof SuggestionPriority];
 
 /**
  * Improvement suggestion

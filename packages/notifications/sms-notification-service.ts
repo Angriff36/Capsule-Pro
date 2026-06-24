@@ -84,29 +84,6 @@ function normalizePhoneNumber(phoneNumber: string): string {
 }
 
 /**
- * Checks if an employee has opted in to SMS notifications for a specific type
- */
-async function _checkOptInStatus(
-  database: PrismaClient,
-  tenantId: string,
-  employeeId: string,
-  notificationType: string
-): Promise<boolean> {
-  const preference = await database.notification_preferences.findFirst({
-    where: {
-      tenant_id: tenantId,
-      employee_id: employeeId,
-      notification_type: notificationType,
-      channel: "sms",
-    },
-  });
-
-  // If no preference exists, default to opted-in
-  // If preference exists, respect the is_enabled value
-  return preference?.is_enabled ?? true;
-}
-
-/**
  * Creates a log entry for an SMS message
  */
 async function createSmsLog(

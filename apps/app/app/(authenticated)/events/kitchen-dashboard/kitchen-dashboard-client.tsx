@@ -68,15 +68,6 @@ type ViewMode = "timeline" | "queue";
 type QuickFilter = "live-now" | "starting-soon" | "high-capacity" | "sold-out";
 type OperationalStatus = "upcoming" | "live" | "finished";
 
-const statusVariantMap = {
-  draft: "outline",
-  confirmed: "default",
-  tentative: "secondary",
-  postponed: "outline",
-  completed: "secondary",
-  cancelled: "destructive",
-} as const;
-
 const operationalStatusConfig: Record<
   OperationalStatus,
   { label: string; className: string }
@@ -389,7 +380,7 @@ export const KitchenDashboardClient = ({
     }
 
     const index = Math.floor(0.75 * (counts.length - 1));
-    return counts[Math.max(0, index)];
+    return counts[Math.max(0, index)] ?? 0;
   }, [parsedEvents]);
 
   const enrichedEvents = useMemo(() => {
@@ -960,10 +951,6 @@ export const KitchenDashboardClient = ({
                           : `Ended ${formatDuration(now.getTime() - event.end.getTime())} ago`;
                       const operationalBadge =
                         operationalStatusConfig[event.operationalStatus];
-                      const _statusVariant =
-                        statusVariantMap[
-                          event.status as keyof typeof statusVariantMap
-                        ] ?? "outline";
 
                       return (
                         <div
@@ -1103,10 +1090,6 @@ export const KitchenDashboardClient = ({
                           {group.items.map((event, index) => {
                             const operationalBadge =
                               operationalStatusConfig[event.operationalStatus];
-                            const _statusVariant =
-                              statusVariantMap[
-                                event.status as keyof typeof statusVariantMap
-                              ] ?? "outline";
 
                             return (
                               <div
@@ -1219,10 +1202,6 @@ export const KitchenDashboardClient = ({
                       {queueEvents.map((event, index) => {
                         const operationalBadge =
                           operationalStatusConfig[event.operationalStatus];
-                        const _statusVariant =
-                          statusVariantMap[
-                            event.status as keyof typeof statusVariantMap
-                          ] ?? "outline";
                         const countdownLabel = event.isLive
                           ? `Live ${formatDuration(now.getTime() - event.start.getTime())}`
                           : event.isUpcoming

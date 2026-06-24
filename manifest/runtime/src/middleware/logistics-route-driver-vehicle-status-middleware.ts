@@ -196,6 +196,9 @@ async function processRouteLeg(
 ): Promise<void> {
   const { storeProvider, dispatchCommand, onDiagnostic } = deps;
   const leg = LIFECYCLE_LEGS[event.name];
+  if (!leg) {
+    return;
+  }
   const payload = event.payload as LogisticsRoutePayload | undefined;
 
   const routeId =

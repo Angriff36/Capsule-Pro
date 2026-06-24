@@ -470,12 +470,17 @@ export function createNextResponse<T>(
  * Manifest constraint violation error
  */
 export class ManifestConstraintError extends Error {
+  public readonly constraintOutcomes: ApiConstraintOutcome[];
+  public readonly details?: Record<string, unknown>;
+
   constructor(
     message: string,
-    public readonly constraintOutcomes: ApiConstraintOutcome[],
-    public readonly details?: Record<string, unknown>
+    constraintOutcomes: ApiConstraintOutcome[],
+    details?: Record<string, unknown>
   ) {
     super(message);
+    this.constraintOutcomes = constraintOutcomes;
+    this.details = details;
     this.name = "ManifestConstraintError";
   }
 }
@@ -484,12 +489,17 @@ export class ManifestConstraintError extends Error {
  * Manifest policy denial error
  */
 export class ManifestPolicyError extends Error {
+  public readonly policyName: string;
+  public readonly details?: Record<string, unknown>;
+
   constructor(
     message: string,
-    public readonly policyName: string,
-    public readonly details?: Record<string, unknown>
+    policyName: string,
+    details?: Record<string, unknown>
   ) {
     super(message);
+    this.policyName = policyName;
+    this.details = details;
     this.name = "ManifestPolicyError";
   }
 }
@@ -498,11 +508,14 @@ export class ManifestPolicyError extends Error {
  * Manifest concurrency conflict error
  */
 export class ManifestConflictError extends Error {
+  public readonly conflict: NonNullable<CommandResult["concurrencyConflict"]>;
+
   constructor(
     message: string,
-    public readonly conflict: NonNullable<CommandResult["concurrencyConflict"]>
+    conflict: NonNullable<CommandResult["concurrencyConflict"]>
   ) {
     super(message);
+    this.conflict = conflict;
     this.name = "ManifestConflictError";
   }
 }

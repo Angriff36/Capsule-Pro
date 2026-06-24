@@ -129,6 +129,7 @@ export function createProposalLineItemCountMiddleware(
 
       for (const event of relevant) {
         const leg = LEG[event.name];
+        if (!leg) continue;
         const payload = event.payload as
           | { proposalId?: unknown; tenantId?: unknown }
           | undefined;

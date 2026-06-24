@@ -355,9 +355,9 @@ function CommandCard({
   entityName,
   expanded,
   onToggle,
-  onValidate,
-  validating,
-  validationResult,
+  onValidate: _onValidate,
+  validating: _validating,
+  validationResult: _validationResult,
 }: CommandCardProps) {
   return (
     <Card>
@@ -494,10 +494,10 @@ interface ConstraintItemProps {
 
 function ConstraintItem({
   constraint,
-  entityName,
-  commandName,
-  onValidate,
-  validating,
+  entityName: _entityName,
+  commandName: _commandName,
+  onValidate: _onValidate,
+  validating: _validating,
   validationResult,
 }: ConstraintItemProps) {
   const severityConfig = {
@@ -581,11 +581,11 @@ interface GuardItemProps {
 
 function GuardItem({
   guard,
-  entityName,
-  commandName,
+  entityName: _entityName,
+  commandName: _commandName,
   index,
-  onValidate,
-  validating,
+  onValidate: _onValidate,
+  validating: _validating,
   validationResult,
 }: GuardItemProps) {
   return (
@@ -622,7 +622,7 @@ interface PolicyCardProps {
   policy: PolicyDetail;
 }
 
-function PolicyCard({ policy, entityName }: PolicyCardProps) {
+function PolicyCard({ policy, entityName: _entityName }: PolicyCardProps) {
   return (
     <Card>
       <CardHeader>

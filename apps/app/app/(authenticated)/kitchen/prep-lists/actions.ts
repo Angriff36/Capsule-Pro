@@ -554,6 +554,9 @@ function populateStations(
   for (const data of ingredientMap.values()) {
     const stations = Array.from(data.stations);
     const primaryStationId = stations[0];
+    if (primaryStationId === undefined) {
+      continue;
+    }
 
     const dietarySubstitutions = applyDietaryRestrictions(
       data.ingredient.allergens ?? [],
@@ -823,7 +826,11 @@ export async function savePrepListToDatabase(
       RETURNING id
     `;
 
-    const prepListId = result[0].id;
+    const createdPrepList = result[0];
+    if (!createdPrepList) {
+      throw new Error("Failed to create prep list: no row returned");
+    }
+    const prepListId = createdPrepList.id;
 
     // Create all prep list items
     let sortOrder = 0;
