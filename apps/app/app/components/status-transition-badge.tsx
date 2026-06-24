@@ -31,9 +31,8 @@ import {
 } from "@repo/design-system/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 import { apiUrl } from "@/app/lib/api";
-import { executeCommand } from "@/app/lib/manifest-client";
+import { useOptimisticCommand } from "@/app/lib/use-optimistic-command";
 
 type BadgeVariant =
   | "default"
@@ -80,7 +79,14 @@ export function StatusTransitionBadge({
 }: StatusTransitionBadgeProps) {
   const [transitions, setTransitions] = useState<Transition[] | null>(null);
   const [loading, setLoading] = useState(false);
-  const [busy, setBusy] = useState(false);
+  // Optimistic status: the badge shows the target status immediately on click
+  // and reverts (with the runtime's friendly error) if the governed command
+  // fails. `pending` gates the dropdown while a transition is in flight.
+  const {
+    value: displayedStatus,
+    pending,
+    run,
+  } = useOptimisticCommand<string>(status);
 
   async function loadOnOpen(open: boolean) {
     if (!open || transitions !== null || loading) {
@@ -110,31 +116,34 @@ export function StatusTransitionBadge({
   }
 
   async function applyTransition(t: Transition) {
-    if (!t.command || busy) {
+    if (!t.command || pending) {
       return;
     }
-    setBusy(true);
-    try {
-      await executeCommand(entity, t.command, { id });
-      toast.success(`Status changed to ${t.to}`);
+    const res = await run(
+      entity,
+      t.command,
+      { id },
+      {
+        optimistic: t.to,
+        successMessage: `Status changed to ${t.to}`,
+        errorMessage: "Transition failed",
+      }
+    );
+    if (res) {
       onChanged?.(t.to);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Transition failed");
-    } finally {
-      setBusy(false);
     }
   }
 
   return (
     <DropdownMenu onOpenChange={loadOnOpen}>
-      <DropdownMenuTrigger asChild disabled={busy}>
+      <DropdownMenuTrigger asChild disabled={pending}>
         <button
           aria-label={`Change ${entity} status`}
           className="inline-flex cursor-pointer items-center disabled:cursor-not-allowed"
           type="button"
         >
           <Badge className={className} variant={variant}>
-            {label ?? status}
+            {label ?? displayedStatus}
             <ChevronDown className="ml-1 h-3 w-3 opacity-60" />
           </Badge>
         </button>
@@ -160,7 +169,7 @@ export function StatusTransitionBadge({
             return (
               <DropdownMenuItem
                 className="flex flex-col items-start gap-0.5"
-                disabled={blocked || busy}
+                disabled={blocked || pending}
                 key={t.to}
                 onSelect={(e) => {
                   if (blocked) {
