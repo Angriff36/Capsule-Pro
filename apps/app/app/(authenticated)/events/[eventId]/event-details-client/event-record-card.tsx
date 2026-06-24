@@ -209,7 +209,22 @@ export function EventRecordCard({ event, onEditEvent }: EventRecordCardProps) {
             label="Event Number"
             value={formatValue(event.eventNumber)}
           />
-          <DetailItem label="Event Date" value={formatDate(event.eventDate)} />
+          <DetailItem
+            label="Event Date"
+            value={formatDate(event.eventDate)}
+            valueNode={
+              <InlineEditField
+                command="updateDate"
+                display={formatDate(event.eventDate)}
+                entity="Event"
+                field="newEventDate"
+                id={event.id}
+                label="Event Date"
+                type="date"
+                value={event.eventDate}
+              />
+            }
+          />
           <DetailItem
             className="md:col-span-2"
             label="Title"
