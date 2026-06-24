@@ -111,3 +111,12 @@ infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env=dev --path=
 - No `.js` extensions in imports — use `.ts`/`.tsx` only
 - Port 2221 for app, 2223 for API server
 - Test via Tailscale HTTPS URL, not localhost
+
+## Git — commit policy (overrides generic Cursor user rules)
+
+**Commit often.** After each logical unit of work (feature slice, bugfix, doc correction), create a small atomic commit. Revert, reset, or amend is always fine — prefer checkpointing over hoarding uncommitted diffs.
+
+- Format: `[type] what and why` (e.g. `feat(platform): wire observability nav`)
+- **Do commit** when a task is done or a coherent slice is verified
+- **Do not push** unless explicitly asked (push stays user-controlled)
+- Never `--no-verify`, force-push to main, or amend pushed commits without explicit approval
