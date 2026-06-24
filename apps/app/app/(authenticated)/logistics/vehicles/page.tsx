@@ -60,13 +60,14 @@ import {
 import type { ComponentType, FormEvent } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { OperationalPageShell } from "../../components/operational-page-shell";
 import {
   listVehicles,
   vehicleCreate,
   vehicleRemove,
   vehicleUpdate,
 } from "@/app/lib/manifest-client.generated";
+import { OperationalPageShell } from "../../components/operational-page-shell";
+import { SampleDataImportButton } from "../../components/sample-data-import-button";
 
 type VehicleStatus = "available" | "in_use" | "maintenance" | "out_of_service";
 
@@ -344,149 +345,148 @@ export default function VehiclesPage() {
         eyebrow="Logistics / Vehicles"
         title="Vehicles"
       >
-
-      {/* Status Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        {STATUS_ORDER.map((status) => {
-          const config = STATUS_CONFIG[status];
-          const count = statusCounts[status];
-          return (
-            <Card key={status} tone="soft-stone">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="font-medium text-sm">
-                  {config.label}
-                </CardTitle>
-                <config.icon className={`h-4 w-4 ${config.iconColor}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="font-bold text-2xl">{count}</div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Vehicle List */}
-      {vehicles.length === 0 ? (
-        <Card>
-          <CardContent className="py-8">
-            <Empty>
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <Truck />
-                </EmptyMedia>
-                <EmptyTitle>No vehicles yet</EmptyTitle>
-                <EmptyDescription>
-                  Add fleet vehicles to manage capacity, maintenance status, and
-                  driver assignments.
-                </EmptyDescription>
-              </EmptyHeader>
-              <EmptyContent>
-                <p className="text-muted-foreground text-xs">
-                  Click <strong>Add Vehicle</strong> above to register your
-                  first vehicle.
-                </p>
-              </EmptyContent>
-            </Empty>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {vehicles.map((vehicle) => {
-            const config = getStatusConfig(vehicle.status);
-            const Icon = config.icon;
+        {/* Status Summary Cards */}
+        <div className="grid gap-4 md:grid-cols-4">
+          {STATUS_ORDER.map((status) => {
+            const config = STATUS_CONFIG[status];
+            const count = statusCounts[status];
             return (
-              <Card
-                className="transition-shadow hover:border-primary/40"
-                key={vehicle.id}
-                tone="canvas"
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-full ${config.color}`}
-                    >
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="mb-1 flex items-center gap-2">
-                        <span className="font-semibold">
-                          {getVehicleName(vehicle)}
-                        </span>
-                        <Badge className={config.color}>{config.label}</Badge>
-                        {vehicle.assigned_drivers > 0 && (
-                          <Badge variant="secondary">
-                            {vehicle.assigned_drivers} driver
-                            {vehicle.assigned_drivers > 1 ? "s" : ""}
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                        {vehicle.plate_number && (
-                          <span>{vehicle.plate_number}</span>
-                        )}
-                        {vehicle.fuel_type && (
-                          <span className="flex items-center gap-1">
-                            <Fuel className="h-3 w-3" />
-                            {vehicle.fuel_type}
-                          </span>
-                        )}
-                        {vehicle.capacity_weight && (
-                          <span className="flex items-center gap-1">
-                            <Weight className="h-3 w-3" />
-                            {vehicle.capacity_weight} lbs
-                          </span>
-                        )}
-                        {vehicle.mileage && (
-                          <span className="flex items-center gap-1">
-                            <Gauge className="h-3 w-3" />
-                            {vehicle.mileage.toLocaleString()} mi
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        aria-label={`Edit ${getVehicleName(vehicle)}`}
-                        onClick={() => openEdit(vehicle)}
-                        size="sm"
-                        type="button"
-                        variant="outline"
-                      >
-                        <Pencil aria-hidden="true" className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        aria-label={`Delete ${getVehicleName(vehicle)}`}
-                        className="text-red-500 hover:text-red-700"
-                        disabled={deleting === vehicle.id}
-                        onClick={() =>
-                          confirmDelete({
-                            id: vehicle.id,
-                            name: getVehicleName(vehicle),
-                          })
-                        }
-                        size="sm"
-                        type="button"
-                        variant="outline"
-                      >
-                        {deleting === vehicle.id ? (
-                          <Loader2
-                            aria-hidden="true"
-                            className="h-4 w-4 animate-spin"
-                          />
-                        ) : (
-                          <Trash2 aria-hidden="true" className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
+              <Card key={status} tone="soft-stone">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="font-medium text-sm">
+                    {config.label}
+                  </CardTitle>
+                  <config.icon className={`h-4 w-4 ${config.iconColor}`} />
+                </CardHeader>
+                <CardContent>
+                  <div className="font-bold text-2xl">{count}</div>
                 </CardContent>
               </Card>
             );
           })}
         </div>
-      )}
 
+        {/* Vehicle List */}
+        {vehicles.length === 0 ? (
+          <Card>
+            <CardContent className="py-8">
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <Truck />
+                  </EmptyMedia>
+                  <EmptyTitle>No vehicles yet</EmptyTitle>
+                  <EmptyDescription>
+                    Add fleet vehicles to manage capacity, maintenance status,
+                    and driver assignments.
+                  </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <p className="text-muted-foreground text-xs">
+                    Click <strong>Add Vehicle</strong> above to register your
+                    first vehicle, or import sample data to explore.
+                  </p>
+                  <SampleDataImportButton onSeeded={loadVehicles} />
+                </EmptyContent>
+              </Empty>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {vehicles.map((vehicle) => {
+              const config = getStatusConfig(vehicle.status);
+              const Icon = config.icon;
+              return (
+                <Card
+                  className="transition-shadow hover:border-primary/40"
+                  key={vehicle.id}
+                  tone="canvas"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      <div
+                        className={`flex h-10 w-10 items-center justify-center rounded-full ${config.color}`}
+                      >
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1 flex items-center gap-2">
+                          <span className="font-semibold">
+                            {getVehicleName(vehicle)}
+                          </span>
+                          <Badge className={config.color}>{config.label}</Badge>
+                          {vehicle.assigned_drivers > 0 && (
+                            <Badge variant="secondary">
+                              {vehicle.assigned_drivers} driver
+                              {vehicle.assigned_drivers > 1 ? "s" : ""}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4 text-muted-foreground text-sm">
+                          {vehicle.plate_number && (
+                            <span>{vehicle.plate_number}</span>
+                          )}
+                          {vehicle.fuel_type && (
+                            <span className="flex items-center gap-1">
+                              <Fuel className="h-3 w-3" />
+                              {vehicle.fuel_type}
+                            </span>
+                          )}
+                          {vehicle.capacity_weight && (
+                            <span className="flex items-center gap-1">
+                              <Weight className="h-3 w-3" />
+                              {vehicle.capacity_weight} lbs
+                            </span>
+                          )}
+                          {vehicle.mileage && (
+                            <span className="flex items-center gap-1">
+                              <Gauge className="h-3 w-3" />
+                              {vehicle.mileage.toLocaleString()} mi
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          aria-label={`Edit ${getVehicleName(vehicle)}`}
+                          onClick={() => openEdit(vehicle)}
+                          size="sm"
+                          type="button"
+                          variant="outline"
+                        >
+                          <Pencil aria-hidden="true" className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          aria-label={`Delete ${getVehicleName(vehicle)}`}
+                          className="text-red-500 hover:text-red-700"
+                          disabled={deleting === vehicle.id}
+                          onClick={() =>
+                            confirmDelete({
+                              id: vehicle.id,
+                              name: getVehicleName(vehicle),
+                            })
+                          }
+                          size="sm"
+                          type="button"
+                          variant="outline"
+                        >
+                          {deleting === vehicle.id ? (
+                            <Loader2
+                              aria-hidden="true"
+                              className="h-4 w-4 animate-spin"
+                            />
+                          ) : (
+                            <Trash2 aria-hidden="true" className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </OperationalPageShell>
 
       {/* Create/Edit Dialog */}
