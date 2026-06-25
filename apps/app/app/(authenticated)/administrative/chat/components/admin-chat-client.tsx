@@ -42,6 +42,7 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { useCallback, useEffect, useMemo, useState } from "react";
 // NOTE: Keeping apiFetch for chat endpoints (/api/administrative/chat/*, /api/staff/employees) — no generated client for chat operations
 import { apiFetch } from "@/app/lib/api";
+import { isPlainRecord } from "@/app/lib/is-record";
 import {
   type RealtimeEventMessage,
   useRealtimeChannel,
@@ -151,9 +152,6 @@ const messageName = "admin.chat.message";
 const messageCacheLimit = 200;
 const loadLimit = 50;
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null;
-
 const parseDate = (value?: string | null) => {
   if (!value) {
     return null;
@@ -185,7 +183,7 @@ const formatDisplayName = (employee: {
 }) => `${employee.firstName} ${employee.lastName}`.trim() || employee.email;
 
 const parseRealtimePayload = (value: unknown): RealtimePayload => {
-  if (!isRecord(value)) {
+  if (!isPlainRecord(value)) {
     return {};
   }
   const payload: RealtimePayload = {};

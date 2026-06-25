@@ -1,5 +1,6 @@
 import type { WorkBook, WorkSheet } from "xlsx";
 import { invariant } from "@/app/lib/invariant";
+import { isPlainRecord } from "@/app/lib/is-record";
 
 // Lazy load xlsx utils to keep it out of initial bundle
 const getXlsxUtils = async () => {
@@ -193,9 +194,6 @@ const CREATED_DATE_COL = "created_date";
 
 const CURRENCY_HINTS = ["total", "value", "amount", "budget", "revenue"];
 const DATE_HINTS = ["date", "created"];
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
 
 const normalizeName = (value: string): string => {
   const text = value.toLowerCase().replace(/[^a-z0-9]+/g, " ");
@@ -393,7 +391,7 @@ const parseSheetRows = async (sheet: WorkSheet): Promise<DataRow[]> => {
   }) as unknown;
   invariant(Array.isArray(rows), "Workbook sheet rows must be an array");
   return rows.map((row: unknown) => {
-    invariant(isRecord(row), "Each row must be an object");
+    invariant(isPlainRecord(row), "Each row must be an object");
     const parsed: DataRow = {};
     for (const [key, value] of Object.entries(row)) {
       parsed[key] = value as CellValue;

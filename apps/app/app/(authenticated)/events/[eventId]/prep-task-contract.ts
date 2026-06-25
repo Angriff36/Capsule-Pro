@@ -1,5 +1,7 @@
 import type { PrepTask } from "@repo/database";
 
+import { isPlainRecord } from "@/app/lib/is-record";
+
 export type PrepTaskSummary = Pick<
   PrepTask,
   | "id"
@@ -16,9 +18,6 @@ export type PrepTaskSummaryClient = Omit<PrepTaskSummary, "quantityTotal"> & {
 };
 
 type RecordShape = Record<string, unknown>;
-
-const isRecord = (value: unknown): value is RecordShape =>
-  typeof value === "object" && value !== null;
 
 const isNumberLike = (value: unknown): boolean => {
   if (typeof value === "number") {
@@ -52,7 +51,7 @@ export function assertPrepTaskContract(
 
   (value as unknown[]).forEach((item: unknown, index: number) => {
     assertField(
-      isRecord(item),
+      isPlainRecord(item),
       `PrepTask contract violation at index ${index}: expected an object.`
     );
 

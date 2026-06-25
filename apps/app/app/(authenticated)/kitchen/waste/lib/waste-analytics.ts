@@ -2,6 +2,10 @@
 import * as Sentry from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import { invariant } from "@/app/lib/invariant";
+import {
+  assertRecord as expectRecord,
+  isPlainRecord,
+} from "@/app/lib/is-record";
 
 const { logger } = Sentry;
 
@@ -56,17 +60,6 @@ export interface WasteReportData {
   summary: WasteReportSummary;
 }
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null;
-
-const expectRecord = (
-  value: unknown,
-  path: string
-): Record<string, unknown> => {
-  invariant(isRecord(value), `${path} must be an object`);
-  return value;
-};
-
 const expectArray = (value: unknown, path: string): unknown[] => {
   invariant(Array.isArray(value), `${path} must be an array`);
   return value;
@@ -86,7 +79,7 @@ const expectNumber = (value: unknown, path: string): number => {
 };
 
 export const parseWasteTrendsResponse = (payload: unknown): WasteTrendsData => {
-  invariant(isRecord(payload), "payload must be an object");
+  invariant(isPlainRecord(payload), "payload must be an object");
 
   const trends = expectRecord(payload.trends, "payload.trends");
   const summary = expectRecord(trends.summary, "payload.trends.summary");
@@ -173,7 +166,7 @@ export const parseWasteTrendsResponse = (payload: unknown): WasteTrendsData => {
 };
 
 export const parseWasteReportResponse = (payload: unknown): WasteReportData => {
-  invariant(isRecord(payload), "payload must be an object");
+  invariant(isPlainRecord(payload), "payload must be an object");
 
   const report = expectRecord(payload.report, "payload.report");
   const summary = expectRecord(report.summary, "payload.report.summary");

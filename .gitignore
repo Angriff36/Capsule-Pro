@@ -371,9 +371,9 @@ scripts/*
 !scripts/security/*.mjs
 !scripts/check-hardcoded-routes.mjs
 !scripts/check-staged-write-routes.mjs
+!scripts/check-no-local-isrecord.mjs
 !scripts/lint-explicit-any.mjs
 !scripts/lint-explicit-any-baseline.txt
-!scripts/ensure-github-packages-npmrc.sh
 !scripts/test-route-conformance.mjs
 !scripts/sync-manifest-runtime.mjs
 !scripts/verify-governance-route-findings.mjs
@@ -383,8 +383,6 @@ scripts/*
 !scripts/__tests__/
 !scripts/__tests__/validate-migration-table-schemas.test.mjs
 !scripts/__tests__/validate-generated-migration.test.mjs
-!scripts/ensure-github-packages-npmrc.sh
-
 # Local Netlify folder
 .netlify
 

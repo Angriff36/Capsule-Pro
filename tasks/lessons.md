@@ -161,3 +161,21 @@ corrected the premise (the resulting fix was still right, for a different reason
 **Rule:** kitchen.ir.json shape: `ir.commands[] = {name, entity, parameters,...}`;
 `ir.entities[].commands = string[]`. Verify IR claims against the schema
 (node_modules/@angriff36/manifest/docs/spec/ir/ir-v1.schema.json) before asserting absence.
+
+## Lesson (2026-06-25): One shared plain-record guard — never redefine `isRecord`/`expectRecord`/`assertRecord` locally
+
+**What happened:** Eight files each copy-pasted a local `isRecord`/`expectRecord` "AI slop" helper.
+Two shapes drifted (some excluded arrays, some didn't), so the same-named helper behaved differently
+per file.
+**Rule:** There is ONE shared home: `apps/app/app/lib/is-record.ts` + `apps/api/app/lib/is-record.ts`
+(mirror, like `@/app/lib/invariant`) exporting `isPlainRecord` (object && !null && !Array.isArray —
+arrays are NOT records) and `assertRecord(value, path)` (invariant-throwing, the old `expectRecord`).
+Import `{ isPlainRecord }` (or `{ assertRecord as expectRecord }` to keep an `expect*` family
+internally consistent). The gate `pnpm check:no-local-isrecord` (`scripts/check-no-local-isrecord.mjs`,
+wired into CI) fails on any NEW local def of `isRecord|isPlainRecord|expectRecord|assertRecord` outside
+the shared files, printing `file:line` + the fix. Do NOT centralize feature-specific validators that do
+extra domain checks — only the generic plain-object guard.
+**Gotcha (cost me a re-do):** the PostToolUse import-organizer strips an import it sees as unused.
+If you add the `@/app/lib/is-record` import BEFORE deleting the local `const expectRecord` it shadows,
+the organizer deletes the import (shadowed = "unused"), leaving the call sites undeclared. Order:
+delete/rename the local def FIRST, then add the import LAST.

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 // NOTE: Keeping apiFetch for custom analytics bottleneck endpoint (no generated equivalent)
 import { apiFetch } from "@/app/lib/api";
 import { invariant } from "@/app/lib/invariant";
+import { assertRecord as expectRecord } from "@/app/lib/is-record";
 
 export interface BottleneckSuggestion {
   aiGenerated: boolean;
@@ -74,17 +75,6 @@ export interface UseBottlenecksOptions {
   period?: string;
   useAi?: boolean;
 }
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null;
-
-const expectRecord = (
-  value: unknown,
-  path: string
-): Record<string, unknown> => {
-  invariant(isRecord(value), `${path} must be an object`);
-  return value;
-};
 
 const expectString = (value: unknown, path: string): string => {
   invariant(typeof value === "string", `${path} must be a string`);
