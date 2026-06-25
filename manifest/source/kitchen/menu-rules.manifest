@@ -54,7 +54,7 @@ entity Menu mixin TenantScoped {
 
   relationship hasMany dishes: MenuDish
 
-  transition status from "draft" to ["published"]
+  transition status from "draft" to ["published", "archived"]
   transition status from "published" to ["draft", "archived"]
   transition status from "archived" to ["draft"]
 

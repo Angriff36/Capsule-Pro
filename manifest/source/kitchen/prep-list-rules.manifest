@@ -77,6 +77,7 @@ entity PrepList mixin TenantScoped {
   transition status from "draft" to ["draft", "finalized", "cancelled"]
   transition status from "finalized" to ["completed", "cancelled", "draft"]
   transition status from "completed" to ["draft", "cancelled"]
+  transition status from "cancelled" to ["cancelled"]
 
   default policy PrepListDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Prep list management"
   command update(newName: string, newDietaryRestrictions: array<string>, newNotes: string) {

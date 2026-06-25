@@ -29,9 +29,10 @@ entity EventContract mixin TenantScoped, SoftDeletable {
   computed hasDocument: boolean = self.documentUrl != ""
   computed hasExpiration: boolean = self.expiresAt != null
 
-  transition status from "draft" to ["sent"]
-  transition status from "sent" to ["viewed", "expired", "cancelled"]
+  transition status from "draft" to ["sent", "cancelled", "expired"]
+  transition status from "sent" to ["viewed", "expired", "cancelled", "signed"]
   transition status from "viewed" to ["signed", "expired", "cancelled"]
+  transition status from "expired" to ["expired", "cancelled"]
 
   constraint requireEvent: self.eventId != null and self.eventId != "" "Event ID is required"
   constraint requireClient: self.clientId != null and self.clientId != "" "Client ID is required"

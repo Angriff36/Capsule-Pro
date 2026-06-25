@@ -37,6 +37,8 @@ entity Budget mixin TenantScoped {
   transition status from "draft" to ["active", "archived"]
   transition status from "active" to ["closed"]
   transition status from "closed" to ["archived"]
+  // remove is guardable from any non-... state incl. already-archived (no-op self-transition, §21)
+  transition status from "archived" to ["archived"]
 
   constraint warnOverBudget:warn (self.spentAmount > self.allocatedAmount) and self.status == "active" {
     messageTemplate: "Budget '{budgetName}' is over by {overAmount}"

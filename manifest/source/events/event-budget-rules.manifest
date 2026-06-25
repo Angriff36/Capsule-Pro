@@ -26,7 +26,7 @@ entity EventBudget mixin TenantScoped, SoftDeletable {
   constraint validStatus: self.status in ["draft", "approved", "finalized"] "Status must be valid"
   constraint positiveBudget: self.totalBudgetAmount >= 0 "Total budget amount must be non-negative"
 
-  transition status from "draft" to ["approved"]
+  transition status from "draft" to ["approved", "finalized"]
   transition status from "approved" to ["finalized"]
 
   constraint overrideable warnOverBudget:warn self.totalActualAmount > self.totalBudgetAmount {

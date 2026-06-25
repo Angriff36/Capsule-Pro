@@ -53,7 +53,9 @@ entity PaymentMethod mixin TenantScoped {
 
   // State transitions
   transition status from "ACTIVE" to ["EXPIRED", "INVALID", "FRAUDULENT", "REMOVED"]
-  transition status from "EXPIRED" to ["ACTIVE"]
+  transition status from "EXPIRED" to ["ACTIVE", "INVALID", "REMOVED"]
+  transition status from "INVALID" to ["INVALID", "REMOVED"]
+  transition status from "REMOVED" to ["REMOVED", "INVALID"]
 
   // Commands
   default policy PaymentMethodDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Payment method management"

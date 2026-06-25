@@ -49,7 +49,7 @@ entity ClientInteraction mixin TenantScoped, SoftDeletable {
   transition status from "open" to ["scheduled", "overdue", "completed", "escalated"]
   transition status from "scheduled" to ["overdue", "completed", "escalated"]
   transition status from "overdue" to ["scheduled", "completed", "escalated"]
-  transition status from "escalated" to ["open", "scheduled", "completed"]
+  transition status from "escalated" to ["open", "scheduled", "completed", "escalated"]
 
   constraint warnOverdueFollowUp:warn (self.followUpDate != null and self.followUpDate < now() and self.followUpCompleted == false) {
     messageTemplate: "Follow-up for '{subject}' is overdue (due {followUpDate})"

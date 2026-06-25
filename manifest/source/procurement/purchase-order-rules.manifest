@@ -199,6 +199,7 @@ entity PurchaseOrder mixin TenantScoped, SoftDeletable {
   transition status from "approved" to ["ordered", "cancelled"]
   transition status from "ordered" to ["partially_received", "received", "cancelled"]
   transition status from "partially_received" to ["received", "cancelled"]
+  transition status from "rejected" to ["cancelled"]
   // "rejected", "cancelled", "received" are terminal states
 
   store PurchaseOrder in durable

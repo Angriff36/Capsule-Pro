@@ -389,7 +389,7 @@ entity TrainingAssignment mixin TenantScoped {
   computed isSchedulableSatisfied: boolean = self.status in ["completed", "waived"]
 
   transition status from "assigned" to ["in_progress", "completed", "waived", "overdue", "manager_review"]
-  transition status from "in_progress" to ["completed", "waived", "overdue", "manager_review"]
+  transition status from "in_progress" to ["completed", "waived", "overdue", "manager_review", "in_progress"]
   transition status from "overdue" to ["in_progress", "completed", "waived", "manager_review"]
   transition status from "manager_review" to ["completed", "waived", "in_progress"]
 

@@ -36,7 +36,7 @@ entity Schedule mixin TenantScoped, SoftDeletable {
   relationship hasMany shifts: ScheduleShift
   relationship belongsTo location: Facility with locationId
 
-  transition status from "draft" to ["approved"]
+  transition status from "draft" to ["approved", "published"]
   transition status from "approved" to ["draft", "published"]
   transition status from "published" to ["closed", "draft"]
 

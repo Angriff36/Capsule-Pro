@@ -182,9 +182,10 @@ entity Shipment mixin TenantScoped, SoftDeletable {
   }
 
   transition status from "draft" to ["scheduled", "cancelled"]
-  transition status from "scheduled" to ["preparing", "cancelled"]
+  transition status from "scheduled" to ["preparing", "cancelled", "delivered"]
   transition status from "preparing" to ["in_transit", "cancelled"]
   transition status from "in_transit" to ["delivered", "cancelled"]
+  transition status from "returned" to ["cancelled"]
 
   store Shipment in durable
 }

@@ -127,8 +127,8 @@ entity QACorrectiveAction mixin TenantScoped {
   computed isEscalated: boolean = self.status == "escalated"
   computed isDismissed: boolean = self.status == "dismissed"
 
-  transition status from "open" to ["in_progress", "escalated", "dismissed"]
-  transition status from "in_progress" to ["resolved", "escalated"]
+  transition status from "open" to ["in_progress", "escalated", "dismissed", "resolved"]
+  transition status from "in_progress" to ["resolved", "escalated", "dismissed"]
   transition status from "escalated" to ["in_progress", "resolved"]
 
   constraint validPriority: self.severity in ["low", "medium", "high", "critical"] "Invalid severity"

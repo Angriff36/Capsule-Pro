@@ -18,7 +18,7 @@ entity EmployeeCertification mixin TenantScoped, SoftDeletable {
   computed isExpired: boolean = self.status == "expired"
   computed isRevoked: boolean = self.status == "revoked"
 
-  transition status from "active" to ["expired", "revoked"]
+  transition status from "active" to ["expired", "revoked", "active"]
   transition status from "expired" to ["active", "revoked"]
 
   constraint requireEmployee: self.employeeId != "" "Employee ID is required"

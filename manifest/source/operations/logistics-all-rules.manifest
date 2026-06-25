@@ -319,6 +319,8 @@ entity LogisticsRoute mixin TenantScoped {
 
   transition status from "planned" to ["in_progress", "cancelled"]
   transition status from "in_progress" to ["completed", "cancelled"]
+  transition status from "completed" to ["cancelled"]
+  transition status from "cancelled" to ["cancelled"]
 
   relationship belongsTo vehicle: Vehicle with vehicleId
   relationship belongsTo driver: Driver with driverId
