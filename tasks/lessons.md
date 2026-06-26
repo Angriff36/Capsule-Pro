@@ -229,7 +229,10 @@ Use grep only for *content* questions — never as a structural survey. Do this 
 structural work and whenever a layout claim feels uncertain. This matters most when **adding a new
 entry**: grep'ing "does X already exist?" returns nothing if the existing entry is named differently
 from your search term, so you silently create a duplicate or misnamed unit. treex the area first,
-every time.
+every time. Same for flat inventories: `ls <dir>/<glob>` (e.g. `ls manifest/scripts/generate*`)
+surfaced a parallel stack of **19 custom generators** silently reimplementing documented Manifest
+projections — grep would never have listed them unless you already knew the name. treex/ls show
+*what exists*; grep only shows *what matches your guess*.
 **Gotcha:** `treex` operates on the **current working directory** and ignores a path argument —
 `treex c:/projects/capsule-pro/canonical` dumped the entire repo root (38.6 MB). Always `cd` first:
 `cd /c/projects/capsule-pro/<dir> && treex`.
