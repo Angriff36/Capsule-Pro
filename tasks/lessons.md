@@ -198,6 +198,11 @@ broader validation than it deserved.
 **Rule:**
 - The dirty tree is handled by explicit-pathspec staging. NEVER cite it as a reason to delay a
   commit or a fix. Stage only your files, commit, move on.
+- **Update (same day):** the "dirty tree" state is **session-dependent, not permanent** — later the
+  working tree was clean except the current session's own changes. Before citing "dirty tree" as
+  context, run `git status` and verify it THIS session; do not parrot old memory that said "100+
+  uncommitted concurrent-loop files." (I repeated that exact parroting error on 2026-06-26 and got
+  called out — the tree was actually clean except my own canonical/ work.)
 - When you find a broken gate that's blocking CI and the fix is repo-documented + safe (regen an
   artifact, refresh a stale generated file), **just do it** — commit the regenerated file(s) by
   explicit pathspec. Don't punt it to the user as "your call."
@@ -207,3 +212,24 @@ broader validation than it deserved.
   branch (not main). Push it; don't re-ask.
 - End-state for this incident: IR embed refreshed (`cdf8ccda8`), full `manifest:ci` EXIT=0, branch
   pushed to `origin/feat/event-finalized-client-interaction`.
+
+## Lesson (2026-06-26): treex > grep for understanding directory structure
+
+**What happened:** In `canonical/`, Ryan had manually created empty `features/` and `ui/` dirs before
+any file writes. I built a `README.md` taxonomy from the written spec (which said `app-wiring/`,
+`integrations/`, `unresolved/`) and relied on `grep`/`Glob` for structural understanding. Neither ever
+showed the empty `features/` or `ui/` dirs, so the README silently diverged from the real on-disk tree.
+Ryan corrected: run `treex` to get the full picture — it exposes misconfigurations grep can't see.
+**Root cause:** Content searches (`grep`/`Glob`/`Grep`) only surface files matching a pattern and hide
+the layout. Empty folders, placeholder dirs, missing branches, and structural drift are invisible to
+grep AND to git (empty dirs aren't tracked), so they slip through undetected.
+**Rule:** When the task touches directory layout / branch structure / "what exists where," `cd` into
+the dir and run `treex`. Treat its tree as ground truth for what exists; reconcile docs/code to it.
+Use grep only for *content* questions — never as a structural survey. Do this at the start of
+structural work and whenever a layout claim feels uncertain. This matters most when **adding a new
+entry**: grep'ing "does X already exist?" returns nothing if the existing entry is named differently
+from your search term, so you silently create a duplicate or misnamed unit. treex the area first,
+every time.
+**Gotcha:** `treex` operates on the **current working directory** and ignores a path argument —
+`treex c:/projects/capsule-pro/canonical` dumped the entire repo root (38.6 MB). Always `cd` first:
+`cd /c/projects/capsule-pro/<dir> && treex`.
