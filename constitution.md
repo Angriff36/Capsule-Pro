@@ -606,6 +606,10 @@ Capsule-Pro must maintain these artifacts or equivalent machine-readable replace
 
 `manifest/governance/generated-surfaces.md` — Defines derived artifacts and the required response when generated output disagrees with IR/runtime.
 
+### Contract import allowlist
+
+`manifest/governance/contract-import-allowlist.json` — Registers feature-code consumers permitted to reference generated Manifest artifacts by path (build tracing, the drift-gated IR embed, the OpenAPI-serving route, the MCP introspection server, IR-reading test fixtures), each with a reason. Enforced by `pnpm manifest:contract:check` (`manifest/scripts/audit-contract-imports.mjs`, wired into `manifest:ci`), which fails CI on any other import/path reference to `manifest/ir/`, `manifest/api-docs/`, `manifest/generated/`, the generated runtime artifacts (`manifest/runtime/src/generated/`, `routes.manifest.json`, `routes.ts`, `command-source-map.json`, `commands.registry.json`), `generated-schema.prisma`, or `*.generated.json`. This is the import-level enforcement of §4a (contract-package boundary) and §13's "generated surface drift against IR/runtime" CI check.
+
 ### AI surface governance
 
 `manifest/governance/ai-surfaces.md` — Defines allowed Agent SDK/MCP/AI behavior and forbidden AI bypass paths.

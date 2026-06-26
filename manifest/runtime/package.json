@@ -28,6 +28,7 @@
     "./run-manifest-saga-core": "./src/run-manifest-saga-core.ts",
     "./bottleneck-detector": "./src/bottleneck-detector/index.ts",
     "./entity-accessor": "./src/generated/entity-accessor.generated.ts",
+    "./routes-manifest": "./src/routes-manifest.ts",
     "./prep-list-autogeneration": "./src/prep-list-autogeneration.ts",
     "./flag-provider": "./src/flag-provider.ts"
   },

@@ -13,6 +13,8 @@
  * you catch stale/typo'd endpoints early.
  */
 
+import { ROUTES_MANIFEST_REL_PATH } from "@repo/manifest-runtime/routes-manifest";
+
 const DEFAULT_API_BASE_URL = "http://127.0.0.1:2223";
 
 const TRAILING_SLASH_RE = /\/$/;
@@ -104,7 +106,7 @@ function getKnownPatterns(): Set<string> {
       const path = require("node:path");
       const manifestPath = path.resolve(
         process.cwd(),
-        "manifest/runtime/routes.manifest.json"
+        ROUTES_MANIFEST_REL_PATH
       );
       if (fs.existsSync(manifestPath)) {
         const manifest: RouteManifest = JSON.parse(

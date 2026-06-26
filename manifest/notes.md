@@ -6,6 +6,32 @@
 
 ---
 
+## 0b. Contract-package import gate (2026-06-25)
+
+Constitution §4a designates `@repo/manifest-runtime` (`manifest/runtime/`) as the single
+contract workspace package (§17: its `exports` field is the canonical adapter list). Before
+this change there was NO import-level enforcement: feature code could reach into generated
+artifacts by path, and in ~22 places did. Added `manifest/scripts/audit-contract-imports.mjs`
+(`pnpm manifest:contract:check`, `--strict`, `--self-test`; ripgrep-backed, near-instant) wired
+into `manifest:ci`. It flags QUOTED string literals in `apps/**`/`packages/**` feature code that
+reference forbidden generated paths (`manifest/ir/`, `manifest/api-docs/`, `manifest/generated/`,
+`manifest/runtime/src/generated/`, `manifest/runtime/{routes.manifest.json,routes.ts,command-source-map.json,commands.registry.json}`,
+`generated-schema.prisma`, `prisma-{store-,}options.generated.json`, `kitchen.ir.generated.json`,
+`*.generated.json`). Unquoted comment prose is ignored; `@repo/manifest-runtime/*` and
+`@angriff36/manifest` are never matched. Legitimate consumers are registered in
+`manifest/governance/contract-import-allowlist.json` (13 entries, tight — `--strict` fails on
+stale entries): build `outputFileTracingIncludes` (2 `next.config.ts`), the drift-gated IR embed
+(`apps/api/lib/manifest/frozen-ir.ts`), the OpenAPI-serving route (`apps/api/app/api-docs/openapi.json/route.ts`),
+the MCP introspection server (`packages/mcp-server/` pathPrefix — reading IR/openapi/routes is its
+purpose), and 8 IR-reading test fixtures. **Baseline scan = 23 violations; migration slice removed
+1** (`apps/app/app/lib/api.ts` now imports `ROUTES_MANIFEST_REL_PATH` from the new
+`@repo/manifest-runtime/routes-manifest` export instead of hardcoding the path; also wired `apps/app`
+→ `@repo/manifest-runtime` workspace dep); the remaining 22 are allowlisted. The in-app generated
+client (`apps/app/app/lib/manifest-client|hooks|types|field-hints`) is the ALLOWED client surface
+(excluded from the scan — `.generated.ts`, not in the forbidden list). apps/app typecheck: 0 errors
+from this change (21 pre-existing syntax errors in unrelated design-system/playground files,
+unchanged).
+
 ## 0a. Deploy failure 2026-06-19 (NOT Manifest drift — modern-lib + lib-version skew)
 The `workflow_dispatch` Deploy (dpl_7jmLvC5r9KMVvtFzpLfdZ1SM6aRU, commit `67706d0`) failed both
 `turbo build --filter=app|api`. The Sentry 403 in the log is non-fatal (errorHandler in
