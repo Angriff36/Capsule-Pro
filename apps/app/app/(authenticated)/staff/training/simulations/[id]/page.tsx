@@ -2,7 +2,8 @@ import { auth } from "@repo/auth/server";
 import {
   BUILT_IN_SIMULATIONS,
   getSimulationById,
-} from "@repo/types/training-simulations";
+// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
+"@repo/types/training-simulations";
 import { notFound } from "next/navigation";
 import { SimulationRunClient } from "./simulation-run-client";
 

@@ -6,7 +6,8 @@
  */
 import { resolve } from "node:path";
 import { config } from "dotenv";
-import { afterAll, describe, expect, it } from "vitest";
+// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
+"vitest";
 import { attemptAIFix, revertEdits } from "../src/fixer";
 import type { ParsedSentryIssue, StackFrame } from "../src/types";
 

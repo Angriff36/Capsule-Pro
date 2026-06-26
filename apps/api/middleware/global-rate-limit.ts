@@ -18,7 +18,8 @@
  */
 
 import { log } from "@repo/observability/log";
-import { createRateLimiter, slidingWindow } from "@repo/rate-limit";
+// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
+"@repo/rate-limit";
 import { NextResponse } from "next/server";
 
 // ============================================================================

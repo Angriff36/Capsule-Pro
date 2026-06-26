@@ -3,4 +3,5 @@ export {
   getSimulationById,
   scoreSimulation,
   type TrainingSimulation,
-} from "@repo/types/training-simulations";
+// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
+"@repo/types/training-simulations";

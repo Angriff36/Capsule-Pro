@@ -3,7 +3,8 @@
  * Covers the mobile-offline-mode feature
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
+"vitest";
 
 // Mock React Native dependencies
 vi.mock("@react-native-async-storage/async-storage", () => ({

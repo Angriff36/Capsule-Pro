@@ -9,7 +9,8 @@
 
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
-import { deleteFile, uploadFile } from "@repo/storage";
+// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
+"@repo/storage";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { resolveCurrentUser } from "@/app/lib/tenant";

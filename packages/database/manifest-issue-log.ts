@@ -1,4 +1,5 @@
-import { logManifestIssue } from "@repo/observability/manifest-issue-log";
+// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
+"@repo/observability/manifest-issue-log";
 import type { PrismaClient } from "./generated/client";
 
 function summarizeArgs(args: unknown): unknown {

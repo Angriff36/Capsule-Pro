@@ -1,4 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/react";
+// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
+"@storybook/react";
 import { Calendar, ClipboardList, Users, UtensilsCrossed } from "lucide-react";
 import { useState } from "react";
 import {

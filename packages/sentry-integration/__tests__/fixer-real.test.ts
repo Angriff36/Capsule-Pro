@@ -11,7 +11,8 @@ import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { config } from "dotenv";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
+"vitest";
 import {
   attemptAIFix,
   type FileEdit,

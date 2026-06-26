@@ -44,7 +44,7 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
         env:
           NPM_TOKEN: ${{ github.token }}
 

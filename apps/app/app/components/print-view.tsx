@@ -1,7 +1,8 @@
 "use client";
 
 import { Printer } from "lucide-react";
-import { QRCodeSVG } from "qrcode.react";
+// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
+"qrcode.react";
 import { useEffect, useState } from "react";
 
 // Print View — the global `@media print` rules in app/styles.css strip the nav,

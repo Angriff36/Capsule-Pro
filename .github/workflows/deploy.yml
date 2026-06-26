@@ -59,7 +59,7 @@ jobs:
         run: npm install -g vercel@53.1.0
 
       - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
         env:
           NPM_TOKEN: ${{ github.token }}
 
@@ -133,7 +133,7 @@ jobs:
         run: npm install -g vercel@53.1.0
 
       - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
         env:
           NPM_TOKEN: ${{ github.token }}
 
@@ -174,7 +174,7 @@ jobs:
         run: npm install -g vercel@53.1.0
 
       - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
         env:
           NPM_TOKEN: ${{ github.token }}
 
@@ -215,7 +215,7 @@ jobs:
         run: npm install -g vercel@53.1.0
 
       - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
         env:
           NPM_TOKEN: ${{ github.token }}
 
@@ -257,7 +257,7 @@ jobs:
         run: npm install -g vercel@53.1.0
 
       - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
         env:
           NPM_TOKEN: ${{ github.token }}
 

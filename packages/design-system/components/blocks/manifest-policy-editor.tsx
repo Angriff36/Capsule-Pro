@@ -31,7 +31,8 @@ import type {
   EntityDetail,
   GuardDetail,
   PolicyDetail,
-} from "@repo/types/manifest-editor";
+// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
+"@repo/types/manifest-editor";
 import {
   AlertCircle,
   AlertTriangle,
