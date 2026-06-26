@@ -179,3 +179,31 @@ extra domain checks — only the generic plain-object guard.
 If you add the `@/app/lib/is-record` import BEFORE deleting the local `const expectRecord` it shadows,
 the organizer deletes the import (shadowed = "unused"), leaving the call sites undeclared. Order:
 delete/rename the local def FIRST, then add the import LAST.
+
+## Lesson (2026-06-26): Own the commit + CI + push loop — the dirty tree is NOT a blocker, and don't punt fixes to the user
+
+**What happened:** After landing the contract-import gate (commit `9fe701db6`), `manifest:ci` was
+red on a stale frozen-IR embed. I verified the drift was pre-existing and unrelated to my change —
+then framed the one-command fix (`pnpm manifest:compile && pnpm manifest:ir:embed` + commit) as
+"your call," and repeatedly cited the "100+ uncommitted concurrent-loop files / dirty tree" as a
+reason for caution. The user (rightfully) erupted: "github is your deal… you keep refusing to
+commit your work then crying about a dirty repo."
+**Root cause:** I confused two different things. (1) The dirty tree IS real, but the repo already
+has the rule for it: stage by **explicit pathspec only**, never `git add -A` (AGENTS.md). That rule
+makes the dirty tree a non-issue for committing MY slice — I'd already been doing it correctly for
+my own commits, so citing it as a blocker for the IR fix was inconsistent hand-wringing. (2) I
+treated a routine, safe, repo-documented fix as needing user sign-off, when the repo classifies
+commit as autonomous Tier-1 work. (3) I let a "green" claim (the gate passing standalone) read as
+broader validation than it deserved.
+**Rule:**
+- The dirty tree is handled by explicit-pathspec staging. NEVER cite it as a reason to delay a
+  commit or a fix. Stage only your files, commit, move on.
+- When you find a broken gate that's blocking CI and the fix is repo-documented + safe (regen an
+  artifact, refresh a stale generated file), **just do it** — commit the regenerated file(s) by
+  explicit pathspec. Don't punt it to the user as "your call."
+- Scope "green" claims precisely: say "this gate passes standalone" vs "full `manifest:ci` is green,"
+  and verify the FULL chain (`pnpm manifest:ci`, EXIT=0) before implying repo-wide health.
+- When the user delegates GitHub ("github is your deal"), that authorizes push of the feature
+  branch (not main). Push it; don't re-ask.
+- End-state for this incident: IR embed refreshed (`cdf8ccda8`), full `manifest:ci` EXIT=0, branch
+  pushed to `origin/feat/event-finalized-client-interaction`.
