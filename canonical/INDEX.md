@@ -4,7 +4,20 @@ One row per canonical unit. Agents **append** a row when they create or update a
 
 | Canonical ID | Decision file | Type | Owner decision | Impl status | Last reviewed |
 | --- | --- | --- | --- | --- | --- |
-| `manifest.generation.type-generation` | [manifest/generation/type-generation/README.md](manifest/generation/type-generation/README.md) | generator | needs-ryan | unknown | 2026-06-26 |
+| `manifest.generation.type-generation` | [manifest/generation/type-generation/README.md](manifest/generation/type-generation/README.md) | generator | needs-ryan | working | 2026-06-26 |
+| `manifest.generation.client-generation` | [manifest/generation/client-generation/README.md](manifest/generation/client-generation/README.md) | generator | needs-ryan | working | 2026-06-26 |
+| `manifest.generation.route-generation` | [manifest/generation/route-generation/README.md](manifest/generation/route-generation/README.md) | generator | needs-ryan | working | 2026-06-26 |
+| `manifest.generation.docs-generation` | [manifest/generation/docs-generation/README.md](manifest/generation/docs-generation/README.md) | generator | needs-ryan | working | 2026-06-26 |
+| `manifest.language.entities` | [manifest/language/entities/README.md](manifest/language/entities/README.md) | manifest-capability | needs-ryan | working | 2026-06-26 |
+| `manifest.language.commands` | [manifest/language/commands/README.md](manifest/language/commands/README.md) | manifest-capability | needs-ryan | working | 2026-06-26 |
+| `manifest.language.events` | [manifest/language/events/README.md](manifest/language/events/README.md) | manifest-capability | needs-ryan | working | 2026-06-26 |
+| `manifest.language.policies` | [manifest/language/policies/README.md](manifest/language/policies/README.md) | manifest-capability | needs-ryan | working | 2026-06-26 |
+| `manifest.language.stores` | [manifest/language/stores/README.md](manifest/language/stores/README.md) | manifest-capability | needs-ryan | working | 2026-06-26 |
+| `manifest.language.constraints` | [manifest/language/constraints/README.md](manifest/language/constraints/README.md) | manifest-capability | needs-ryan | working | 2026-06-26 |
+| `manifest.language.computed-fields` | [manifest/language/computed-fields/README.md](manifest/language/computed-fields/README.md) | manifest-capability | needs-ryan | working | 2026-06-26 |
+| `ui.design-system` | [ui/design-system/README.md](ui/design-system/README.md) | feature | needs-ryan | working | 2026-06-26 |
+| `ui.components` | [ui/components/README.md](ui/components/README.md) | feature | needs-ryan | working | 2026-06-26 |
+| `ui.client-rendering` | [ui/client-rendering/README.md](ui/client-rendering/README.md) | feature | needs-ryan | working | 2026-06-26 |
 
 ## How to add a row
 
