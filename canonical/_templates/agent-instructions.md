@@ -10,6 +10,17 @@ If repo code disagrees with a final canonical decision, treat the repo as drift,
 
 If no matching canonical unit exists and the choice could affect architecture, generated code, routing, data access, naming, auth, tenants, CI, or app behavior, create a new canonical unit from `_templates/canonical-unit.md`.
 
+**Manifest entries must reconcile every piece of custom glue against a documented capability.**
+For any manifest-related unit (generation, language, app-wiring, integrations touching Manifest),
+each custom script, wrapper, hand-written file, or divergence must state (a) the documented Manifest
+projection / surface / feature it relates to, with the official-doc URL
+(https://manifest-b1e8623f.mintlify.app/ — e.g. `/integration/projections`, `/projections/react-query`),
+and (b) WHY custom glue is required instead of using that documented capability — or mark it
+`SOURCE REQUIRED` if not yet verified. Bias toward the documented path (manifest/AGENTS.md): repo
+divergence from the official method is suspect/legacy until proven necessary. Documented rule
+(per `/integration/projections`): write routes MUST use `RuntimeEngine.runCommand` — custom glue may
+only call it, never replace it.
+
 Agents may fill in:
 - current status
 - paths

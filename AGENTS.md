@@ -39,11 +39,14 @@ Use the output to pick likely files, but prefer implementation files over packag
 
 <!-- END:nextjs-agent-rules -->
 
-You must also read the constitution.md and the planning with files documentation at "C:\Projects\capsule-pro\manifest\IMPLEMENTATION_PROMPT.md"
-"C:\Projects\capsule-pro\manifest\notes.md"
-"C:\Projects\capsule-pro\manifest\phase-out-registry.md"
-"C:\Projects\capsule-pro\manifest\task_plan.md"
-"C:\Projects\capsule-pro\manifest\AGENTS.md"
+Before any architectural or code work, read the relevant decision entry in `canonical/`:
+`cd canonical && treex` to find the area, then read its `README.md`. Obey that entry's
+`Ryan Final Decision` over current repo patterns; if no entry exists for an architecture-affecting
+choice, create one from `canonical/_templates/canonical-unit.md` and leave the decision as
+`NEEDS-RYAN`. (`constitution.md` stays the binding Manifest Integration Charter — canonical is
+subordinate to it.) The manifest planning docs (`manifest/notes.md`, `manifest/IMPLEMENTATION_PROMPT.md`,
+`manifest/phase-out-registry.md`, `manifest/task_plan*.md`) are historical snapshots, no longer
+required reading.
 
 ## Capsule Pro Dev Server
 
