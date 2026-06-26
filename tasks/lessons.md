@@ -233,6 +233,22 @@ every time. Same for flat inventories: `ls <dir>/<glob>` (e.g. `ls manifest/scri
 surfaced a parallel stack of **19 custom generators** silently reimplementing documented Manifest
 projections — grep would never have listed them unless you already knew the name. treex/ls show
 *what exists*; grep only shows *what matches your guess*.
+
+## Lesson (2026-06-26): Don't stamp a claim "verified" off one weak check — especially grep on node_modules
+
+**What happened:** I committed "react-query NOT shipped in our pinned 2.18.0 (verified)" into a canonical
+entry. The "verification" was a content-grep of `node_modules/@angriff36/manifest` — which ripgrep
+**skips** (node_modules is gitignored), so it returned only README/package.json, and I wrongly concluded
+the projection's dist code was absent. I also rejected a correct upstream finding on the strength of that
+same flawed grep. A cross-check (another agent + `ls` + reading `generator.d.ts:44–80`) proved react-query
+IS shipped, with every D23 override knob. I had to retract two commits (`f97324a3c`, `73fc6de03`).
+
+**Root cause:** (1) Content-grep is unreliable inside `node_modules` (ripgrep respects `.gitignore`).
+(2) I labeled the claim "verified" off a single check that couldn't actually answer an *existence* question.
+
+**Rule:**
+- For **existence** checks ("does this file/option ship?"), use `ls`, `test -f`, or `Read` the file — **never** content-grep on `node_modules`.
+- Never stamp a claim "verified" off one method. Corroborate with a **second, different** check before committing it to source. A committed false "verified" is worse than an unverified claim — it repels scrutiny and misleads the next agent.
 **Gotcha:** `treex` operates on the **current working directory** and ignores a path argument —
 `treex c:/projects/capsule-pro/canonical` dumped the entire repo root (38.6 MB). Always `cd` first:
 `cd /c/projects/capsule-pro/<dir> && treex`.
