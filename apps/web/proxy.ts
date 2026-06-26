@@ -1,5 +1,4 @@
-// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
-"@repo/auth/proxy";
+import { authMiddleware, type ClerkMiddlewareAuth } from "@repo/auth/proxy"
 import { internationalizationMiddleware } from "@repo/internationalization/proxy";
 import { parseError } from "@repo/observability/error";
 import { secure } from "@repo/security";

@@ -8,13 +8,10 @@
  */
 
 import { createOpenAI } from "@ai-sdk/openai";
-// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
-"@repo/observability/log";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/node";
-// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
-"ai";
-// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
-"zod";
+import { generateObject } from "ai";
+import { z } from "zod";
 import type {
   Bottleneck,
   BottleneckCategory,

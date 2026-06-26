@@ -40,8 +40,7 @@ import type {
   EntityDetail,
   ExecutionHistoryEntry,
   ExecutionResult,
-// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
-"@repo/types/manifest-editor";
+} from "@repo/types/manifest-editor";
 import {
   AlertCircle,
   ArrowRight,

@@ -21,8 +21,7 @@
 
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
-// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
-"@repo/rate-limit";
+import { createRateLimiter, slidingWindow } from "@repo/rate-limit"
 import { NextResponse } from "next/server";
 
 // ============================================================================

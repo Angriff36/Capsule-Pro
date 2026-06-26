@@ -5,8 +5,7 @@
  */
 
 import { render, screen } from "@testing-library/react";
-// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
-"vitest";
+import { describe, expect, it } from "vitest"
 import { AmbientAnimation } from "./ambient-animation";
 
 describe("AmbientAnimation", () => {

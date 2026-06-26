@@ -3,8 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 // @ts-expect-error — .mjs audit script, run via vitest's ESM loader
-// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
-"../../../scripts/audit-parent-context.mjs";
+import { scanParentContextViolations } from "../../../scripts/audit-parent-context.mjs"
 
 // ---------------------------------------------------------------------------
 // Static backpressure for the parent-context invariant: a child `create` must

@@ -2,8 +2,7 @@ import {
   getSimulationById,
   scoreSimulation,
 } from "@repo/types/training-simulations";
-// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
-"vitest";
+import { describe, expect, it } from "vitest"
 
 describe("training-simulations", () => {
   it("scores a perfect run as passed", () => {

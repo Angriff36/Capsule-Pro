@@ -4,8 +4,7 @@ import {
   BUILT_IN_SIMULATIONS,
   getSimulationById,
   scoreSimulation,
-// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
-"@repo/types/training-simulations";
+} from "@repo/types/training-simulations";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 

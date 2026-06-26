@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
-"@repo/types/manifest-editor";
+import type { EntityDetail, EntityListItem } from "@repo/types/manifest-editor"
 
 type RawIrExpression = unknown;
 

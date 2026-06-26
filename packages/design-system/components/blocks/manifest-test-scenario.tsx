@@ -25,8 +25,7 @@ import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
-"@repo/types/manifest-editor";
+import type { TestResult, TestScenario } from "@repo/types/manifest-editor"
 import {
   AlertCircle,
   CheckCircle2,

@@ -4,8 +4,7 @@
  * Stories for the ambient animation component used in empty states.
  */
 
-// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
-"@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 import { AmbientAnimation } from "./ambient-animation";
 import { EmptyListState, NoDataState } from "./illustrated-empty-states";
 
