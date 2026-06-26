@@ -14,30 +14,22 @@ Last updated by: `agent`
 
 ---
 
-## 1. What This Is
+## 1. What This Is (plain English)
 
-Plain-English purpose:
+This builds the typed functions your screens call to talk to the API. Instead of a screen hand-writing "fetch this URL with this body," it calls a typed function like `eventCreate(...)` or `listClients()` that already knows the right URL and the right shape, and is checked by TypeScript before it ever runs.
 
-```text
-Generates a domain-partitioned, typed in-app client that wraps executeCommand() for every
-Manifest entity command and read operation. Each domain (events, kitchen, finance, staffing,
-crm, logistics) gets its own generated file for code-splitting. A barrel index provides
-a dynamic domain loader for lazy imports.
-```
+**Manifest already ships this for free** — `ts.types` + `ts.client` (Next.js projection surfaces) and the `react-query` hooks projection. We built a custom version anyway. This entry exists to explain **why**, piece by piece, and whether each piece is justified glue or removable "bullshit."
 
 Real app impact:
 
 ```text
 When correct:
-- Every page can call typed functions like eventCreate(), listClients(), getInvoice(id)
-  instead of raw executeCommand("Entity", "command", body).
-- Domain partitioning keeps bundle size manageable.
-- All command payloads are type-checked at compile time.
+- Screens call one typed function; payloads are type-checked before the network call.
+- Changing a Manifest command updates the function automatically on regenerate.
 
 When wrong:
-- Pages fall back to untyped executeCommand() calls with string entity/command names.
-- Payloads compile but fail at runtime due to missing or mistyped fields.
-- Duplicate hand-written client wrappers proliferate across feature folders.
+- Screens hand-write fetches; payloads compile but fail at runtime.
+- Duplicate hand-written clients spread across feature folders.
 ```
 
 ---
@@ -53,332 +45,171 @@ NEEDS-RYAN
 Reason:
 
 ```text
-Client generation is working and widely consumed. Open questions remain around:
-(1) migration path for pages still using raw executeCommand(),
-(2) whether the pilot hooks file should be promoted to the default import,
-(3) whether batch operations should be generated per-entity or stay hand-written.
+The entire custom stack traces back to ONE choice: domain-routed URLs
+(/api/events/...) vs Manifest's generic /api/manifest/Event. That single
+decision forces the custom client, the custom hooks, and the domain map.
+Before keeping any of it, Ryan decides: keep domain routes, switch to
+generic Manifest routes, or get domain routing supported officially.
+Everything below hinges on that.
 ```
 
 Do not do:
 
 ```text
-Do not hand-write new domain client wrappers in feature folders.
-Do not call executeCommand() with string literals for entity/command when a typed
-  generated function exists for that entity/command.
-Do not import from manifest/generated/ or manifest/ir/ directly.
+Do not hand-write new client or hook wrappers in feature folders.
+Do not call executeCommand with string entity/command names when a typed
+  function already exists for that entity/command.
+Do not replace RuntimeEngine.runCommand — the client only CALLS it through
+  the dispatcher. That is the documented rule, not just our charter.
 ```
 
 ---
 
-## 3. Current Status
+## 3. Current Status & Reconciliation (documented Manifest vs. our glue)
 
-Current recorded status:
+> **This is the important part.** Per the agent rule, every custom piece below is reconciled against a documented Manifest capability, with the doc link and the verified reason it exists. Bias is toward the documented path; our divergence is suspect until proven necessary.
 
+### What Manifest gives you for free
+- `ts.types` surface → entity `interface` declarations. ([/integration/projections](https://manifest-b1e8623f.mintlify.app/integration/projections))
+- `ts.client` surface → typed fetch wrappers (client SDK). (same)
+- `react-query` projection → typed hooks + `QueryClient` provider + automatic cache invalidation. ([/projections/react-query](https://manifest-b1e8623f.mintlify.app/projections/react-query))
+
+### What we built instead, and why
+| Piece | Manifest ships this (doc) | We built this instead | Why — verified from the scripts | Verdict |
+|---|---|---|---|---|
+| **Types** (entity shapes) | `--surface types` | Uses it, then post-processes | Stock output emits scalar names (`int`/`money`/`decimal`) that **don't compile**, and **omits enum definitions**. We fix both. (`generate-capsule-client.mjs:57–101`) | Glue forced by **upstream bugs**. Justified — but should be fixed in Manifest itself. |
+| **Client** (typed call fns) | `--surface client` | Hand-built, split into 6 domain files | Stock client emits URLs that **404** against our domain routes, and a read-envelope shape we don't use. (`generate-capsule-client.mjs:3–13, 106+`) | Custom. **Root cause = domain routing.** |
+| **Hooks** (data fetching) | `react-query` projection | Hand-built `generate-react-query-hooks.mjs` wrapping our custom client | Documented projection emits one module calling generic paths; we need domain-split hooks that call our custom client. (`generate-react-query-hooks.mjs:1–25`) | Custom. Same root cause, and coupled to the custom client. |
+| **Pilot file** | (none — projection emits all hooks) | `manifest-hooks-pilot.ts` hand-selects a subset | Transitional adoption shim from the gradual hooks rollout. | **Cruft.** Candidate to delete. |
+| **`executeCommand` core** | (transport only; doc: writes MUST use `RuntimeEngine.runCommand`) | Hand-written POST → dispatcher | The browser has to call the API somehow. This is the thin wire. | **Legit.** Routes to the dispatcher, which calls `runCommand`. Does NOT replace it. ✅ |
+| **`executeCommandBatch`** | (no documented batch surface) | Hand-written generic batch in the core | App needed bulk operations. | Custom; may be removable if not load-bearing. |
+| **Domain partitioning** | (projections emit single files) | Split into 6–7 chunks | Bundle size — avoid shipping a ~1054-command monolith to every page. | Real concern. Only justifies the glue IF domain routing stays. |
+
+### The root cause, in plain English
+Manifest's documented client + hooks emit **generic** URLs (`/api/manifest/Event`). We use **domain** URLs (`/api/events/...`). They don't match → the stock client/hooks 404 → we hand-built a parallel client + hooks that emit our URL shape. **Pull the domain-routing thread and most of this maze deletes itself.**
+
+### Bigger picture (flagged, not solved here)
+This unit is one of **~19 custom generators** in `manifest/scripts/generate-*.mjs`. Several reimplement other documented projections (`generate-drizzle`, `generate-openapi`, `generate-zod-schemas`, `generate-mermaid`, `generate-llm-context`, `generate-full-schema` ≈ Prisma). That parallel stack is the "mass maze" at scale — a separate audit should reconcile each, same way.
+
+### Documented rule honored here
+Per [/integration/projections](https://manifest-b1e8623f.mintlify.app/integration/projections): *write routes MUST use `RuntimeEngine.runCommand`.* Our client is transport only — it POSTs to the canonical dispatcher, which calls `runCommand`. It never replaces it.
+
+### Evidence (verified this pass)
 ```text
-Client generation is ACTIVE. manifest:client produces:
-- A backward-compat shim (manifest-client.generated.ts) re-exporting domain chunks.
-- 7 domain-partitioned files in manifest-client/ (core, events, kitchen, finance,
-  staffing, crm, logistics) with typed functions per command.
-- An index.generated.ts barrel with dynamic domain loader.
-- Concurrently generates manifest-types.generated.ts (entity interfaces + enums).
-
-Hooks are generated separately by manifest:generate-hooks into manifest-hooks/
-(8 files: core + 7 domains). A pilot adoption file (manifest-hooks-pilot.ts) hand-written
-selectively re-exports commonly used hooks.
-
-Field hints generated by manifest:field-hints into manifest-field-hints.generated.ts.
+- Client generator:  manifest/scripts/generate-capsule-client.mjs (uses --surface types, hand-builds client)
+- Hooks generator:   manifest/scripts/generate-react-query-hooks.mjs (hand-builds hooks over the custom client)
+- Domain map (shared): manifest/scripts/entity-domain-map.mjs (CLIENT_CHUNKS / ENTITY_DOMAIN_MAP)
+- Scalar fix:        manifest/scripts/scalar-type-map.mjs
+- Conventions:       manifest/capsule-conventions.json (domain read paths + read envelopes)
+- Hand-written core: apps/app/app/lib/manifest-client.ts (executeCommand / executeCommandBatch)
+- Generated output:  apps/app/app/lib/manifest-types.generated.ts, manifest-client.{ts,<domain>.generated.ts}, manifest-hooks.{ts,<domain>.generated.ts}, index.generated.ts
+- Pilot (cruft):     apps/app/app/lib/manifest-hooks-pilot.ts
+- Official docs:      https://manifest-b1e8623f.mintlify.app/integration/projections  (ts.types, ts.client, reads-vs-writes rule)
+                      https://manifest-b1e8623f.mintlify.app/projections/react-query  (hooks projection)
+- CLI:               pnpm manifest:client · pnpm manifest:generate-hooks · pnpm manifest:field-hints
+- Confidence:        high (every claim read from the script or the official doc this pass)
 ```
 
 Known gaps:
 
 ```text
-1. manifest-client.ts (hand-written core runtime with executeCommand/executeCommandBatch)
-   is NOT generated — it is the runtime layer the generated client calls into.
-2. manifest-hooks-pilot.ts is hand-written and selective — not all generated hooks are
-   re-exported. Some pages may import from manifest-hooks.generated.ts directly.
-3. Batch operations (executeCommandBatch) are in the hand-written core, not per-domain generated.
-4. UNKNOWN: how many pages still use raw executeCommand() vs generated typed functions.
-```
-
-Confidence: `high`
-
-Evidence:
-
-```text
-- Generator script: manifest/scripts/generate-capsule-client.mjs
-- Hooks generator: manifest/scripts/generate-hooks (pnpm manifest:generate-hooks)
-- Field hints generator: manifest/scripts/generate-field-hints.mjs
-- Domain map: manifest/scripts/entity-domain-map.mjs
-- Hand-written core: apps/app/app/lib/manifest-client.ts (executeCommand, executeCommandBatch)
-- Shim: apps/app/app/lib/manifest-client.generated.ts
-- Domain chunks: apps/app/app/lib/manifest-client/{core,events,kitchen,finance,staffing,crm,logistics}.generated.ts
-- Domain barrel: apps/app/app/lib/manifest-client/index.generated.ts
-- Hooks shim: apps/app/app/lib/manifest-hooks.generated.ts
-- Hooks domain: apps/app/app/lib/manifest-hooks/{core,events,kitchen,finance,staffing,crm,logistics}.generated.ts
-- Hooks pilot: apps/app/app/lib/manifest-hooks-pilot.ts
-- Field hints: apps/app/app/lib/manifest-field-hints.generated.ts
-- Field hints runtime: apps/app/app/lib/manifest-field-hints.ts
-- CLI commands: pnpm manifest:client, pnpm manifest:generate-hooks, pnpm manifest:field-hints
+1. No dedicated client-function staleness CI gate (hooks are covered indirectly by manifest:react-query:check).
+2. Whether pages still call raw executeCommand() vs typed fns — not counted this pass.
+3. Field-hints (generate-field-hints.mjs) has no documented projection equivalent — custom may be justified; not verified.
 ```
 
 ---
 
 ## 4. Where It Lives
 
-Canonical decision file:
-
 ```text
-canonical/manifest/generation/client-generation/README.md
-```
-
-Source location:
-
-```text
-manifest/scripts/generate-capsule-client.mjs
-manifest/scripts/generate-hooks (script entry)
-manifest/scripts/generate-field-hints.mjs
-manifest/scripts/entity-domain-map.mjs
-manifest/scripts/scalar-type-map.mjs
-```
-
-Generated output location:
-
-```text
-apps/app/app/lib/manifest-types.generated.ts
-apps/app/app/lib/manifest-client.generated.ts
-apps/app/app/lib/manifest-client/*.generated.ts
-apps/app/app/lib/manifest-hooks.generated.ts
-apps/app/app/lib/manifest-hooks/*.generated.ts
-apps/app/app/lib/manifest-field-hints.generated.ts
-```
-
-Runtime location:
-
-```text
-apps/app/app/lib/manifest-client.ts (hand-written executeCommand runtime)
-apps/app/app/lib/manifest-field-hints.ts (hand-written hint helpers)
-```
-
-UI location:
-
-```text
-NONE (consumed by UI, not a UI component itself)
-```
-
-Test location:
-
-```text
-UNKNOWN — no dedicated test found for client generation correctness
-```
-
-Docs location:
-
-```text
-NONE
+Canonical decision file: canonical/manifest/generation/client-generation/README.md
+Source (scripts):        manifest/scripts/generate-capsule-client.mjs, generate-react-query-hooks.mjs, entity-domain-map.mjs, scalar-type-map.mjs
+Generated output:        apps/app/app/lib/manifest-{types,client,client/*,hooks,hooks/*}.generated.ts, index.generated.ts
+Runtime (hand-written):  apps/app/app/lib/manifest-client.ts (executeCommand/executeCommandBatch), manifest-field-hints.ts
+UI / Test / Docs:        NONE / UNKNOWN (no dedicated test) / official docs linked in §3
 ```
 
 ---
 
 ## 5. Entry Points
 
-User-facing route:
-
 ```text
-NONE
-```
-
-Route file:
-
-```text
-NONE
-```
-
-API route / dispatcher:
-
-```text
-Generated client calls POST to /api/manifest/{entity}/commands/{command}
-Generated client calls GET to /api/{domain}/{entity-plural}/list and /api/{domain}/{entity-plural}/{id}
-```
-
-CLI command:
-
-```text
-pnpm manifest:client
-pnpm manifest:generate-hooks
-pnpm manifest:field-hints
-```
-
-Background job / cron / worker:
-
-```text
-NONE
+User-facing route: NONE (consumed by UI)
+CLI:               pnpm manifest:client · pnpm manifest:generate-hooks · pnpm manifest:field-hints
+Writes:            POST /api/manifest/{entity}/commands/{command}   (→ dispatcher → RuntimeEngine.runCommand)
+Reads:             GET  /api/{domain}/{entity-plural}/list and /{id} (domain-routed — the root-cause convention)
 ```
 
 ---
 
 ## 6. What Consumes It
 
-Direct consumers:
-
 ```text
-- apps/app/app/lib/budgets.ts (imports from manifest-client.generated)
-- apps/app/app/lib/leads.ts (imports from manifest-client.generated)
-- apps/app/app/components/bulk-actions.tsx (imports executeCommandBatch from manifest-client.ts)
-- apps/app/app/lib/manifest-hooks-pilot.ts (imports from manifest-hooks.generated)
-- All page components importing typed functions or hooks
-```
-
-Indirect consumers:
-
-```text
-- Every page that creates, updates, lists, or reads entity data.
-- Every form that submits a command payload.
-```
-
-Generated consumers:
-
-```text
-- manifest-hooks/*.generated.ts hooks call generated client functions internally.
-```
-
-Human consumers:
-
-```text
-Ryan, coding agents building features.
+Direct:   apps/app/app/lib/budgets.ts, leads.ts; apps/app/app/components/bulk-actions.tsx (executeCommandBatch); the pilot file; all pages importing typed fns or hooks.
+Indirect: every page/form that creates, updates, lists, or reads entity data.
+Human:    Ryan, coding agents.
 ```
 
 ---
 
 ## 7. What It Is Wired To
 
-Manifest entities:
-
 ```text
-All 200+ entities — each gets a create/update/remove/get/list function.
-```
-
-Manifest commands:
-
-```text
-All commands — each gets a typed function (e.g., clientCreate, eventUpdate).
-```
-
-Manifest events:
-
-```text
-Not directly consumed by the client.
-```
-
-Manifest policies / access rules:
-
-```text
-Not directly consumed by the client (enforced server-side by the dispatcher).
-```
-
-Database tables / collections:
-
-```text
-NONE (client talks to API routes, not database directly).
-```
-
-Generated types:
-
-```text
-manifest-types.generated.ts (entity interfaces used for function return types and input types)
-```
-
-Generated client/hooks:
-
-```text
-Self-referential: manifest-client/*.generated.ts uses manifest-types.generated.ts types.
-manifest-hooks/*.generated.ts wraps manifest-client/*.generated.ts functions in TanStack Query.
-```
-
-Forms/pages/components:
-
-```text
-All pages importing from manifest-client.generated.ts or manifest-hooks-pilot.ts.
+Manifest entities:  all 200+ — each gets create/update/remove/get/list functions.
+Manifest commands:  all — each gets a typed function (e.g. clientCreate, eventUpdate).
+Manifest events / policies: not consumed client-side (enforced server-side by the dispatcher/runtime).
+Generated types:    manifest-types.generated.ts (entity interfaces + enums).
+DB tables:          NONE (client talks to API routes, never the DB).
 ```
 
 ---
 
 ## 8. Canonical Behavior
 
-Happy path:
-
 ```text
-1. pnpm manifest:client reads IR, partitions entities into 6 domains via entity-domain-map.mjs.
-2. Generates typed functions per entity command + list/get operations.
-3. Pages import typed functions (e.g., eventCreate from manifest-client.generated).
-4. Typed function calls executeCommand() with correct entity, command, and payload.
-5. Dispatcher routes to runManifestCommand on API server.
-```
+Happy path:
+  IR → manifest:client (typed fns) + manifest:generate-hooks (useQuery/useMutation)
+  → screen calls typed fn → executeCommand POSTs to dispatcher → RuntimeEngine.runCommand.
 
 Failure behavior:
-
-```text
-If generation fails or is stale, typed function signatures may not match current IR commands.
-manifest:react-query:check in CI catches hook staleness (regenerates + diffs).
-No dedicated client-function staleness gate exists.
-```
+  If generation is stale, function signatures drift from IR. Hooks caught indirectly by
+  manifest:react-query:check; client functions have no direct gate (gap).
 
 Forbidden behavior:
-
-```text
-No hand-written domain client wrappers.
-No raw executeCommand("Entity", "command", body) when a typed function exists.
-No imports from manifest/generated/ or manifest/ir/.
+  No hand-written domain client/hook wrappers. No raw executeCommand("Entity","command",body)
+  when a typed fn exists. No replacing RuntimeEngine.runCommand. No direct imports from
+  manifest/generated/ or manifest/ir/.
 ```
 
 ---
 
 ## 9. Naming Rules
 
-Canonical name:
-
 ```text
-Manifest Client Generation
-```
-
-Allowed aliases:
-
-```text
-Generated manifest client
-Capsule client
-Domain client chunks
-```
-
-Forbidden aliases:
-
-```text
-API client (ambiguous — could mean non-Manifest client)
-Feature client wrappers (hand-written per-feature clients)
-```
-
-Casing / slug rules:
-
-```text
-Folder: client-generation
-Canonical ID: manifest.generation.client-generation
-Core runtime file: manifest-client.ts
-Generated shim: manifest-client.generated.ts
-Domain chunk: manifest-client/{domain}.generated.ts (e.g., events.generated.ts)
-Function naming: camelCase entity + PascalCase command (e.g., clientCreate, eventUpdate)
+Canonical name:   Manifest Client Generation
+Allowed aliases:  Generated manifest client; Capsule client; domain client chunks
+Forbidden:        "API client" (ambiguous); per-feature hand-written clients
+Casing/slug:      folder client-generation; core file manifest-client.ts; chunk manifest-client/<domain>.generated.ts;
+                  fn camelCase entity + PascalCase command (clientCreate, eventUpdate)
 ```
 
 ---
 
 ## 10. Open Questions
 
-| ID   | Question | Why it matters | Evidence found | Options | Ryan decision |
-| ---- | -------- | -------------- | -------------- | ------- | ------------- |
-| Q001 | Should manifest-hooks-pilot.ts be promoted to the default import path? | Pilot file hand-selects hooks; some generated hooks may not be re-exported. Pages importing from pilot get a curated subset; importing from generated gets everything. | manifest-hooks-pilot.ts exists with selective re-exports. manifest-hooks.generated.ts re-exports ALL hooks. | A: Promote pilot as canonical import; B: Remove pilot, import from generated directly; C: Generate the pilot file automatically | NEEDS-RYAN |
-| Q002 | Should batch operations be generated per-entity? | executeCommandBatch is hand-written and generic. No per-entity batch helper exists. | manifest-client.ts has executeCommandBatch. No entity-specific batch generated. | A: Generate per-entity batch helpers; B: Keep hand-written generic batch; C: Remove batch support | NEEDS-RYAN |
-| Q003 | Should read operations use the generic /api/manifest/{entity} route or domain-specific /api/{domain}/{entity-plural} routes? | The client generates domain-specific read paths but a generic manifest read route also exists. Two paths = potential confusion. | Generated client uses /api/{domain}/{entity-plural}/list. Generic route exists at apps/api/app/api/manifest/[entity]/route.ts. | A: Standardize on domain-specific reads; B: Standardize on generic manifest reads; C: Keep both for transition | NEEDS-RYAN |
+| ID | Question | Why it matters | Evidence found | Options | Ryan decision |
+|---|---|---|---|---|---|
+| Q001 | **Domain routing**: keep `/api/{domain}/...` vs switch to generic `/api/manifest/{entity}`? | This ONE decision is why the custom client + hooks + domain map exist. Switching deletes most of the maze. | Frontend has 95+ hardcoded `/api/<domain>/` URLs; documented client/hooks emit generic paths that 404 against them. | A: keep domain routes (keep the custom stack); B: migrate frontend to generic Manifest routes (delete custom client/hooks, use `ts.client` + `react-query` projection); C: get domain routing added as an official projection option | NEEDS-RYAN |
+| Q002 | Fix the upstream type bugs (`int`/`money` don't compile; enums missing) in `@angriff36/manifest` and drop our post-processing? | Removes custom glue; types come straight from `--surface types`. | `generate-capsule-client.mjs:79–95` works around both. | A: upstream PR then drop the glue; B: keep the glue | NEEDS-RYAN |
+| Q003 | Delete `manifest-hooks-pilot.ts` (transitional)? | Hand-written selective re-export = cruft once adoption is direct. | Pilot exists; `manifest-hooks.generated.ts` already re-exports all hooks. | A: delete, import generated directly; B: keep | NEEDS-RYAN |
+| Q004 | Is `executeCommandBatch` (hand-written) load-bearing, or can batching go through a documented surface? | Extra custom surface in the core. | `apps/app/app/lib/manifest-client.ts`. | A: keep; B: remove if a documented path covers it | NEEDS-RYAN |
+| Q005 | Add a dedicated client-function staleness CI gate? | Hooks have `react-query:check`; client fns have no direct gate. | See §3 gaps. | A: add `manifest:client:check`; B: rely on indirect coverage | NEEDS-RYAN |
 
 ---
 
 ## 11. Decision History
 
-| Date       | Decision | Made by | Reason |
-| ---------- | -------- | ------- | ------ |
+| Date | Decision | Made by | Reason |
+|---|---|---|---|
+| 2026-06-26 | Entry rewritten: plain-English lead + glue-vs-documented-capability reconciliation | agent | Ryan: every manifest entry must justify custom glue against documented Manifest capabilities, in language a non-dev can follow |
