@@ -5,7 +5,7 @@ One row per canonical unit. Agents **append** a row when they create or update a
 | Canonical ID | Decision file | Type | Owner decision | Impl status | Last reviewed |
 | --- | --- | --- | --- | --- | --- |
 | `manifest.generation.type-generation` | [manifest/generation/type-generation/README.md](manifest/generation/type-generation/README.md) | generator | needs-ryan | working | 2026-06-26 |
-| `manifest.generation.client-generation` | [manifest/generation/client-generation/README.md](manifest/generation/client-generation/README.md) | generator | needs-ryan | working | 2026-06-26 |
+| `manifest.generation.client-generation` | [manifest/generation/client-generation/README.md](manifest/generation/client-generation/README.md) | generator | needs-ryan | partial | 2026-06-26 |
 | `manifest.generation.route-generation` | [manifest/generation/route-generation/README.md](manifest/generation/route-generation/README.md) | generator | needs-ryan | working | 2026-06-26 |
 | `manifest.generation.docs-generation` | [manifest/generation/docs-generation/README.md](manifest/generation/docs-generation/README.md) | generator | needs-ryan | working | 2026-06-26 |
 | `manifest.language.entities` | [manifest/language/entities/README.md](manifest/language/entities/README.md) | manifest-capability | needs-ryan | working | 2026-06-26 |
