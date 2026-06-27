@@ -107,7 +107,7 @@ Evidence:
 - Allowlist enforcement: manifest/scripts/audit-contract-imports.mjs
 - Allowlist config: manifest/governance/contract-import-allowlist.json
 - Scalar type map: manifest/scripts/scalar-type-map.mjs
-- Manifest compiler: @angriff36/manifest 2.18.1 (fixes money/decimal/int/enum in ts.types; only `float` still leaks → see scalar-type-map.mjs)
+- Manifest compiler: @angriff36/manifest 2.18.3 (ts.types maps all scalars money/decimal/int/bigint/float → number + enum unions; zero leaks → scalar-type-map.mjs post-processing now redundant)
 ```
 
 ---

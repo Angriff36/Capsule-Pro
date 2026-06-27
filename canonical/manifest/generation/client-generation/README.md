@@ -76,14 +76,16 @@ Our domain routing (`/api/events/event/...`) and response envelopes are passed t
 
 Pattern verified on `Event`; per-entity verification happens during migration. All four knobs honored the config and produced Capsule-shaped output directly from the projections.
 
-### The residual glue (nearly retired)
-- **`ts.types` `float` fix** — Manifest **2.18.1** fixed the bulk of the stock `ts.types` bug: `money`/`decimal`/`int`/`bigint` now emit `number`, and enums now emit string-literal unions (verified empirically on the kitchen IR — e.g. `type BudgetStatus = "draft" | "active" | "closed" | "archived"`). **One residual upstream bug remains**: `float` still leaks the bare `float` token (invalid TS — 3 fields in the IR: `usageHours`, `maxUsageHours`, `fraudScore`). So the post-processing collapses from a multi-scalar + enum transform to a single `float → number` substitution. Retire it entirely once `float` is fixed upstream (or report it). Everything else the old custom generators did is covered by projection config.
+### No remaining glue (fully retired as of 2.18.3)
+- **`ts.types` post-processing — DELETE.** Manifest **2.18.3** fully fixed the stock `ts.types` scalar bug: `money`/`decimal`/`int`/`bigint`/`float` all emit `number`, and enums emit string-literal unions (`type BudgetStatus = "draft" | "active" | "closed" | "archived"`). Verified empirically on the kitchen IR — **zero raw-scalar leaks**, `usageHours?: number`. The scalar→TS map lives at `node_modules/@angriff36/manifest/dist/manifest/projections/nextjs/generator.js` (`irTypeToTsType`). There is no longer any justified post-processing — `--surface types` output is directly usable. `manifest/scripts/scalar-type-map.mjs` and the enum-emission glue can be deleted with the rest of the custom generators. Everything the old custom generators did is now covered by projection config + the stock projection.
+
+> History: 2.18.0 leaked money/decimal + omitted enums; 2.18.1 fixed money/decimal/int/enum; 2.18.2 was unchanged for this; **2.18.3 added `float` + `bigint`**, closing it.
 
 ### What gets retired (the migration)
 The custom generators that hand-built what the projections now produce are deleted:
 - `generate.mjs` domain-remap → replaced by `routeSegments`.
 - `generate-react-query-hooks.mjs` → replaced by the `react-query` projection.
-- `generate-capsule-client.mjs` domain/envelope logic → replaced by `ts.client` + `routeSegments` (only the `ts.types` post-processing above is kept).
+- `generate-capsule-client.mjs` domain/envelope logic **and** its `ts.types` post-processing → both replaced (domain/envelope by `ts.client` + `routeSegments`; the scalar/enum post-processing is now redundant as of 2.18.3 — see above). Nothing is kept.
 
 Evidence (verified this pass):
 
@@ -91,7 +93,7 @@ Evidence (verified this pass):
 - Projections ship in: node_modules/@angriff36/manifest/dist/manifest/projections/{nextjs,react-query}/
 - Options: .../projections/interface.d.ts (NextJsProjectionOptions.routeSegments); .../react-query/generator.d.ts (ReactQueryProjectionOptions: entityRoutes/readEnvelope/fetchAdapter/commandEnvelope)
 - Domain-map source: manifest/scripts/entity-domain-map.mjs (ENTITY_DOMAIN_MAP → routeSegments/entityRoutes/readEnvelope)
-- Scalar fix (kept glue): manifest/scripts/scalar-type-map.mjs
+- Scalar/enum handling: now native in `ts.types` as of 2.18.3 (verified zero leaks); `manifest/scripts/scalar-type-map.mjs` is retired glue, not kept
 - Docs: https://manifest-b1e8623f.mintlify.app/integration/projections  ·  .../projections/react-query
 - Confidence: high — config knobs + Capsule-shaped output verified empirically (Event across all four surfaces)
 ```
@@ -104,7 +106,7 @@ Evidence (verified this pass):
 Canonical decision file: canonical/manifest/generation/client-generation/README.md
 Projections (shipped):   node_modules/@angriff36/manifest/dist/manifest/projections/{nextjs,react-query}/
 Config-map source:       manifest/scripts/entity-domain-map.mjs
-Generated output (target): apps/app/app/lib/manifest-types.generated.ts (types, post-processed);
+Generated output (target): apps/app/app/lib/manifest-types.generated.ts (stock ts.types — no post-processing as of 2.18.3);
                            manifest-client (ts.client via routeSegments);
                            manifest-hooks (react-query via entityRoutes/readEnvelope)
 Custom generators (retiring): manifest/scripts/{generate-capsule-client,generate-react-query-hooks}.mjs, generate.mjs remap
@@ -175,7 +177,7 @@ Function naming: camelCase entity + PascalCase command (clientCreate, eventUpdat
 |---|---|---|---|---|---|
 | Q001 | **Approve the migration**: retire the custom generators, wire the projections with `routeSegments`/`entityRoutes`/`readEnvelope`? | Deletes the hand-built client/hooks/remap; uses Manifest as built; keeps domain URLs as config. | Verified feasible (§3); domain URLs preserved. | A: approve + stage migration; B: keep custom (state why); C: partial | NEEDS-RYAN |
 | Q002 | Route reads through react-query hooks (entityRoutes+readEnvelope) so `ts.client` isn't needed for reads? | If yes, the custom client fully retires; `ts.client` only for non-hook callers. | `react-query` `entityRoutes` verified; `ts.client` has no envelope knob (`readEnvelope` is react-query-only). | A: reads via hooks (retire ts.client for reads); B: keep ts.client for reads | NEEDS-RYAN |
-| Q003 | Report the residual `ts.types` `float` bug upstream and drop the last post-processing? | Removes the last glue entirely. | **2.18.1 fixed money/decimal/int/enum** (verified); only `float` still leaks (`usageHours`/`maxUsageHours`/`fraudScore`). Glue is now a single `float → number` substitution. | A: report `float` upstream then drop glue; B: keep the one-line glue until fixed | NEEDS-RYAN |
+| Q003 | ~~Fix the `ts.types` scalar/enum bug upstream and drop the post-processing?~~ **RESOLVED 2026-06-26.** | Removed the last justified glue. | **2.18.3 fully fixes it** — money/decimal/int/bigint/float → `number`, enums → unions; verified zero leaks on the kitchen IR. | Outcome: drop the `ts.types` post-processing (`scalar-type-map.mjs` + enum emission) as part of the migration. | RESOLVED — fixed upstream |
 | Q004 | Verify the pattern on a 2nd entity (e.g. `EventStaff` → `events/event-staff`) before the full rollout? | De-risks the all-entity migration. | Pattern proven on `Event` only. | A: verify a 2nd entity first; B: trust the pattern | NEEDS-RYAN |
 
 ---
@@ -184,6 +186,6 @@ Function naming: camelCase entity + PascalCase command (clientCreate, eventUpdat
 
 | Date | Decision | Made by | Reason |
 |---|---|---|---|
-| 2026-06-26 | Ryan upgraded to **2.18.1**; verified it fixes `money`/`decimal`/`int`/`bigint` (→`number`) and emits enum union types. Residual: `float` still leaks (3 fields). Glue collapses to a one-line `float → number` fix. Updated §3 + Q003. | agent | Empirical re-test of `ts.types` on the kitchen IR after the version bump |
+| 2026-06-26 | Ryan upgraded to **2.18.3**; verified `ts.types` now maps all scalars (money/decimal/int/bigint/float → `number`) + enum unions with **zero leaks**. The `ts.types` post-processing glue is now fully redundant → DELETE with the rest. Q003 RESOLVED. (2.18.1 fixed all but float/bigint; 2.18.2 unchanged; 2.18.3 closed it.) | agent | Empirical re-test of `ts.types` on the kitchen IR after each bump |
 | 2026-06-26 | Entry rewritten to the **correct target implementation** (projections + config maps); custom generators framed as retiring, not as the baseline | agent | Ryan: canonical describes the right way; don't confuse agents with the old maze |
 | 2026-06-26 | Verified `routeSegments`/`entityRoutes` unwind the domain-routing maze — `nextjs.route`, `ts.client`, and `react-query.hooks` all honor per-entity config (tested on `Event`) | agent | Empirical: Capsule-shaped output produced from projection config, not custom code |
