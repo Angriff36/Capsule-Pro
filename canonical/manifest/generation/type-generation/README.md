@@ -107,8 +107,23 @@ Evidence:
 - Allowlist enforcement: manifest/scripts/audit-contract-imports.mjs
 - Allowlist config: manifest/governance/contract-import-allowlist.json
 - Scalar type map: manifest/scripts/scalar-type-map.mjs
-- Manifest compiler: @angriff36/manifest 2.18.3 (ts.types maps all scalars money/decimal/int/bigint/float → number + enum unions; zero leaks → scalar-type-map.mjs post-processing now redundant)
+- Manifest compiler: @angriff36/manifest **2.18.5** (installed, verified across all 4 package.json). ts.types maps numeric scalars → number, emits enum unions, and (NEW in 2.18.5) recurses `array`/`list` → typed `T[]` natively (zero `array` leaks verified). `dateSerialization?: 'date' | 'iso-string'` option added (default `'date'`). → scalar-type-map.mjs is now FULLY retireable: array native, datetime via `dateSerialization: 'iso-string'`, numeric+enum native, enum-prepend redundant. See §3a.
 ```
+
+---
+
+## 3a. Custom Glue & Why Manifest Can't Do It Natively
+
+Type generation runs the stock `--surface types` projection, then applies one post-process. Per the canonical rule, every glue piece must justify why Manifest can't do it natively:
+
+| Glue | File | Stock behavior | Native as of installed 2.18.5? | Status |
+|---|---|---|---|---|
+| `datetime → string` | `scalar-type-map.mjs` (`toTsTypes`) | `Date` (830×) by default | Wire convention serializes dates as ISO 8601 **strings**; typing it `Date` is a runtime lie. As of installed **2.18.5** the `nextjs` projection has `dateSerialization?: 'date' \| 'iso-string'` (default `'date'`). Set **`dateSerialization: 'iso-string'`** → emits `string`. (Ryan added it upstream, `5dfa675`; shipped in 2.18.5.) | **RETIREABLE via `dateSerialization: 'iso-string'` config** |
+| `array → unknown[]` | `scalar-type-map.mjs` (`toTsTypes`) | (2.18.3 leaked raw `array`) | **Fixed natively in 2.18.5** — `irTypeToTsType` recurses `array`/`list` → typed `T[]` (verified 0 leaks). | **REDUNDANT — delete** |
+| Enum prepend | `generate-capsule-client.mjs` ll. 88–95 | enum unions, native (`generateEnumType`) | Was needed pre-2.18.3 when stock referenced enum types without defining them. **Now redundant** — and harmful: regenerating under 2.18.3 emits each enum twice (duplicate-identifier error). | **REDUNDANT — remove on next regen** |
+| Numeric scalars → `number` | (was in `toTsTypes`) | `number`, native | Fixed upstream in 2.18.1/2.18.3. | **REDUNDANT** |
+
+Verified empirically 2026-06-27 by running `pnpm exec manifest generate manifest/ir/kitchen.ir.json --surface types` and counting raw-type leaks. Full detail lives in the sibling entry [`client-generation`](../client-generation/README.md) §3.
 
 ---
 
@@ -356,7 +371,7 @@ Command input: PascalCase + Command (e.g., ClientCreateInput)
 | ID   | Question | Why it matters | Evidence found | Options | Ryan decision |
 | ---- | -------- | -------------- | -------------- | ------- | ------------- |
 | Q001 | Should there be a dedicated type-staleness CI gate? | Currently staleness is caught only indirectly (hooks/openapi drift). Types could drift without triggering CI failure. | manifest:ci has react-query:check and openapi:check but NO type-only check. generate-capsule-client.mjs also generates hooks and client — type drift likely correlates. | A: Add manifest:types:check (regen + diff); B: Current indirect coverage is sufficient; C: Bundle into existing manifest:client check | NEEDS-RYAN |
-| Q002 | Should types live in a shared @repo/ package vs app-local? | constitution §4a names @repo/manifest-runtime as the contract package but it does NOT exist on disk. Types are in app-local generated output. | No packages/manifest-runtime/ directory exists. Contract enforcement is via audit-contract-imports.mjs allowlist. App imports from "@/app/lib/manifest-types.generated". | A: Create @repo/manifest-runtime package exporting types; B: Keep app-local as-is; C: Move to packages/types as a thin re-export package | NEEDS-RYAN |
+| Q002 | Should types live in the shared @repo/manifest-runtime package vs app-local? | The contract package exists; types currently sit in app-local generated output instead. | **CORRECTED 2026-06-27:** `@repo/manifest-runtime` DOES exist — at `manifest/runtime/` (verified `name === "@repo/manifest-runtime"`); `packages/manifest-runtime/` is absent (retired by constitution §19a). So this is "move types into the existing pkg", not "create it". App imports from `@/app/lib/manifest-types.generated`; boundary enforced by `audit-contract-imports.mjs`. | A: Export types from the existing @repo/manifest-runtime (manifest/runtime/); B: Keep app-local as-is; C: Thin re-export package | NEEDS-RYAN |
 | Q003 | Should Zod schemas be importable by app code? | manifest/generated/schemas/ has 200+ Zod schemas but contract:check blocks imports from manifest/generated/. | manifest:generate-zod produces manifest/generated/schemas/*.schema.ts. audit-contract-imports.mjs blocks manifest/generated/ imports. UNKNOWN whether any app code successfully imports them. | A: Unblock schemas for app form validation; B: Keep blocked (app uses custom validation); C: Generate schemas to app-local path like types | NEEDS-RYAN |
 
 ---

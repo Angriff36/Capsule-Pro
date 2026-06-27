@@ -252,3 +252,33 @@ IS shipped, with every D23 override knob. I had to retract two commits (`f97324a
 **Gotcha:** `treex` operates on the **current working directory** and ignores a path argument —
 `treex c:/projects/capsule-pro/canonical` dumped the entire repo root (38.6 MB). Always `cd` first:
 `cd /c/projects/capsule-pro/<dir> && treex`.
+
+---
+
+## Lesson — A wrapper citing a "Manifest bug" is a STOP-and-ASK signal, not a fact (2026-06-27)
+
+**What happened:** `manifest/scripts/compile.mjs`'s header comment said it exists to work around the
+stock CLI's "--glob last file wins" bug. I took that comment as current fact, treated the stock CLI as
+broken, and started planning to recompile/regenerate around it. Ryan (who **authors** the Manifest
+compiler) had already FIXED that bug upstream — `compileCommand` auto-merges multiple sources into one
+`.json` output (commit d6d42fc, shipped ≥v2.10.0, present in installed 2.18.3). The comment was stale.
+
+**Two corrections from Ryan in the same session:**
+1. Don't assert "no native option exists" from the installed `.d.ts` + one projection run — **search the
+   official docs first** (Mintlify `/integration/projections`, `/cli/configuration`). (Here the docs
+   happened to corroborate, but I asserted before checking.)
+2. When you hit a wrapper/comment that claims "Manifest has bug X", **STOP and ask Ryan** before acting —
+   he owns the compiler and has likely already fixed it. Don't go off running scripts on the assumption.
+
+**Root cause:** Treating a code comment as a live source of truth about upstream behavior, and letting a
+stale workaround rationale drive a plan.
+
+**Rule:**
+- A comment that says "works around upstream bug X" is **unverified history**, not current state. Before
+  building on it: check the installed package version + official docs/changelog, and if it implies the
+  vendor tool is broken, **ask the owner** (Ryan owns `@angriff36/manifest`).
+- Don't `pnpm manifest:*` your way into "verifying" — many of those scripts ARE the custom glue; running
+  them reproduces glue output, not stock behavior. To test "can Manifest do X natively", use the **bare
+  stock CLI** (`manifest compile` / `manifest generate`), never the wrapper.
+- Record the corrected fact in canonical so the next agent doesn't re-trip:
+  `canonical/manifest/generation/ir-compilation/README.md`.

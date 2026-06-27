@@ -4,10 +4,11 @@ One row per canonical unit. Agents **append** a row when they create or update a
 
 | Canonical ID | Decision file | Type | Owner decision | Impl status | Last reviewed |
 | --- | --- | --- | --- | --- | --- |
-| `manifest.generation.type-generation` | [manifest/generation/type-generation/README.md](manifest/generation/type-generation/README.md) | generator | needs-ryan | working | 2026-06-26 |
-| `manifest.generation.client-generation` | [manifest/generation/client-generation/README.md](manifest/generation/client-generation/README.md) | generator | needs-ryan | partial | 2026-06-26 |
-| `manifest.generation.route-generation` | [manifest/generation/route-generation/README.md](manifest/generation/route-generation/README.md) | generator | needs-ryan | working | 2026-06-26 |
-| `manifest.generation.docs-generation` | [manifest/generation/docs-generation/README.md](manifest/generation/docs-generation/README.md) | generator | needs-ryan | working | 2026-06-26 |
+| `manifest.generation.ir-compilation` | [manifest/generation/ir-compilation/README.md](manifest/generation/ir-compilation/README.md) | generator | final | working | 2026-06-27 |
+| `manifest.generation.type-generation` | [manifest/generation/type-generation/README.md](manifest/generation/type-generation/README.md) | generator | needs-ryan | working | 2026-06-27 |
+| `manifest.generation.client-generation` | [manifest/generation/client-generation/README.md](manifest/generation/client-generation/README.md) | generator | final | partial | 2026-06-27 |
+| `manifest.generation.route-generation` | [manifest/generation/route-generation/README.md](manifest/generation/route-generation/README.md) | generator | needs-ryan | working | 2026-06-27 |
+| `manifest.generation.docs-generation` | [manifest/generation/docs-generation/README.md](manifest/generation/docs-generation/README.md) | generator | needs-ryan | working | 2026-06-27 |
 | `manifest.language.entities` | [manifest/language/entities/README.md](manifest/language/entities/README.md) | manifest-capability | needs-ryan | working | 2026-06-26 |
 | `manifest.language.commands` | [manifest/language/commands/README.md](manifest/language/commands/README.md) | manifest-capability | needs-ryan | working | 2026-06-26 |
 | `manifest.language.events` | [manifest/language/events/README.md](manifest/language/events/README.md) | manifest-capability | needs-ryan | working | 2026-06-26 |
@@ -17,7 +18,23 @@ One row per canonical unit. Agents **append** a row when they create or update a
 | `manifest.language.computed-fields` | [manifest/language/computed-fields/README.md](manifest/language/computed-fields/README.md) | manifest-capability | needs-ryan | working | 2026-06-26 |
 | `ui.design-system` | [ui/design-system/README.md](ui/design-system/README.md) | feature | needs-ryan | working | 2026-06-26 |
 | `ui.components` | [ui/components/README.md](ui/components/README.md) | feature | needs-ryan | working | 2026-06-26 |
-| `ui.client-rendering` | [ui/client-rendering/README.md](ui/client-rendering/README.md) | feature | needs-ryan | working | 2026-06-26 |
+| `ui.client-rendering` | [ui/client-rendering/README.md](ui/client-rendering/README.md) | feature | needs-ryan | working | 2026-06-27 |
+
+## Custom-glue rule (Ryan, 2026-06-26)
+
+**Every entry that uses any Manifest system MUST explain why its custom glue is required and why Manifest can't do it natively.** This lives as a `## 3a. Custom Glue & Why Manifest Can't Do It Natively` section in each glue-using entry. Glue status across entries (verified 2026-06-27 against `@angriff36/manifest` 2.18.3):
+
+| Entry | Glue? | Required glue (no native option) | Retireable / redundant |
+| --- | --- | --- | --- |
+| `manifest.generation.type-generation` | ~~yes~~ → **none required (2.18.5)** | — | `array` native `T[]` (2.18.5), `datetime→string` via `dateSerialization: 'iso-string'` config (2.18.5), numeric+enum native, enum-prepend → drop |
+| `manifest.generation.client-generation` | route remap (shared w/ route-generation) | `generate.mjs` flat→domain remap — `routeSegments` can't express the `commands/` infix + per-entity detail overrides | scalar/type glue RETIRED (commit `bb84d673d`: `dateSerialization` + native array/numeric/enum) |
+| `manifest.generation.route-generation` | yes | accessor-drift rewrite, field-name overrides, no-table entity drop | flat→domain path remap → `routeSegments` config (D24) |
+| `manifest.generation.docs-generation` | yes | OpenAPI path rewrites (list-collapse, command-nest, casing) — no projection knob | — |
+| `ui.client-rendering` | yes | domain-split hooks, friendly-error/optimistic/SSE/analytics (UX+transport+composition) | pilot re-export file (staging, Q001) |
+| `manifest.language.*` (entities, commands, events, policies, stores, constraints, computed-fields) | no | native DSL capabilities; `compile.mjs` + audit scripts are first-party tooling, not glue | n/a |
+| `ui.design-system`, `ui.components` | no | pure UI; not Manifest consumers | n/a |
+
+The one durable root cause behind the generator glue is **Capsule's wire conventions + domain-grouped routing**, which the stock projections now expose as config. **Update 2026-06-27 (installed 2.18.5):** all scalar glue is now retireable — `routeSegments` retires the routing glue; `array` is native typed `T[]` (2.18.5); `datetime→string` is config via `dateSerialization: 'iso-string'` (2.18.5, default `'date'`); numeric+enum native. So the remaining required glue is **route-generation's accessor-drift/field-override/entity-drop** (compensating for IR↔Prisma divergence) and **client-rendering's UX/transport/composition** layers — the scalar/type generator glue is gone once the projection migration wires `dateSerialization: 'iso-string'`.
 
 ## How to add a row
 

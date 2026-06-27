@@ -180,7 +180,7 @@ NONE
 Direct consumers:
 
 ```text
-- manifest/scripts/compile.mjs (compiles all .manifest files into merged IR)
+- manifest/scripts/compile.mjs (compiles all .manifest files into merged IR — see [ir-compilation](../../generation/ir-compilation/README.md); NB the stock CLI's old "last file wins" glob bug is FIXED ≥2.10.0, the CLI is not broken)
 - manifest/runtime/src/runtime-engine.ts (loads IR, executes entity commands)
 - manifest/governance/entities.json (governance registry)
 - apps/api/lib/manifest/execute-command.ts (dispatches commands on entities)

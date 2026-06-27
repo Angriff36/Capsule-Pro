@@ -4,13 +4,15 @@ Canonical ID: `ui.client-rendering`
 
 Type: `feature`
 
-Owner decision status: `needs-ryan`
+Owner decision status: `needs-ryan` (glue-rationale section added — see §3a; was flagged INVALID on 2026-06-26 for lacking it)
+
+> Standing rule (Ryan, 2026-06-26): **every entry that uses any Manifest system MUST explain why its custom glue is required and why Manifest can't do that natively.** Recorded as §3a in each glue-using entry.
 
 Implementation status: `working`
 
 Last reviewed: 2026-06-26
 
-Last updated by: `agent`
+Last updated by: `Ryan`
 
 ---
 
@@ -106,6 +108,23 @@ Evidence:
 - 16 files in manifest-hooks/ and manifest-client/ subdirectories carry "use client" directive.
 - manifest-client.ts does NOT carry "use client" (server-compatible).
 ```
+
+---
+
+## 3a. Custom Glue & Why Manifest Can't Do It Natively
+
+This layer consumes Manifest-generated hooks/clients but adds glue around them. Each piece and its justification:
+
+| Glue | What it is | What stock Manifest offers | Why the glue is required (native gap) | Status |
+|---|---|---|---|---|
+| Domain-chunked hooks (`manifest-hooks/`) | TanStack hooks split into 7 domain chunks; each imports only its sibling client chunk | `react-query` projection emits **one monolithic file** of all ~1358 hooks; has `entityRoutes`/`readEnvelope` but **no domain-split** option | Route-segmented pages must ship only their domain's hooks, not the full bundle. No projection knob splits hooks by domain or gates them to a client subset → `generate-react-query-hooks.mjs` parses the client chunks and emits per-domain. | **REQUIRED** (until a domain-split projection option exists) |
+| Typed command client wrapper (`manifest-client.ts`) | `executeCommand` + `CommandEnvelope<T>` + friendly-error mapping (server-compatible, no `"use client"`) | Stock `ts.client` emits typed fetch wrappers | The friendly-error mapping (`friendlyError.title/message/suggestedFix` toast UX) is Capsule product behavior, not a generated transform. The typed envelope is hand-maintained over the generated client. | **REQUIRED** (UX layer) |
+| Optimistic command hook (`use-optimistic-command.ts`) | Optimistic apply + rollback-on-error reconciliation | Stock react-query gives mutation hooks; optimistic cache writes are caller-supplied | Optimistic UI + snapshot rollback is app-specific interaction logic Manifest doesn't (and shouldn't) generate. | **REQUIRED** (UX layer) |
+| SSE realtime hook (`use-realtime-channel.ts`) | Subscribes to `/api/realtime/events` (SSE); replaced Ably | Manifest ships subscription hooks but not this SSE transport | Capsule chose native SSE over the Ably SDK; the transport client is hand-written. | **REQUIRED** (transport choice) |
+| Domain analytics hooks (`use-finance-analytics`, `use-kitchen-analytics`, +8) | Cross-entity composed/derived metrics | Generated hooks are per-entity reads | These compose multiple entities + computed aggregates — not a single governed read, so not generatable. Hand-written by design. | **REQUIRED** (composition) |
+| Pilot re-export (`manifest-hooks-pilot.ts`) | Re-exports 3 domains from the generated library | n/a | **Not a Manifest gap** — an internal adoption staging file. Its fate is Q001 below (migrate to direct imports vs keep). | **STAGING — not justified glue** |
+
+Net: the domain-split is the one real generator-level gap (everything else is UX/transport/composition that belongs in app code). The pilot file is the only piece that is neither native nor justified glue — it's a migration artifact pending Q001.
 
 ---
 
@@ -362,7 +381,7 @@ Agents may add rows. Agents may not decide for Ryan.
 | Q001 | Is the pilot re-export pattern (manifest-hooks-pilot.ts) the intended adoption strategy, or should pages import directly from manifest-hooks/? | The pilot file re-exports 3 domains. Full library has 1358+ hooks. If pilot stays, every new domain needs a manual re-export. | manifest-hooks-pilot.ts re-exports 3 domains from manifest-hooks.generated.ts. Comment says "Pilot adoption of generated TanStack Query hooks (Task 5.2)." | A: Migrate to direct imports from manifest-hooks/ (remove pilot file). B: Keep pilot pattern, add re-exports per domain. C: Auto-generate the pilot barrel. | NEEDS-RYAN |
 | Q002 | Why do top-level manifest-hooks.generated.ts and manifest-client.generated.ts exist alongside the manifest-hooks/ and manifest-client/ subdirectories? | Two parallel structures create ambiguity about which is canonical. Risk of importing from the wrong location. | Both manifest-hooks.generated.ts and manifest-hooks/ exist. Both manifest-client.generated.ts and manifest-client/ exist. | A: Top-level files are legacy; delete them. B: Top-level files are the barrel; keep both. C: SOURCE REQUIRED — need generator docs. | NEEDS-RYAN |
 | Q003 | Should domain-specific analytics hooks (use-finance-analytics, use-kitchen-analytics, etc.) be generated or remain hand-written? | 10 hand-written hooks exist in app/lib/. If they query governed entities, they could be generated. If they compose complex cross-entity analytics, they must stay hand-written. | use-event-budgets, use-event-profitability, use-finance-analytics, use-forecasts, use-kitchen-analytics, use-locations, use-recipe-costing, use-event-export — all in apps/app/app/lib/. | A: Generate what can be generated, keep analytics composition hand-written. B: All hand-written (current state). C: SOURCE REQUIRED — need hook source analysis. | NEEDS-RYAN |
-| Q004 | Should CI gate generated hook/client freshness against Manifest IR? | manifest:react-query:check exists (per memory). If stale hooks ship, pages may break at runtime. | manifest-hooks-pilot.ts comment references "Task 5.2". Memory mentions manifest:react-query:check wired into manifest:ci. | A: Already done (manifest:react-query:check in CI). B: Not yet done, needs wiring. C: SOURCE REQUIRED — verify CI config. | NEEDS-RYAN |
+| Q004 | Should CI gate generated hook/client freshness against Manifest IR? | If stale hooks ship, pages may break at runtime. | **VERIFIED 2026-06-27:** `manifest:react-query:check` (`check-react-query-drift.mjs`) IS the 4th step in `manifest:ci` (`package.json:106`). It regenerates hooks and diffs against committed → fails on drift. | A: Already done (react-query:check in CI). | RESOLVED — A (already wired) |
 
 ---
 

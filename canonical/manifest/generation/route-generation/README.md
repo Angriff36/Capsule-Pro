@@ -121,6 +121,22 @@ Evidence:
 
 ---
 
+## 3a. Custom Glue & Why Manifest Can't Do It Natively
+
+`generate.mjs` calls the stock `nextjs` projection, then post-processes its output. Each glue piece and why the stock projection can't replace it:
+
+| Glue | What stock projection does | What Capsule needs | Why Manifest can't do it natively (today) | Status |
+|---|---|---|---|---|
+| Flat → domain path remap (via `ENTITY_DOMAIN_MAP`) | Emits **flat** paths: `event/list → app/api/event/list/route.ts` | **Domain-grouped** paths: `app/api/events/event/list/route.ts` + `commands/{cmd}` infix + per-entity `[detailSegment]` | `routeSegments` overrides only the per-entity URL *prefix* — it **cannot** add the `commands/` infix (per-command routes like `events/profitability/commands/recalculate` exist) nor set custom detail-param names (`ENTITY_DETAIL_SEGMENT_OVERRIDES`, not always `[id]`). **Corrected 2026-06-27** (was wrongly marked "retireable via routeSegments"): the remap is irreducible — the stock projection can't express these shapes. | **REQUIRED** (routeSegments handles only the read-route prefix, not commands/ or detail overrides) |
+| Prisma accessor rewrite | Hardcodes `database.<camelCase(entity)>` with no model-existence check | Correct accessor when the Prisma model name drifts from the entity name (`@@map`, PascalCase, renamed models) | Stock has no model-existence check → emits phantom accessors that throw at runtime. No projection option for accessor drift. (`accessor-resolution.mjs`) | **REQUIRED** |
+| Field-name overrides | Emits IR property names verbatim | Real column names for legacy/drifted models (snake_case, missing `createdAt`) | Stock can't know the live Prisma column names — they diverge from the IR. No projection knob. (`applyFieldOverrides`) | **REQUIRED** |
+| Entity drop (no Prisma table) | Emits read routes for every entity | No read route for entities with no backing table | Stock generates unconditionally; a route to a non-existent table 500s. No projection filter. | **REQUIRED** |
+| Legacy per-command route pruning | (stock now defaults `concreteCommandRoutes.enabled=false`) | Single dispatcher only; remove stale per-command files | Largely covered now by stock `concreteCommandRoutes` defaults; the prune step (`pruneLegacyCommandRoutes`) cleans pre-existing files the projection won't delete. | **PARTIAL — cleanup only** |
+
+The command **dispatcher** itself is fully native (stock `nextjs.dispatcher`) — no glue. Only read-route shaping + accessor/field correctness need glue. The accessor/field/entity-drop glue is genuinely required (it compensates for IR↔Prisma drift the projection can't see); the path remap is retireable config.
+
+---
+
 ## 4. Where It Lives
 
 Canonical decision file:

@@ -121,8 +121,22 @@ Evidence:
 - CLI command: pnpm manifest:openapi (generate)
 - CI check: pnpm manifest:openapi:check (drift gate)
 - CI chain position: 3rd in manifest:ci (after invariants + doctor)
-- Manifest compiler: @angriff36/manifest 2.18.0
+- Manifest compiler: @angriff36/manifest 2.18.5
 ```
+
+---
+
+## 3a. Custom Glue & Why Manifest Can't Do It Natively
+
+`generate-openapi.mjs` calls the stock `openapi` projection surface, then post-processes the emitted paths so the spec matches Capsule's **actual** route structure. Each glue piece:
+
+| Glue | What stock OpenAPI projection emits | What Capsule needs | Why Manifest can't do it natively | Status |
+|---|---|---|---|---|
+| Collapse list suffix | `GET /{entity}/list` | `GET /{entity}` | Capsule's read routes resolve at `/{entity}` (and domain paths). The projection has no path-template option. | **REQUIRED** |
+| Rebase command path | `POST /{entity}/{command}` | `POST /{entity}/commands/{command}` (canonical dispatcher) | Spec must document the path the live client actually calls. The projection emits a flat command path with no nesting option. | **REQUIRED** |
+| Casing canonicalization | lowercased segments (`actionmilestone`, `mark-created`) | IR casing (`ActionMilestone`, `markCreated`) | The dispatcher routes on exact `[entity]`/`[command]` casing. Stock lowercases → Scalar's "Try it" 404s because documented paths don't match executable paths. No casing option. | **REQUIRED** |
+
+All three are genuine projection gaps (no path-rewrite / casing options exist) — not retireable by config. The spec source (Manifest IR) and the byte-level drift gate (`check-openapi-drift.mjs` in `manifest:ci`) are native/first-party, not glue. Note these path rewrites mirror the same domain-routing decision that drives the `routeSegments` glue in [`route-generation`](../route-generation/README.md) §3a — if `routeSegments` lands upstream, a future Manifest could in principle emit matching OpenAPI paths and retire this too.
 
 ---
 
