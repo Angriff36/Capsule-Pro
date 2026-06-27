@@ -76,8 +76,8 @@ Our domain routing (`/api/events/event/...`) and response envelopes are passed t
 
 Pattern verified on `Event`; per-entity verification happens during migration. All four knobs honored the config and produced Capsule-shaped output directly from the projections.
 
-### The ONE justified glue (kept)
-- **`ts.types` post-processing** — Manifest 2.18.0's stock `ts.types` emits non-compiling scalar names (`money`/`decimal`) and omits enum definitions. A thin wrapper runs `--surface types` then fixes both (`manifest/scripts/scalar-type-map.mjs` + enum emission). This is retired once `ts.types` is fixed upstream. Everything else the old custom generators did is covered by projection config.
+### The residual glue (nearly retired)
+- **`ts.types` `float` fix** — Manifest **2.18.1** fixed the bulk of the stock `ts.types` bug: `money`/`decimal`/`int`/`bigint` now emit `number`, and enums now emit string-literal unions (verified empirically on the kitchen IR — e.g. `type BudgetStatus = "draft" | "active" | "closed" | "archived"`). **One residual upstream bug remains**: `float` still leaks the bare `float` token (invalid TS — 3 fields in the IR: `usageHours`, `maxUsageHours`, `fraudScore`). So the post-processing collapses from a multi-scalar + enum transform to a single `float → number` substitution. Retire it entirely once `float` is fixed upstream (or report it). Everything else the old custom generators did is covered by projection config.
 
 ### What gets retired (the migration)
 The custom generators that hand-built what the projections now produce are deleted:
@@ -175,7 +175,7 @@ Function naming: camelCase entity + PascalCase command (clientCreate, eventUpdat
 |---|---|---|---|---|---|
 | Q001 | **Approve the migration**: retire the custom generators, wire the projections with `routeSegments`/`entityRoutes`/`readEnvelope`? | Deletes the hand-built client/hooks/remap; uses Manifest as built; keeps domain URLs as config. | Verified feasible (§3); domain URLs preserved. | A: approve + stage migration; B: keep custom (state why); C: partial | NEEDS-RYAN |
 | Q002 | Route reads through react-query hooks (entityRoutes+readEnvelope) so `ts.client` isn't needed for reads? | If yes, the custom client fully retires; `ts.client` only for non-hook callers. | `react-query` `entityRoutes` verified; `ts.client` has no envelope knob (`readEnvelope` is react-query-only). | A: reads via hooks (retire ts.client for reads); B: keep ts.client for reads | NEEDS-RYAN |
-| Q003 | Fix the `ts.types` money/decimal/enum bug upstream and drop the post-processing? | Removes the last justified glue. | `generate-capsule-client.mjs` works around it; confirmed real in 2.18.0. | A: upstream fix then drop glue; B: keep glue | NEEDS-RYAN |
+| Q003 | Report the residual `ts.types` `float` bug upstream and drop the last post-processing? | Removes the last glue entirely. | **2.18.1 fixed money/decimal/int/enum** (verified); only `float` still leaks (`usageHours`/`maxUsageHours`/`fraudScore`). Glue is now a single `float → number` substitution. | A: report `float` upstream then drop glue; B: keep the one-line glue until fixed | NEEDS-RYAN |
 | Q004 | Verify the pattern on a 2nd entity (e.g. `EventStaff` → `events/event-staff`) before the full rollout? | De-risks the all-entity migration. | Pattern proven on `Event` only. | A: verify a 2nd entity first; B: trust the pattern | NEEDS-RYAN |
 
 ---
@@ -184,5 +184,6 @@ Function naming: camelCase entity + PascalCase command (clientCreate, eventUpdat
 
 | Date | Decision | Made by | Reason |
 |---|---|---|---|
+| 2026-06-26 | Ryan upgraded to **2.18.1**; verified it fixes `money`/`decimal`/`int`/`bigint` (→`number`) and emits enum union types. Residual: `float` still leaks (3 fields). Glue collapses to a one-line `float → number` fix. Updated §3 + Q003. | agent | Empirical re-test of `ts.types` on the kitchen IR after the version bump |
 | 2026-06-26 | Entry rewritten to the **correct target implementation** (projections + config maps); custom generators framed as retiring, not as the baseline | agent | Ryan: canonical describes the right way; don't confuse agents with the old maze |
 | 2026-06-26 | Verified `routeSegments`/`entityRoutes` unwind the domain-routing maze — `nextjs.route`, `ts.client`, and `react-query.hooks` all honor per-entity config (tested on `Event`) | agent | Empirical: Capsule-shaped output produced from projection config, not custom code |
