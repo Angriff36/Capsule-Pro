@@ -123,6 +123,9 @@ export async function GET(
     }
 
     const version = versionResult[0];
+    if (!version) {
+      return NextResponse.json({ error: "Version not found" }, { status: 404 });
+    }
 
     // Fetch unit name for yield
     const unitResult = await database.$queryRaw<{ name: string | null }[]>`

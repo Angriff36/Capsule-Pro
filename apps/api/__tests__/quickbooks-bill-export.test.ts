@@ -155,8 +155,8 @@ describe("QuickBooks Bill Export", () => {
         .buildLines();
 
       expect(lines.length).toBeGreaterThan(0);
-      expect(lines[0][0]).toBe("BILL-PO-001");
-      expect(lines[0][1]).toBe("Fresh Farms Produce");
+      expect(lines[0]?.[0]).toBe("BILL-PO-001");
+      expect(lines[0]?.[1]).toBe("Fresh Farms Produce");
     });
 
     it("should throw error when bill not set", () => {
@@ -212,7 +212,7 @@ describe("QuickBooks Bill Export", () => {
 
     it("should generate unique filenames with timestamp", () => {
       const result1 = exportBills([sampleBill], "qbOnlineCsv");
-      const _result2 = exportBills([sampleBill], "qbOnlineCsv");
+      exportBills([sampleBill], "qbOnlineCsv");
 
       // Filenames should contain the date
       expect(result1.filename).toMatch(/bills-\d{4}-\d{2}-\d{2}\.csv/);

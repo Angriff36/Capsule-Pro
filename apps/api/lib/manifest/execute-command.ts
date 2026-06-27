@@ -324,6 +324,9 @@ export async function runManifestBatch(
           [];
         for (let i = 0; i < operations.length; i++) {
           const op = operations[i];
+          if (!op) {
+            continue;
+          }
           const result = await runManifestCommandCore(deps, {
             entity: op.entity,
             command: op.command,

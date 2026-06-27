@@ -176,8 +176,6 @@ export async function GET(request: Request) {
       });
     }
 
-    const _locationIds = locations.map((l) => l.id);
-
     // Fetch all metrics in parallel for better performance
     const [
       // Revenue metrics

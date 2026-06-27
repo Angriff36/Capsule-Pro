@@ -108,7 +108,7 @@ describe("POST /api/crm/scoring — governed create", () => {
     await POST(makeRequest(VALID_BODY));
 
     expect(mocks.runManifestCommandMock).toHaveBeenCalledTimes(1);
-    const arg = mocks.runManifestCommandMock.mock.calls[0][0];
+    const arg = mocks.runManifestCommandMock.mock.calls[0]![0];
     expect(arg.entity).toBe("CrmScoringRule");
     expect(arg.command).toBe("create");
     // snake_case request → camelCase command params, with coercion.

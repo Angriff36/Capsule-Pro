@@ -60,6 +60,12 @@ export async function GET() {
     }
 
     const currentEmployee = employee[0];
+    if (!currentEmployee) {
+      return NextResponse.json(
+        { error: "Employee not found" },
+        { status: 404 }
+      );
+    }
 
     // Get the active (open) time entry for this employee
     const activeTimeEntry = await database.$queryRaw<

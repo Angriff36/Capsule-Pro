@@ -74,8 +74,8 @@ describe("GET /api/payroll/approvals — status filter", () => {
     expect(res.status).toBe(200);
     expect(mockDatabase.$queryRaw).toHaveBeenCalledTimes(2);
 
-    const countSql = String(mockDatabase.$queryRaw.mock.calls[0][0]);
-    const runsSql = String(mockDatabase.$queryRaw.mock.calls[1][0]);
+    const countSql = String(mockDatabase.$queryRaw.mock.calls[0]?.[0]);
+    const runsSql = String(mockDatabase.$queryRaw.mock.calls[1]?.[0]);
 
     // The bug fix: governed "processing" runs must be in the filter.
     expect(countSql).toContain("status = 'processing'");

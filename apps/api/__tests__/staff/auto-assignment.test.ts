@@ -236,8 +236,8 @@ describe("Auto-Assignment Service", () => {
 
       expect(result.shiftId).toBe(mockShiftId);
       expect(result.suggestions).toHaveLength(2); // emp-3 filtered out (conflict)
-      expect(result.suggestions[0].employee.id).toBe("emp-1"); // Senior ranks first
-      expect(result.suggestions[1].employee.id).toBe("emp-2");
+      expect(result.suggestions[0]?.employee.id).toBe("emp-1"); // Senior ranks first
+      expect(result.suggestions[1]?.employee.id).toBe("emp-2");
       expect(result.bestMatch).not.toBeNull();
     });
 
@@ -295,6 +295,8 @@ describe("Auto-Assignment Service", () => {
       // Base score without availability = 38+16+10+10 = 74
       // Availability depends on timezone matching (formatTime uses UTC, checkAvailabilityMatch uses local)
       const suggestion = result.suggestions[0];
+      expect(suggestion).toBeDefined();
+      if (!suggestion) throw new Error("expected a suggestion");
       expect(suggestion.score).toBeGreaterThanOrEqual(50);
       expect(suggestion.matchDetails.skillsMatch).toBe(true);
       expect(suggestion.matchDetails.hasConflicts).toBe(false);
@@ -449,7 +451,7 @@ describe("Auto-Assignment Service", () => {
       );
 
       // Reasoning should mention skills and seniority
-      const reasoning = result.suggestions[0].reasoning.join(" ").toLowerCase();
+      const reasoning = result.suggestions[0]!.reasoning.join(" ").toLowerCase();
       expect(reasoning).toContain("skill");
       expect(reasoning).toContain("seniority");
     });
@@ -498,7 +500,7 @@ describe("Auto-Assignment Service", () => {
         requirement
       );
 
-      const matchDetails = result.suggestions[0].matchDetails;
+      const matchDetails = result.suggestions[0]!.matchDetails;
       expect(matchDetails).toHaveProperty("skillsMatch");
       expect(matchDetails).toHaveProperty("skillsMatched");
       expect(matchDetails).toHaveProperty("skillsMissing");
@@ -653,10 +655,10 @@ describe("Auto-Assignment Service", () => {
       );
 
       expect(results).toHaveLength(2);
-      expect(results[0].shiftId).toBe("shift-1");
-      expect(results[1].shiftId).toBe("shift-2");
-      expect(results[0].suggestions.length).toBeGreaterThan(0);
-      expect(results[1].suggestions.length).toBeGreaterThan(0);
+      expect(results[0]?.shiftId).toBe("shift-1");
+      expect(results[1]?.shiftId).toBe("shift-2");
+      expect(results[0]?.suggestions.length).toBeGreaterThan(0);
+      expect(results[1]?.suggestions.length).toBeGreaterThan(0);
     });
 
     it("should handle empty requirements array", async () => {

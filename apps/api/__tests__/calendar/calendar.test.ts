@@ -49,7 +49,7 @@ vi.mock("@/app/lib/tenant", () => ({
 }));
 vi.mock("@/app/lib/invariant", () => ({
   InvariantError: class extends Error {
-    name = "InvariantError";
+    override name = "InvariantError";
   },
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
@@ -596,7 +596,7 @@ describe("GET /api/calendar", () => {
     await GET(req);
 
     expect(mockEventFindMany).toHaveBeenCalledTimes(1);
-    const call = mockEventFindMany.mock.calls[0][0];
+    const call = mockEventFindMany.mock.calls[0]![0];
     expect(call.where.tenantId).toBe(TEST_TENANT_ID);
     expect(call.where.deletedAt).toBeNull();
     expect(call.where.eventDate.gte).toBeInstanceOf(Date);
@@ -831,7 +831,7 @@ describe("PATCH /api/calendar/reschedule", () => {
         }),
       })
     );
-    const callBody = vi.mocked(runManifestCommand).mock.calls[0][0]
+    const callBody = vi.mocked(runManifestCommand).mock.calls[0]![0]
       .body as Record<string, unknown>;
     const newStart = callBody.shiftStart as number;
     const newEnd = callBody.shiftEnd as number;

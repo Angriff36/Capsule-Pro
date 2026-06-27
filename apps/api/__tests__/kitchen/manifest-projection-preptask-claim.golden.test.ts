@@ -29,7 +29,7 @@ function normalizeIR(ir: IR): IR {
   }
 
   const [entity] = ir.entities;
-  if (entity.commands.length > 0) {
+  if (!entity || entity.commands.length > 0) {
     return ir;
   }
 
@@ -80,7 +80,7 @@ describe("Projection proof: PrepTask.claim golden snapshot", () => {
     expect(result.diagnostics).toEqual([]);
     expect(result.artifacts).toHaveLength(1);
 
-    const generated = result.artifacts[0].code;
+    const generated = result.artifacts[0]!.code;
     expect(typeof generated).toBe("string");
     expect(generated.length).toBeGreaterThan(0);
 

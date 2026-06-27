@@ -171,7 +171,7 @@ export async function optimizeSchedule(
   tenantId: string,
   request: ScheduleOptimizationRequest
 ): Promise<ScheduleOptimizationResult> {
-  const { scheduleId, locationId, startDate, endDate, constraints } = request;
+  const { scheduleId, startDate, endDate, constraints } = request;
 
   // Get all unassigned shifts for the schedule
   const unassignedShifts = await getUnassignedShifts(
@@ -461,16 +461,16 @@ export async function generateWorkforceAnalytics(
     endDate
   );
 
-  const totalHours = Number(metrics.total_hours);
-  const uniqueEmployees = Number(metrics.unique_employees);
-  const employeeCount = Number(metrics.employee_count);
+  const totalHours = Number(metrics?.total_hours ?? 0);
+  const uniqueEmployees = Number(metrics?.unique_employees ?? 0);
+  const employeeCount = Number(metrics?.employee_count ?? 0);
 
   return {
     periodStart: startDate,
     periodEnd: endDate,
     metrics: {
       totalHours,
-      totalCost: Number(metrics.total_cost),
+      totalCost: Number(metrics?.total_cost ?? 0),
       averageHoursPerEmployee:
         uniqueEmployees > 0 ? totalHours / uniqueEmployees : 0,
       utilizationRate: employeeCount > 0 ? uniqueEmployees / employeeCount : 0,

@@ -413,7 +413,7 @@ export async function DELETE(request: Request, context: RouteContext) {
         AND inventory_item_id = ${id}
         AND deleted_at IS NULL
     `;
-    if (wasteEntryCount[0]?.count > 0) {
+    if ((wasteEntryCount[0]?.count ?? 0n) > 0) {
       dependencies.push("waste entries");
     }
 
@@ -424,7 +424,7 @@ export async function DELETE(request: Request, context: RouteContext) {
       WHERE tenant_id = ${tenantId}
         AND item_id = ${id}
     `;
-    if (shipmentItemCount[0]?.count > 0) {
+    if ((shipmentItemCount[0]?.count ?? 0n) > 0) {
       dependencies.push("shipment items");
     }
 
@@ -435,7 +435,7 @@ export async function DELETE(request: Request, context: RouteContext) {
       WHERE tenant_id = ${tenantId}
         AND item_id = ${id}
     `;
-    if (inventoryStockCount[0]?.count > 0) {
+    if ((inventoryStockCount[0]?.count ?? 0n) > 0) {
       dependencies.push("inventory stock records");
     }
 
@@ -448,7 +448,7 @@ export async function DELETE(request: Request, context: RouteContext) {
       WHERE tenant_id = ${tenantId}
         AND item_id = ${id}
     `;
-    if (inventoryTransactionCount[0]?.count > 0) {
+    if ((inventoryTransactionCount[0]?.count ?? 0n) > 0) {
       dependencies.push("inventory transactions");
     }
 
@@ -460,7 +460,7 @@ export async function DELETE(request: Request, context: RouteContext) {
         AND item_id = ${id}
         AND deleted_at IS NULL
     `;
-    if (inventoryAlertCount[0]?.count > 0) {
+    if ((inventoryAlertCount[0]?.count ?? 0n) > 0) {
       dependencies.push("inventory alerts");
     }
 
@@ -471,7 +471,7 @@ export async function DELETE(request: Request, context: RouteContext) {
       WHERE tenant_id = ${tenantId}
         AND item_id = ${id}
     `;
-    if (cycleCountRecordCount[0]?.count > 0) {
+    if ((cycleCountRecordCount[0]?.count ?? 0n) > 0) {
       dependencies.push("cycle count records");
     }
 
@@ -485,7 +485,7 @@ export async function DELETE(request: Request, context: RouteContext) {
         AND item_id = ${id}
         AND deleted_at IS NULL
     `;
-    if (purchaseOrderItemCount[0]?.count > 0) {
+    if ((purchaseOrderItemCount[0]?.count ?? 0n) > 0) {
       dependencies.push("purchase order items");
     }
 

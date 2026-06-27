@@ -80,14 +80,6 @@ interface ManifestSpec {
   phase: string;
 }
 
-/**
- * Previously tracked known compiler issues — all resolved by renaming reserved words.
- * - `delete` → `softDelete` or `remove`
- * - `publish` → `release`
- * - `not in` → negated constraint
- */
-const _KNOWN_COMPILER_ISSUES: Record<string, string> = {};
-
 const MANIFEST_SPECS: ManifestSpec[] = [
   // ── Phase 1: Kitchen Operations ──────────────────────────────────────────
   {

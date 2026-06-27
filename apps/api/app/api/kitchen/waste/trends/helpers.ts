@@ -168,23 +168,24 @@ export function groupWasteEntriesByPeriod(
 
     switch (groupBy) {
       case "day":
-        key = date.toISOString().split("T")[0];
+        key = date.toISOString().split("T")[0] ?? "";
         break;
       case "week": {
         const weekStart = new Date(date);
         weekStart.setDate(date.getDate() - date.getDay());
-        key = weekStart.toISOString().split("T")[0];
+        key = weekStart.toISOString().split("T")[0] ?? "";
         break;
       }
       case "month":
         key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
         break;
       default:
-        key = date.toISOString().split("T")[0];
+        key = date.toISOString().split("T")[0] ?? "";
     }
 
-    if (!trendData[key]) {
-      trendData[key] = {
+    let point = trendData[key];
+    if (!point) {
+      point = {
         period: key,
         totalCost: 0,
         totalQuantity: 0,
@@ -193,12 +194,13 @@ export function groupWasteEntriesByPeriod(
         avgCostPerEntry: 0,
         avgQuantityPerEntry: 0,
       };
+      trendData[key] = point;
     }
 
-    trendData[key].totalCost += Number(entry.totalCost || 0);
-    trendData[key].totalQuantity += Number(entry.quantity);
-    trendData[key].count += 1;
-    trendData[key].entries.push(entry);
+    point.totalCost += Number(entry.totalCost || 0);
+    point.totalQuantity += Number(entry.quantity);
+    point.count += 1;
+    point.entries.push(entry);
   }
 
   // Convert to array and calculate averages
@@ -242,11 +244,13 @@ export async function analyzeWasteReasons(
   const reasonCounts: Record<number, { count: number; cost: number }> = {};
 
   for (const entry of entries) {
-    if (!reasonCounts[entry.reasonId]) {
-      reasonCounts[entry.reasonId] = { count: 0, cost: 0 };
+    let counts = reasonCounts[entry.reasonId];
+    if (!counts) {
+      counts = { count: 0, cost: 0 };
+      reasonCounts[entry.reasonId] = counts;
     }
-    reasonCounts[entry.reasonId].count += 1;
-    reasonCounts[entry.reasonId].cost += Number(entry.totalCost || 0);
+    counts.count += 1;
+    counts.cost += Number(entry.totalCost || 0);
   }
 
   const topReasons = await Promise.all(
@@ -317,12 +321,13 @@ export async function calculateReductionOpportunities(
     priority: string;
   }> = [];
 
-  if (topItems.length > 0) {
-    const topItemCost = topItems[0].cost;
+  const topItem = topItems[0];
+  if (topItem) {
+    const topItemCost = topItem.cost;
     const potentialSavings = topItemCost * 0.5; // Assume 50% could be prevented
     reductionOpportunities.push({
       type: "top_item_prevention",
-      description: `Prevent waste of ${topItems[0].name}`,
+      description: `Prevent waste of ${topItem.name}`,
       potentialSavings,
       priority: "high",
     });
@@ -336,7 +341,9 @@ export async function calculateReductionOpportunities(
 
   if (maxReasonCost > totalPeriodCost * 0.3 && reasonKeys.length > 0) {
     const topReasonId = reasonKeys.reduce((best, next) =>
-      reasonCounts[best].cost > reasonCounts[next].cost ? best : next
+      (reasonCounts[best]?.cost ?? 0) > (reasonCounts[next]?.cost ?? 0)
+        ? best
+        : next
     );
     const topReason = await database.wasteReason.findUnique({
       where: {

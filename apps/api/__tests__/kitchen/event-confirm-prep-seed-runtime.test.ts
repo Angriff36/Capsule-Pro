@@ -50,11 +50,13 @@ async function buildRuntime() {
         `${file}: ${diagnostics.map((diagnostic) => diagnostic.message).join("; ")}`
       );
     }
-    const manifestName = file.replace(".manifest", "").split("/").pop();
     compiled.push(ir);
   }
 
   const [base] = compiled;
+  if (!base) {
+    throw new Error("No manifest IR compiled");
+  }
   const mergedIr = {
     ...base,
     entities: compiled.flatMap((item) => item.entities),
@@ -352,8 +354,8 @@ describe("Event confirmation auto-seeds the prep list and feeds the order draft"
       totalItems: 3,
       isActive: true,
     });
-    expect(String(prepLists[0].notes)).toContain("[auto-seed:event-confirmed]");
-    const prepListId = String(prepLists[0].id);
+    expect(String(prepLists[0]!.notes)).toContain("[auto-seed:event-confirmed]");
+    const prepListId = String(prepLists[0]!.id);
 
     // --- Items: scaled = recipeQty * (servings / yield), latest version wins -
     const prepItems = await storeProvider("PrepListItem").getAll();
@@ -404,7 +406,7 @@ describe("Event confirmation auto-seeds the prep list and feeds the order draft"
       subtotal: 35,
       estimatedTotal: 35,
     });
-    expect(String(requisitions[0].notes)).toContain(`[prep:${prepListId}]`);
+    expect(String(requisitions[0]!.notes)).toContain(`[prep:${prepListId}]`);
 
     await expect(
       storeProvider("InventoryItem").getById("inventory-flour")

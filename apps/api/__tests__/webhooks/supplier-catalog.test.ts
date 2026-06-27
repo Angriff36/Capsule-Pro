@@ -57,7 +57,7 @@ vi.mock("@/lib/manifest/execute-command", () => ({
 }));
 vi.mock("@/app/lib/invariant", () => {
   class InvariantError extends Error {
-    name = "InvariantError" as const;
+    override name = "InvariantError" as const;
   }
   return { invariant: vi.fn(), InvariantError };
 });
@@ -199,12 +199,10 @@ describe("Supplier Catalog Webhook", () => {
 
   describe("POST /api/webhooks/supplier-catalog", () => {
     let POST: typeof import("@/app/api/webhooks/supplier-catalog/route").POST;
-    let _GET: typeof import("@/app/api/webhooks/supplier-catalog/route").GET;
 
     beforeEach(async () => {
       const mod = await import("@/app/api/webhooks/supplier-catalog/route");
       POST = mod.POST;
-      _GET = mod.GET;
     });
 
     it("returns 400 for invalid JSON body", async () => {

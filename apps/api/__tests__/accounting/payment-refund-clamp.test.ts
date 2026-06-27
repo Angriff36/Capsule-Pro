@@ -203,7 +203,7 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
 
       expect(res.status).toBe(200);
       // Gateway receives the clamped $100, NOT the requested $250
-      const gatewayArgs = mocks.refundPaymentGatewayMock.mock.calls[0][0];
+      const gatewayArgs = mocks.refundPaymentGatewayMock.mock.calls[0]![0];
       expect(gatewayArgs.amount).toBe(100);
       // Manifest receives "refund" (full) with the clamped amount
       expect(mocks.manifestRunCommandMock).toHaveBeenCalledWith(
@@ -332,7 +332,7 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
       );
 
       expect(mocks.refundPaymentGatewayMock).toHaveBeenCalledTimes(1);
-      const gatewayArgs = mocks.refundPaymentGatewayMock.mock.calls[0][0];
+      const gatewayArgs = mocks.refundPaymentGatewayMock.mock.calls[0]![0];
       expect(gatewayArgs.paymentId).toBe(PAYMENT_ID);
       expect(gatewayArgs.tenantId).toBe(TENANT_ID);
       expect(gatewayArgs.amount).toBe(50);
@@ -354,7 +354,7 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
         params: Promise.resolve({ id: PAYMENT_ID }),
       });
 
-      const gatewayArgs = mocks.refundPaymentGatewayMock.mock.calls[0][0];
+      const gatewayArgs = mocks.refundPaymentGatewayMock.mock.calls[0]![0];
       expect(gatewayArgs.amount).toBe(100);
     });
 
@@ -447,7 +447,7 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
       );
 
       expect(mocks.paymentRefundAttemptCreateMock).toHaveBeenCalledTimes(1);
-      const auditArgs = mocks.paymentRefundAttemptCreateMock.mock.calls[0][0];
+      const auditArgs = mocks.paymentRefundAttemptCreateMock.mock.calls[0]![0];
       expect(auditArgs.data).toMatchObject({
         tenantId: TENANT_ID,
         paymentId: PAYMENT_ID,
@@ -478,7 +478,7 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
       // (failureReason, gateway-side refundTransactionId) MUST be persisted.
       expect(res.status).toBe(502);
       expect(mocks.paymentRefundAttemptCreateMock).toHaveBeenCalledTimes(1);
-      const auditArgs = mocks.paymentRefundAttemptCreateMock.mock.calls[0][0];
+      const auditArgs = mocks.paymentRefundAttemptCreateMock.mock.calls[0]![0];
       expect(auditArgs.data).toMatchObject({
         tenantId: TENANT_ID,
         paymentId: PAYMENT_ID,
@@ -501,7 +501,7 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
         params: Promise.resolve({ id: PAYMENT_ID }),
       });
 
-      const auditArgs = mocks.paymentRefundAttemptCreateMock.mock.calls[0][0];
+      const auditArgs = mocks.paymentRefundAttemptCreateMock.mock.calls[0]![0];
       expect(auditArgs.data.requestedAmount).toBe(250);
       expect(auditArgs.data.effectiveAmount).toBe(100);
     });

@@ -584,48 +584,6 @@ const importMenuToEvent = async (
 };
 
 /**
- * Helper function to generate and save battle board
- * Note: Event must be created before calling this function
- */
-async function _createBattleBoard(
-  mergedEvent: ParsedEvent,
-  tenantId: string,
-  eventId: string,
-  user: ManifestUser
-) {
-  const { buildBattleBoardFromEvent } = await getEventParser();
-  const battleBoardResult = buildBattleBoardFromEvent(mergedEvent);
-
-  // Save battle board to database — governed write via Manifest runtime
-  const boardName = mergedEvent.client || mergedEvent.number || eventId || "";
-
-  const saved = await execCommand(
-    "BattleBoard",
-    "create",
-    {
-      tenantId,
-      eventId,
-      boardName,
-      boardType: "event-specific",
-      description: "",
-      isTemplate: false,
-      notes: "",
-      tags: "imported",
-      // Extra fields passed through to store
-      schema_version: "mangia-battle-board@1",
-      boardData: battleBoardResult.battleBoard as object,
-      status: "draft",
-      is_template: false,
-      board_name: boardName,
-      board_type: "event-specific",
-    },
-    user
-  );
-
-  return { battleBoard: battleBoardResult, battleBoardId: saved.id as string };
-}
-
-/**
  * Helper function to validate file extensions
  */
 function validateFileExtensions(
@@ -798,7 +756,7 @@ async function createEventFromParsedData(
  * Link import records to an event
  */
 async function linkImportRecordsToEvent(
-  importRecords: Array<{ importId: string; document: ProcessedDocument }>,
+  importRecords: Array<{ importId: string; document: ProcessedDocument | undefined }>,
   eventId: string
 ): Promise<void> {
   await Promise.all(
@@ -818,7 +776,7 @@ async function handleEventCreation(
   tenantId: string,
   event: ParsedEvent,
   files: File[],
-  importRecords: Array<{ importId: string; document: ProcessedDocument }>,
+  importRecords: Array<{ importId: string; document: ProcessedDocument | undefined }>,
   user: ManifestUser
 ): Promise<{ eventId: string; title: string }> {
   log.debug("[handleEventCreation] Creating new event from parsed data");
@@ -964,7 +922,7 @@ async function processParsedEventData(
   eventId: string | undefined,
   event: ParsedEvent,
   files: File[],
-  importRecords: Array<{ importId: string; document: ProcessedDocument }>,
+  importRecords: Array<{ importId: string; document: ProcessedDocument | undefined }>,
   user: ManifestUser
 ): Promise<{ actualEventId: string; derivedTitle: string }> {
   let actualEventId = eventId ?? "";
@@ -1014,11 +972,6 @@ async function processDocumentsAndGenerateResponse(
   // Initialize Manifest runtime via dynamic import (avoids require() of ESM on Vercel)
   // Note: Event import functions are capsule-pro specific and not in @angriff36/manifest
   // These need to be ported to kitchen-ops or a separate event-import module
-  const _engine = undefined;
-  const _processDoc = undefined;
-  const _createUpdateEvent = undefined;
-  const _generateBattleBoardFn = undefined;
-  const _generateChecklistFn = undefined;
 
   // Process files
   const fileContents = await Promise.all(
@@ -1206,7 +1159,7 @@ interface ParseDocumentsResponse {
   checklistId?: string;
   documents: ProcessedDocument[];
   errors: string[];
-  imports: Array<{ importId: string; document: ProcessedDocument }>;
+  imports: Array<{ importId: string; document: ProcessedDocument | undefined }>;
   mergedEvent?: ParsedEvent;
   mergedStaff?: StaffShift[];
 }
@@ -1218,7 +1171,7 @@ function buildResponse(
     mergedStaff?: StaffShift[];
     errors: string[];
   },
-  importRecords: Array<{ importId: string; document: ProcessedDocument }>
+  importRecords: Array<{ importId: string; document: ProcessedDocument | undefined }>
 ): ParseDocumentsResponse {
   return {
     documents: result.documents,
@@ -1226,52 +1179,6 @@ function buildResponse(
     mergedStaff: result.mergedStaff,
     imports: importRecords,
     errors: result.errors,
-  };
-}
-
-/**
- * Helper function to generate and save checklist
- * Note: Event must be created before calling this function
- */
-async function _createChecklist(
-  mergedEvent: ParsedEvent,
-  tenantId: string,
-  eventId: string,
-  user: ManifestUser
-) {
-  const { buildInitialChecklist } = await getEventParser();
-  const checklistResult = buildInitialChecklist(mergedEvent);
-  const reportName = deriveEventTitle(mergedEvent, []) || eventId;
-
-  // Governed write: EventReport.create via Manifest runtime
-  const savedReport = await execCommand(
-    "EventReport",
-    "create",
-    {
-      tenantId,
-      eventId,
-      name: reportName,
-      version: "1",
-      checklistData: JSON.stringify({
-        checklist: checklistResult.checklist,
-        warnings: checklistResult.warnings,
-      }),
-      reportConfig: "",
-      notes: "",
-      // Extra fields passed through to store
-      status: "draft",
-      completion: Math.round(
-        (checklistResult.autoFilledCount / checklistResult.totalQuestions) * 100
-      ),
-      autoFillScore: checklistResult.autoFilledCount,
-      parsedEventData: mergedEvent as unknown as Record<string, unknown>,
-    },
-    user
-  );
-
-  return {
-    checklist: checklistResult,
-    checklistId: savedReport.id as string,
   };
 }
 

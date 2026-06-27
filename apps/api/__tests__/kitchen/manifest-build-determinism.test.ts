@@ -176,6 +176,9 @@ describe("Test B: generated route content determinism", () => {
 
     for (const entity of entities) {
       const domain = ENTITY_DOMAIN_MAP[entity];
+      if (!domain) {
+        continue;
+      }
       const listRoute = join(API_DIR, domain, "list", "route.ts");
       if (!existsSync(listRoute)) {
         missing.push(`${domain}/list/route.ts (entity: ${entity})`);
@@ -408,7 +411,9 @@ describe("Test H — Route integrity (known issues)", () => {
 
     const exportedFunctions = [
       ...content.matchAll(/export\s+async\s+function\s+(\w+)/g),
-    ].map((m) => m[1]);
+    ]
+      .map((m) => m[1])
+      .filter((name): name is string => name !== undefined);
 
     expect(exportedFunctions.length).toBeGreaterThan(0);
     for (const name of exportedFunctions) {

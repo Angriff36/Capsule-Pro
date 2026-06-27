@@ -201,6 +201,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       clear: "clearHistory",
     };
     const command = commandMap[action];
+    invariant(command, "unsupported action");
 
     const user = await resolveCurrentUser(request);
     const result = await runManifestCommand({

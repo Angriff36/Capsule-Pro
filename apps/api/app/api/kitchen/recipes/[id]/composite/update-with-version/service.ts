@@ -80,9 +80,12 @@ export interface UpdateRecipeWithVersionResult {
 }
 
 export class ConstraintBlockedError extends Error {
-  constructor(public readonly constraintOutcomes: ConstraintOutcome[]) {
+  readonly constraintOutcomes: ConstraintOutcome[];
+
+  constructor(constraintOutcomes: ConstraintOutcome[]) {
     super("Recipe update blocked by constraints");
     this.name = "ConstraintBlockedError";
+    this.constraintOutcomes = constraintOutcomes;
   }
 }
 

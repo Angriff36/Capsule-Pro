@@ -191,7 +191,7 @@ describe("EmailTemplate governance", () => {
       const response = await listPOST(request);
 
       expect(runManifestCommand).toHaveBeenCalledTimes(1);
-      const call = vi.mocked(runManifestCommand).mock.calls[0][0];
+      const call = vi.mocked(runManifestCommand).mock.calls[0]![0];
 
       // Entity and command
       expect(call.entity).toBe("EmailTemplate");
@@ -237,7 +237,7 @@ describe("EmailTemplate governance", () => {
 
       await listPOST(request);
 
-      const call = vi.mocked(runManifestCommand).mock.calls[0][0];
+      const call = vi.mocked(runManifestCommand).mock.calls[0]![0];
       expect(call.body).toEqual(
         expect.objectContaining({
           templateType: "custom",
@@ -283,7 +283,7 @@ describe("EmailTemplate governance", () => {
       const response = await detailPUT(request, context);
 
       expect(runManifestCommand).toHaveBeenCalledTimes(1);
-      const call = vi.mocked(runManifestCommand).mock.calls[0][0];
+      const call = vi.mocked(runManifestCommand).mock.calls[0]![0];
 
       expect(call.entity).toBe("EmailTemplate");
       expect(call.command).toBe("update");
@@ -324,7 +324,7 @@ describe("EmailTemplate governance", () => {
 
       await detailPUT(request, context);
 
-      const call = vi.mocked(runManifestCommand).mock.calls[0][0];
+      const call = vi.mocked(runManifestCommand).mock.calls[0]![0];
       // Route applies defaults: subject → "", templateType → "custom", etc.
       expect(call.body).toEqual(
         expect.objectContaining({
@@ -355,7 +355,7 @@ describe("EmailTemplate governance", () => {
       const response = await detailDELETE(request, context);
 
       expect(runManifestCommand).toHaveBeenCalledTimes(1);
-      const call = vi.mocked(runManifestCommand).mock.calls[0][0];
+      const call = vi.mocked(runManifestCommand).mock.calls[0]![0];
 
       expect(call.entity).toBe("EmailTemplate");
       expect(call.command).toBe("softDelete");
@@ -458,7 +458,7 @@ describe("EmailTemplate governance", () => {
 
       await listPOST(request);
 
-      const call = vi.mocked(runManifestCommand).mock.calls[0][0];
+      const call = vi.mocked(runManifestCommand).mock.calls[0]![0];
       expect(call.body).toEqual(expect.objectContaining({ isDefault: true }));
     });
 
@@ -482,7 +482,7 @@ describe("EmailTemplate governance", () => {
 
       await detailPUT(request, context);
 
-      const call = vi.mocked(runManifestCommand).mock.calls[0][0];
+      const call = vi.mocked(runManifestCommand).mock.calls[0]![0];
       expect(call.body).toEqual(expect.objectContaining({ isDefault: true }));
     });
 
@@ -499,7 +499,7 @@ describe("EmailTemplate governance", () => {
 
       await listPOST(request);
 
-      const call = vi.mocked(runManifestCommand).mock.calls[0][0];
+      const call = vi.mocked(runManifestCommand).mock.calls[0]![0];
       expect(call.body).toEqual(expect.objectContaining({ isDefault: false }));
     });
   });

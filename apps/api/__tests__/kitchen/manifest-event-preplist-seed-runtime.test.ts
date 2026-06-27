@@ -25,12 +25,13 @@ async function buildRuntime() {
         diagnostics.map((diagnostic) => diagnostic.message).join("; ")
       );
     }
-    // Ownership lookup is keyed by the bare manifest name, not the domain path.
-    const manifestName = file.replace(".manifest", "").split("/").pop();
     compiled.push(ir);
   }
 
   const [base] = compiled;
+  if (!base) {
+    throw new Error("No manifest IR compiled");
+  }
   const mergedIr = {
     ...base,
     entities: compiled.flatMap((item) => item.entities),

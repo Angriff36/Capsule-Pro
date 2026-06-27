@@ -35,12 +35,6 @@ export interface ActivityFeedItem {
   visibility: string;
 }
 
-interface ActivityFeedResponse {
-  activities: ActivityFeedItem[];
-  hasMore: boolean;
-  totalCount: number;
-}
-
 // GET /api/activity-feed - List activities with filtering and pagination
 export async function GET(request: NextRequest) {
   try {

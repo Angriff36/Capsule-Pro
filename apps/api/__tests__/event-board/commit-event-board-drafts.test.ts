@@ -101,7 +101,7 @@ describe("commitEventBoardDrafts", () => {
       (c) => c.entity === "EventStaff" && c.command === "create"
     );
     expect(assigns).toHaveLength(2);
-    expect(assigns[0].body).toMatchObject({
+    expect(assigns[0]!.body).toMatchObject({
       eventId: "e1",
       staffMemberId: "s1",
       role: "server",
@@ -114,12 +114,12 @@ describe("commitEventBoardDrafts", () => {
       (c) => c.entity === "CommandBoardCard" && c.command === "update"
     );
     expect(flips).toHaveLength(2);
-    expect(flips[0].body).toMatchObject({
+    expect(flips[0]!.body).toMatchObject({
       newTitle: "Staff s1",
       newStatus: "pending",
       newCardType: "entity",
     });
-    const flippedMeta = JSON.parse(flips[0].body.newMetadata as string);
+    const flippedMeta = JSON.parse(flips[0]!.body.newMetadata as string);
     expect(flippedMeta.eventBoardDraft.draftState).toBe("committed");
     expect(flippedMeta.eventBoardDraft.committedRecordId).toMatch(
       /^created-EventStaff/
@@ -194,7 +194,7 @@ describe("commitEventBoardDrafts", () => {
       (c) => c.entity === "CommandBoardCard" && c.command === "update"
     );
     expect(flips).toHaveLength(1);
-    const flippedMeta = JSON.parse(flips[0].body.newMetadata as string);
+    const flippedMeta = JSON.parse(flips[0]!.body.newMetadata as string);
     expect(flippedMeta.eventBoardDraft.draftState).toBe("committed");
   });
 
@@ -242,7 +242,7 @@ describe("commitEventBoardDrafts", () => {
       (c) => c.entity === "EventDish" && c.command === "create"
     );
     expect(creates).toHaveLength(1);
-    expect(creates[0].body).toMatchObject({
+    expect(creates[0]!.body).toMatchObject({
       eventId: "e1",
       dishId: "dish-1",
       // Envelope params are strings; the int command param must arrive as a number.
@@ -254,7 +254,7 @@ describe("commitEventBoardDrafts", () => {
       (c) => c.entity === "CommandBoardCard" && c.command === "update"
     );
     expect(flips).toHaveLength(1);
-    const flippedMeta = JSON.parse(flips[0].body.newMetadata as string);
+    const flippedMeta = JSON.parse(flips[0]!.body.newMetadata as string);
     expect(flippedMeta.eventBoardDraft.draftState).toBe("committed");
     expect(flippedMeta.eventBoardDraft.committedRecordId).toMatch(
       /^created-EventDish/
@@ -324,7 +324,7 @@ describe("commitEventBoardDrafts", () => {
       (c) => c.entity === "EventStaff" && c.command === "create"
     );
     expect(assigns).toHaveLength(1);
-    expect(assigns[0].body).toMatchObject({ staffMemberId: "s2" });
+    expect(assigns[0]!.body).toMatchObject({ staffMemberId: "s2" });
     // BOTH cards flip to committed — the duplicate points at the EXISTING row.
     const flips = calls.filter(
       (c) => c.entity === "CommandBoardCard" && c.command === "update"

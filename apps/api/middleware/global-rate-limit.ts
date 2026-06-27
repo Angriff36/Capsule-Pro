@@ -119,21 +119,6 @@ function extractTenantKey(request: Request): string | null {
   return null;
 }
 
-/**
- * Creates rate limit response headers.
- */
-function _createRateLimitHeaders(
-  limit: number,
-  remaining: number,
-  reset: Date
-): Headers {
-  const headers = new Headers();
-  headers.set("x-ratelimit-limit", String(limit));
-  headers.set("x-ratelimit-remaining", String(Math.max(0, remaining)));
-  headers.set("x-ratelimit-reset", reset.toISOString());
-  return headers;
-}
-
 // ============================================================================
 // Main Middleware Function
 // ============================================================================

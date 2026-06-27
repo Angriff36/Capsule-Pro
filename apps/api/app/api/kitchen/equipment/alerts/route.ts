@@ -104,7 +104,7 @@ export async function GET(_request: NextRequest) {
           message: `${eq.name} maintenance overdue by ${daysOverdue} days`,
           metric: "next_maintenance_date",
           threshold: "today",
-          currentValue: eq.nextMaintenanceDate.toISOString().split("T")[0],
+          currentValue: eq.nextMaintenanceDate.toISOString().slice(0, 10),
         });
       }
 
@@ -125,7 +125,7 @@ export async function GET(_request: NextRequest) {
           message: `${eq.name} warranty expires in ${daysLeft} days`,
           metric: "warranty_expiry",
           threshold: "30 days",
-          currentValue: eq.warrantyExpiry.toISOString().split("T")[0],
+          currentValue: eq.warrantyExpiry.toISOString().slice(0, 10),
         });
       } else if (eq.warrantyExpiry && eq.warrantyExpiry <= now) {
         alerts.push({
@@ -136,7 +136,7 @@ export async function GET(_request: NextRequest) {
           message: `${eq.name} warranty has expired`,
           metric: "warranty_expiry",
           threshold: "today",
-          currentValue: eq.warrantyExpiry.toISOString().split("T")[0],
+          currentValue: eq.warrantyExpiry.toISOString().slice(0, 10),
         });
       }
 

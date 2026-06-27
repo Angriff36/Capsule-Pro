@@ -56,7 +56,7 @@ function parseVersionNumber(versionLabel: string): number {
   }
 
   const match = versionLabel.match(VERSION_NUMBER_RE);
-  return match ? Number.parseInt(match[1], 10) : 1;
+  return match?.[1] ? Number.parseInt(match[1], 10) : 1;
 }
 
 export async function importRecipeSheet(
@@ -134,6 +134,9 @@ export async function importRecipeSheet(
 
   for (let index = 0; index < sheet.ingredients.length; index++) {
     const line = sheet.ingredients[index];
+    if (!line) {
+      continue;
+    }
     const ingredientId = await findOrCreateIngredientId(
       line.name,
       line.unit,

@@ -271,10 +271,10 @@ export function buildAvailabilityUpdateQuery(body: UpdateAvailabilityInput): {
     const [endHour, endMinute] = body.endTime.split(":").map(Number);
 
     const startTime = new Date();
-    startTime.setHours(startHour, startMinute, 0, 0);
+    startTime.setHours(startHour ?? 0, startMinute ?? 0, 0, 0);
 
     const endTime = new Date();
-    endTime.setHours(endHour, endMinute, 0, 0);
+    endTime.setHours(endHour ?? 0, endMinute ?? 0, 0, 0);
 
     updateFields.push(`start_time = $${updateValues.length + 1}`);
     updateValues.push(startTime.toISOString());

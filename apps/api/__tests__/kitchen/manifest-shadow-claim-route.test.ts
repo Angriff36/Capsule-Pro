@@ -114,7 +114,7 @@ describe("Shadow Claim Route - Generated Backup", () => {
       { params: Promise.resolve({ id: "task-123" }) }
     );
 
-    const _json = await response.json();
+    await response.json();
 
     expect(createManifestRuntimeMock).toHaveBeenCalledWith({
       user: { id: "user-1", tenantId: "tenant-1" },

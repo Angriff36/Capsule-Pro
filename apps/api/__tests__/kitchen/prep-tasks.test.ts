@@ -83,7 +83,7 @@ vi.mock("@/lib/manifest-response", async () => {
 });
 vi.mock("@/app/lib/invariant", () => {
   class InvariantError extends Error {
-    name = "InvariantError" as const;
+    override name = "InvariantError" as const;
     constructor(m: string) {
       super(m);
       this.name = "InvariantError";
@@ -271,8 +271,8 @@ describe("Prep Tasks API", () => {
         (c) => (c as Record<string, unknown>).OR !== undefined
       ) as { OR: Record<string, { contains: string; mode: string }>[] };
       expect(orClause).toBeDefined();
-      expect(orClause.OR[0].name.contains).toBe("onion");
-      expect(orClause.OR[0].name.mode).toBe("insensitive");
+      expect(orClause.OR[0]!.name!.contains).toBe("onion");
+      expect(orClause.OR[0]!.name!.mode).toBe("insensitive");
     });
 
     it("applies isOverdue filter excluding done/completed/canceled", async () => {
@@ -535,7 +535,6 @@ describe("Prep Tasks API", () => {
 
   describe.each(COMMANDS)("POST PrepTask.$name", ({
     name,
-    runtimeName,
     sampleBody,
   }) => {
     it(`returns 401 when unauthenticated [${name}]`, async () => {

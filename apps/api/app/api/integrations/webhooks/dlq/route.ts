@@ -14,13 +14,6 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-interface DLQListQuery {
-  entityType?: string;
-  limit?: number;
-  page?: number;
-  unresolved?: boolean;
-}
-
 /**
  * List DLQ entries
  */

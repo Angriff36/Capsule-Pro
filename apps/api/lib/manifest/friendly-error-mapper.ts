@@ -302,7 +302,7 @@ function articleFor(noun: string): string {
 }
 
 function capitalise(text: string): string {
-  return text.length === 0 ? text : text[0].toUpperCase() + text.slice(1);
+  return text.length === 0 ? text : text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 // ---------------------------------------------------------------------------
@@ -339,7 +339,7 @@ function parseStatusGuard(expression: unknown): ParsedStatusGuard | undefined {
   );
   if (equality) {
     const field = equality[1];
-    if (!field.endsWith("status") && field !== "status") {
+    if (!field || (!field.endsWith("status") && field !== "status")) {
       return;
     }
     const value = equality[3] ?? equality[4] ?? "";
@@ -354,11 +354,11 @@ function parseStatusGuard(expression: unknown): ParsedStatusGuard | undefined {
   const inMatch = cleaned.match(/^self\.([\w.]+)\s+in\s+\[([^\]]*)\]$/);
   if (inMatch) {
     const field = inMatch[1];
-    if (!field.endsWith("status") && field !== "status") {
+    if (!field || (!field.endsWith("status") && field !== "status")) {
       return;
     }
-    const values = (inMatch[2].match(/"([^"]*)"|'([^']*)'/g) ?? []).map((v) =>
-      v.replace(/^["']|["']$/g, "")
+    const values = ((inMatch[2] ?? "").match(/"([^"]*)"|'([^']*)'/g) ?? []).map(
+      (v) => v.replace(/^["']|["']$/g, "")
     );
     return { field, operator: "in", required: values };
   }
@@ -411,7 +411,7 @@ function listToProse(values: string[]): string {
     return "";
   }
   if (humanised.length === 1) {
-    return humanised[0];
+    return humanised[0] ?? "";
   }
   if (humanised.length === 2) {
     return `${humanised[0]} or ${humanised[1]}`;

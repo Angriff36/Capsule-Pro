@@ -11,7 +11,6 @@ import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   createGoodshuffleClient,
   type GoodshuffleClient,
-  type GoodshuffleConflict,
   type GoodshuffleInventoryItem,
   type GoodshuffleInventorySyncResult,
 } from "./goodshuffle-client";
@@ -20,70 +19,6 @@ export interface InventorySyncOptions {
   direction?: "convoy_to_goodshuffle" | "goodshuffle_to_convoy" | "both";
   dryRun?: boolean;
   tenantId: string;
-}
-
-/**
- * Detect conflicts between Goodshuffle and Convoy inventory data
- */
-function _detectInventoryConflicts(
-  goodshuffleItem: GoodshuffleInventoryItem,
-  convoyItem: {
-    name: string;
-    quantityOnHand: number;
-    unitCost: number;
-  }
-): GoodshuffleConflict[] {
-  const conflicts: GoodshuffleConflict[] = [];
-
-  // Check name conflict
-  if (
-    goodshuffleItem.name &&
-    convoyItem.name &&
-    goodshuffleItem.name !== convoyItem.name
-  ) {
-    conflicts.push({
-      goodshuffleItemId: goodshuffleItem.id,
-      convoyInventoryItemId: "",
-      field: "name",
-      goodshuffleValue: goodshuffleItem.name,
-      convoyValue: convoyItem.name,
-      resolution: "pending",
-    });
-  }
-
-  // Check quantity conflict
-  if (
-    goodshuffleItem.quantity_available !== undefined &&
-    convoyItem.quantityOnHand !== undefined &&
-    goodshuffleItem.quantity_available !== convoyItem.quantityOnHand
-  ) {
-    conflicts.push({
-      goodshuffleItemId: goodshuffleItem.id,
-      convoyInventoryItemId: "",
-      field: "quantity",
-      goodshuffleValue: goodshuffleItem.quantity_available,
-      convoyValue: convoyItem.quantityOnHand,
-      resolution: "pending",
-    });
-  }
-
-  // Check unit cost conflict
-  if (
-    goodshuffleItem.unit_cost !== undefined &&
-    convoyItem.unitCost !== undefined &&
-    goodshuffleItem.unit_cost !== convoyItem.unitCost
-  ) {
-    conflicts.push({
-      goodshuffleItemId: goodshuffleItem.id,
-      convoyInventoryItemId: "",
-      field: "unitCost",
-      goodshuffleValue: goodshuffleItem.unit_cost,
-      convoyValue: convoyItem.unitCost,
-      resolution: "pending",
-    });
-  }
-
-  return conflicts;
 }
 
 /**

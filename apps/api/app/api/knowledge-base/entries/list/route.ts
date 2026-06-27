@@ -27,12 +27,6 @@ export interface KnowledgeBaseEntry {
   updatedAt: Date;
 }
 
-interface KnowledgeBaseListResponse {
-  entries: KnowledgeBaseEntry[];
-  hasMore: boolean;
-  totalCount: number;
-}
-
 // GET /api/knowledge-base/entries - List entries with filtering and pagination
 export async function GET(request: NextRequest) {
   try {

@@ -60,7 +60,7 @@ vi.mock("@repo/observability/log", () => ({
 }));
 vi.mock("@/app/lib/invariant", () => {
   class InvariantError extends Error {
-    name = "InvariantError" as const;
+    override name = "InvariantError" as const;
   }
   return { invariant: vi.fn(), InvariantError };
 });
@@ -459,12 +459,6 @@ describe("POST /api/events/battle-boards (delegated create)", () => {
 // ===========================================================================
 
 const CURRENT_USER = { id: USER_ID, tenantId: TENANT_ID, role: "admin" };
-
-const _dispatch = (entity: string, command: string) => (req: NextRequest) => {
-  const { POST } =
-    require("@/app/api/manifest/[entity]/commands/[command]/route") as typeof import("@/app/api/manifest/[entity]/commands/[command]/route");
-  return POST(req, { params: Promise.resolve({ entity, command }) });
-};
 
 describe("POST via dispatcher — BattleBoard commands", () => {
   let POST_dispatch: typeof import("@/app/api/manifest/[entity]/commands/[command]/route")["POST"];

@@ -64,7 +64,7 @@ function parsePaymentTerms(terms: string | null): number {
     return 30;
   }
   const match = terms.match(PAYMENT_TERMS_REGEX);
-  return match ? Number.parseInt(match[1], 10) : 30;
+  return match?.[1] ? Number.parseInt(match[1], 10) : 30;
 }
 
 /**

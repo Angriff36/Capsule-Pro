@@ -37,7 +37,7 @@ vi.mock("@/lib/manifest-response", () => ({
 }));
 vi.mock("@/app/lib/invariant", () => {
   class InvariantError extends Error {
-    name = "InvariantError" as const;
+    override name = "InvariantError" as const;
     constructor(m: string) {
       super(m);
       this.name = "InvariantError";

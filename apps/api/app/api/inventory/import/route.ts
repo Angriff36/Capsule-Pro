@@ -101,8 +101,8 @@ function parseRow(
     };
   }
 
-  const item_number = fields[0].trim();
-  const name = fields[1].trim();
+  const item_number = (fields[0] ?? "").trim();
+  const name = (fields[1] ?? "").trim();
 
   if (!item_number) {
     return {
@@ -225,7 +225,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const headerLine = lines[0].toLowerCase();
+    const headerLine = (lines[0] ?? "").toLowerCase();
     if (!(headerLine.includes("item_number") && headerLine.includes("name"))) {
       return NextResponse.json(
         { message: "CSV must have 'item_number' and 'name' columns" },
@@ -237,7 +237,7 @@ export async function POST(request: NextRequest) {
     const validRows: ParsedRow[] = [];
 
     for (let i = 1; i < lines.length; i++) {
-      const { row, error } = parseRow(lines[i], i);
+      const { row, error } = parseRow(lines[i] ?? "", i);
       if (error) {
         errors.push({ row: i + 1, message: error });
       } else {

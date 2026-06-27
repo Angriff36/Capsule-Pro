@@ -59,8 +59,8 @@ async function compileManifest(manifestPath: string): Promise<IR> {
   }
 
   // Normalize: link orphan commands to their entity
-  if (ir.entities.length === 1 && ir.entities[0].commands.length === 0) {
-    const [entity] = ir.entities;
+  const [entity] = ir.entities;
+  if (ir.entities.length === 1 && entity && entity.commands.length === 0) {
     const commandNames = ir.commands.map((command) => command.name);
     return {
       ...ir,
@@ -99,7 +99,7 @@ function generateArtifact(
   }
 
   expect(result.artifacts).toHaveLength(1);
-  return result.artifacts[0].code;
+  return result.artifacts[0]!.code;
 }
 
 /**

@@ -380,7 +380,7 @@ function generateMenuSections(draft: EventPlanningDraft): MenuSection[] {
  * Generate pricing breakdown from draft and menu
  */
 function generatePricing(
-  draft: EventPlanningDraft,
+  _draft: EventPlanningDraft,
   menuSections: MenuSection[]
 ): PricingBreakdown {
   // Calculate subtotal from menu items

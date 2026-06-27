@@ -11,7 +11,6 @@ import { database, Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 type PayrollRunStatus =
@@ -21,12 +20,6 @@ type PayrollRunStatus =
   | "approved"
   | "paid"
   | "failed";
-
-const _UpdatePayrollRunSchema = z.object({
-  status: z
-    .enum(["pending", "processing", "completed", "approved", "paid", "failed"])
-    .optional(),
-});
 
 interface PaginationParams {
   limit: number;

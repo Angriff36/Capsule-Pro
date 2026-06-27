@@ -169,7 +169,7 @@ describe("Command Board Health Smoke Test", () => {
       expect(body.conflicts.length).toBeGreaterThan(0);
       expect(body.summary.total).toBeGreaterThan(0);
 
-      const conflict = (body.conflicts as Record<string, any>[])[0];
+      const conflict = (body.conflicts as Record<string, any>[])[0]!;
       expect(conflict.id).toBeDefined();
       expect(conflict.type).toBeDefined();
       expect(conflict.severity).toBeDefined();
@@ -431,7 +431,7 @@ describe("Command Board Health Smoke Test", () => {
       const response = await conflictDetect(request);
       const body = (await response.json()) as Record<string, any>;
 
-      const conflict = (body.conflicts as Record<string, any>[])[0];
+      const conflict = (body.conflicts as Record<string, any>[])[0]!;
 
       // Required fields
       expect(typeof conflict.id).toBe("string");

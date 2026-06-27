@@ -153,10 +153,6 @@ function makeGetRequest(params: Record<string, string>): NextRequest {
   );
 }
 
-function _makeManifestParams(entity: string, command: string) {
-  return { params: Promise.resolve({ entity, command }) };
-}
-
 function mockAuthenticated() {
   vi.mocked(auth).mockResolvedValue({
     orgId: TEST_ORG_ID,

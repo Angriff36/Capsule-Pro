@@ -206,7 +206,7 @@ describe("POST /api/accounting/invoices/[id] — email dispatch", () => {
     expect(response.status).toBe(200);
     expect(mocks.resendSendMock).toHaveBeenCalledTimes(1);
 
-    const sendArgs = mocks.resendSendMock.mock.calls[0][0];
+    const sendArgs = mocks.resendSendMock.mock.calls[0]![0];
     expect(sendArgs.to).toBe("jane@acme.example.com");
     expect(sendArgs.subject).toContain("INV-2026-0001");
     expect(sendArgs.subject).toContain("1250.00");
@@ -216,7 +216,7 @@ describe("POST /api/accounting/invoices/[id] — email dispatch", () => {
   it("renders the InvoiceTemplate with required props", async () => {
     await makeRequestWithClient(sentInvoiceWithClient.client);
 
-    const sendArgs = mocks.resendSendMock.mock.calls[0][0];
+    const sendArgs = mocks.resendSendMock.mock.calls[0]![0];
     expect(sendArgs.react).toMatchObject({
       __invoiceTemplate: true,
       props: {
@@ -238,7 +238,7 @@ describe("POST /api/accounting/invoices/[id] — email dispatch", () => {
       first_name: null,
     });
 
-    const sendArgs = mocks.resendSendMock.mock.calls[0][0];
+    const sendArgs = mocks.resendSendMock.mock.calls[0]![0];
     expect(sendArgs.react.props.clientName).toBe("Acme Catering");
   });
 
@@ -249,7 +249,7 @@ describe("POST /api/accounting/invoices/[id] — email dispatch", () => {
       company_name: null,
     });
 
-    const sendArgs = mocks.resendSendMock.mock.calls[0][0];
+    const sendArgs = mocks.resendSendMock.mock.calls[0]![0];
     expect(sendArgs.react.props.clientName).toBe("Valued Client");
   });
 
@@ -338,7 +338,7 @@ describe("POST /api/accounting/invoices/[id] — email dispatch", () => {
   it("formats the dueDate as a human-readable string in template props", async () => {
     await makeRequestWithClient(sentInvoiceWithClient.client);
 
-    const sendArgs = mocks.resendSendMock.mock.calls[0][0];
+    const sendArgs = mocks.resendSendMock.mock.calls[0]![0];
     // Locale formatting — accept "May 15, 2026" or "May 14, 2026"
     // (timezone-dependent), just assert it contains the year and month.
     expect(sendArgs.react.props.dueDate).toMatch(/2026/);

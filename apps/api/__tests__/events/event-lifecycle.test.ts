@@ -85,39 +85,6 @@ const TEST_EVENT_ID = "b0000000-0000-4000-a000-000000000010";
 const TEST_USER_ORG = "test-org-123";
 
 // Mock data factories
-function _createMockEvent(overrides = {}) {
-  return {
-    id: TEST_EVENT_ID,
-    tenantId: TEST_TENANT_ID,
-    eventNumber: null,
-    title: "Test Event",
-    clientId: null,
-    locationId: null,
-    venueId: null,
-    venueEntityId: null,
-    eventType: "corporate",
-    eventDate: new Date("2026-06-15"),
-    guestCount: 100,
-    status: "confirmed",
-    budget: null,
-    ticketPrice: null,
-    ticketTier: null,
-    eventFormat: null,
-    accessibilityOptions: [],
-    featuredMediaUrl: null,
-    assignedTo: null,
-    venueName: null,
-    venueAddress: null,
-    notes: null,
-    tags: [],
-    templateId: null,
-    createdAt: new Date("2026-01-01"),
-    updatedAt: new Date("2026-01-01"),
-    deletedAt: null,
-    ...overrides,
-  };
-}
-
 function createMockBudget(overrides = {}) {
   return {
     id: "budget-001",
@@ -377,7 +344,7 @@ describe("Event Budget Validation", () => {
         };
 
         const result = CreateEventBudgetSchema.parse(validData);
-        expect(result.lineItems[0].category).toBe(category);
+        expect(result.lineItems[0]!.category).toBe(category);
       }
     });
   });

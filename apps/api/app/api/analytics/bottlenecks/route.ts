@@ -165,7 +165,7 @@ function createEmptyCategoryCounts(
  */
 function getPeriodMs(period: string): number {
   const match = period.match(/^(\d+)([dhm])$/);
-  if (!match) {
+  if (!match?.[1]) {
     return 30 * 24 * 60 * 60 * 1000; // Default to 30 days
   }
 

@@ -33,12 +33,13 @@ async function buildRuntime() {
         diagnostics.map((diagnostic) => diagnostic.message).join("; ")
       );
     }
-    // Ownership lookup is keyed by the bare manifest name, not the domain path.
-    const manifestName = file.replace(".manifest", "").split("/").pop();
     compiled.push(ir);
   }
 
   const [base] = compiled;
+  if (!base) {
+    throw new Error("No manifest IR compiled");
+  }
   const mergedIr = {
     ...base,
     entities: compiled.flatMap((item) => item.entities),
@@ -282,9 +283,9 @@ describe("Prep list finalization derives inventory demand", () => {
       subtotal: 35,
       estimatedTotal: 35,
     });
-    expect(String(requisitions[0].requisitionNumber)).toMatch(/^PREP-DRAFT-/);
-    expect(String(requisitions[0].justification)).toContain("US Foods");
-    expect(String(requisitions[0].notes)).toContain(
+    expect(String(requisitions[0]!.requisitionNumber)).toMatch(/^PREP-DRAFT-/);
+    expect(String(requisitions[0]!.justification)).toContain("US Foods");
+    expect(String(requisitions[0]!.notes)).toContain(
       "[prep:prep-list-demand-001]"
     );
 
@@ -323,10 +324,10 @@ describe("Prep list finalization derives inventory demand", () => {
       subtotal: 53,
       estimatedTotal: 53,
     });
-    expect(String(requisitions[0].notes)).toContain(
+    expect(String(requisitions[0]!.notes)).toContain(
       "[prep:prep-list-demand-001]"
     );
-    expect(String(requisitions[0].notes)).toContain(
+    expect(String(requisitions[0]!.notes)).toContain(
       "[prep:prep-list-demand-002]"
     );
 
@@ -354,8 +355,8 @@ describe("Prep list finalization derives inventory demand", () => {
 
     const doneDiags = diagnostics.filter((d) => d.stage === "done");
     expect(doneDiags).toHaveLength(2);
-    expect(doneDiags[1].reason).toContain("NOT submitted");
-    expect(doneDiags[1].reason).toContain("existing draft");
+    expect(doneDiags[1]!.reason).toContain("NOT submitted");
+    expect(doneDiags[1]!.reason).toContain("existing draft");
   });
 
   it("re-finalizing an already-ingested prep list neither double-reserves nor double-orders", async () => {

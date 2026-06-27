@@ -95,7 +95,7 @@ vi.mock("@repo/observability/log", () => ({
 }));
 vi.mock("@/app/lib/invariant", () => {
   class InvariantError extends Error {
-    name = "InvariantError" as const;
+    override name = "InvariantError" as const;
   }
   return { invariant: vi.fn(), InvariantError };
 });
@@ -263,7 +263,7 @@ describe("GET /api/crm/proposals (list)", () => {
     const { GET } = await import("@/app/api/crm/proposals/route");
     await GET(getRequest("/api/crm/proposals?search=lunch"));
 
-    const call = mockProposalFindMany.mock.calls[0][0] as any;
+    const call = mockProposalFindMany.mock.calls[0]![0] as any;
     const andClause = call.where.AND as any[];
     // One of the AND clauses should contain an OR with title/proposalNumber/venueName
     const orClause = andClause.find((c: any) => c.OR);

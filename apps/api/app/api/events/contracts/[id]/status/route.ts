@@ -99,7 +99,14 @@ export async function PATCH(
       );
     }
 
-    const { commandName, buildPayload } = STATUS_COMMAND_MAP[status];
+    const commandEntry = STATUS_COMMAND_MAP[status];
+    if (!commandEntry) {
+      return manifestErrorResponse(
+        `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}`,
+        400
+      );
+    }
+    const { commandName, buildPayload } = commandEntry;
 
     const runtime = await createManifestRuntime({
       user: {

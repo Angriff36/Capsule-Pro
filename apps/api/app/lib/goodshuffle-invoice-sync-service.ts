@@ -13,7 +13,6 @@ import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   createGoodshuffleClient,
   type GoodshuffleClient,
-  type GoodshuffleConflict,
   type GoodshuffleInvoice,
   type GoodshuffleInvoiceSyncResult,
 } from "./goodshuffle-client";
@@ -24,37 +23,6 @@ export interface InvoiceSyncOptions {
   endDate?: Date;
   startDate?: Date;
   tenantId: string;
-}
-
-/**
- * Detect conflicts between Goodshuffle and Convoy invoice data
- */
-function _detectInvoiceConflicts(
-  goodshuffleInvoice: GoodshuffleInvoice,
-  convoyBudget: {
-    totalBudgeted: number;
-    totalActual: number;
-  }
-): GoodshuffleConflict[] {
-  const conflicts: GoodshuffleConflict[] = [];
-
-  // Check total amount conflict
-  if (
-    goodshuffleInvoice.total_amount !== undefined &&
-    convoyBudget.totalActual !== undefined &&
-    goodshuffleInvoice.total_amount !== convoyBudget.totalActual
-  ) {
-    conflicts.push({
-      goodshuffleInvoiceId: goodshuffleInvoice.id,
-      convoyInvoiceId: "",
-      field: "totalAmount",
-      goodshuffleValue: goodshuffleInvoice.total_amount,
-      convoyValue: convoyBudget.totalActual,
-      resolution: "pending",
-    });
-  }
-
-  return conflicts;
 }
 
 /**

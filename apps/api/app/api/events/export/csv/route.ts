@@ -41,7 +41,7 @@ function formatDateForCSV(date: Date | string | null): string {
     return "";
   }
   const d = typeof date === "string" ? new Date(date) : date;
-  return d.toISOString().split("T")[0]; // YYYY-MM-DD
+  return d.toISOString().split("T")[0] ?? ""; // YYYY-MM-DD
 }
 
 /**

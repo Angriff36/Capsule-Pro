@@ -99,9 +99,6 @@ function verifySignature(rawBody: string, signature: string | null): boolean {
 /**
  * Validate that the payload has required fields per Vercel schema
  */
-type ValidSource = (typeof VALID_SOURCES)[number];
-type ValidLevel = (typeof VALID_LEVELS)[number];
-
 function validateLogPayload(data: unknown): {
   valid: boolean;
   errors: string[];

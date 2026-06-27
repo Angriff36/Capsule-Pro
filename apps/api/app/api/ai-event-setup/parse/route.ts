@@ -85,7 +85,8 @@ const MONTH_ABBREVIATIONS = [
 function parseMonth(text: string): number | null {
   const lower = text.toLowerCase();
   for (let i = 0; i < MONTH_NAMES.length; i++) {
-    if (lower.includes(MONTH_NAMES[i])) {
+    const monthName = MONTH_NAMES[i];
+    if (monthName && lower.includes(monthName)) {
       return i;
     }
   }
@@ -102,7 +103,7 @@ function parseDayOfMonth(text: string): number | null {
   const monthDayPattern =
     /\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(?:st|nd|rd|th)?\b/i;
   const monthDayMatch = text.match(monthDayPattern);
-  if (monthDayMatch) {
+  if (monthDayMatch?.[1]) {
     const day = Number.parseInt(monthDayMatch[1], 10);
     if (day >= 1 && day <= 31) {
       return day;
@@ -111,7 +112,7 @@ function parseDayOfMonth(text: string): number | null {
 
   const onDayPattern = /\bon\s+(?:the\s+)?(\d{1,2})(?:st|nd|rd|th)?\b/i;
   const onDayMatch = text.match(onDayPattern);
-  if (onDayMatch) {
+  if (onDayMatch?.[1]) {
     const day = Number.parseInt(onDayMatch[1], 10);
     if (day >= 1 && day <= 31) {
       return day;
@@ -120,7 +121,7 @@ function parseDayOfMonth(text: string): number | null {
 
   const standalonePattern = /(?<!\bfor\s+)(\d{1,2})(?:st|nd|rd|th)\b/i;
   const standaloneMatch = text.match(standalonePattern);
-  if (standaloneMatch) {
+  if (standaloneMatch?.[1]) {
     const day = Number.parseInt(standaloneMatch[1], 10);
     if (day >= 1 && day <= 31) {
       return day;
@@ -132,7 +133,7 @@ function parseDayOfMonth(text: string): number | null {
 
 function parseYear(text: string): number | null {
   const yearMatch = text.match(/\b(20\d{2})\b/);
-  return yearMatch ? Number.parseInt(yearMatch[1], 10) : null;
+  return yearMatch?.[1] ? Number.parseInt(yearMatch[1], 10) : null;
 }
 
 function parseRelativeDate(
@@ -154,7 +155,7 @@ function parseRelativeDate(
   }
 
   const inWeeksMatch = lower.match(/\bin\s+(\d+)\s+weeks?\b/);
-  if (inWeeksMatch) {
+  if (inWeeksMatch?.[1]) {
     const weeks = Number.parseInt(inWeeksMatch[1], 10);
     const result = new Date(referenceDate);
     result.setDate(result.getDate() + weeks * 7);
@@ -173,7 +174,7 @@ function parseRelativeDate(
   const nextDayMatch = lower.match(
     /\bnext\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i
   );
-  if (nextDayMatch) {
+  if (nextDayMatch?.[1]) {
     const targetDay = dayNames.indexOf(nextDayMatch[1].toLowerCase());
     const result = new Date(referenceDate);
     const currentDay = result.getDay();
@@ -189,7 +190,7 @@ function parseRelativeDate(
   const thisDayMatch = lower.match(
     /\bthis\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i
   );
-  if (thisDayMatch) {
+  if (thisDayMatch?.[1]) {
     const targetDay = dayNames.indexOf(thisDayMatch[1].toLowerCase());
     const result = new Date(referenceDate);
     const currentDay = result.getDay();
@@ -202,7 +203,7 @@ function parseRelativeDate(
   }
 
   const inDaysMatch = lower.match(/\bin\s+(\d+)\s+days?\b/);
-  if (inDaysMatch) {
+  if (inDaysMatch?.[1]) {
     const days = Number.parseInt(inDaysMatch[1], 10);
     const result = new Date(referenceDate);
     result.setDate(result.getDate() + days);
@@ -275,7 +276,7 @@ function parseGuestCount(text: string): number | null {
 
   for (const pattern of patterns) {
     const match = text.match(pattern);
-    if (match) {
+    if (match?.[1]) {
       const count = Number.parseInt(match[1], 10);
       if (count > 0 && count <= 100_000) {
         return count;
@@ -316,7 +317,7 @@ function parseVenue(text: string): { name: string; address: string } {
   const atMatch = text.match(
     /\b(?:at|@)\s+(?:the\s+)?([A-Z][A-Za-z]+(?:\s+[A-Za-z]+)*)/i
   );
-  if (atMatch) {
+  if (atMatch?.[1]) {
     let venueName = atMatch[1].trim();
     const words = venueName.split(/\s+/);
     const filteredWords: string[] = [];
@@ -336,7 +337,7 @@ function parseVenue(text: string): { name: string; address: string } {
   const venueColonMatch = text.match(
     /\bvenue[:\s]+["']?([A-Za-z\s]+?)["']?(?:\s|$)/i
   );
-  if (venueColonMatch) {
+  if (venueColonMatch?.[1]) {
     const venueName = venueColonMatch[1].trim();
     if (venueName.length > 2) {
       return { name: venueName, address: "" };
@@ -361,7 +362,7 @@ function parseVenue(text: string): { name: string; address: string } {
     "i"
   );
   const venueTypeMatch = text.match(venueTypeRegex);
-  if (venueTypeMatch) {
+  if (venueTypeMatch?.[1]) {
     return { name: venueTypeMatch[1].trim(), address: "" };
   }
 

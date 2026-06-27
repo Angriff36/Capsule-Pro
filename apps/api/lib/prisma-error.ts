@@ -37,9 +37,6 @@ const NOT_FOUND_CODES = new Set(["P2025", "P2001"]);
 /** Error codes that indicate a conflict (duplicate) scenario */
 const CONFLICT_CODES = new Set(["P2002"]);
 
-/** Error codes that indicate a bad request (constraint violation) scenario */
-const _BAD_REQUEST_CODES = new Set(["P2003", "P2014", "P2015"]);
-
 /**
  * Classification of Prisma errors by their semantic meaning
  */

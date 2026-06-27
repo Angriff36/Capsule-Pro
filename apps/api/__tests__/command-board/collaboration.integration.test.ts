@@ -469,14 +469,14 @@ describe("Command Board - Multi-User Collaboration Integration", () => {
 
       expect(outboxEvents.length).toBeGreaterThan(0);
       expect(
-        outboxEvents[0].payload &&
-          isCardCreatedPayload(outboxEvents[0].payload) &&
-          outboxEvents[0].payload.cardId
+        outboxEvents[0]!.payload &&
+          isCardCreatedPayload(outboxEvents[0]!.payload) &&
+          outboxEvents[0]!.payload.cardId
       ).toBe(card1.id);
       expect(
-        outboxEvents[0].payload &&
-          isCardCreatedPayload(outboxEvents[0].payload) &&
-          outboxEvents[0].payload.createdBy
+        outboxEvents[0]!.payload &&
+          isCardCreatedPayload(outboxEvents[0]!.payload) &&
+          outboxEvents[0]!.payload.createdBy
       ).toBe(user1.userId);
     });
 
@@ -539,7 +539,7 @@ describe("Command Board - Multi-User Collaboration Integration", () => {
       });
 
       expect(events.length).toBeGreaterThan(0);
-      const latestEvent = events[0];
+      const latestEvent = events[0]!;
       expect(
         latestEvent.payload &&
           isCardCreatedPayload(latestEvent.payload) &&
@@ -585,7 +585,7 @@ describe("Command Board - Multi-User Collaboration Integration", () => {
       });
 
       expect(moveEvents.length).toBeGreaterThan(0);
-      const latestMoveEvent = moveEvents[0];
+      const latestMoveEvent = moveEvents[0]!;
       expect(
         latestMoveEvent.payload &&
           isCardMovedPayload(latestMoveEvent.payload) &&
@@ -632,9 +632,9 @@ describe("Command Board - Multi-User Collaboration Integration", () => {
       expect(moveEvents.length).toBeGreaterThanOrEqual(3);
 
       // Verify position progression
-      const moveEvent0 = moveEvents[0];
-      const moveEvent1 = moveEvents[1];
-      const moveEvent2 = moveEvents[2];
+      const moveEvent0 = moveEvents[0]!;
+      const moveEvent1 = moveEvents[1]!;
+      const moveEvent2 = moveEvents[2]!;
 
       expect(
         moveEvent0.payload &&
@@ -740,14 +740,14 @@ describe("Command Board - Multi-User Collaboration Integration", () => {
 
       expect(deleteEvents.length).toBeGreaterThan(0);
       expect(
-        deleteEvents[0].payload &&
-          isCardDeletedPayload(deleteEvents[0].payload) &&
-          deleteEvents[0].payload.deletedBy
+        deleteEvents[0]!.payload &&
+          isCardDeletedPayload(deleteEvents[0]!.payload) &&
+          deleteEvents[0]!.payload.deletedBy
       ).toBe(user2.userId);
       expect(
-        deleteEvents[0].payload &&
-          isCardDeletedPayload(deleteEvents[0].payload) &&
-          deleteEvents[0].payload.cardId
+        deleteEvents[0]!.payload &&
+          isCardDeletedPayload(deleteEvents[0]!.payload) &&
+          deleteEvents[0]!.payload.cardId
       ).toBe(card.id);
     });
 
@@ -799,7 +799,7 @@ describe("Command Board - Multi-User Collaboration Integration", () => {
       });
 
       expect(joinEvents.length).toBeGreaterThan(0);
-      const latestJoinEvent = joinEvents[0];
+      const latestJoinEvent = joinEvents[0]!;
       expect(
         latestJoinEvent.payload &&
           isUserJoinedPayload(latestJoinEvent.payload) &&
@@ -826,7 +826,7 @@ describe("Command Board - Multi-User Collaboration Integration", () => {
       });
 
       expect(leaveEvents.length).toBeGreaterThan(0);
-      const latestLeaveEvent = leaveEvents[0];
+      const latestLeaveEvent = leaveEvents[0]!;
       expect(
         latestLeaveEvent.payload &&
           isUserLeftPayload(latestLeaveEvent.payload) &&
@@ -882,7 +882,7 @@ describe("Command Board - Multi-User Collaboration Integration", () => {
       });
 
       expect(cursorEvents.length).toBeGreaterThan(0);
-      const latestCursorEvent = cursorEvents[0];
+      const latestCursorEvent = cursorEvents[0]!;
       expect(
         latestCursorEvent.payload &&
           isCursorMovedPayload(latestCursorEvent.payload) &&
@@ -928,9 +928,9 @@ describe("Command Board - Multi-User Collaboration Integration", () => {
         );
         expect(userEvents.length).toBeGreaterThan(0);
         expect(
-          userEvents[0].payload &&
-            isCursorMovedPayload(userEvents[0].payload) &&
-            userEvents[0].payload.position
+          userEvents[0]!.payload &&
+            isCursorMovedPayload(userEvents[0]!.payload) &&
+            userEvents[0]!.payload.position
         ).toEqual(position);
       }
     });
@@ -995,8 +995,8 @@ describe("Command Board - Multi-User Collaboration Integration", () => {
 
       // Verify chronological ordering
       for (let i = 1; i < events.length; i++) {
-        expect(events[i - 1].createdAt.getTime()).toBeLessThanOrEqual(
-          events[i].createdAt.getTime()
+        expect(events[i - 1]!.createdAt.getTime()).toBeLessThanOrEqual(
+          events[i]!.createdAt.getTime()
         );
       }
     });
