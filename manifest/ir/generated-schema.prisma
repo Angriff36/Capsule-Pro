@@ -1,3 +1,10 @@
+// ============================================================================
+// CI VALIDATION ARTIFACT — *NOT* THE LIVE SCHEMA. DO NOT point prisma generate /
+// migrate at this file. It is regenerated from the Manifest IR by
+// manifest/scripts/generate-full-schema.mjs and only drift-checked against the
+// LIVE, hand-authored schema at packages/database/prisma/schema.prisma.
+// ============================================================================
+
 generator client {
   provider               = "prisma-client"
   output                 = "../generated"
@@ -2346,6 +2353,7 @@ model EventPlanningDraft {
   expiresAt DateTime? @map("expires_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
+
 
   @@map("event_planning_drafts")
   @@id([tenantId, id])
@@ -6332,6 +6340,7 @@ model Venue {
   isActive Boolean? @map("is_active") @default(true)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
+
 
   @@map("venues")
   @@id([tenantId, id])
