@@ -9,19 +9,18 @@
  * Before the fix, ALL failed constraints blocked execution regardless of severity.
  */
 
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
-import { inMemoryStoreProvider } from "../test-helpers";
+import {
+  inMemoryStoreProvider,
+  readManifestSourceWithBase,
+} from "../test-helpers";
 
 async function getTestRuntime() {
-  const manifestPath = join(
-    process.cwd(),
-    "../../manifest/source/kitchen/prep-task-rules.manifest"
+  const source = readManifestSourceWithBase(
+    "kitchen/prep-task-rules.manifest"
   );
-  const source = readFileSync(manifestPath, "utf-8");
   const { ir, diagnostics } = await compileToIR(source);
 
   if (!ir) {
@@ -44,26 +43,30 @@ describe("Manifest Runtime - Constraint Severity Enforcement", () => {
   it("should allow creation when warn constraint fails (warnOverdue)", async () => {
     const runtime = await getTestRuntime();
 
-    // Create data that triggers warnOverdue constraint (overdue task, not done)
-    // warnOverdue: self.isOverdue and self.status != "done"
-    // isOverdue: self.dueByDate != 0 and now() > self.dueByDate and self.status != "done"
-    const overdueTaskData = {
+    // The `warnOverdue:warn` constraint is a POSITIVE-assert constraint under the
+    // @angriff36/manifest 2.18.6 engine: a constraint whose name does NOT start
+    // with "severity" passes when its expression is truthy and FAILS when falsy
+    // (runtime-engine evaluateConstraint: `passed = !!result`). Its expression is
+    // the overdue predicate, so it fails (passed=false, severity=warn) precisely
+    // when the task is NOT overdue. A future-due task therefore produces a failed
+    // warn outcome without any blocking constraint — exactly the scenario this
+    // test needs to prove warn-severity does not block creation.
+    const taskData = {
       id: "warn-test-001",
       tenantId: "test-tenant-456",
       eventId: "event-001",
-      name: "Overdue prep task",
+      name: "Not-overdue prep task",
       status: "open",
       taskType: "prep",
-      priority: 3, // Valid priority (1-5)
-      quantityTotal: 10, // Positive quantity
-      dueByDate: Date.now() - 86_400_000, // Due yesterday (overdue)
+      priority: 3, // Valid priority (1-5) — no block constraint fires
+      quantityTotal: 10, // Positive quantity — no block constraint fires
+      stationId: "", // Unstationed — keeps warnStationCapacity below warnOverdue
+      claimedBy: "",
+      dueByDate: Date.now() + 86_400_000, // Due tomorrow (not overdue → warnOverdue fails)
     };
 
     // Check constraints to observe the warn outcome
-    const outcomes = await runtime.checkConstraints(
-      "PrepTask",
-      overdueTaskData
-    );
+    const outcomes = await runtime.checkConstraints("PrepTask", taskData);
 
     // Verify that a warn-severity constraint failed
     const warnOutcomes = outcomes.filter(
@@ -79,7 +82,7 @@ describe("Manifest Runtime - Constraint Severity Enforcement", () => {
     expect(blockOutcomes.length).toBe(0);
 
     // CRITICAL TEST: createInstance should succeed despite warn constraint failure
-    const instance = await runtime.createInstance("PrepTask", overdueTaskData);
+    const instance = await runtime.createInstance("PrepTask", taskData);
 
     // Before the severity fix, this would have returned undefined (blocked)
     // After the fix, it returns a valid instance (not blocked)
@@ -87,7 +90,7 @@ describe("Manifest Runtime - Constraint Severity Enforcement", () => {
     expect(instance?.id).toBe("warn-test-001");
     expect(instance?.status).toBe("open");
     // The critical assertion: instance was created despite warn constraint
-    expect(instance?.dueByDate).toBeLessThan(Date.now());
+    expect(instance?.dueByDate).toBeGreaterThan(Date.now());
   });
 
   it("should block creation when block constraint fails (validStatus)", async () => {

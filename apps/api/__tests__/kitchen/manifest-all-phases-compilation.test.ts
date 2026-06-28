@@ -598,9 +598,26 @@ const EXPECTED_ENTITY_MAPPING: Record<string, string> = {
 // Helper: compile + normalize a manifest, returning null for known failures
 // ---------------------------------------------------------------------------
 
+// Shared `_base.manifest` source (tenant declaration, role hierarchy, and the
+// TenantScoped / SoftDeletable mixin entities). Domain files reference it via
+// `use "../_base.manifest"`, but the single-source `compileToIR` has no
+// filesystem host to resolve that directive — under compiler 2.18.6 the mixins
+// are otherwise unknown ("mixes unknown entity 'TenantScoped'"). Inline it.
+const BASE_MANIFEST_SOURCE = readFileSync(
+  join(MANIFEST_DIR, "_base.manifest"),
+  "utf-8"
+);
+
 async function compileManifest(manifestName: string) {
   const manifestPath = resolveManifestPath(manifestName);
-  const source = readFileSync(manifestPath, "utf-8");
+  const raw = readFileSync(manifestPath, "utf-8");
+  // Strip the `use "..._base.manifest"` directive — its mixins/roles/tenant are
+  // inlined via BASE_MANIFEST_SOURCE below (matches project-level compilation).
+  const withoutUse = raw.replace(
+    /^[ \t]*use[ \t]+"[^"]*_base\.manifest"[ \t]*\r?\n/m,
+    ""
+  );
+  const source = `${BASE_MANIFEST_SOURCE}\n${withoutUse}`;
   const { ir, diagnostics } = await compileToIR(source);
   return { ir, diagnostics, source };
 }

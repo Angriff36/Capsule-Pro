@@ -20,6 +20,10 @@ import {
 } from "./entity-domain-map.mjs";
 import { getConfigPaths } from "./read-config.mjs";
 
+// True when a generated route body references `request` (e.g. `request.url`).
+// Read routes that never use it get the param prefixed `_` to satisfy noUnusedParameters.
+const REQUEST_USAGE_RE = /\brequest\s*\./;
+
 const {
   repoRoot,
   irPath: defaultIr,
@@ -377,6 +381,22 @@ const materializeRemappedOutput = (stagingDir, outputDir) => {
       outputContent = fieldResult.content;
       rewrittenFields.push(
         `${safeRelativePath} (${fieldResult.rewrites.join("; ")})`
+      );
+    }
+
+    // The upstream projection emits `GET(request: NextRequest)`, but read (list/detail)
+    // routes never use `request`. Under this repo's strict tsconfig (noUnusedParameters)
+    // that is a TS6133 error on every regen. Prefix the param with `_` when the body
+    // never references `request` (routes that DO use `request.url`/`.json()` keep it).
+    if (
+      outputContent.includes(
+        "export async function GET(request: NextRequest)"
+      ) &&
+      !REQUEST_USAGE_RE.test(outputContent)
+    ) {
+      outputContent = outputContent.replace(
+        "export async function GET(request: NextRequest)",
+        "export async function GET(_request: NextRequest)"
       );
     }
 

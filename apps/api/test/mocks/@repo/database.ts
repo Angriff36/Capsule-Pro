@@ -240,5 +240,11 @@ export const database: Record<string, unknown> = {
 
 database.$transaction = vi.fn((fn: (tx: unknown) => unknown) => fn(database));
 
+// Mock analyticsDatabase — in the real package the analytics (read-replica)
+// client falls back to the primary connection, so it shares the same models.
+// Pointing it at `database` keeps a single mockable surface (mirrors
+// packages/database/standalone.ts where `analyticsDatabase = database`).
+export const analyticsDatabase: Record<string, unknown> = database;
+
 // Mock tenantDatabase function
 export const tenantDatabase = vi.fn(() => database);

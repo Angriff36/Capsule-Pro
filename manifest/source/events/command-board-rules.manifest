@@ -28,7 +28,7 @@ entity CommandBoard mixin TenantScoped, SoftDeletable {
   transition status from "active" to ["archived"]
 
   default policy CommandBoardDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
-  command create(name: string, description: string, eventId: string, isTemplate: boolean, tags: array<string>, autoPopulate: boolean, scope: string) {
+  command create(name: string, optional description: string, optional eventId: string, optional isTemplate: boolean, optional tags: array<string>, optional autoPopulate: boolean, optional scope: string) {
     guard name != null and name != "" "Board name is required"
 
     // Auto-create seed persists the full command body in one INSERT; per-field
@@ -63,7 +63,7 @@ entity CommandBoard mixin TenantScoped, SoftDeletable {
     emit CommandBoardActivated
   }
 
-  command deactivate(reason: string, userId: string) {
+  command deactivate(optional reason: string, optional userId: string) {
     guard self.status != "archived" "Board is already archived"
 
     constraint warnHasActiveCards:warn true {

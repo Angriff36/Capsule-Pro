@@ -13,12 +13,9 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { IR } from "@angriff36/manifest/ir";
-import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { NextJsProjection } from "@angriff36/manifest/projections/nextjs";
 import { describe, expect, it } from "vitest";
-
-const MANIFEST_ROOT = join(process.cwd(), "../../manifest/source");
-const MANIFEST_PATH = join(MANIFEST_ROOT, "kitchen/prep-task-rules.manifest");
+import { compileManifestSourceForTest } from "../test-helpers";
 
 const SNAP_DIR = join(process.cwd(), "__tests__/kitchen/__snapshots__");
 const SNAP_FILE = join(SNAP_DIR, "preptask-claim-command.snapshot.ts");
@@ -49,14 +46,9 @@ describe("Projection proof: PrepTask.claim golden snapshot", () => {
       mkdirSync(SNAP_DIR, { recursive: true });
     }
 
-    const source = readFileSync(MANIFEST_PATH, "utf-8");
-    const { ir, diagnostics } = await compileToIR(source);
-
-    if (!ir) {
-      throw new Error(
-        `Failed to compile manifest: ${diagnostics.map((d: { message: string }) => d.message).join(", ")}`
-      );
-    }
+    const ir = await compileManifestSourceForTest(
+      "kitchen/prep-task-rules.manifest"
+    );
 
     const projection = new NextJsProjection();
     expect(projection).toBeDefined();

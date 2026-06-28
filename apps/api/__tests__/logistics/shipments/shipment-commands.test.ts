@@ -154,6 +154,7 @@ describe("Shipment dispatcher — runtime failure responses", () => {
         method: "POST",
         body: JSON.stringify({
           id: TEST_SHIPMENT_ID,
+          userId: TEST_USER_ID,
           reason: "supplier delay",
         }),
       }),
@@ -180,7 +181,11 @@ describe("Shipment dispatcher — runtime failure responses", () => {
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
-        body: JSON.stringify({ id: TEST_SHIPMENT_ID }),
+        body: JSON.stringify({
+          id: TEST_SHIPMENT_ID,
+          userId: TEST_USER_ID,
+          reason: "supplier delay",
+        }),
       }),
       { params: Promise.resolve({ entity: "Shipment", command: "cancel" }) }
     );
@@ -203,7 +208,11 @@ describe("Shipment dispatcher — runtime failure responses", () => {
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
-        body: JSON.stringify({ id: TEST_SHIPMENT_ID }),
+        body: JSON.stringify({
+          id: TEST_SHIPMENT_ID,
+          userId: TEST_USER_ID,
+          reason: "supplier delay",
+        }),
       }),
       { params: Promise.resolve({ entity: "Shipment", command: "cancel" }) }
     );
@@ -236,7 +245,15 @@ describe("Shipment Command Routes — success paths", () => {
     const { POST } = await import(
       "@/app/api/manifest/[entity]/commands/[command]/route"
     );
-    const body = { shipmentNumber: "SHP-100", carrier: "UPS" };
+    const body = {
+      shipmentNumber: "SHP-100",
+      carrier: "UPS",
+      scheduledDate: 1_735_689_600_000,
+      shippingMethod: "ground",
+      notes: "",
+      supplierId: "",
+      eventId: "",
+    };
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
@@ -267,6 +284,11 @@ describe("Shipment Command Routes — success paths", () => {
       id: TEST_SHIPMENT_ID,
       trackingNumber: "T-9",
       carrier: "DHL",
+      shippingMethod: "ground",
+      estimatedDeliveryDate: 1_735_689_600_000,
+      shippingCost: 10,
+      notes: "",
+      internalNotes: "",
     };
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
@@ -399,7 +421,7 @@ describe("Shipment Command Routes — success paths", () => {
       id: TEST_SHIPMENT_ID,
       userId: TEST_USER_ID,
       receivedBy: "Jane Doe",
-      signature: "data:image/png;base64,xyz",
+      signatureData: "data:image/png;base64,xyz",
     };
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
@@ -419,7 +441,7 @@ describe("Shipment Command Routes — success paths", () => {
       "markDelivered",
       expect.objectContaining({
         receivedBy: "Jane Doe",
-        signature: "data:image/png;base64,xyz",
+        signatureData: "data:image/png;base64,xyz",
       }),
       expect.objectContaining({ instanceId: TEST_SHIPMENT_ID })
     );
@@ -525,7 +547,10 @@ describe("ShipmentItem.create command", () => {
       shipmentId: TEST_SHIPMENT_ID,
       itemId: "inv-001",
       quantityShipped: 10,
+      unitId: 0,
       unitCost: 4.5,
+      lotNumber: "",
+      expirationDate: 1_735_689_600_000,
     };
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
@@ -571,6 +596,10 @@ describe("ShipmentItem.create command", () => {
           shipmentId: TEST_SHIPMENT_ID,
           itemId: "inv-001",
           quantityShipped: 0,
+          unitId: 0,
+          unitCost: 4.5,
+          lotNumber: "",
+          expirationDate: 1_735_689_600_000,
         }),
       }),
       { params: Promise.resolve({ entity: "ShipmentItem", command: "create" }) }
@@ -589,7 +618,15 @@ describe("ShipmentItem.create command", () => {
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
-        body: JSON.stringify({ shipmentId: TEST_SHIPMENT_ID }),
+        body: JSON.stringify({
+          shipmentId: TEST_SHIPMENT_ID,
+          itemId: "inv-001",
+          quantityShipped: 10,
+          unitId: 0,
+          unitCost: 4.5,
+          lotNumber: "",
+          expirationDate: 1_735_689_600_000,
+        }),
       }),
       { params: Promise.resolve({ entity: "ShipmentItem", command: "create" }) }
     );
@@ -728,7 +765,14 @@ describe("ShipmentItem.updateReceived command", () => {
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
-        body: JSON.stringify({ quantityReceived: -1 }),
+        body: JSON.stringify({
+          shipmentItemId: "item-001",
+          quantityReceived: -1,
+          quantityDamaged: 0,
+          condition: "good",
+          conditionNotes: "",
+          userId: TEST_USER_ID,
+        }),
       }),
       {
         params: Promise.resolve({
@@ -751,7 +795,14 @@ describe("ShipmentItem.updateReceived command", () => {
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
-        body: JSON.stringify({}),
+        body: JSON.stringify({
+          shipmentItemId: "item-001",
+          quantityReceived: 8,
+          quantityDamaged: 0,
+          condition: "good",
+          conditionNotes: "",
+          userId: TEST_USER_ID,
+        }),
       }),
       {
         params: Promise.resolve({

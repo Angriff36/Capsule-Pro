@@ -14,12 +14,13 @@
  * Invariant: If this test breaks, the claim workflow semantics changed.
  */
 
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
-import { inMemoryStoreProvider } from "../test-helpers";
+import {
+  inMemoryStoreProvider,
+  readManifestSourceWithBase,
+} from "../test-helpers";
 
 // ---------------------------------------------------------------------------
 // Deterministic fixtures — fixed IDs and timestamps for reproducibility
@@ -41,11 +42,9 @@ async function buildDeterministicRuntime(userOverrides?: {
   role?: string;
   tenantId?: string;
 }) {
-  const manifestPath = join(
-    process.cwd(),
-    "../../manifest/source/kitchen/prep-task-rules.manifest"
+  const source = readManifestSourceWithBase(
+    "kitchen/prep-task-rules.manifest"
   );
-  const source = readFileSync(manifestPath, "utf-8");
   const { ir, diagnostics } = await compileToIR(source);
 
   if (!ir) {
@@ -396,11 +395,16 @@ describe("PrepTask.claim conformance", () => {
   // CONSTRAINT: Overdue warning (non-blocking)
   // =========================================================================
   describe("constraint — overdue warning is non-blocking", () => {
-    it("claim succeeds with warn constraint outcome when task is overdue", async () => {
+    it("claim succeeds with a failing warn constraint outcome", async () => {
       const runtime = await buildDeterministicRuntime();
-      await seedClaimableTask(runtime, {
-        dueByDate: FIXED_NOW - 86_400_000, // Due yesterday
-      });
+      // The command-level `warnOverdueClaim:warn` constraint is POSITIVE-assert
+      // under @angriff36/manifest 2.18.6 (its name does not start with
+      // "severity", so evaluateConstraint reports `passed = !!expression`). Its
+      // expression is the overdue predicate, so it FAILS (passed=false,
+      // severity=warn) when the task is NOT overdue. seedClaimableTask already
+      // uses a future due date, which produces exactly that failed warn outcome
+      // — the scenario this test needs to prove a warn never blocks the command.
+      await seedClaimableTask(runtime);
 
       const result = await runtime.runCommand(
         "claim",
@@ -411,7 +415,7 @@ describe("PrepTask.claim conformance", () => {
       // Claim should SUCCEED (warn doesn't block)
       expect(result.success).toBe(true);
 
-      // But constraint outcomes should include the warning
+      // But constraint outcomes should include the failing warning
       expect(result.constraintOutcomes).toBeDefined();
       const overdueWarning = result.constraintOutcomes!.find(
         (o) => o.constraintName === "warnOverdueClaim"

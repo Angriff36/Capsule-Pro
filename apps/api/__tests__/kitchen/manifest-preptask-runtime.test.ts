@@ -8,29 +8,20 @@
  * 4. Emits events on successful commands
  */
 
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import {
   createCustomBuiltins,
   ManifestRuntimeEngine,
 } from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
-import { inMemoryStoreProvider } from "../test-helpers";
+import {
+  compileManifestSourceForTest,
+  inMemoryStoreProvider,
+} from "../test-helpers";
 
 async function getTestRuntime() {
-  const manifestPath = join(
-    process.cwd(),
-    "../../manifest/source/kitchen/prep-task-rules.manifest"
+  const ir = await compileManifestSourceForTest(
+    "kitchen/prep-task-rules.manifest"
   );
-  const source = readFileSync(manifestPath, "utf-8");
-  const { ir, diagnostics } = await compileToIR(source);
-
-  if (!ir) {
-    throw new Error(
-      `Failed to compile manifest: ${diagnostics.map((d: { message: string }) => d.message).join(", ")}`
-    );
-  }
 
   return new ManifestRuntimeEngine(
     ir,

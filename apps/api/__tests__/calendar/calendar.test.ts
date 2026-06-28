@@ -612,9 +612,16 @@ describe("PATCH /api/calendar/reschedule", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     makeAuthedUser();
+    // Freeze the clock so the route's past-date guard is deterministic:
+    // the reschedule cases use 2026-06-15 / 2026-06-20 as *future* dates and
+    // 2020-01-01 as a *past* date relative to this fixed "now". Without a fixed
+    // clock these tests rot once the real date passes 2026-06-15.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-01T08:00:00.000Z"));
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 

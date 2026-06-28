@@ -25,36 +25,24 @@
  * file to IR and drive a real ManifestRuntimeEngine over an in-memory store.
  */
 
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import {
   createCustomBuiltins,
   ManifestRuntimeEngine,
 } from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
-import { inMemoryStoreProvider } from "../test-helpers";
+import {
+  compileManifestSourceForTest,
+  inMemoryStoreProvider,
+} from "../test-helpers";
 
 const MANIFEST_FILE = "core/employee-availability-rules.manifest";
 const TENANT = "test-tenant-456";
 
-function manifestSource() {
-  return readFileSync(
-    join(process.cwd(), "../../manifest/source", MANIFEST_FILE),
-    "utf-8"
-  );
-}
-
-async function compile() {
-  const { ir, diagnostics } = await compileToIR(manifestSource());
-  if (!ir) {
-    throw new Error(
-      `Failed to compile ${MANIFEST_FILE}: ${diagnostics
-        .map((d: { message: string }) => d.message)
-        .join(", ")}`
-    );
-  }
-  return ir;
+// The real source opens with `use "../_base.manifest"` and mixes TenantScoped /
+// SoftDeletable; compiler 2.18.6 can't resolve `use` in a bare single-source
+// compile, so the shared helper inlines `_base.manifest` first.
+function compile() {
+  return compileManifestSourceForTest(MANIFEST_FILE);
 }
 
 async function getRuntime(role = "manager") {

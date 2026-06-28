@@ -21,29 +21,15 @@
  * place the regression is observable — so this is where it must be pinned.
  */
 
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
-import { inMemoryStoreProvider } from "../test-helpers";
+import {
+  compileManifestSourceForTest,
+  inMemoryStoreProvider,
+} from "../test-helpers";
 
 async function getRuntime(manifestFile: string) {
-  const manifestPath = join(
-    process.cwd(),
-    "../../manifest/source",
-    manifestFile
-  );
-  const source = readFileSync(manifestPath, "utf-8");
-  const { ir, diagnostics } = await compileToIR(source);
-
-  if (!ir) {
-    throw new Error(
-      `Failed to compile ${manifestFile}: ${diagnostics
-        .map((d: { message: string }) => d.message)
-        .join(", ")}`
-    );
-  }
+  const ir = await compileManifestSourceForTest(manifestFile);
 
   return new ManifestRuntimeEngine(
     ir,
