@@ -228,6 +228,8 @@ entity QATemperatureLog mixin TenantScoped {
     }
   }
 
+  relationship belongsTo equipment: Equipment with equipmentId
+
   default policy QATemperatureLogDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Quality assurance"
   command log(logType: string, temperature: number, unit: string, equipmentId: string, loggedBy: string, notes: string) {
     guard logType != null and logType != "" "Log type is required"

@@ -37,6 +37,8 @@ entity Venue mixin TenantScoped, SoftDeletable {
   constraint requireName: self.name != "" "Venue name is required"
   constraint positiveCapacity: self.capacity >= 0 "Capacity cannot be negative"
 
+  relationship hasMany planningDrafts: EventPlanningDraft
+
   default policy VenueDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(name: string, venueType: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, capacity: int, contactName: string, contactPhone: string, contactEmail: string, accessNotes: string, cateringNotes: string, layoutImageUrl: string, tags: array<string>) {
     guard name != null and name != "" "Venue name is required"

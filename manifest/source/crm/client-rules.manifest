@@ -195,6 +195,7 @@ entity ClientContact mixin TenantScoped, SoftDeletable {
   constraint validLastName: self.lastName != null and self.lastName != "" "Last name is required"
 
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
+  relationship hasMany planningDrafts: EventPlanningDraft
 
   constraint warnNoContactInfo:warn self.email == "" and self.phone == "" and self.phoneMobile == "" {
     messageTemplate: "Contact '{contactName}' has no email or phone number"

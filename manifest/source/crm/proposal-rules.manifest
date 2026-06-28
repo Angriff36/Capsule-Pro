@@ -62,6 +62,7 @@ entity Proposal mixin TenantScoped, SoftDeletable {
 
   // Back-relations (U11): inverse hasMany for children that belongTo Proposal
   relationship hasMany lineItems: ProposalLineItem
+  relationship hasMany planningDrafts: EventPlanningDraft
 
   constraint positiveSubtotal: self.subtotal >= 0 "Subtotal must be non-negative"
   constraint positiveTaxRate: self.taxRate >= 0 "Tax rate must be non-negative"

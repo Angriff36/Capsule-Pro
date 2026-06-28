@@ -44,8 +44,8 @@ entity Equipment mixin TenantScoped {
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
 
   // Back-relations (U11): inverse hasMany for children that belongTo Equipment
-  relationship hasMany kitchenTasks: KitchenTask
   relationship hasMany temperatureLogs: TemperatureLog
+  relationship hasMany qaTemperatureLogs: QATemperatureLog
   relationship hasMany workOrders: MaintenanceWorkOrder
   relationship hasMany iotAlertRules: IotAlertRule
   relationship hasMany preventiveMaintenanceSchedules: PreventiveMaintenanceSchedule

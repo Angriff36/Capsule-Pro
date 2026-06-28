@@ -89,6 +89,10 @@ entity EventPlanningDraft mixin TenantScoped, SoftDeletable {
     }
   }
 
+  relationship belongsTo clientContact: ClientContact with clientContactId
+  relationship belongsTo venue: Venue with venueId
+  relationship belongsTo proposal: Proposal with proposalId
+
   default policy EventPlanningDraftDefaultAccess execute: user.role in ["staff", "event_coordinator", "manager", "admin"] "AI call planner drafts"
 
   command create(sessionId: string) {

@@ -65,7 +65,6 @@ entity Event mixin TenantScoped, SoftDeletable {
   relationship hasMany allergenWarnings: AllergenWarning
   relationship hasMany wasteEntries: WasteEntry
   relationship hasMany shipments: Shipment
-  relationship hasMany revenueLines: RevenueRecognitionLine
   relationship hasMany collectionCases: CollectionCase
   relationship hasMany prepTaskPlans: PrepTaskPlanWorkflow
   relationship hasMany aiEventSetupSessions: AiEventSetupSession
