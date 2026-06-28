@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # pnpm/action-setup must come before actions/setup-node when cache: pnpm
       # is used — setup-node invokes pnpm to compute the cache key.
@@ -125,7 +125,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # pnpm/action-setup must come before actions/setup-node when cache: pnpm
       # is used — setup-node invokes pnpm to compute the cache key.
