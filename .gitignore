@@ -621,3 +621,4 @@ manifest/generated/*
 CLAUDE-FABLE-5.md
 __previewjs__/
 previewjs.config.js
+/packages/sentry-integration/dist
