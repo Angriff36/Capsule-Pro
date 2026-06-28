@@ -3,23 +3,23 @@
   "entries": {
     "command:ActionMilestone.complete": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 363
+      "line": 364
     },
     "command:ActionMilestone.create": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 351
+      "line": 352
     },
     "command:ActionMilestone.miss": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 372
+      "line": 373
     },
     "command:AdminChatMessage.create": {
       "file": "core/crm-admin-extended-rules.manifest",
-      "line": 481
+      "line": 486
     },
     "command:AdminChatMessage.remove": {
       "file": "core/crm-admin-extended-rules.manifest",
-      "line": 494
+      "line": 499
     },
     "command:AdminChatParticipant.archive": {
       "file": "core/admin-chat-participant-rules.manifest",
@@ -39,11 +39,11 @@
     },
     "command:AdminChatThread.create": {
       "file": "core/crm-admin-extended-rules.manifest",
-      "line": 433
+      "line": 435
     },
     "command:AdminChatThread.recordLastMessage": {
       "file": "core/crm-admin-extended-rules.manifest",
-      "line": 451
+      "line": 453
     },
     "command:AdminTask.cancel": {
       "file": "core/admin-task-rules.manifest",
@@ -203,23 +203,23 @@
     },
     "command:AuditSchedule.activate": {
       "file": "inventory/inventory-extended-rules.manifest",
-      "line": 848
+      "line": 850
     },
     "command:AuditSchedule.create": {
       "file": "inventory/inventory-extended-rules.manifest",
-      "line": 811
+      "line": 813
     },
     "command:AuditSchedule.deactivate": {
       "file": "inventory/inventory-extended-rules.manifest",
-      "line": 840
+      "line": 842
     },
     "command:AuditSchedule.recordRun": {
       "file": "inventory/inventory-extended-rules.manifest",
-      "line": 857
+      "line": 859
     },
     "command:AuditSchedule.update": {
       "file": "inventory/inventory-extended-rules.manifest",
-      "line": 828
+      "line": 830
     },
     "command:AutomatedFollowup.complete": {
       "file": "events/event-automation-rules.manifest",
@@ -315,15 +315,15 @@
     },
     "command:BoardAnnotation.create": {
       "file": "events/events-extended-rules.manifest",
-      "line": 703
+      "line": 705
     },
     "command:BoardAnnotation.remove": {
       "file": "events/events-extended-rules.manifest",
-      "line": 719
+      "line": 721
     },
     "command:BoardAnnotation.update": {
       "file": "events/events-extended-rules.manifest",
-      "line": 712
+      "line": 714
     },
     "command:BoardConfig.create": {
       "file": "core/board-config-rules.manifest",
@@ -343,19 +343,19 @@
     },
     "command:BoardProjection.create": {
       "file": "events/events-extended-rules.manifest",
-      "line": 619
+      "line": 621
     },
     "command:BoardProjection.move": {
       "file": "events/events-extended-rules.manifest",
-      "line": 634
+      "line": 636
     },
     "command:BoardProjection.remove": {
       "file": "events/events-extended-rules.manifest",
-      "line": 646
+      "line": 648
     },
     "command:BoardProjection.resize": {
       "file": "events/events-extended-rules.manifest",
-      "line": 639
+      "line": 641
     },
     "command:Budget.addLineItem": {
       "file": "finance/budget-rules.manifest",
@@ -391,27 +391,27 @@
     },
     "command:BudgetAlert.acknowledge": {
       "file": "staff/labor-budget-rules.manifest",
-      "line": 154
+      "line": 155
     },
     "command:BudgetAlert.create": {
       "file": "staff/labor-budget-rules.manifest",
-      "line": 139
+      "line": 140
     },
     "command:BudgetAlert.markResolved": {
       "file": "staff/labor-budget-rules.manifest",
-      "line": 164
+      "line": 165
     },
     "command:BudgetLineItem.create": {
       "file": "events/event-budget-rules.manifest",
-      "line": 173
+      "line": 174
     },
     "command:BudgetLineItem.remove": {
       "file": "events/event-budget-rules.manifest",
-      "line": 214
+      "line": 215
     },
     "command:BudgetLineItem.update": {
       "file": "events/event-budget-rules.manifest",
-      "line": 192
+      "line": 193
     },
     "command:BulkCombineRule.create": {
       "file": "kitchen/kitchen-extended-rules.manifest",
@@ -527,187 +527,187 @@
     },
     "command:Client.archive": {
       "file": "crm/client-rules.manifest",
-      "line": 141
+      "line": 149
     },
     "command:Client.create": {
       "file": "crm/client-rules.manifest",
-      "line": 83
+      "line": 91
     },
     "command:Client.reactivate": {
       "file": "crm/client-rules.manifest",
-      "line": 157
+      "line": 165
     },
     "command:Client.update": {
       "file": "crm/client-rules.manifest",
-      "line": 115
+      "line": 123
     },
     "command:ClientContact.create": {
       "file": "crm/client-rules.manifest",
-      "line": 200
+      "line": 209
     },
     "command:ClientContact.remove": {
       "file": "crm/client-rules.manifest",
-      "line": 234
+      "line": 243
     },
     "command:ClientContact.setPrimary": {
       "file": "crm/client-rules.manifest",
-      "line": 250
+      "line": 259
     },
     "command:ClientContact.update": {
       "file": "crm/client-rules.manifest",
-      "line": 219
+      "line": 228
     },
     "command:ClientInteraction.complete": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 113
+      "line": 114
     },
     "command:ClientInteraction.create": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 65
+      "line": 66
     },
     "command:ClientInteraction.escalate": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 156
+      "line": 157
     },
     "command:ClientInteraction.markOverdue": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 145
+      "line": 146
     },
     "command:ClientInteraction.schedule": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 131
+      "line": 132
     },
     "command:ClientInteraction.softDelete": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 170
+      "line": 171
     },
     "command:ClientInteraction.update": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 91
+      "line": 92
     },
     "command:ClientPreference.create": {
       "file": "crm/client-rules.manifest",
-      "line": 278
+      "line": 287
     },
     "command:ClientPreference.remove": {
       "file": "crm/client-rules.manifest",
-      "line": 301
+      "line": 310
     },
     "command:ClientPreference.update": {
       "file": "crm/client-rules.manifest",
-      "line": 292
+      "line": 301
     },
     "command:CollectionAction.complete": {
       "file": "finance/collections-rules.manifest",
-      "line": 297
+      "line": 299
     },
     "command:CollectionAction.fail": {
       "file": "finance/collections-rules.manifest",
-      "line": 308
+      "line": 310
     },
     "command:CollectionAction.reschedule": {
       "file": "finance/collections-rules.manifest",
-      "line": 324
+      "line": 326
     },
     "command:CollectionAction.skip": {
       "file": "finance/collections-rules.manifest",
-      "line": 316
+      "line": 318
     },
     "command:CollectionCase.assignTo": {
       "file": "finance/collections-rules.manifest",
-      "line": 99
+      "line": 101
     },
     "command:CollectionCase.close": {
       "file": "finance/collections-rules.manifest",
-      "line": 225
+      "line": 227
     },
     "command:CollectionCase.create": {
       "file": "finance/collections-rules.manifest",
-      "line": 89
+      "line": 91
     },
     "command:CollectionCase.createPaymentPlan": {
       "file": "finance/collections-rules.manifest",
-      "line": 166
+      "line": 168
     },
     "command:CollectionCase.escalateDunning": {
       "file": "finance/collections-rules.manifest",
-      "line": 136
+      "line": 138
     },
     "command:CollectionCase.escalateToLegal": {
       "file": "finance/collections-rules.manifest",
-      "line": 144
+      "line": 146
     },
     "command:CollectionCase.escalateToLegalWithDetails": {
       "file": "finance/collections-rules.manifest",
-      "line": 192
+      "line": 194
     },
     "command:CollectionCase.markDisputed": {
       "file": "finance/collections-rules.manifest",
-      "line": 176
+      "line": 178
     },
     "command:CollectionCase.markResolved": {
       "file": "finance/collections-rules.manifest",
-      "line": 128
+      "line": 130
     },
     "command:CollectionCase.recordPayment": {
       "file": "finance/collections-rules.manifest",
-      "line": 119
+      "line": 121
     },
     "command:CollectionCase.resetDunning": {
       "file": "finance/collections-rules.manifest",
-      "line": 159
+      "line": 161
     },
     "command:CollectionCase.resolveDispute": {
       "file": "finance/collections-rules.manifest",
-      "line": 184
+      "line": 186
     },
     "command:CollectionCase.setHighPriority": {
       "file": "finance/collections-rules.manifest",
-      "line": 155
+      "line": 157
     },
     "command:CollectionCase.setPriority": {
       "file": "finance/collections-rules.manifest",
-      "line": 220
+      "line": 222
     },
     "command:CollectionCase.setUrgentPriority": {
       "file": "finance/collections-rules.manifest",
-      "line": 151
+      "line": 153
     },
     "command:CollectionCase.settle": {
       "file": "finance/collections-rules.manifest",
-      "line": 112
+      "line": 114
     },
     "command:CollectionCase.updateAging": {
       "file": "finance/collections-rules.manifest",
-      "line": 214
+      "line": 216
     },
     "command:CollectionCase.updateStatus": {
       "file": "finance/collections-rules.manifest",
-      "line": 106
+      "line": 108
     },
     "command:CollectionCase.writeOff": {
       "file": "finance/collections-rules.manifest",
-      "line": 204
+      "line": 206
     },
     "command:CollectionPaymentPlan.cancel": {
       "file": "finance/collections-rules.manifest",
-      "line": 397
+      "line": 399
     },
     "command:CollectionPaymentPlan.markCompleted": {
       "file": "finance/collections-rules.manifest",
-      "line": 383
+      "line": 385
     },
     "command:CollectionPaymentPlan.markDefaulted": {
       "file": "finance/collections-rules.manifest",
-      "line": 390
+      "line": 392
     },
     "command:CollectionPaymentPlan.modify": {
       "file": "finance/collections-rules.manifest",
-      "line": 403
+      "line": 405
     },
     "command:CollectionPaymentPlan.recordInstallment": {
       "file": "finance/collections-rules.manifest",
-      "line": 376
+      "line": 378
     },
     "command:CommandBoard.activate": {
       "file": "events/command-board-rules.manifest",
@@ -727,55 +727,55 @@
     },
     "command:CommandBoardCard.create": {
       "file": "events/command-board-rules.manifest",
-      "line": 124
+      "line": 130
     },
     "command:CommandBoardCard.move": {
       "file": "events/command-board-rules.manifest",
-      "line": 160
+      "line": 166
     },
     "command:CommandBoardCard.remove": {
       "file": "events/command-board-rules.manifest",
-      "line": 183
+      "line": 189
     },
     "command:CommandBoardCard.resize": {
       "file": "events/command-board-rules.manifest",
-      "line": 172
+      "line": 178
     },
     "command:CommandBoardCard.update": {
       "file": "events/command-board-rules.manifest",
-      "line": 136
+      "line": 142
     },
     "command:CommandBoardConnection.create": {
       "file": "events/command-board-rules.manifest",
-      "line": 274
+      "line": 281
     },
     "command:CommandBoardConnection.remove": {
       "file": "events/command-board-rules.manifest",
-      "line": 285
+      "line": 292
     },
     "command:CommandBoardGroup.create": {
       "file": "events/command-board-rules.manifest",
-      "line": 217
+      "line": 224
     },
     "command:CommandBoardGroup.remove": {
       "file": "events/command-board-rules.manifest",
-      "line": 240
+      "line": 247
     },
     "command:CommandBoardGroup.update": {
       "file": "events/command-board-rules.manifest",
-      "line": 226
+      "line": 233
     },
     "command:CommandBoardLayout.create": {
       "file": "events/command-board-rules.manifest",
-      "line": 317
+      "line": 324
     },
     "command:CommandBoardLayout.remove": {
       "file": "events/command-board-rules.manifest",
-      "line": 346
+      "line": 353
     },
     "command:CommandBoardLayout.update": {
       "file": "events/command-board-rules.manifest",
-      "line": 333
+      "line": 340
     },
     "command:Container.create": {
       "file": "core/container-rules.manifest",
@@ -799,19 +799,19 @@
     },
     "command:ContractSignature.create": {
       "file": "events/event-contract-rules.manifest",
-      "line": 158
+      "line": 160
     },
     "command:ContractSignature.invalidate": {
       "file": "events/event-contract-rules.manifest",
-      "line": 184
+      "line": 186
     },
     "command:ContractSignature.softDelete": {
       "file": "events/event-contract-rules.manifest",
-      "line": 195
+      "line": 197
     },
     "command:ContractSignature.verify": {
       "file": "events/event-contract-rules.manifest",
-      "line": 175
+      "line": 177
     },
     "command:CorrectiveAction.assign": {
       "file": "kitchen/kitchen-extended-rules.manifest",
@@ -931,79 +931,79 @@
     },
     "command:DeliveryRoute.assignDriver": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 688
+      "line": 692
     },
     "command:DeliveryRoute.complete": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 680
+      "line": 684
     },
     "command:DeliveryRoute.create": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 657
+      "line": 661
     },
     "command:DeliveryRoute.start": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 671
+      "line": 675
     },
     "command:DisciplinaryAction.acknowledge": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 296
+      "line": 297
     },
     "command:DisciplinaryAction.close": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 318
+      "line": 319
     },
     "command:DisciplinaryAction.create": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 279
+      "line": 280
     },
     "command:DisciplinaryAction.escalate": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 305
+      "line": 306
     },
     "command:Dish.activate": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 139
+      "line": 140
     },
     "command:Dish.clearDefaultContainer": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 272
+      "line": 273
     },
     "command:Dish.create": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 94
+      "line": 95
     },
     "command:Dish.deactivate": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 147
+      "line": 148
     },
     "command:Dish.eightySix": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 242
+      "line": 243
     },
     "command:Dish.markSeasonal": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 215
+      "line": 216
     },
     "command:Dish.reinstate": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 255
+      "line": 256
     },
     "command:Dish.unmarkSeasonal": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 230
+      "line": 231
     },
     "command:Dish.update": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 122
+      "line": 123
     },
     "command:Dish.updateLeadTime": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 202
+      "line": 203
     },
     "command:Dish.updatePricing": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 164
+      "line": 165
     },
     "command:Document.create": {
       "file": "core/crm-admin-extended-rules.manifest",
@@ -1155,15 +1155,15 @@
     },
     "command:EmployeeDeduction.create": {
       "file": "staff/payroll-rules.manifest",
-      "line": 104
+      "line": 107
     },
     "command:EmployeeDeduction.deactivate": {
       "file": "staff/payroll-rules.manifest",
-      "line": 136
+      "line": 139
     },
     "command:EmployeeDeduction.update": {
       "file": "staff/payroll-rules.manifest",
-      "line": 123
+      "line": 126
     },
     "command:EntityVersion.approve": {
       "file": "integrations/version-control-rules.manifest",
@@ -1183,127 +1183,127 @@
     },
     "command:Equipment.create": {
       "file": "operations/equipment-rules.manifest",
-      "line": 168
+      "line": 171
     },
     "command:Equipment.recordMaintenance": {
       "file": "operations/equipment-rules.manifest",
-      "line": 113
+      "line": 116
     },
     "command:Equipment.recordUsage": {
       "file": "operations/equipment-rules.manifest",
-      "line": 160
+      "line": 163
     },
     "command:Equipment.retire": {
       "file": "operations/equipment-rules.manifest",
-      "line": 195
+      "line": 198
     },
     "command:Equipment.scheduleMaintenance": {
       "file": "operations/equipment-rules.manifest",
-      "line": 94
+      "line": 97
     },
     "command:Equipment.updateCondition": {
       "file": "operations/equipment-rules.manifest",
-      "line": 143
+      "line": 146
     },
     "command:Equipment.updateStatus": {
       "file": "operations/equipment-rules.manifest",
-      "line": 124
+      "line": 127
     },
     "command:Event.archive": {
       "file": "events/event-rules.manifest",
-      "line": 181
+      "line": 193
     },
     "command:Event.cancel": {
       "file": "events/event-rules.manifest",
-      "line": 171
+      "line": 183
     },
     "command:Event.confirm": {
       "file": "events/event-rules.manifest",
-      "line": 152
+      "line": 164
     },
     "command:Event.create": {
       "file": "events/event-rules.manifest",
-      "line": 95
+      "line": 107
     },
     "command:Event.finalize": {
       "file": "events/event-rules.manifest",
-      "line": 252
+      "line": 264
     },
     "command:Event.softDelete": {
       "file": "events/event-rules.manifest",
-      "line": 268
+      "line": 280
     },
     "command:Event.unfinalize": {
       "file": "events/event-rules.manifest",
-      "line": 260
+      "line": 272
     },
     "command:Event.update": {
       "file": "events/event-rules.manifest",
-      "line": 120
+      "line": 132
     },
     "command:Event.updateBudget": {
       "file": "events/event-rules.manifest",
-      "line": 189
+      "line": 201
     },
     "command:Event.updateDate": {
       "file": "events/event-rules.manifest",
-      "line": 219
+      "line": 231
     },
     "command:Event.updateGuestCount": {
       "file": "events/event-rules.manifest",
-      "line": 199
+      "line": 211
     },
     "command:Event.updateLocation": {
       "file": "events/event-rules.manifest",
-      "line": 230
+      "line": 242
     },
     "command:EventBudget.approve": {
       "file": "events/event-budget-rules.manifest",
-      "line": 94
+      "line": 95
     },
     "command:EventBudget.create": {
       "file": "events/event-budget-rules.manifest",
-      "line": 60
+      "line": 61
     },
     "command:EventBudget.finalize": {
       "file": "events/event-budget-rules.manifest",
-      "line": 110
+      "line": 111
     },
     "command:EventBudget.update": {
       "file": "events/event-budget-rules.manifest",
-      "line": 74
+      "line": 75
     },
     "command:EventContract.cancel": {
       "file": "events/event-contract-rules.manifest",
-      "line": 111
+      "line": 113
     },
     "command:EventContract.create": {
       "file": "events/event-contract-rules.manifest",
-      "line": 45
+      "line": 47
     },
     "command:EventContract.expire": {
       "file": "events/event-contract-rules.manifest",
-      "line": 102
+      "line": 104
     },
     "command:EventContract.markViewed": {
       "file": "events/event-contract-rules.manifest",
-      "line": 84
+      "line": 86
     },
     "command:EventContract.send": {
       "file": "events/event-contract-rules.manifest",
-      "line": 73
+      "line": 75
     },
     "command:EventContract.sign": {
       "file": "events/event-contract-rules.manifest",
-      "line": 93
+      "line": 95
     },
     "command:EventContract.softDelete": {
       "file": "events/event-contract-rules.manifest",
-      "line": 121
+      "line": 123
     },
     "command:EventContract.update": {
       "file": "events/event-contract-rules.manifest",
-      "line": 61
+      "line": 63
     },
     "command:EventDish.create": {
       "file": "events/event-dish-rules.manifest",
@@ -1327,19 +1327,19 @@
     },
     "command:EventFollowup.cancel": {
       "file": "events/events-extended-rules.manifest",
-      "line": 557
+      "line": 559
     },
     "command:EventFollowup.complete": {
       "file": "events/events-extended-rules.manifest",
-      "line": 543
+      "line": 545
     },
     "command:EventFollowup.create": {
       "file": "events/events-extended-rules.manifest",
-      "line": 532
+      "line": 534
     },
     "command:EventFollowup.reschedule": {
       "file": "events/events-extended-rules.manifest",
-      "line": 550
+      "line": 552
     },
     "command:EventGuest.assignTable": {
       "file": "events/event-guest-rules.manifest",
@@ -1371,23 +1371,23 @@
     },
     "command:EventImport.complete": {
       "file": "events/events-extended-rules.manifest",
-      "line": 439
+      "line": 441
     },
     "command:EventImport.create": {
       "file": "events/events-extended-rules.manifest",
-      "line": 421
+      "line": 423
     },
     "command:EventImport.fail": {
       "file": "events/events-extended-rules.manifest",
-      "line": 448
+      "line": 450
     },
     "command:EventImport.retry": {
       "file": "events/events-extended-rules.manifest",
-      "line": 454
+      "line": 456
     },
     "command:EventImport.startProcessing": {
       "file": "events/events-extended-rules.manifest",
-      "line": 434
+      "line": 436
     },
     "command:EventImportWorkflow.cancel": {
       "file": "events/event-import-workflow.manifest",
@@ -1463,55 +1463,55 @@
     },
     "command:EventPlanningDraft.confirmDetail": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 144
+      "line": 148
     },
     "command:EventPlanningDraft.convertToEvent": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 210
+      "line": 214
     },
     "command:EventPlanningDraft.create": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 94
+      "line": 98
     },
     "command:EventPlanningDraft.expire": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 220
+      "line": 224
     },
     "command:EventPlanningDraft.markReview": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 202
+      "line": 206
     },
     "command:EventPlanningDraft.updateBudget": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 157
+      "line": 161
     },
     "command:EventPlanningDraft.updateField": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 114
+      "line": 118
     },
     "command:EventPlanningDraft.updateGuestCount": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 174
+      "line": 178
     },
     "command:EventPlanningDraft.updateMenuPreferences": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 184
+      "line": 188
     },
     "command:EventPlanningDraft.updateVenue": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 193
+      "line": 197
     },
     "command:EventProfitability.create": {
       "file": "events/event-rules.manifest",
-      "line": 336
+      "line": 348
     },
     "command:EventProfitability.recalculate": {
       "file": "events/event-rules.manifest",
-      "line": 369
+      "line": 381
     },
     "command:EventProfitability.update": {
       "file": "events/event-rules.manifest",
-      "line": 353
+      "line": 365
     },
     "command:EventReport.approve": {
       "file": "events/event-report-rules.manifest",
@@ -1575,31 +1575,31 @@
     },
     "command:EventSummary.create": {
       "file": "events/event-rules.manifest",
-      "line": 417
+      "line": 429
     },
     "command:EventSummary.refresh": {
       "file": "events/event-rules.manifest",
-      "line": 443
+      "line": 455
     },
     "command:EventSummary.update": {
       "file": "events/event-rules.manifest",
-      "line": 432
+      "line": 444
     },
     "command:EventTimeline.create": {
       "file": "events/events-extended-rules.manifest",
-      "line": 178
+      "line": 180
     },
     "command:EventTimeline.remove": {
       "file": "events/events-extended-rules.manifest",
-      "line": 204
+      "line": 206
     },
     "command:EventTimeline.reorder": {
       "file": "events/events-extended-rules.manifest",
-      "line": 199
+      "line": 201
     },
     "command:EventTimeline.update": {
       "file": "events/events-extended-rules.manifest",
-      "line": 190
+      "line": 192
     },
     "command:EventTimelineItem.blockItem": {
       "file": "events/event-automation-rules.manifest",
@@ -1659,111 +1659,111 @@
     },
     "command:Facility.create": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 72
+      "line": 86
     },
     "command:Facility.edit": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 99
+      "line": 113
     },
     "command:Facility.remove": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 91
+      "line": 105
     },
     "command:Facility.restoreFromMaintenance": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 128
+      "line": 142
     },
     "command:Facility.sendToMaintenance": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 118
+      "line": 132
     },
     "command:FacilityArea.closeForMaintenance": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 200
+      "line": 219
     },
     "command:FacilityArea.create": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 166
+      "line": 185
     },
     "command:FacilityArea.edit": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 186
+      "line": 205
     },
     "command:FacilityArea.remove": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 180
+      "line": 199
     },
     "command:FacilityArea.reopen": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 209
+      "line": 228
     },
     "command:FacilityAsset.create": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 270
+      "line": 290
     },
     "command:FacilityAsset.remove": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 289
+      "line": 309
     },
     "command:FacilityAsset.retire": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 327
+      "line": 347
     },
     "command:FacilityAsset.returnFromMaintenance": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 316
+      "line": 336
     },
     "command:FacilityAsset.sendToMaintenance": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 306
+      "line": 326
     },
     "command:FacilityAsset.update": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 295
+      "line": 315
     },
     "command:FacilitySchedule.cancel": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 442
+      "line": 462
     },
     "command:FacilitySchedule.complete": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 432
+      "line": 452
     },
     "command:FacilitySchedule.create": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 383
+      "line": 403
     },
     "command:FacilitySchedule.edit": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 406
+      "line": 426
     },
     "command:FacilitySchedule.remove": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 400
+      "line": 420
     },
     "command:FacilitySchedule.start": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 422
+      "line": 442
     },
     "command:FacilityWorkOrder.assign": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 523
+      "line": 543
     },
     "command:FacilityWorkOrder.cancel": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 559
+      "line": 579
     },
     "command:FacilityWorkOrder.complete": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 547
+      "line": 567
     },
     "command:FacilityWorkOrder.create": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 505
+      "line": 525
     },
     "command:FacilityWorkOrder.start": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 536
+      "line": 556
     },
     "command:FeatureFlag.create": {
       "file": "platform/feature-flag-rules.manifest",
@@ -1875,39 +1875,39 @@
     },
     "command:InventoryItem.adjust": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 183
+      "line": 184
     },
     "command:InventoryItem.consume": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 101
+      "line": 102
     },
     "command:InventoryItem.create": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 242
+      "line": 243
     },
     "command:InventoryItem.releaseReservation": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 223
+      "line": 224
     },
     "command:InventoryItem.reserve": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 71
+      "line": 72
     },
     "command:InventoryItem.restock": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 202
+      "line": 203
     },
     "command:InventoryItem.softDelete": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 291
+      "line": 292
     },
     "command:InventoryItem.update": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 270
+      "line": 271
     },
     "command:InventoryItem.waste": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 147
+      "line": 148
     },
     "command:InventoryStock.adjust": {
       "file": "inventory/inventory-extended-rules.manifest",
@@ -2167,27 +2167,27 @@
     },
     "command:LaborBudget.approve": {
       "file": "staff/labor-budget-rules.manifest",
-      "line": 70
+      "line": 71
     },
     "command:LaborBudget.close": {
       "file": "staff/labor-budget-rules.manifest",
-      "line": 100
+      "line": 101
     },
     "command:LaborBudget.create": {
       "file": "staff/labor-budget-rules.manifest",
-      "line": 44
+      "line": 45
     },
     "command:LaborBudget.recordActual": {
       "file": "staff/labor-budget-rules.manifest",
-      "line": 90
+      "line": 91
     },
     "command:LaborBudget.softDelete": {
       "file": "staff/labor-budget-rules.manifest",
-      "line": 109
+      "line": 110
     },
     "command:LaborBudget.update": {
       "file": "staff/labor-budget-rules.manifest",
-      "line": 57
+      "line": 58
     },
     "command:Lead.archive": {
       "file": "crm/lead-rules.manifest",
@@ -2211,79 +2211,79 @@
     },
     "command:LogisticsDispatch.assign": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 472
+      "line": 475
     },
     "command:LogisticsDispatch.deliver": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 499
+      "line": 502
     },
     "command:LogisticsDispatch.depart": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 489
+      "line": 492
     },
     "command:LogisticsDispatch.fail": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 509
+      "line": 512
     },
     "command:LogisticsDispatch.reassign": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 520
+      "line": 523
     },
     "command:LogisticsRoute.cancel": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 413
+      "line": 416
     },
     "command:LogisticsRoute.complete": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 404
+      "line": 407
     },
     "command:LogisticsRoute.completeStop": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 385
+      "line": 388
     },
     "command:LogisticsRoute.create": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 333
+      "line": 336
     },
     "command:LogisticsRoute.optimize": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 422
+      "line": 425
     },
     "command:LogisticsRoute.recordDelay": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 394
+      "line": 397
     },
     "command:LogisticsRoute.remove": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 350
+      "line": 353
     },
     "command:LogisticsRoute.start": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 375
+      "line": 378
     },
     "command:LogisticsRoute.update": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 358
+      "line": 361
     },
     "command:MaintenanceWorkOrder.assign": {
       "file": "operations/equipment-rules.manifest",
-      "line": 266
+      "line": 269
     },
     "command:MaintenanceWorkOrder.completeWork": {
       "file": "operations/equipment-rules.manifest",
-      "line": 286
+      "line": 289
     },
     "command:MaintenanceWorkOrder.create": {
       "file": "operations/equipment-rules.manifest",
-      "line": 316
+      "line": 319
     },
     "command:MaintenanceWorkOrder.startWork": {
       "file": "operations/equipment-rules.manifest",
-      "line": 278
+      "line": 281
     },
     "command:MaintenanceWorkOrder.updateStatus": {
       "file": "operations/equipment-rules.manifest",
-      "line": 297
+      "line": 300
     },
     "command:Menu.archive": {
       "file": "kitchen/menu-rules.manifest",
@@ -2347,15 +2347,15 @@
     },
     "command:Note.create": {
       "file": "events/events-extended-rules.manifest",
-      "line": 765
+      "line": 767
     },
     "command:Note.remove": {
       "file": "events/events-extended-rules.manifest",
-      "line": 783
+      "line": 785
     },
     "command:Note.update": {
       "file": "events/events-extended-rules.manifest",
-      "line": 775
+      "line": 777
     },
     "command:Notification.create": {
       "file": "platform/notification-rules.manifest",
@@ -2375,35 +2375,35 @@
     },
     "command:OnboardingCompletion.complete": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 561
+      "line": 564
     },
     "command:OnboardingCompletion.create": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 550
+      "line": 553
     },
     "command:OnboardingTask.create": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 508
+      "line": 509
     },
     "command:OnboardingTask.remove": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 530
+      "line": 531
     },
     "command:OnboardingTask.update": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 519
+      "line": 520
     },
     "command:OpenShift.cancel": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 618
+      "line": 621
     },
     "command:OpenShift.claim": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 608
+      "line": 611
     },
     "command:OpenShift.create": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 593
+      "line": 596
     },
     "command:OverrideAudit.authorize": {
       "file": "platform/override-audit-rules.manifest",
@@ -2415,43 +2415,43 @@
     },
     "command:Payment.markAcceptedNotApplied": {
       "file": "finance/payment-rules.manifest",
-      "line": 146
+      "line": 147
     },
     "command:Payment.markChargeback": {
       "file": "finance/payment-rules.manifest",
-      "line": 105
+      "line": 106
     },
     "command:Payment.markFraudFailed": {
       "file": "finance/payment-rules.manifest",
-      "line": 135
+      "line": 136
     },
     "command:Payment.markFraudPassed": {
       "file": "finance/payment-rules.manifest",
-      "line": 127
+      "line": 128
     },
     "command:Payment.markFraudReviewed": {
       "file": "finance/payment-rules.manifest",
-      "line": 120
+      "line": 121
     },
     "command:Payment.partialRefund": {
       "file": "finance/payment-rules.manifest",
-      "line": 92
+      "line": 93
     },
     "command:Payment.process": {
       "file": "finance/payment-rules.manifest",
-      "line": 62
+      "line": 63
     },
     "command:Payment.processFailed": {
       "file": "finance/payment-rules.manifest",
-      "line": 71
+      "line": 72
     },
     "command:Payment.refund": {
       "file": "finance/payment-rules.manifest",
-      "line": 78
+      "line": 79
     },
     "command:Payment.updateFraudStatus": {
       "file": "finance/payment-rules.manifest",
-      "line": 113
+      "line": 114
     },
     "command:PaymentMethod.create": {
       "file": "finance/payment-method-rules.manifest",
@@ -2499,19 +2499,19 @@
     },
     "command:PaymentRefundAttempt.create": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 784
+      "line": 788
     },
     "command:PaymentRefundAttempt.markFailed": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 802
+      "line": 806
     },
     "command:PaymentRefundAttempt.markSucceeded": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 796
+      "line": 800
     },
     "command:PayrollApprovalHistory.create": {
       "file": "staff/payroll-rules.manifest",
-      "line": 162
+      "line": 165
     },
     "command:PayrollLineItem.create": {
       "file": "staff/staff-logistics-extended-rules.manifest",
@@ -2539,23 +2539,23 @@
     },
     "command:PayrollRun.approve": {
       "file": "staff/payroll-rules.manifest",
-      "line": 234
+      "line": 240
     },
     "command:PayrollRun.create": {
       "file": "staff/payroll-rules.manifest",
-      "line": 211
+      "line": 217
     },
     "command:PayrollRun.markPaid": {
       "file": "staff/payroll-rules.manifest",
-      "line": 256
+      "line": 262
     },
     "command:PayrollRun.process": {
       "file": "staff/payroll-rules.manifest",
-      "line": 221
+      "line": 227
     },
     "command:PayrollRun.reject": {
       "file": "staff/payroll-rules.manifest",
-      "line": 245
+      "line": 251
     },
     "command:PerformancePrediction.create": {
       "file": "operations/workforce-ai-rules.manifest",
@@ -2563,19 +2563,19 @@
     },
     "command:PerformanceReview.acknowledge": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 445
+      "line": 446
     },
     "command:PerformanceReview.create": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 409
+      "line": 410
     },
     "command:PerformanceReview.signOff": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 436
+      "line": 437
     },
     "command:PerformanceReview.submit": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 424
+      "line": 425
     },
     "command:PrepComment.create": {
       "file": "kitchen/prep-comment-rules.manifest",
@@ -2815,19 +2815,19 @@
     },
     "command:PreventiveMaintenanceSchedule.complete": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 876
+      "line": 880
     },
     "command:PreventiveMaintenanceSchedule.create": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 838
+      "line": 842
     },
     "command:PreventiveMaintenanceSchedule.deactivate": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 886
+      "line": 890
     },
     "command:PreventiveMaintenanceSchedule.update": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 858
+      "line": 862
     },
     "command:PricingTier.activate": {
       "file": "finance/pricing-tier-rules.manifest",
@@ -2867,55 +2867,55 @@
     },
     "command:ProcurementBudgetAlert.acknowledge": {
       "file": "inventory/inventory-extended-rules.manifest",
-      "line": 767
+      "line": 769
     },
     "command:ProcurementBudgetAlert.create": {
       "file": "inventory/inventory-extended-rules.manifest",
-      "line": 751
+      "line": 753
     },
     "command:Proposal.accept": {
       "file": "crm/proposal-rules.manifest",
-      "line": 207
+      "line": 208
     },
     "command:Proposal.create": {
       "file": "crm/proposal-rules.manifest",
-      "line": 101
+      "line": 102
     },
     "command:Proposal.decrementLineItemCount": {
       "file": "crm/proposal-rules.manifest",
-      "line": 303
+      "line": 304
     },
     "command:Proposal.generatePublicLink": {
       "file": "crm/proposal-rules.manifest",
-      "line": 279
+      "line": 280
     },
     "command:Proposal.incrementLineItemCount": {
       "file": "crm/proposal-rules.manifest",
-      "line": 297
+      "line": 298
     },
     "command:Proposal.markViewed": {
       "file": "crm/proposal-rules.manifest",
-      "line": 198
+      "line": 199
     },
     "command:Proposal.reject": {
       "file": "crm/proposal-rules.manifest",
-      "line": 234
+      "line": 235
     },
     "command:Proposal.remove": {
       "file": "crm/proposal-rules.manifest",
-      "line": 271
+      "line": 272
     },
     "command:Proposal.send": {
       "file": "crm/proposal-rules.manifest",
-      "line": 155
+      "line": 156
     },
     "command:Proposal.update": {
       "file": "crm/proposal-rules.manifest",
-      "line": 129
+      "line": 130
     },
     "command:Proposal.withdraw": {
       "file": "crm/proposal-rules.manifest",
-      "line": 244
+      "line": 245
     },
     "command:ProposalDraft.approve": {
       "file": "ai/proposal-draft-rules.manifest",
@@ -2959,15 +2959,15 @@
     },
     "command:ProposalLineItem.create": {
       "file": "crm/proposal-rules.manifest",
-      "line": 347
+      "line": 348
     },
     "command:ProposalLineItem.remove": {
       "file": "crm/proposal-rules.manifest",
-      "line": 388
+      "line": 389
     },
     "command:ProposalLineItem.update": {
       "file": "crm/proposal-rules.manifest",
-      "line": 368
+      "line": 369
     },
     "command:ProposalTemplate.activate": {
       "file": "core/crm-admin-extended-rules.manifest",
@@ -3103,27 +3103,27 @@
     },
     "command:QACorrectiveAction.assign": {
       "file": "quality/qa-rules.manifest",
-      "line": 152
+      "line": 154
     },
     "command:QACorrectiveAction.create": {
       "file": "quality/qa-rules.manifest",
-      "line": 138
+      "line": 140
     },
     "command:QACorrectiveAction.dismiss": {
       "file": "quality/qa-rules.manifest",
-      "line": 188
+      "line": 190
     },
     "command:QACorrectiveAction.escalate": {
       "file": "quality/qa-rules.manifest",
-      "line": 163
+      "line": 165
     },
     "command:QACorrectiveAction.markResolved": {
       "file": "quality/qa-rules.manifest",
-      "line": 176
+      "line": 178
     },
     "command:QATemperatureLog.log": {
       "file": "quality/qa-rules.manifest",
-      "line": 230
+      "line": 234
     },
     "command:QualityCheck.create": {
       "file": "kitchen/kitchen-extended-rules.manifest",
@@ -3187,35 +3187,35 @@
     },
     "command:RecipeIngredient.create": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 316
+      "line": 320
     },
     "command:RecipeIngredient.remove": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 333
+      "line": 337
     },
     "command:RecipeIngredient.updateQuantity": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 282
+      "line": 286
     },
     "command:RecipeIngredient.updateWasteFactor": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 300
+      "line": 304
     },
     "command:RecipeStep.create": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 362
+      "line": 366
     },
     "command:RecipeStep.remove": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 391
+      "line": 395
     },
     "command:RecipeStep.updateInstruction": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 381
+      "line": 385
     },
     "command:RecipeVersion.approve": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 218
+      "line": 222
     },
     "command:RecipeVersion.create": {
       "file": "kitchen/recipe-rules.manifest",
@@ -3223,19 +3223,19 @@
     },
     "command:RecipeVersion.markPublished": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 189
+      "line": 193
     },
     "command:RecipeVersion.restore": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 229
+      "line": 233
     },
     "command:RecipeVersion.retract": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 199
+      "line": 203
     },
     "command:RecipeVersion.updateCosts": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 242
+      "line": 246
     },
     "command:ReorderSuggestion.accept": {
       "file": "inventory/inventory-extended-rules.manifest",
@@ -3271,75 +3271,75 @@
     },
     "command:RevenueRecognitionLine.cancel": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 289
+      "line": 290
     },
     "command:RevenueRecognitionLine.create": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 253
+      "line": 254
     },
     "command:RevenueRecognitionLine.recognize": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 272
+      "line": 273
     },
     "command:RevenueRecognitionLine.reverse": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 295
+      "line": 296
     },
     "command:RevenueRecognitionLine.skip": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 282
+      "line": 283
     },
     "command:RevenueRecognitionSchedule.adjustSchedule": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 177
+      "line": 178
     },
     "command:RevenueRecognitionSchedule.cancel": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 170
+      "line": 171
     },
     "command:RevenueRecognitionSchedule.completeIfAllMilestones": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 130
+      "line": 131
     },
     "command:RevenueRecognitionSchedule.completeIfFullyRecognized": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 112
+      "line": 113
     },
     "command:RevenueRecognitionSchedule.completeIfPercentageFull": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 149
+      "line": 150
     },
     "command:RevenueRecognitionSchedule.create": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 74
+      "line": 75
     },
     "command:RevenueRecognitionSchedule.pause": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 158
+      "line": 159
     },
     "command:RevenueRecognitionSchedule.recognizeAmount": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 103
+      "line": 104
     },
     "command:RevenueRecognitionSchedule.recognizeMilestone": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 120
+      "line": 121
     },
     "command:RevenueRecognitionSchedule.recognizePercentage": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 139
+      "line": 140
     },
     "command:RevenueRecognitionSchedule.resume": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 164
+      "line": 165
     },
     "command:RevenueRecognitionSchedule.reverseRecognition": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 189
+      "line": 190
     },
     "command:RevenueRecognitionSchedule.startRecognition": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 96
+      "line": 97
     },
     "command:RolePolicy.create": {
       "file": "platform/role-policy-rules.manifest",
@@ -3359,19 +3359,19 @@
     },
     "command:RouteStop.complete": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 747
+      "line": 751
     },
     "command:RouteStop.create": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 725
+      "line": 729
     },
     "command:RouteStop.markArrived": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 738
+      "line": 742
     },
     "command:RouteStop.reorder": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 756
+      "line": 760
     },
     "command:SampleData.clear": {
       "file": "platform/sample-data-rules.manifest",
@@ -3387,59 +3387,59 @@
     },
     "command:Schedule.approve": {
       "file": "staff/schedule-rules.manifest",
-      "line": 68
+      "line": 69
     },
     "command:Schedule.close": {
       "file": "staff/schedule-rules.manifest",
-      "line": 109
+      "line": 110
     },
     "command:Schedule.create": {
       "file": "staff/schedule-rules.manifest",
-      "line": 46
+      "line": 47
     },
     "command:Schedule.release": {
       "file": "staff/schedule-rules.manifest",
-      "line": 91
+      "line": 92
     },
     "command:Schedule.reopen": {
       "file": "staff/schedule-rules.manifest",
-      "line": 81
+      "line": 82
     },
     "command:Schedule.syncShiftCount": {
       "file": "staff/schedule-rules.manifest",
-      "line": 125
+      "line": 126
     },
     "command:Schedule.update": {
       "file": "staff/schedule-rules.manifest",
-      "line": 57
+      "line": 58
     },
     "command:ScheduleShift.acceptSwap": {
       "file": "staff/schedule-rules.manifest",
-      "line": 223
+      "line": 225
     },
     "command:ScheduleShift.cancelSwap": {
       "file": "staff/schedule-rules.manifest",
-      "line": 245
+      "line": 247
     },
     "command:ScheduleShift.create": {
       "file": "staff/schedule-rules.manifest",
-      "line": 177
+      "line": 179
     },
     "command:ScheduleShift.declineSwap": {
       "file": "staff/schedule-rules.manifest",
-      "line": 235
+      "line": 237
     },
     "command:ScheduleShift.offerSwap": {
       "file": "staff/schedule-rules.manifest",
-      "line": 209
+      "line": 211
     },
     "command:ScheduleShift.remove": {
       "file": "staff/schedule-rules.manifest",
-      "line": 254
+      "line": 256
     },
     "command:ScheduleShift.update": {
       "file": "staff/schedule-rules.manifest",
-      "line": 194
+      "line": 196
     },
     "command:SelOnboardingTrainingModuleDefinition.create": {
       "file": "staff/training-module-sel-rules.manifest",
@@ -3599,11 +3599,11 @@
     },
     "command:StaffTrainingSignal.recordSchedulabilityGranted": {
       "file": "staff/training-module-rules.manifest",
-      "line": 609
+      "line": 612
     },
     "command:StaffTrainingSignal.recordWaiverLogged": {
       "file": "staff/training-module-rules.manifest",
-      "line": 623
+      "line": 626
     },
     "command:Station.activate": {
       "file": "kitchen/station-rules.manifest",
@@ -3703,23 +3703,23 @@
     },
     "command:TimeEntry.addEntry": {
       "file": "staff/time-entry-rules.manifest",
-      "line": 77
+      "line": 78
     },
     "command:TimeEntry.applyEdit": {
       "file": "staff/time-entry-rules.manifest",
-      "line": 111
+      "line": 112
     },
     "command:TimeEntry.clockIn": {
       "file": "staff/time-entry-rules.manifest",
-      "line": 29
+      "line": 30
     },
     "command:TimeEntry.clockOut": {
       "file": "staff/time-entry-rules.manifest",
-      "line": 51
+      "line": 52
     },
     "command:TimeEntry.softDelete": {
       "file": "staff/time-entry-rules.manifest",
-      "line": 121
+      "line": 122
     },
     "command:TimeOffRequest.approve": {
       "file": "staff/time-off-request-rules.manifest",
@@ -3767,47 +3767,47 @@
     },
     "command:TimecardEditRequest.approve": {
       "file": "staff/time-entry-rules.manifest",
-      "line": 172
+      "line": 173
     },
     "command:TimecardEditRequest.create": {
       "file": "staff/time-entry-rules.manifest",
-      "line": 157
+      "line": 158
     },
     "command:TimecardEditRequest.reject": {
       "file": "staff/time-entry-rules.manifest",
-      "line": 189
+      "line": 190
     },
     "command:TimelineTask.blockTask": {
       "file": "events/events-extended-rules.manifest",
-      "line": 298
+      "line": 300
     },
     "command:TimelineTask.complete": {
       "file": "events/events-extended-rules.manifest",
-      "line": 292
+      "line": 294
     },
     "command:TimelineTask.create": {
       "file": "events/events-extended-rules.manifest",
-      "line": 275
+      "line": 277
     },
     "command:TimelineTask.reassign": {
       "file": "events/events-extended-rules.manifest",
-      "line": 316
+      "line": 318
     },
     "command:TimelineTask.remove": {
       "file": "events/events-extended-rules.manifest",
-      "line": 322
+      "line": 324
     },
     "command:TimelineTask.reorder": {
       "file": "events/events-extended-rules.manifest",
-      "line": 310
+      "line": 312
     },
     "command:TimelineTask.start": {
       "file": "events/events-extended-rules.manifest",
-      "line": 287
+      "line": 289
     },
     "command:TimelineTask.unblockTask": {
       "file": "events/events-extended-rules.manifest",
-      "line": 305
+      "line": 307
     },
     "command:TipPool.allocate": {
       "file": "staff/staff-logistics-extended-rules.manifest",
@@ -3831,107 +3831,107 @@
     },
     "command:TrainingAssignment.applyFirstShiftDueDate": {
       "file": "staff/training-module-rules.manifest",
-      "line": 498
+      "line": 501
     },
     "command:TrainingAssignment.create": {
       "file": "staff/training-module-rules.manifest",
-      "line": 403
+      "line": 406
     },
     "command:TrainingAssignment.markOverdue": {
       "file": "staff/training-module-rules.manifest",
-      "line": 512
+      "line": 515
     },
     "command:TrainingAssignment.start": {
       "file": "staff/training-module-rules.manifest",
-      "line": 426
+      "line": 429
     },
     "command:TrainingAssignment.submitFailedAttempt": {
       "file": "staff/training-module-rules.manifest",
-      "line": 459
+      "line": 462
     },
     "command:TrainingAssignment.submitFinalFailedAttempt": {
       "file": "staff/training-module-rules.manifest",
-      "line": 478
+      "line": 481
     },
     "command:TrainingAssignment.submitPassingAttempt": {
       "file": "staff/training-module-rules.manifest",
-      "line": 438
+      "line": 441
     },
     "command:TrainingAssignment.waive": {
       "file": "staff/training-module-rules.manifest",
-      "line": 527
+      "line": 530
     },
     "command:TrainingAttempt.create": {
       "file": "staff/training-module-rules.manifest",
-      "line": 571
+      "line": 574
     },
     "command:TrainingCompletion.create": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 475
+      "line": 476
     },
     "command:TrainingModule.archive": {
       "file": "staff/training-module-rules.manifest",
-      "line": 259
+      "line": 261
     },
     "command:TrainingModule.create": {
       "file": "staff/training-module-rules.manifest",
-      "line": 190
+      "line": 192
     },
     "command:TrainingModule.createVersion": {
       "file": "staff/training-module-rules.manifest",
-      "line": 247
+      "line": 249
     },
     "command:TrainingModule.markPublished": {
       "file": "staff/training-module-rules.manifest",
-      "line": 234
+      "line": 236
     },
     "command:TrainingModule.softDelete": {
       "file": "staff/training-module-rules.manifest",
-      "line": 281
+      "line": 283
     },
     "command:TrainingModule.unarchive": {
       "file": "staff/training-module-rules.manifest",
-      "line": 271
+      "line": 273
     },
     "command:TrainingModule.update": {
       "file": "staff/training-module-rules.manifest",
-      "line": 214
+      "line": 216
     },
     "command:TrainingQuestion.create": {
       "file": "staff/training-module-rules.manifest",
-      "line": 321
+      "line": 323
     },
     "command:TrainingQuestion.deactivate": {
       "file": "staff/training-module-rules.manifest",
-      "line": 344
+      "line": 346
     },
     "command:User.create": {
       "file": "platform/user-rules.manifest",
-      "line": 35
+      "line": 65
     },
     "command:User.deactivate": {
       "file": "platform/user-rules.manifest",
-      "line": 71
+      "line": 101
     },
     "command:User.reactivate": {
       "file": "platform/user-rules.manifest",
-      "line": 116
+      "line": 146
     },
     "command:User.softDelete": {
       "file": "platform/user-rules.manifest",
-      "line": 125
+      "line": 155
     },
     "command:User.terminate": {
       "file": "platform/user-rules.manifest",
-      "line": 79
+      "line": 109
     },
     "command:User.update": {
       "file": "platform/user-rules.manifest",
-      "line": 56
+      "line": 86
     },
     "command:User.updateRole": {
       "file": "platform/user-rules.manifest",
-      "line": 97
+      "line": 127
     },
     "command:VarianceReport.approve": {
       "file": "inventory/cycle-count-rules.manifest",
@@ -3955,35 +3955,35 @@
     },
     "command:Vehicle.create": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 181
+      "line": 185
     },
     "command:Vehicle.decommission": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 246
+      "line": 250
     },
     "command:Vehicle.remove": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 199
+      "line": 203
     },
     "command:Vehicle.returnFromMaintenance": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 237
+      "line": 241
     },
     "command:Vehicle.sendToMaintenance": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 227
+      "line": 231
     },
     "command:Vehicle.setAvailable": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 268
+      "line": 272
     },
     "command:Vehicle.setInUse": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 258
+      "line": 262
     },
     "command:Vehicle.update": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 208
+      "line": 212
     },
     "command:Vendor.addContact": {
       "file": "procurement/vendor-rules.manifest",
@@ -4103,43 +4103,43 @@
     },
     "command:Venue.activate": {
       "file": "events/events-extended-rules.manifest",
-      "line": 89
+      "line": 91
     },
     "command:Venue.create": {
       "file": "events/events-extended-rules.manifest",
-      "line": 41
+      "line": 43
     },
     "command:Venue.deactivate": {
       "file": "events/events-extended-rules.manifest",
-      "line": 94
+      "line": 96
     },
     "command:Venue.softDelete": {
       "file": "events/events-extended-rules.manifest",
-      "line": 110
+      "line": 112
     },
     "command:Venue.update": {
       "file": "events/events-extended-rules.manifest",
-      "line": 66
+      "line": 68
     },
     "command:Venue.updateCapacity": {
       "file": "events/events-extended-rules.manifest",
-      "line": 99
+      "line": 101
     },
     "command:VersionApproval.approve": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 203
+      "line": 204
     },
     "command:VersionApproval.cancel": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 223
+      "line": 224
     },
     "command:VersionApproval.create": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 191
+      "line": 192
     },
     "command:VersionApproval.reject": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 213
+      "line": 214
     },
     "command:VersionedEntity.lock": {
       "file": "integrations/version-control-rules.manifest",
@@ -4239,23 +4239,23 @@
     },
     "constraint:ActionMilestone.requireTitle": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 343
+      "line": 344
     },
     "constraint:ActionMilestone.validStatus": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 342
+      "line": 343
     },
     "constraint:AdminChatMessage.requireAuthor": {
       "file": "core/crm-admin-extended-rules.manifest",
-      "line": 477
+      "line": 482
     },
     "constraint:AdminChatMessage.requireText": {
       "file": "core/crm-admin-extended-rules.manifest",
-      "line": 478
+      "line": 483
     },
     "constraint:AdminChatMessage.requireThreadId": {
       "file": "core/crm-admin-extended-rules.manifest",
-      "line": 476
+      "line": 481
     },
     "constraint:AdminTask.requireTitle": {
       "file": "core/admin-task-rules.manifest",
@@ -4335,15 +4335,15 @@
     },
     "constraint:AuditSchedule.requireName": {
       "file": "inventory/inventory-extended-rules.manifest",
-      "line": 799
+      "line": 801
     },
     "constraint:AuditSchedule.validFrequency": {
       "file": "inventory/inventory-extended-rules.manifest",
-      "line": 800
+      "line": 802
     },
     "constraint:AuditSchedule.warnInactive": {
       "file": "inventory/inventory-extended-rules.manifest",
-      "line": 802
+      "line": 804
     },
     "constraint:AutomatedFollowup.validStatus": {
       "file": "events/event-automation-rules.manifest",
@@ -4375,27 +4375,27 @@
     },
     "constraint:BoardAnnotation.requireBoard": {
       "file": "events/events-extended-rules.manifest",
-      "line": 700
+      "line": 702
     },
     "constraint:BoardProjection.positiveHeight": {
       "file": "events/events-extended-rules.manifest",
-      "line": 616
+      "line": 618
     },
     "constraint:BoardProjection.positiveWidth": {
       "file": "events/events-extended-rules.manifest",
-      "line": 615
+      "line": 617
     },
     "constraint:BoardProjection.requireBoard": {
       "file": "events/events-extended-rules.manifest",
-      "line": 612
+      "line": 614
     },
     "constraint:BoardProjection.requireEntityId": {
       "file": "events/events-extended-rules.manifest",
-      "line": 614
+      "line": 616
     },
     "constraint:BoardProjection.requireEntityType": {
       "file": "events/events-extended-rules.manifest",
-      "line": 613
+      "line": 615
     },
     "constraint:Budget.blockApproveZero": {
       "file": "finance/budget-rules.manifest",
@@ -4423,39 +4423,39 @@
     },
     "constraint:BudgetAlert.validAlertType": {
       "file": "staff/labor-budget-rules.manifest",
-      "line": 136
+      "line": 137
     },
     "constraint:BudgetLineItem.positiveActualAmount": {
       "file": "events/event-budget-rules.manifest",
-      "line": 157
+      "line": 158
     },
     "constraint:BudgetLineItem.positiveBudgetedAmount": {
       "file": "events/event-budget-rules.manifest",
-      "line": 156
+      "line": 157
     },
     "constraint:BudgetLineItem.positiveSortOrder": {
       "file": "events/event-budget-rules.manifest",
-      "line": 158
+      "line": 159
     },
     "constraint:BudgetLineItem.validBudgetId": {
       "file": "events/event-budget-rules.manifest",
-      "line": 153
+      "line": 154
     },
     "constraint:BudgetLineItem.validCategory": {
       "file": "events/event-budget-rules.manifest",
-      "line": 154
+      "line": 155
     },
     "constraint:BudgetLineItem.validName": {
       "file": "events/event-budget-rules.manifest",
-      "line": 155
+      "line": 156
     },
     "constraint:BudgetLineItem.warnOverBudgetItem": {
       "file": "events/event-budget-rules.manifest",
-      "line": 162
+      "line": 163
     },
     "constraint:BudgetLineItem.warnSignificantOverage": {
       "file": "events/event-budget-rules.manifest",
-      "line": 196
+      "line": 197
     },
     "constraint:BulkCombineRule.requireMatchCriteria": {
       "file": "kitchen/kitchen-extended-rules.manifest",
@@ -4559,43 +4559,43 @@
     },
     "constraint:Client.validClientType": {
       "file": "crm/client-rules.manifest",
-      "line": 64
+      "line": 72
     },
     "constraint:Client.validPaymentTerms": {
       "file": "crm/client-rules.manifest",
-      "line": 65
+      "line": 73
     },
     "constraint:Client.warnArchiveWithAssignment": {
       "file": "crm/client-rules.manifest",
-      "line": 144
+      "line": 152
     },
     "constraint:Client.warnNoEmail": {
       "file": "crm/client-rules.manifest",
-      "line": 67
+      "line": 75
     },
     "constraint:Client.warnNoSource": {
       "file": "crm/client-rules.manifest",
-      "line": 75
+      "line": 83
     },
     "constraint:ClientContact.validClientId": {
       "file": "crm/client-rules.manifest",
-      "line": 185
+      "line": 193
     },
     "constraint:ClientContact.validFirstName": {
       "file": "crm/client-rules.manifest",
-      "line": 186
+      "line": 194
     },
     "constraint:ClientContact.validLastName": {
       "file": "crm/client-rules.manifest",
-      "line": 187
+      "line": 195
     },
     "constraint:ClientContact.warnNoContactInfo": {
       "file": "crm/client-rules.manifest",
-      "line": 191
+      "line": 200
     },
     "constraint:ClientContact.warnRemovePrimary": {
       "file": "crm/client-rules.manifest",
-      "line": 237
+      "line": 246
     },
     "constraint:ClientInteraction.validEmployeeId": {
       "file": "crm/client-interaction-rules.manifest",
@@ -4607,11 +4607,11 @@
     },
     "constraint:ClientInteraction.validPriority": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 47
+      "line": 48
     },
     "constraint:ClientInteraction.validStatus": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 46
+      "line": 47
     },
     "constraint:ClientInteraction.validSubject": {
       "file": "crm/client-interaction-rules.manifest",
@@ -4619,59 +4619,59 @@
     },
     "constraint:ClientInteraction.warnNoClientOrLead": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 37
+      "line": 38
     },
     "constraint:ClientInteraction.warnNoFollowUp": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 117
+      "line": 118
     },
     "constraint:ClientInteraction.warnOverdueFollowUp": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 54
+      "line": 55
     },
     "constraint:ClientInteraction.warnPastFollowUp": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 70
+      "line": 71
     },
     "constraint:ClientPreference.validClientId": {
       "file": "crm/client-rules.manifest",
-      "line": 271
+      "line": 280
     },
     "constraint:ClientPreference.validPreferenceKey": {
       "file": "crm/client-rules.manifest",
-      "line": 273
+      "line": 282
     },
     "constraint:ClientPreference.validPreferenceType": {
       "file": "crm/client-rules.manifest",
-      "line": 272
+      "line": 281
     },
     "constraint:CollectionAction.valid_direction": {
       "file": "finance/collections-rules.manifest",
-      "line": 289
+      "line": 291
     },
     "constraint:CollectionAction.valid_status": {
       "file": "finance/collections-rules.manifest",
-      "line": 290
+      "line": 292
     },
     "constraint:CollectionCase.amount_positive": {
       "file": "finance/collections-rules.manifest",
-      "line": 68
+      "line": 70
     },
     "constraint:CollectionCase.collected_valid": {
       "file": "finance/collections-rules.manifest",
-      "line": 69
+      "line": 71
     },
     "constraint:CollectionPaymentPlan.amount_positive": {
       "file": "finance/collections-rules.manifest",
-      "line": 367
+      "line": 369
     },
     "constraint:CollectionPaymentPlan.completed_valid": {
       "file": "finance/collections-rules.manifest",
-      "line": 369
+      "line": 371
     },
     "constraint:CollectionPaymentPlan.installments_valid": {
       "file": "finance/collections-rules.manifest",
-      "line": 368
+      "line": 370
     },
     "constraint:CommandBoard.validName": {
       "file": "events/command-board-rules.manifest",
@@ -4691,83 +4691,83 @@
     },
     "constraint:CommandBoardCard.positiveHeight": {
       "file": "events/command-board-rules.manifest",
-      "line": 118
+      "line": 124
     },
     "constraint:CommandBoardCard.positiveWidth": {
       "file": "events/command-board-rules.manifest",
-      "line": 117
+      "line": 123
     },
     "constraint:CommandBoardCard.validBoardId": {
       "file": "events/command-board-rules.manifest",
-      "line": 114
+      "line": 120
     },
     "constraint:CommandBoardCard.validCardType": {
       "file": "events/command-board-rules.manifest",
-      "line": 115
+      "line": 121
     },
     "constraint:CommandBoardCard.validStatus": {
       "file": "events/command-board-rules.manifest",
-      "line": 116
+      "line": 122
     },
     "constraint:CommandBoardCard.validTitle": {
       "file": "events/command-board-rules.manifest",
-      "line": 113
+      "line": 119
     },
     "constraint:CommandBoardCard.warnStatusChange": {
       "file": "events/command-board-rules.manifest",
-      "line": 139
+      "line": 145
     },
     "constraint:CommandBoardConnection.noSelfConnection": {
       "file": "events/command-board-rules.manifest",
-      "line": 266
+      "line": 273
     },
     "constraint:CommandBoardConnection.validBoardId": {
       "file": "events/command-board-rules.manifest",
-      "line": 263
+      "line": 270
     },
     "constraint:CommandBoardConnection.validFromCardId": {
       "file": "events/command-board-rules.manifest",
-      "line": 264
+      "line": 271
     },
     "constraint:CommandBoardConnection.validRelationshipType": {
       "file": "events/command-board-rules.manifest",
-      "line": 267
+      "line": 274
     },
     "constraint:CommandBoardConnection.validToCardId": {
       "file": "events/command-board-rules.manifest",
-      "line": 265
+      "line": 272
     },
     "constraint:CommandBoardGroup.positiveHeight": {
       "file": "events/command-board-rules.manifest",
-      "line": 212
+      "line": 218
     },
     "constraint:CommandBoardGroup.positiveWidth": {
       "file": "events/command-board-rules.manifest",
-      "line": 211
+      "line": 217
     },
     "constraint:CommandBoardGroup.validBoardId": {
       "file": "events/command-board-rules.manifest",
-      "line": 210
+      "line": 216
     },
     "constraint:CommandBoardGroup.validName": {
       "file": "events/command-board-rules.manifest",
-      "line": 209
+      "line": 215
     },
     "constraint:CommandBoardLayout.positiveGridSize": {
       "file": "events/command-board-rules.manifest",
-      "line": 311
+      "line": 318
     },
     "constraint:CommandBoardLayout.validBoardId": {
       "file": "events/command-board-rules.manifest",
-      "line": 309
+      "line": 316
     },
     "constraint:CommandBoardLayout.validName": {
       "file": "events/command-board-rules.manifest",
-      "line": 308
+      "line": 315
     },
     "constraint:CommandBoardLayout.validUserId": {
       "file": "events/command-board-rules.manifest",
-      "line": 310
+      "line": 317
     },
     "constraint:Container.positivePortions": {
       "file": "core/container-rules.manifest",
@@ -4791,15 +4791,15 @@
     },
     "constraint:ContractSignature.requireContract": {
       "file": "events/event-contract-rules.manifest",
-      "line": 151
+      "line": 153
     },
     "constraint:ContractSignature.requireSignatureData": {
       "file": "events/event-contract-rules.manifest",
-      "line": 152
+      "line": 154
     },
     "constraint:ContractSignature.requireSignerName": {
       "file": "events/event-contract-rules.manifest",
-      "line": 153
+      "line": 155
     },
     "constraint:CorrectiveAction.requireDescription": {
       "file": "kitchen/kitchen-extended-rules.manifest",
@@ -4867,15 +4867,15 @@
     },
     "constraint:DeliveryRoute.distancePositive": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 648
+      "line": 651
     },
     "constraint:DeliveryRoute.requireName": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 647
+      "line": 650
     },
     "constraint:DeliveryRoute.validStatus": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 646
+      "line": 649
     },
     "constraint:DisciplinaryAction.requireActionType": {
       "file": "staff/staff-logistics-extended-rules.manifest",
@@ -4895,59 +4895,59 @@
     },
     "constraint:Dish.leadDaysOrder": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 57
+      "line": 58
     },
     "constraint:Dish.positiveCost": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 54
+      "line": 55
     },
     "constraint:Dish.positiveMaxLeadDays": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 56
+      "line": 57
     },
     "constraint:Dish.positiveMinLeadDays": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 55
+      "line": 56
     },
     "constraint:Dish.positivePrice": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 53
+      "line": 54
     },
     "constraint:Dish.validName": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 52
+      "line": 53
     },
     "constraint:Dish.validSeasonMonths": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 58
+      "line": 59
     },
     "constraint:Dish.warnActiveMenu": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 150
+      "line": 151
     },
     "constraint:Dish.warnCostExceedsPrice": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 60
+      "line": 61
     },
     "constraint:Dish.warnLongLeadTime": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 68
+      "line": 69
     },
     "constraint:Dish.warnLowMargin": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 83
+      "line": 84
     },
     "constraint:Dish.warnMarginBelowThreshold": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 177
+      "line": 178
     },
     "constraint:Dish.warnNoPrice": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 75
+      "line": 76
     },
     "constraint:Dish.warnPriceDecrease": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 169
+      "line": 170
     },
     "constraint:Document.positiveFileSize": {
       "file": "core/crm-admin-extended-rules.manifest",
@@ -5047,23 +5047,23 @@
     },
     "constraint:EmployeeDeduction.nonNegativeAmount": {
       "file": "staff/payroll-rules.manifest",
-      "line": 98
+      "line": 101
     },
     "constraint:EmployeeDeduction.requireEmployee": {
       "file": "staff/payroll-rules.manifest",
-      "line": 95
+      "line": 98
     },
     "constraint:EmployeeDeduction.requireName": {
       "file": "staff/payroll-rules.manifest",
-      "line": 97
+      "line": 100
     },
     "constraint:EmployeeDeduction.requireType": {
       "file": "staff/payroll-rules.manifest",
-      "line": 96
+      "line": 99
     },
     "constraint:EmployeeDeduction.validPercentage": {
       "file": "staff/payroll-rules.manifest",
-      "line": 99
+      "line": 102
     },
     "constraint:EntityVersion.validChangeType": {
       "file": "integrations/version-control-rules.manifest",
@@ -5083,123 +5083,123 @@
     },
     "constraint:Equipment.positiveMaintenanceInterval": {
       "file": "operations/equipment-rules.manifest",
-      "line": 54
+      "line": 57
     },
     "constraint:Equipment.positiveMaxUsage": {
       "file": "operations/equipment-rules.manifest",
-      "line": 55
+      "line": 58
     },
     "constraint:Equipment.validCondition": {
       "file": "operations/equipment-rules.manifest",
-      "line": 53
+      "line": 56
     },
     "constraint:Equipment.validEquipmentType": {
       "file": "operations/equipment-rules.manifest",
-      "line": 51
+      "line": 54
     },
     "constraint:Equipment.validStatus": {
       "file": "operations/equipment-rules.manifest",
-      "line": 52
+      "line": 55
     },
     "constraint:Equipment.warnConditionDegraded": {
       "file": "operations/equipment-rules.manifest",
-      "line": 146
+      "line": 149
     },
     "constraint:Equipment.warnConflictWithEvents": {
       "file": "operations/equipment-rules.manifest",
-      "line": 99
+      "line": 102
     },
     "constraint:Equipment.warnDeactivateActiveEquipment": {
       "file": "operations/equipment-rules.manifest",
-      "line": 128
+      "line": 131
     },
     "constraint:Equipment.warnHighUsage": {
       "file": "operations/equipment-rules.manifest",
-      "line": 75
+      "line": 78
     },
     "constraint:Equipment.warnMaintenanceDue": {
       "file": "operations/equipment-rules.manifest",
-      "line": 57
+      "line": 60
     },
     "constraint:Equipment.warnOverdueMaintenance": {
       "file": "operations/equipment-rules.manifest",
-      "line": 66
+      "line": 69
     },
     "constraint:Equipment.warnPoorCondition": {
       "file": "operations/equipment-rules.manifest",
-      "line": 85
+      "line": 88
     },
     "constraint:Equipment.warnRetireFunctionalEquipment": {
       "file": "operations/equipment-rules.manifest",
-      "line": 198
+      "line": 201
     },
     "constraint:Event.blockNoGuestCount": {
       "file": "events/event-rules.manifest",
-      "line": 158
+      "line": 170
     },
     "constraint:Event.positiveGuestCount": {
       "file": "events/event-rules.manifest",
-      "line": 75
+      "line": 87
     },
     "constraint:Event.validEventType": {
       "file": "events/event-rules.manifest",
-      "line": 73
+      "line": 85
     },
     "constraint:Event.validStatus": {
       "file": "events/event-rules.manifest",
-      "line": 74
+      "line": 86
     },
     "constraint:Event.validTitle": {
       "file": "events/event-rules.manifest",
-      "line": 72
+      "line": 84
     },
     "constraint:Event.warnLargeGuestCount": {
       "file": "events/event-rules.manifest",
-      "line": 77
+      "line": 89
     },
     "constraint:Event.warnLargeGuestCountChange": {
       "file": "events/event-rules.manifest",
-      "line": 205
+      "line": 217
     },
     "constraint:Event.warnLocationChange": {
       "file": "events/event-rules.manifest",
-      "line": 235
+      "line": 247
     },
     "constraint:EventBudget.blockFinalizeHighVariance": {
       "file": "events/event-budget-rules.manifest",
-      "line": 111
+      "line": 112
     },
     "constraint:EventBudget.blockNoLineItems": {
       "file": "events/event-budget-rules.manifest",
-      "line": 97
+      "line": 98
     },
     "constraint:EventBudget.positiveBudget": {
       "file": "events/event-budget-rules.manifest",
-      "line": 27
+      "line": 28
     },
     "constraint:EventBudget.validEventId": {
       "file": "events/event-budget-rules.manifest",
-      "line": 25
+      "line": 26
     },
     "constraint:EventBudget.validStatus": {
       "file": "events/event-budget-rules.manifest",
-      "line": 26
+      "line": 27
     },
     "constraint:EventBudget.warnBudgetIncrease": {
       "file": "events/event-budget-rules.manifest",
-      "line": 78
+      "line": 79
     },
     "constraint:EventBudget.warnBudgetOverrunRisk": {
       "file": "events/event-budget-rules.manifest",
-      "line": 42
+      "line": 43
     },
     "constraint:EventBudget.warnFinalizeWithVariance": {
       "file": "events/event-budget-rules.manifest",
-      "line": 121
+      "line": 122
     },
     "constraint:EventBudget.warnHighVariance": {
       "file": "events/event-budget-rules.manifest",
-      "line": 50
+      "line": 51
     },
     "constraint:EventContract.requireClient": {
       "file": "events/event-contract-rules.manifest",
@@ -5227,15 +5227,15 @@
     },
     "constraint:EventFollowup.requireEvent": {
       "file": "events/events-extended-rules.manifest",
-      "line": 522
+      "line": 524
     },
     "constraint:EventFollowup.requireType": {
       "file": "events/events-extended-rules.manifest",
-      "line": 523
+      "line": 525
     },
     "constraint:EventFollowup.validStatus": {
       "file": "events/events-extended-rules.manifest",
-      "line": 524
+      "line": 526
     },
     "constraint:EventGuest.requireEvent": {
       "file": "events/event-guest-rules.manifest",
@@ -5247,23 +5247,23 @@
     },
     "constraint:EventImport.nonNegativeImportedRows": {
       "file": "events/events-extended-rules.manifest",
-      "line": 418
+      "line": 420
     },
     "constraint:EventImport.nonNegativeRows": {
       "file": "events/events-extended-rules.manifest",
-      "line": 417
+      "line": 419
     },
     "constraint:EventImport.requireFileName": {
       "file": "events/events-extended-rules.manifest",
-      "line": 415
+      "line": 417
     },
     "constraint:EventImport.requireFileType": {
       "file": "events/events-extended-rules.manifest",
-      "line": 414
+      "line": 416
     },
     "constraint:EventImport.validStatus": {
       "file": "events/events-extended-rules.manifest",
-      "line": 416
+      "line": 418
     },
     "constraint:EventImportWorkflow.hasIdempotencyKey": {
       "file": "events/event-import-workflow.manifest",
@@ -5295,7 +5295,7 @@
     },
     "constraint:EventPlanningDraft.warnInvalidBudget": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 160
+      "line": 164
     },
     "constraint:EventPlanningDraft.warnLowConfidence": {
       "file": "ai/event-planning-draft-rules.manifest",
@@ -5303,7 +5303,7 @@
     },
     "constraint:EventPlanningDraft.warnLowConfidenceUpdate": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 118
+      "line": 122
     },
     "constraint:EventPlanningDraft.warnMissingClientName": {
       "file": "ai/event-planning-draft-rules.manifest",
@@ -5319,15 +5319,15 @@
     },
     "constraint:EventProfitability.validEventId": {
       "file": "events/event-rules.manifest",
-      "line": 316
+      "line": 328
     },
     "constraint:EventProfitability.warnHighCostVariance": {
       "file": "events/event-rules.manifest",
-      "line": 326
+      "line": 338
     },
     "constraint:EventProfitability.warnNegativeMargin": {
       "file": "events/event-rules.manifest",
-      "line": 318
+      "line": 330
     },
     "constraint:EventReport.validCompletion": {
       "file": "events/event-report-rules.manifest",
@@ -5367,19 +5367,19 @@
     },
     "constraint:EventSummary.validEventId": {
       "file": "events/event-rules.manifest",
-      "line": 414
+      "line": 426
     },
     "constraint:EventTimeline.positiveDuration": {
       "file": "events/events-extended-rules.manifest",
-      "line": 173
+      "line": 175
     },
     "constraint:EventTimeline.requireDescription": {
       "file": "events/events-extended-rules.manifest",
-      "line": 172
+      "line": 174
     },
     "constraint:EventTimeline.requireEvent": {
       "file": "events/events-extended-rules.manifest",
-      "line": 171
+      "line": 173
     },
     "constraint:EventTimelineItem.validItemType": {
       "file": "events/event-automation-rules.manifest",
@@ -5403,59 +5403,59 @@
     },
     "constraint:Facility.validFacilityType": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 53
+      "line": 67
     },
     "constraint:Facility.validStatus": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 54
+      "line": 68
     },
     "constraint:FacilityArea.validAreaType": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 151
+      "line": 165
     },
     "constraint:FacilityArea.validStatus": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 154
+      "line": 173
     },
     "constraint:FacilityAsset.validAssetType": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 244
+      "line": 263
     },
     "constraint:FacilityAsset.validStatus": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 248
+      "line": 268
     },
     "constraint:FacilityAsset.warnMaintenanceOverdue": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 261
+      "line": 281
     },
     "constraint:FacilityAsset.warnRetireOperational": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 331
+      "line": 351
     },
     "constraint:FacilitySchedule.validScheduleType": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 366
+      "line": 386
     },
     "constraint:FacilitySchedule.validStatus": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 370
+      "line": 390
     },
     "constraint:FacilityWorkOrder.validCategory": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 480
+      "line": 500
     },
     "constraint:FacilityWorkOrder.validPriority": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 478
+      "line": 498
     },
     "constraint:FacilityWorkOrder.validStatus": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 479
+      "line": 499
     },
     "constraint:FacilityWorkOrder.warnOverdue": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 486
+      "line": 506
     },
     "constraint:FeatureFlag.requireFlagKey": {
       "file": "platform/feature-flag-rules.manifest",
@@ -5547,47 +5547,47 @@
     },
     "constraint:InventoryItem.blockInsufficientForWaste": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 155
+      "line": 156
     },
     "constraint:InventoryItem.blockInsufficientStock": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 110
+      "line": 111
     },
     "constraint:InventoryItem.infoConsumed": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 131
+      "line": 132
     },
     "constraint:InventoryItem.infoRestocked": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 206
+      "line": 207
     },
     "constraint:InventoryItem.warnBelowPar": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 60
+      "line": 61
     },
     "constraint:InventoryItem.warnBelowParAfterConsume": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 121
+      "line": 122
     },
     "constraint:InventoryItem.warnBelowParAfterReserve": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 86
+      "line": 87
     },
     "constraint:InventoryItem.warnHighWaste": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 166
+      "line": 167
     },
     "constraint:InventoryItem.warnLargeNegativeAdjustment": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 186
+      "line": 187
     },
     "constraint:InventoryItem.warnReleaseExceedsReserved": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 227
+      "line": 228
     },
     "constraint:InventoryItem.warnStockoutRisk": {
       "file": "inventory/inventory-rules.manifest",
-      "line": 75
+      "line": 76
     },
     "constraint:InventoryStock.blockNegativeResult": {
       "file": "inventory/inventory-extended-rules.manifest",
@@ -5735,19 +5735,19 @@
     },
     "constraint:LaborBudget.blockApproveZero": {
       "file": "staff/labor-budget-rules.manifest",
-      "line": 75
+      "line": 76
     },
     "constraint:LaborBudget.positiveBudget": {
       "file": "staff/labor-budget-rules.manifest",
-      "line": 27
+      "line": 28
     },
     "constraint:LaborBudget.validStatus": {
       "file": "staff/labor-budget-rules.manifest",
-      "line": 26
+      "line": 27
     },
     "constraint:LaborBudget.warnOverBudget": {
       "file": "staff/labor-budget-rules.manifest",
-      "line": 33
+      "line": 34
     },
     "constraint:Lead.blockAlreadyConverted": {
       "file": "crm/lead-rules.manifest",
@@ -5799,39 +5799,39 @@
     },
     "constraint:LogisticsDispatch.validPriority": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 452
+      "line": 455
     },
     "constraint:LogisticsDispatch.validStatus": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 451
+      "line": 454
     },
     "constraint:LogisticsRoute.validStatus": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 318
+      "line": 322
     },
     "constraint:MaintenanceWorkOrder.validPriority": {
       "file": "operations/equipment-rules.manifest",
-      "line": 252
+      "line": 255
     },
     "constraint:MaintenanceWorkOrder.validStatus": {
       "file": "operations/equipment-rules.manifest",
-      "line": 253
+      "line": 256
     },
     "constraint:MaintenanceWorkOrder.validWorkOrderType": {
       "file": "operations/equipment-rules.manifest",
-      "line": 251
+      "line": 254
     },
     "constraint:MaintenanceWorkOrder.warnCancelWorkOrder": {
       "file": "operations/equipment-rules.manifest",
-      "line": 301
+      "line": 304
     },
     "constraint:MaintenanceWorkOrder.warnCriticalWithoutSchedule": {
       "file": "operations/equipment-rules.manifest",
-      "line": 321
+      "line": 324
     },
     "constraint:MaintenanceWorkOrder.warnOverdueWorkOrder": {
       "file": "operations/equipment-rules.manifest",
-      "line": 255
+      "line": 258
     },
     "constraint:Menu.positiveMinGuests": {
       "file": "kitchen/menu-rules.manifest",
@@ -5911,7 +5911,7 @@
     },
     "constraint:Note.requireTitle": {
       "file": "events/events-extended-rules.manifest",
-      "line": 762
+      "line": 764
     },
     "constraint:Notification.validNotificationType": {
       "file": "platform/notification-rules.manifest",
@@ -5931,15 +5931,15 @@
     },
     "constraint:OnboardingTask.requireTitle": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 505
+      "line": 506
     },
     "constraint:OpenShift.requireRole": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 585
+      "line": 588
     },
     "constraint:OpenShift.validStatus": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 584
+      "line": 587
     },
     "constraint:OverrideAudit.cannotAuthorizeTwice": {
       "file": "platform/override-audit-rules.manifest",
@@ -5967,11 +5967,11 @@
     },
     "constraint:Payment.amount_positive": {
       "file": "finance/payment-rules.manifest",
-      "line": 50
+      "line": 51
     },
     "constraint:Payment.valid_currency": {
       "file": "finance/payment-rules.manifest",
-      "line": 51
+      "line": 52
     },
     "constraint:PaymentMethod.default_for_active_only": {
       "file": "finance/payment-method-rules.manifest",
@@ -5979,7 +5979,7 @@
     },
     "constraint:PaymentRefundAttempt.requestedAmountPositive": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 779
+      "line": 783
     },
     "constraint:PayrollLineItem.grossPayPositive": {
       "file": "staff/staff-logistics-extended-rules.manifest",
@@ -5999,7 +5999,7 @@
     },
     "constraint:PayrollRun.validStatus": {
       "file": "staff/payroll-rules.manifest",
-      "line": 206
+      "line": 209
     },
     "constraint:PerformancePrediction.validConfidence": {
       "file": "operations/workforce-ai-rules.manifest",
@@ -6015,11 +6015,11 @@
     },
     "constraint:PerformanceReview.validRating": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 403
+      "line": 404
     },
     "constraint:PerformanceReview.validStatus": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 402
+      "line": 403
     },
     "constraint:PrepComment.blockDeleteIfResolved": {
       "file": "kitchen/prep-comment-rules.manifest",
@@ -6219,11 +6219,11 @@
     },
     "constraint:PreventiveMaintenanceSchedule.requireFrequency": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 832
+      "line": 836
     },
     "constraint:PreventiveMaintenanceSchedule.requireTitle": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 831
+      "line": 835
     },
     "constraint:PricingTier.requireMinQuantity": {
       "file": "finance/pricing-tier-rules.manifest",
@@ -6279,35 +6279,35 @@
     },
     "constraint:ProcurementBudgetAlert.validThreshold": {
       "file": "inventory/inventory-extended-rules.manifest",
-      "line": 748
+      "line": 750
     },
     "constraint:Proposal.blockAlreadyAccepted": {
       "file": "crm/proposal-rules.manifest",
-      "line": 250
+      "line": 251
     },
     "constraint:Proposal.blockAlreadyWithdrawn": {
       "file": "crm/proposal-rules.manifest",
-      "line": 259
+      "line": 260
     },
     "constraint:Proposal.blockExpired": {
       "file": "crm/proposal-rules.manifest",
-      "line": 219
+      "line": 220
     },
     "constraint:Proposal.blockNoLineItems": {
       "file": "crm/proposal-rules.manifest",
-      "line": 167
+      "line": 168
     },
     "constraint:Proposal.positiveSubtotal": {
       "file": "crm/proposal-rules.manifest",
-      "line": 66
+      "line": 67
     },
     "constraint:Proposal.positiveTaxRate": {
       "file": "crm/proposal-rules.manifest",
-      "line": 67
+      "line": 68
     },
     "constraint:Proposal.positiveTotal": {
       "file": "crm/proposal-rules.manifest",
-      "line": 68
+      "line": 69
     },
     "constraint:Proposal.validProposalNumber": {
       "file": "crm/proposal-rules.manifest",
@@ -6323,19 +6323,19 @@
     },
     "constraint:Proposal.warnExpiringSoon": {
       "file": "crm/proposal-rules.manifest",
-      "line": 74
+      "line": 75
     },
     "constraint:Proposal.warnNoClient": {
       "file": "crm/proposal-rules.manifest",
-      "line": 104
+      "line": 105
     },
     "constraint:Proposal.warnNoValidUntil": {
       "file": "crm/proposal-rules.manifest",
-      "line": 175
+      "line": 176
     },
     "constraint:Proposal.warnZeroTotal": {
       "file": "crm/proposal-rules.manifest",
-      "line": 184
+      "line": 185
     },
     "constraint:ProposalDraft.positiveDepositAmount": {
       "file": "ai/proposal-draft-rules.manifest",
@@ -6371,27 +6371,27 @@
     },
     "constraint:ProposalLineItem.positiveQuantity": {
       "file": "crm/proposal-rules.manifest",
-      "line": 333
+      "line": 334
     },
     "constraint:ProposalLineItem.positiveSortOrder": {
       "file": "crm/proposal-rules.manifest",
-      "line": 335
+      "line": 336
     },
     "constraint:ProposalLineItem.positiveUnitPrice": {
       "file": "crm/proposal-rules.manifest",
-      "line": 334
+      "line": 335
     },
     "constraint:ProposalLineItem.validDescription": {
       "file": "crm/proposal-rules.manifest",
-      "line": 330
+      "line": 331
     },
     "constraint:ProposalLineItem.validProposalId": {
       "file": "crm/proposal-rules.manifest",
-      "line": 329
+      "line": 330
     },
     "constraint:ProposalLineItem.warnZeroPrice": {
       "file": "crm/proposal-rules.manifest",
-      "line": 337
+      "line": 338
     },
     "constraint:ProposalTemplate.requireName": {
       "file": "core/crm-admin-extended-rules.manifest",
@@ -6463,15 +6463,15 @@
     },
     "constraint:QACorrectiveAction.validPriority": {
       "file": "quality/qa-rules.manifest",
-      "line": 134
+      "line": 136
     },
     "constraint:QACorrectiveAction.validStatus": {
       "file": "quality/qa-rules.manifest",
-      "line": 135
+      "line": 137
     },
     "constraint:QATemperatureLog.warnUnsafeTemperature": {
       "file": "quality/qa-rules.manifest",
-      "line": 220
+      "line": 222
     },
     "constraint:QualityCheck.requireCheckType": {
       "file": "kitchen/kitchen-extended-rules.manifest",
@@ -6515,31 +6515,31 @@
     },
     "constraint:RecipeIngredient.positiveQuantity": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 277
+      "line": 281
     },
     "constraint:RecipeIngredient.validOrder": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 278
+      "line": 282
     },
     "constraint:RecipeIngredient.validWasteFactor": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 279
+      "line": 283
     },
     "constraint:RecipeIngredient.warnHighWasteFactor": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 303
+      "line": 307
     },
     "constraint:RecipeIngredient.warnQuantityIncrease": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 285
+      "line": 289
     },
     "constraint:RecipeStep.positiveStepNumber": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 358
+      "line": 362
     },
     "constraint:RecipeStep.validInstruction": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 359
+      "line": 363
     },
     "constraint:RecipeVersion.nonNegativeCost": {
       "file": "kitchen/recipe-rules.manifest",
@@ -6559,7 +6559,7 @@
     },
     "constraint:RecipeVersion.warnHighCost": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 245
+      "line": 249
     },
     "constraint:RecipeVersion.warnHighDifficulty": {
       "file": "kitchen/recipe-rules.manifest",
@@ -6571,7 +6571,7 @@
     },
     "constraint:RecipeVersion.warnRetract": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 202
+      "line": 206
     },
     "constraint:ReorderSuggestion.positiveSuggestedQty": {
       "file": "inventory/inventory-extended-rules.manifest",
@@ -6591,39 +6591,39 @@
     },
     "constraint:RevenueRecognitionLine.amount_positive": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 246
+      "line": 247
     },
     "constraint:RevenueRecognitionLine.recognized_not_exceed": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 247
+      "line": 248
     },
     "constraint:RevenueRecognitionLine.sequence_positive": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 248
+      "line": 249
     },
     "constraint:RevenueRecognitionLine.validStatus": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 249
+      "line": 250
     },
     "constraint:RevenueRecognitionSchedule.amount_consistent": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 59
+      "line": 60
     },
     "constraint:RevenueRecognitionSchedule.amount_positive": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 58
+      "line": 59
     },
     "constraint:RevenueRecognitionSchedule.dates_valid": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 60
+      "line": 61
     },
     "constraint:RevenueRecognitionSchedule.validMethod": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 62
+      "line": 63
     },
     "constraint:RevenueRecognitionSchedule.validStatus": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 61
+      "line": 62
     },
     "constraint:RolePolicy.requireRole": {
       "file": "platform/role-policy-rules.manifest",
@@ -6631,35 +6631,35 @@
     },
     "constraint:RouteStop.requireName": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 715
+      "line": 719
     },
     "constraint:RouteStop.stopNumberPositive": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 716
+      "line": 720
     },
     "constraint:RouteStop.validStatus": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 714
+      "line": 718
     },
     "constraint:Schedule.blockNoShifts": {
       "file": "staff/schedule-rules.manifest",
-      "line": 94
+      "line": 95
     },
     "constraint:Schedule.validStatus": {
       "file": "staff/schedule-rules.manifest",
-      "line": 43
+      "line": 44
     },
     "constraint:ScheduleShift.validShiftTimes": {
       "file": "staff/schedule-rules.manifest",
-      "line": 164
+      "line": 166
     },
     "constraint:ScheduleShift.validSwapStatus": {
       "file": "staff/schedule-rules.manifest",
-      "line": 165
+      "line": 167
     },
     "constraint:ScheduleShift.warnLongShift": {
       "file": "staff/schedule-rules.manifest",
-      "line": 167
+      "line": 169
     },
     "constraint:Shipment.blockNoItems": {
       "file": "operations/shipment-rules.manifest",
@@ -6715,7 +6715,7 @@
     },
     "constraint:StaffTrainingSignal.validSignalType": {
       "file": "staff/training-module-rules.manifest",
-      "line": 605
+      "line": 608
     },
     "constraint:Station.blockFull": {
       "file": "kitchen/station-rules.manifest",
@@ -6811,19 +6811,19 @@
     },
     "constraint:TimeEntry.blockAlreadyClockedIn": {
       "file": "staff/time-entry-rules.manifest",
-      "line": 32
+      "line": 33
     },
     "constraint:TimeEntry.blockNotClockedIn": {
       "file": "staff/time-entry-rules.manifest",
-      "line": 54
+      "line": 55
     },
     "constraint:TimeEntry.warnLongEntry": {
       "file": "staff/time-entry-rules.manifest",
-      "line": 82
+      "line": 83
     },
     "constraint:TimeEntry.warnLongShift": {
       "file": "staff/time-entry-rules.manifest",
-      "line": 61
+      "line": 62
     },
     "constraint:TimeOffRequest.requireEmployee": {
       "file": "staff/time-off-request-rules.manifest",
@@ -6851,23 +6851,23 @@
     },
     "constraint:TimecardEditRequest.blockAlreadyProcessed": {
       "file": "staff/time-entry-rules.manifest",
-      "line": 175
+      "line": 176
     },
     "constraint:TimecardEditRequest.validStatus": {
       "file": "staff/time-entry-rules.manifest",
-      "line": 151
+      "line": 152
     },
     "constraint:TimelineTask.requireEvent": {
       "file": "events/events-extended-rules.manifest",
-      "line": 263
+      "line": 265
     },
     "constraint:TimelineTask.requireTitle": {
       "file": "events/events-extended-rules.manifest",
-      "line": 264
+      "line": 266
     },
     "constraint:TimelineTask.validStatus": {
       "file": "events/events-extended-rules.manifest",
-      "line": 265
+      "line": 267
     },
     "constraint:TipPool.totalTipsPositive": {
       "file": "staff/staff-logistics-extended-rules.manifest",
@@ -6879,83 +6879,83 @@
     },
     "constraint:TrainingAssignment.validAttemptCount": {
       "file": "staff/training-module-rules.manifest",
-      "line": 397
+      "line": 400
     },
     "constraint:TrainingAssignment.validMaxAttempts": {
       "file": "staff/training-module-rules.manifest",
-      "line": 399
+      "line": 402
     },
     "constraint:TrainingAssignment.validStatus": {
       "file": "staff/training-module-rules.manifest",
-      "line": 396
+      "line": 399
     },
     "constraint:TrainingAssignment.validThreshold": {
       "file": "staff/training-module-rules.manifest",
-      "line": 398
+      "line": 401
     },
     "constraint:TrainingAttempt.validAttemptNumber": {
       "file": "staff/training-module-rules.manifest",
-      "line": 566
+      "line": 569
     },
     "constraint:TrainingAttempt.validScore": {
       "file": "staff/training-module-rules.manifest",
-      "line": 567
+      "line": 570
     },
     "constraint:TrainingCompletion.scoreRange": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 472
+      "line": 473
     },
     "constraint:TrainingModule.requireTitle": {
       "file": "staff/training-module-rules.manifest",
-      "line": 181
+      "line": 183
     },
     "constraint:TrainingModule.validAttempts": {
       "file": "staff/training-module-rules.manifest",
-      "line": 186
+      "line": 188
     },
     "constraint:TrainingModule.validCategory": {
       "file": "staff/training-module-rules.manifest",
-      "line": 184
+      "line": 186
     },
     "constraint:TrainingModule.validContentType": {
       "file": "staff/training-module-rules.manifest",
-      "line": 183
+      "line": 185
     },
     "constraint:TrainingModule.validStatus": {
       "file": "staff/training-module-rules.manifest",
-      "line": 182
+      "line": 184
     },
     "constraint:TrainingModule.validThreshold": {
       "file": "staff/training-module-rules.manifest",
-      "line": 185
+      "line": 187
     },
     "constraint:TrainingQuestion.validAnswerKey": {
       "file": "staff/training-module-rules.manifest",
-      "line": 317
+      "line": 319
     },
     "constraint:TrainingQuestion.validOptions": {
       "file": "staff/training-module-rules.manifest",
-      "line": 316
+      "line": 318
     },
     "constraint:TrainingQuestion.validPrompt": {
       "file": "staff/training-module-rules.manifest",
-      "line": 315
+      "line": 317
     },
     "constraint:User.blockAlreadyTerminated": {
       "file": "platform/user-rules.manifest",
-      "line": 82
+      "line": 112
     },
     "constraint:User.validEmploymentType": {
       "file": "platform/user-rules.manifest",
-      "line": 32
+      "line": 62
     },
     "constraint:User.validRole": {
       "file": "platform/user-rules.manifest",
-      "line": 31
+      "line": 61
     },
     "constraint:User.warnAdminPromotion": {
       "file": "platform/user-rules.manifest",
-      "line": 101
+      "line": 131
     },
     "constraint:VarianceReport.validStatus": {
       "file": "inventory/cycle-count-rules.manifest",
@@ -6967,7 +6967,7 @@
     },
     "constraint:Vehicle.validStatus": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 168
+      "line": 171
     },
     "constraint:Vendor.validPaymentTerms": {
       "file": "procurement/vendor-rules.manifest",
@@ -7055,11 +7055,11 @@
     },
     "constraint:VersionApproval.validStatus": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 174
+      "line": 175
     },
     "constraint:VersionApproval.warnPendingTooLong": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 179
+      "line": 180
     },
     "constraint:VersionedEntity.validEntityId": {
       "file": "integrations/version-control-rules.manifest",
@@ -7159,11 +7159,11 @@
     },
     "entity:ActionMilestone": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 329
+      "line": 330
     },
     "entity:AdminChatMessage": {
       "file": "core/crm-admin-extended-rules.manifest",
-      "line": 466
+      "line": 471
     },
     "entity:AdminChatParticipant": {
       "file": "core/admin-chat-participant-rules.manifest",
@@ -7171,7 +7171,7 @@
     },
     "entity:AdminChatThread": {
       "file": "core/crm-admin-extended-rules.manifest",
-      "line": 423
+      "line": 425
     },
     "entity:AdminTask": {
       "file": "core/admin-task-rules.manifest",
@@ -7211,7 +7211,7 @@
     },
     "entity:AuditSchedule": {
       "file": "inventory/inventory-extended-rules.manifest",
-      "line": 786
+      "line": 788
     },
     "entity:AutomatedFollowup": {
       "file": "events/event-automation-rules.manifest",
@@ -7227,7 +7227,7 @@
     },
     "entity:BoardAnnotation": {
       "file": "events/events-extended-rules.manifest",
-      "line": 691
+      "line": 693
     },
     "entity:BoardConfig": {
       "file": "core/board-config-rules.manifest",
@@ -7235,7 +7235,7 @@
     },
     "entity:BoardProjection": {
       "file": "events/events-extended-rules.manifest",
-      "line": 601
+      "line": 603
     },
     "entity:Budget": {
       "file": "finance/budget-rules.manifest",
@@ -7243,11 +7243,11 @@
     },
     "entity:BudgetAlert": {
       "file": "staff/labor-budget-rules.manifest",
-      "line": 121
+      "line": 122
     },
     "entity:BudgetLineItem": {
       "file": "events/event-budget-rules.manifest",
-      "line": 137
+      "line": 138
     },
     "entity:BulkCombineRule": {
       "file": "kitchen/kitchen-extended-rules.manifest",
@@ -7275,7 +7275,7 @@
     },
     "entity:ClientContact": {
       "file": "crm/client-rules.manifest",
-      "line": 168
+      "line": 176
     },
     "entity:ClientInteraction": {
       "file": "crm/client-interaction-rules.manifest",
@@ -7283,11 +7283,11 @@
     },
     "entity:ClientPreference": {
       "file": "crm/client-rules.manifest",
-      "line": 262
+      "line": 271
     },
     "entity:CollectionAction": {
       "file": "finance/collections-rules.manifest",
-      "line": 258
+      "line": 260
     },
     "entity:CollectionCase": {
       "file": "finance/collections-rules.manifest",
@@ -7295,7 +7295,7 @@
     },
     "entity:CollectionPaymentPlan": {
       "file": "finance/collections-rules.manifest",
-      "line": 333
+      "line": 335
     },
     "entity:CommandBoard": {
       "file": "events/command-board-rules.manifest",
@@ -7303,19 +7303,19 @@
     },
     "entity:CommandBoardCard": {
       "file": "events/command-board-rules.manifest",
-      "line": 88
+      "line": 94
     },
     "entity:CommandBoardConnection": {
       "file": "events/command-board-rules.manifest",
-      "line": 251
+      "line": 258
     },
     "entity:CommandBoardGroup": {
       "file": "events/command-board-rules.manifest",
-      "line": 194
+      "line": 200
     },
     "entity:CommandBoardLayout": {
       "file": "events/command-board-rules.manifest",
-      "line": 296
+      "line": 303
     },
     "entity:Container": {
       "file": "core/container-rules.manifest",
@@ -7323,7 +7323,7 @@
     },
     "entity:ContractSignature": {
       "file": "events/event-contract-rules.manifest",
-      "line": 130
+      "line": 132
     },
     "entity:CorrectiveAction": {
       "file": "kitchen/kitchen-extended-rules.manifest",
@@ -7347,7 +7347,7 @@
     },
     "entity:DeliveryRoute": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 631
+      "line": 634
     },
     "entity:DisciplinaryAction": {
       "file": "staff/staff-logistics-extended-rules.manifest",
@@ -7387,7 +7387,7 @@
     },
     "entity:EmployeeDeduction": {
       "file": "staff/payroll-rules.manifest",
-      "line": 79
+      "line": 82
     },
     "entity:EntityVersion": {
       "file": "integrations/version-control-rules.manifest",
@@ -7415,7 +7415,7 @@
     },
     "entity:EventFollowup": {
       "file": "events/events-extended-rules.manifest",
-      "line": 505
+      "line": 507
     },
     "entity:EventGuest": {
       "file": "events/event-guest-rules.manifest",
@@ -7423,7 +7423,7 @@
     },
     "entity:EventImport": {
       "file": "events/events-extended-rules.manifest",
-      "line": 392
+      "line": 394
     },
     "entity:EventImportWorkflow": {
       "file": "events/event-import-workflow.manifest",
@@ -7435,7 +7435,7 @@
     },
     "entity:EventProfitability": {
       "file": "events/event-rules.manifest",
-      "line": 283
+      "line": 295
     },
     "entity:EventReport": {
       "file": "events/event-report-rules.manifest",
@@ -7447,11 +7447,11 @@
     },
     "entity:EventSummary": {
       "file": "events/event-rules.manifest",
-      "line": 395
+      "line": 407
     },
     "entity:EventTimeline": {
       "file": "events/events-extended-rules.manifest",
-      "line": 158
+      "line": 160
     },
     "entity:EventTimelineItem": {
       "file": "events/event-automation-rules.manifest",
@@ -7467,19 +7467,19 @@
     },
     "entity:FacilityArea": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 139
+      "line": 153
     },
     "entity:FacilityAsset": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 220
+      "line": 239
     },
     "entity:FacilitySchedule": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 347
+      "line": 367
     },
     "entity:FacilityWorkOrder": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 454
+      "line": 474
     },
     "entity:FeatureFlag": {
       "file": "platform/feature-flag-rules.manifest",
@@ -7567,15 +7567,15 @@
     },
     "entity:LogisticsDispatch": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 432
+      "line": 435
     },
     "entity:LogisticsRoute": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 279
+      "line": 283
     },
     "entity:MaintenanceWorkOrder": {
       "file": "operations/equipment-rules.manifest",
-      "line": 228
+      "line": 231
     },
     "entity:Menu": {
       "file": "kitchen/menu-rules.manifest",
@@ -7591,7 +7591,7 @@
     },
     "entity:Note": {
       "file": "events/events-extended-rules.manifest",
-      "line": 751
+      "line": 753
     },
     "entity:Notification": {
       "file": "platform/notification-rules.manifest",
@@ -7599,15 +7599,15 @@
     },
     "entity:OnboardingCompletion": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 539
+      "line": 542
     },
     "entity:OnboardingTask": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 494
+      "line": 495
     },
     "entity:OpenShift": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 570
+      "line": 573
     },
     "entity:OverrideAudit": {
       "file": "platform/override-audit-rules.manifest",
@@ -7623,11 +7623,11 @@
     },
     "entity:PaymentRefundAttempt": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 768
+      "line": 772
     },
     "entity:PayrollApprovalHistory": {
       "file": "staff/payroll-rules.manifest",
-      "line": 148
+      "line": 151
     },
     "entity:PayrollLineItem": {
       "file": "staff/staff-logistics-extended-rules.manifest",
@@ -7639,7 +7639,7 @@
     },
     "entity:PayrollRun": {
       "file": "staff/payroll-rules.manifest",
-      "line": 180
+      "line": 183
     },
     "entity:PerformancePrediction": {
       "file": "operations/workforce-ai-rules.manifest",
@@ -7647,7 +7647,7 @@
     },
     "entity:PerformanceReview": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 383
+      "line": 384
     },
     "entity:PrepComment": {
       "file": "kitchen/prep-comment-rules.manifest",
@@ -7679,7 +7679,7 @@
     },
     "entity:PreventiveMaintenanceSchedule": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 811
+      "line": 815
     },
     "entity:PricingTier": {
       "file": "finance/pricing-tier-rules.manifest",
@@ -7691,7 +7691,7 @@
     },
     "entity:ProcurementBudgetAlert": {
       "file": "inventory/inventory-extended-rules.manifest",
-      "line": 732
+      "line": 734
     },
     "entity:Proposal": {
       "file": "crm/proposal-rules.manifest",
@@ -7703,7 +7703,7 @@
     },
     "entity:ProposalLineItem": {
       "file": "crm/proposal-rules.manifest",
-      "line": 312
+      "line": 313
     },
     "entity:ProposalTemplate": {
       "file": "core/crm-admin-extended-rules.manifest",
@@ -7731,11 +7731,11 @@
     },
     "entity:QACorrectiveAction": {
       "file": "quality/qa-rules.manifest",
-      "line": 107
+      "line": 109
     },
     "entity:QATemperatureLog": {
       "file": "quality/qa-rules.manifest",
-      "line": 203
+      "line": 205
     },
     "entity:QualityCheck": {
       "file": "kitchen/kitchen-extended-rules.manifest",
@@ -7755,11 +7755,11 @@
     },
     "entity:RecipeIngredient": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 262
+      "line": 266
     },
     "entity:RecipeStep": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 342
+      "line": 346
     },
     "entity:RecipeVersion": {
       "file": "kitchen/recipe-rules.manifest",
@@ -7775,7 +7775,7 @@
     },
     "entity:RevenueRecognitionLine": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 210
+      "line": 211
     },
     "entity:RevenueRecognitionSchedule": {
       "file": "finance/revenue-recognition-rules.manifest",
@@ -7787,7 +7787,7 @@
     },
     "entity:RouteStop": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 700
+      "line": 704
     },
     "entity:SampleData": {
       "file": "platform/sample-data-rules.manifest",
@@ -7799,7 +7799,7 @@
     },
     "entity:ScheduleShift": {
       "file": "staff/schedule-rules.manifest",
-      "line": 136
+      "line": 137
     },
     "entity:SelOnboardingTrainingModuleDefinition": {
       "file": "staff/training-module-sel-rules.manifest",
@@ -7859,7 +7859,7 @@
     },
     "entity:SoftDeletable": {
       "file": "_base.manifest",
-      "line": 126
+      "line": 129
     },
     "entity:StaffMember": {
       "file": "staff/staff-member-rules.manifest",
@@ -7871,7 +7871,7 @@
     },
     "entity:StaffTrainingSignal": {
       "file": "staff/training-module-rules.manifest",
-      "line": 594
+      "line": 597
     },
     "entity:Station": {
       "file": "kitchen/station-rules.manifest",
@@ -7919,11 +7919,11 @@
     },
     "entity:TimecardEditRequest": {
       "file": "staff/time-entry-rules.manifest",
-      "line": 132
+      "line": 133
     },
     "entity:TimelineTask": {
       "file": "events/events-extended-rules.manifest",
-      "line": 243
+      "line": 245
     },
     "entity:TipPool": {
       "file": "staff/staff-logistics-extended-rules.manifest",
@@ -7931,15 +7931,15 @@
     },
     "entity:TrainingAssignment": {
       "file": "staff/training-module-rules.manifest",
-      "line": 353
+      "line": 355
     },
     "entity:TrainingAttempt": {
       "file": "staff/training-module-rules.manifest",
-      "line": 547
+      "line": 550
     },
     "entity:TrainingCompletion": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 456
+      "line": 457
     },
     "entity:TrainingModule": {
       "file": "staff/training-module-rules.manifest",
@@ -7947,7 +7947,7 @@
     },
     "entity:TrainingQuestion": {
       "file": "staff/training-module-rules.manifest",
-      "line": 294
+      "line": 296
     },
     "entity:User": {
       "file": "platform/user-rules.manifest",
@@ -7959,7 +7959,7 @@
     },
     "entity:Vehicle": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 139
+      "line": 142
     },
     "entity:Vendor": {
       "file": "procurement/vendor-rules.manifest",
@@ -7987,7 +7987,7 @@
     },
     "entity:VersionApproval": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 160
+      "line": 161
     },
     "entity:VersionedEntity": {
       "file": "integrations/version-control-rules.manifest",
@@ -8011,7 +8011,7 @@
     },
     "transition:ActionMilestone.status": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 346
+      "line": 347
     },
     "transition:AdminTask.status": {
       "file": "core/admin-task-rules.manifest",
@@ -8047,19 +8047,19 @@
     },
     "transition:ClientInteraction.status": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 49
+      "line": 50
     },
     "transition:CollectionAction.status": {
       "file": "finance/collections-rules.manifest",
-      "line": 293
+      "line": 295
     },
     "transition:CollectionCase.status": {
       "file": "finance/collections-rules.manifest",
-      "line": 249
+      "line": 251
     },
     "transition:CollectionPaymentPlan.status": {
       "file": "finance/collections-rules.manifest",
-      "line": 372
+      "line": 374
     },
     "transition:CommandBoard.status": {
       "file": "events/command-board-rules.manifest",
@@ -8079,7 +8079,7 @@
     },
     "transition:DeliveryRoute.status": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 651
+      "line": 654
     },
     "transition:DisciplinaryAction.status": {
       "file": "staff/staff-logistics-extended-rules.manifest",
@@ -8103,15 +8103,15 @@
     },
     "transition:Equipment.status": {
       "file": "operations/equipment-rules.manifest",
-      "line": 220
+      "line": 223
     },
     "transition:Event.status": {
       "file": "events/event-rules.manifest",
-      "line": 275
+      "line": 287
     },
     "transition:EventBudget.status": {
       "file": "events/event-budget-rules.manifest",
-      "line": 29
+      "line": 30
     },
     "transition:EventContract.status": {
       "file": "events/event-contract-rules.manifest",
@@ -8119,7 +8119,7 @@
     },
     "transition:EventFollowup.status": {
       "file": "events/events-extended-rules.manifest",
-      "line": 527
+      "line": 529
     },
     "transition:EventGuest.rsvpStatus": {
       "file": "events/event-guest-rules.manifest",
@@ -8127,7 +8127,7 @@
     },
     "transition:EventImport.parseStatus": {
       "file": "events/events-extended-rules.manifest",
-      "line": 410
+      "line": 412
     },
     "transition:EventImportWorkflow.status": {
       "file": "events/event-import-workflow.manifest",
@@ -8155,23 +8155,23 @@
     },
     "transition:Facility.status": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 62
+      "line": 76
     },
     "transition:FacilityArea.status": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 161
+      "line": 180
     },
     "transition:FacilityAsset.status": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 256
+      "line": 276
     },
     "transition:FacilitySchedule.status": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 377
+      "line": 397
     },
     "transition:FacilityWorkOrder.status": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 495
+      "line": 515
     },
     "transition:InventoryAlert.status": {
       "file": "inventory/inventory-extended-rules.manifest",
@@ -8207,7 +8207,7 @@
     },
     "transition:LaborBudget.status": {
       "file": "staff/labor-budget-rules.manifest",
-      "line": 30
+      "line": 31
     },
     "transition:Lead.status": {
       "file": "crm/lead-rules.manifest",
@@ -8215,11 +8215,11 @@
     },
     "transition:LogisticsDispatch.status": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 458
+      "line": 461
     },
     "transition:LogisticsRoute.status": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 320
+      "line": 324
     },
     "transition:Menu.status": {
       "file": "kitchen/menu-rules.manifest",
@@ -8227,11 +8227,11 @@
     },
     "transition:OpenShift.status": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 588
+      "line": 591
     },
     "transition:Payment.status": {
       "file": "finance/payment-rules.manifest",
-      "line": 54
+      "line": 55
     },
     "transition:PaymentMethod.status": {
       "file": "finance/payment-method-rules.manifest",
@@ -8243,11 +8243,11 @@
     },
     "transition:PayrollRun.status": {
       "file": "staff/payroll-rules.manifest",
-      "line": 202
+      "line": 205
     },
     "transition:PerformanceReview.status": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 399
+      "line": 400
     },
     "transition:PrepList.status": {
       "file": "kitchen/prep-list-rules.manifest",
@@ -8271,7 +8271,7 @@
     },
     "transition:Proposal.status": {
       "file": "crm/proposal-rules.manifest",
-      "line": 70
+      "line": 71
     },
     "transition:ProposalDraft.status": {
       "file": "ai/proposal-draft-rules.manifest",
@@ -8291,7 +8291,7 @@
     },
     "transition:QACorrectiveAction.status": {
       "file": "quality/qa-rules.manifest",
-      "line": 130
+      "line": 132
     },
     "transition:QualityCheck.status": {
       "file": "kitchen/kitchen-extended-rules.manifest",
@@ -8307,15 +8307,15 @@
     },
     "transition:RevenueRecognitionSchedule.status": {
       "file": "finance/revenue-recognition-rules.manifest",
-      "line": 201
+      "line": 202
     },
     "transition:RouteStop.status": {
       "file": "staff/staff-logistics-extended-rules.manifest",
-      "line": 719
+      "line": 723
     },
     "transition:Schedule.status": {
       "file": "staff/schedule-rules.manifest",
-      "line": 39
+      "line": 40
     },
     "transition:Shipment.status": {
       "file": "operations/shipment-rules.manifest",
@@ -8343,11 +8343,11 @@
     },
     "transition:TimecardEditRequest.status": {
       "file": "staff/time-entry-rules.manifest",
-      "line": 154
+      "line": 155
     },
     "transition:TimelineTask.status": {
       "file": "events/events-extended-rules.manifest",
-      "line": 268
+      "line": 270
     },
     "transition:TipPool.status": {
       "file": "staff/staff-logistics-extended-rules.manifest",
@@ -8355,11 +8355,11 @@
     },
     "transition:TrainingAssignment.status": {
       "file": "staff/training-module-rules.manifest",
-      "line": 391
+      "line": 394
     },
     "transition:TrainingModule.status": {
       "file": "staff/training-module-rules.manifest",
-      "line": 177
+      "line": 179
     },
     "transition:VarianceReport.status": {
       "file": "inventory/cycle-count-rules.manifest",
@@ -8367,7 +8367,7 @@
     },
     "transition:Vehicle.status": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 171
+      "line": 174
     },
     "transition:Vendor.status": {
       "file": "procurement/vendor-rules.manifest",
@@ -8379,7 +8379,7 @@
     },
     "transition:VersionApproval.status": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 177
+      "line": 178
     },
     "transition:WasteEntry.status": {
       "file": "quality/waste-entry-rules.manifest",
