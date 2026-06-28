@@ -5,6 +5,7 @@ One row per canonical unit. Agents **append** a row when they create or update a
 | Canonical ID | Decision file | Type | Owner decision | Impl status | Last reviewed |
 | --- | --- | --- | --- | --- | --- |
 | `manifest.generation.ir-compilation` | [manifest/generation/ir-compilation/README.md](manifest/generation/ir-compilation/README.md) | generator | final | working | 2026-06-27 |
+| `manifest.generation.prisma-schema-generation` | [manifest/generation/prisma-schema-generation/README.md](manifest/generation/prisma-schema-generation/README.md) | generator | needs-ryan | partial | 2026-06-28 |
 | `manifest.generation.type-generation` | [manifest/generation/type-generation/README.md](manifest/generation/type-generation/README.md) | generator | needs-ryan | working | 2026-06-27 |
 | `manifest.generation.client-generation` | [manifest/generation/client-generation/README.md](manifest/generation/client-generation/README.md) | generator | final | partial | 2026-06-27 |
 | `manifest.generation.route-generation` | [manifest/generation/route-generation/README.md](manifest/generation/route-generation/README.md) | generator | needs-ryan | working | 2026-06-27 |
