@@ -1,6 +1,6 @@
 import path from "node:path";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [
@@ -73,6 +73,12 @@ export default defineConfig({
     // blocking test run. They still exist on disk + run via `pnpm test:quarantine`
     // for advisory output. See ci/DRAIN.md for how to retire a quarantined file.
     exclude: [
+      // Restore vitest's built-in excludes (node_modules, dist, etc.). Specifying a
+      // custom `exclude` REPLACES the defaults, which previously let dependency-shipped
+      // tests (e.g. @repo/manifest-runtime's dist/__tests__ via the workspace symlink)
+      // leak into this app's suite. See constitution §4a — the package is sanctioned,
+      // but we do not run its internal tests here.
+      ...configDefaults.exclude,
       "**/__tests__/**/*.integration.test.{ts,tsx,js}",
       "**/__tests__/**/*.quarantine.test.{ts,tsx,js}",
     ],
