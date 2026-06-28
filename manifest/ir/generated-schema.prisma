@@ -404,6 +404,7 @@ model AdminChatThread {
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
+
   @@map("admin_chat_threads")
   @@id([tenantId, id])
   @@index([tenantId, slug])
@@ -1809,6 +1810,7 @@ model Document {
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
+
   @@id([tenantId, id])
   @@index([tenantId, id])
   @@schema("tenant")
@@ -1892,6 +1894,7 @@ model EmailTemplate {
   isDefault Boolean? @map("is_default") @default(false)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
+
 
   @@map("email_templates")
   @@id([tenantId, id])
@@ -3553,6 +3556,7 @@ model OnboardingTask {
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
+
   @@map("onboarding_tasks")
   @@id([tenantId, id])
   @@schema("tenant_staff")
@@ -3789,6 +3793,7 @@ model PayrollPeriod {
   status PayrollPeriodStatus? @default(open)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
+
 
   @@map("payroll_periods")
   @@id([tenantId, id])
@@ -4185,6 +4190,7 @@ model ProcurementBudget {
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
+
   @@map("procurement_budgets")
   @@id([tenantId, id])
   @@schema("tenant_inventory")
@@ -4536,6 +4542,7 @@ model QACheck {
   reinspectedAt DateTime? @map("reinspected_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
+
 
   @@map("qa_checks")
   @@id([tenantId, id])
@@ -4900,6 +4907,7 @@ model RolePolicy {
   isActive Boolean? @map("is_active") @default(true)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
+
 
   @@map("role_policies")
   @@id([tenantId, id])
@@ -5452,6 +5460,7 @@ model StaffMember {
   notes String? @default("")
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
+
 
   @@map("staff_members")
   @@id([tenantId, id])

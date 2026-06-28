@@ -68,6 +68,19 @@ entity Event mixin TenantScoped, SoftDeletable {
   relationship hasMany revenueLines: RevenueRecognitionLine
   relationship hasMany collectionCases: CollectionCase
   relationship hasMany prepTaskPlans: PrepTaskPlanWorkflow
+  relationship hasMany aiEventSetupSessions: AiEventSetupSession
+  relationship hasMany automatedFollowups: AutomatedFollowup
+  relationship hasMany battleBoards: BattleBoard
+  relationship hasMany cateringOrders: CateringOrder
+  relationship hasMany commandBoards: CommandBoard
+  relationship hasMany eventImportWorkflows: EventImportWorkflow
+  relationship hasMany eventTimelines: EventTimeline
+  relationship hasMany eventTimelineItems: EventTimelineItem
+  relationship hasMany eventWaitlistEntries: EventWaitlistEntry
+  relationship hasMany proposals: Proposal
+  relationship hasMany revenueRecognitionSchedules: RevenueRecognitionSchedule
+  relationship hasMany taskBundles: TaskBundle
+  relationship hasMany timelineTasks: TimelineTask
 
   constraint validTitle: self.title != null and self.title != "" "Event title is required"
   constraint validEventType: self.eventType != null and self.eventType != "" "Event type is required"

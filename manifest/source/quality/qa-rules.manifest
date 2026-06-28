@@ -101,6 +101,8 @@ entity QACheck mixin TenantScoped {
     emit QACheckReinspected
   }
 
+  relationship hasMany correctiveActions: QACorrectiveAction
+
   store QACheck in durable
 }
 

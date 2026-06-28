@@ -413,6 +413,8 @@ entity Document mixin TenantScoped, SoftDeletable {
     emit DocumentRemoved
   }
 
+  relationship hasMany documentVersions: DocumentVersion
+
   store Document in durable
 }
 
@@ -455,6 +457,9 @@ entity AdminChatThread mixin TenantScoped, SoftDeletable {
 
     emit AdminChatThreadLastMessageRecorded
   }
+
+  relationship hasMany messages: AdminChatMessage
+  relationship hasMany participants: AdminChatParticipant
 
   store AdminChatThread in durable
 }

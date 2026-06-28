@@ -153,6 +153,7 @@ entity EntityVersion mixin TenantScoped {
     emit EntityVersionRestored
   }
   relationship belongsTo versionedEntity: VersionedEntity with versionedEntityId
+  relationship hasMany approvals: VersionApproval
 
   store EntityVersion in durable
 }

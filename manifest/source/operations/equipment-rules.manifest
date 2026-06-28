@@ -47,6 +47,9 @@ entity Equipment mixin TenantScoped {
   relationship hasMany kitchenTasks: KitchenTask
   relationship hasMany temperatureLogs: TemperatureLog
   relationship hasMany workOrders: MaintenanceWorkOrder
+  relationship hasMany iotAlertRules: IotAlertRule
+  relationship hasMany preventiveMaintenanceSchedules: PreventiveMaintenanceSchedule
+  relationship hasMany equipmentWorkOrders: WorkOrder
 
   constraint validEquipmentType: self.type in ["cooking", "refrigeration", "prep", "baking", "cleaning", "transport", "general"] "Invalid equipment type"
   constraint validStatus: self.status in ["active", "maintenance", "out_of_service", "retired"] "Invalid equipment status"

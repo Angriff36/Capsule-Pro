@@ -49,6 +49,20 @@ entity Facility mixin TenantScoped {
   relationship hasMany areas: FacilityArea
   relationship hasMany schedules: FacilitySchedule
   relationship hasMany workOrders: FacilityWorkOrder
+  relationship hasMany battleBoards: BattleBoard
+  relationship hasMany cycleCountSessions: CycleCountSession
+  relationship hasMany events: Event
+  relationship hasMany facilityAssets: FacilityAsset
+  relationship hasMany laborBudgets: LaborBudget
+  relationship hasMany prepTasks: PrepTask
+  relationship hasMany purchaseOrders: PurchaseOrder
+  relationship hasMany purchaseRequisitions: PurchaseRequisition
+  relationship hasMany facilityScheduleShifts: ScheduleShift
+  relationship hasMany shipments: Shipment
+  relationship hasMany timeEntries: TimeEntry
+  relationship hasMany wasteEntries: WasteEntry
+  relationship hasMany workforceOptimizations: WorkforceOptimization
+  relationship hasMany facilitySchedulingSchedules: Schedule
 
   constraint validFacilityType: self.facilityType in ["kitchen", "warehouse", "commissary", "office", "other"] "Invalid facility type"
   constraint validStatus: self.status in ["active", "inactive", "maintenance"] "Invalid facility status"
@@ -151,6 +165,11 @@ entity FacilityArea mixin TenantScoped {
   constraint validAreaType: self.areaType in ["kitchen", "storage", "dining", "prep", "office", "loading_dock", "restroom", "other"] "Invalid area type"
 
   relationship belongsTo facility: Facility fields [tenantId, venueId] references [tenantId, id]
+  relationship hasMany facilityAssets: FacilityAsset
+  relationship hasMany facilitySchedules: FacilitySchedule
+  relationship hasMany facilityWorkOrders: FacilityWorkOrder
+  relationship hasMany maintenanceWorkOrders: MaintenanceWorkOrder
+  relationship hasMany preventiveMaintenanceSchedules: PreventiveMaintenanceSchedule
   constraint validStatus: self.status in ["active", "inactive", "maintenance"] "Invalid area status"
 
   // State transitions
@@ -245,6 +264,7 @@ entity FacilityAsset mixin TenantScoped {
 
   relationship belongsTo facility: Facility fields [tenantId, facilityId] references [tenantId, id]
   relationship belongsTo area: FacilityArea fields [tenantId, areaId] references [tenantId, id]
+  relationship hasMany facilityWorkOrders: FacilityWorkOrder
   constraint validStatus: self.status in ["operational", "maintenance", "retired", "sold"] "Invalid asset status"
 
   // State transitions

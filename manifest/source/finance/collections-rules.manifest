@@ -64,6 +64,8 @@ entity CollectionCase mixin TenantScoped {
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo invoice: Invoice fields [tenantId, invoiceId] references [tenantId, id]
+  relationship hasMany actions: CollectionAction
+  relationship hasMany paymentPlans: CollectionPaymentPlan
 
   constraint amount_positive: self.originalAmount > 0 "Original amount must be positive"
   constraint collected_valid: self.collectedAmount <= self.originalAmount "Collected amount cannot exceed original"

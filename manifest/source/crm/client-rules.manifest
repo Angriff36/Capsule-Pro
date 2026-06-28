@@ -60,6 +60,14 @@ entity Client mixin TenantScoped, SoftDeletable {
   relationship hasMany proposals: Proposal
   relationship hasMany invoices: Invoice
   relationship hasMany payments: Payment
+  relationship hasMany battleBoards: BattleBoard
+  relationship hasMany cateringOrders: CateringOrder
+  relationship hasMany collectionCases: CollectionCase
+  relationship hasMany events: Event
+  relationship hasMany eventContracts: EventContract
+  relationship hasMany leads: Lead
+  relationship hasMany paymentMethods: PaymentMethod
+  relationship hasMany revenueRecognitionSchedules: RevenueRecognitionSchedule
 
   constraint validClientType: self.clientType in ["company", "individual"] "Client type must be 'company' or 'individual'"
   constraint validPaymentTerms: self.defaultPaymentTerms >= 0 "Payment terms must be non-negative"

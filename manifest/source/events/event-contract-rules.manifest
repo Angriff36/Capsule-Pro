@@ -40,6 +40,8 @@ entity EventContract mixin TenantScoped, SoftDeletable {
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
+  relationship hasMany signatures: ContractSignature
+  relationship hasMany revenueSchedules: RevenueRecognitionSchedule
 
   default policy EventContractDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(eventId: string, clientId: string, contractNumber: string, title: string, documentUrl: string, documentType: string, notes: string, expiresAt: datetime) {

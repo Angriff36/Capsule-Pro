@@ -274,6 +274,7 @@ entity DisciplinaryAction mixin TenantScoped {
   constraint requireReason: self.reason != "" "Reason is required"
 
   relationship belongsTo employee: User with employeeId
+  relationship hasMany actionMilestones: ActionMilestone
 
   default policy DisciplinaryActionDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(employeeId: string, actionType: string, reason: string, severity: string, issuedBy: string) {
@@ -533,6 +534,8 @@ entity OnboardingTask mixin TenantScoped, SoftDeletable {
     emit OnboardingTaskRemoved
   }
 
+  relationship hasMany completions: OnboardingCompletion
+
   store OnboardingTask in durable
 }
 
@@ -652,6 +655,7 @@ entity DeliveryRoute mixin TenantScoped {
   transition status from "in_progress" to ["completed"]
 
   relationship belongsTo driver: Driver with driverId
+  relationship hasMany stops: RouteStop
 
   default policy DeliveryRouteDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(name: string, routeNumber: string, driverId: string, scheduledDate: datetime, totalDistance: number) {

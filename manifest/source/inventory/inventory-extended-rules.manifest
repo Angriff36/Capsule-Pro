@@ -722,6 +722,8 @@ entity ProcurementBudget mixin TenantScoped {
     emit ProcurementBudgetClosed
   }
 
+  relationship hasMany alerts: ProcurementBudgetAlert
+
   store ProcurementBudget in durable
 }
 

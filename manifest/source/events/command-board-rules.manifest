@@ -81,6 +81,12 @@ entity CommandBoard mixin TenantScoped, SoftDeletable {
   }
 
   relationship belongsTo event: Event with eventId
+  relationship hasMany annotations: BoardAnnotation
+  relationship hasMany projections: BoardProjection
+  relationship hasMany cards: CommandBoardCard
+  relationship hasMany connections: CommandBoardConnection
+  relationship hasMany groups: CommandBoardGroup
+  relationship hasMany layouts: CommandBoardLayout
 
   store CommandBoard in durable
 }
@@ -212,6 +218,7 @@ entity CommandBoardGroup mixin TenantScoped, SoftDeletable {
   constraint positiveHeight: self.height > 0 "Group height must be positive"
 
   relationship belongsTo board: CommandBoard fields [tenantId, boardId] references [tenantId, id]
+  relationship hasMany cards: CommandBoardCard
 
   default policy CommandBoardGroupDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
   command create(boardId: string, name: string, color: string, positionX: number, positionY: number, width: number, height: number) {

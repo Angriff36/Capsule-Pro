@@ -19,6 +19,7 @@ entity EventBudget mixin TenantScoped, SoftDeletable {
   computed isFinalized: boolean = self.status == "finalized"
   computed isOverBudget: boolean = self.totalActualAmount > self.totalBudgetAmount
   relationship belongsTo linkedEvent: Event fields [tenantId, eventId] references [tenantId, id]
+  relationship hasMany lineItems: BudgetLineItem
   computed hasVariance: boolean = self.varianceAmount != 0
   computed varianceExceedsThreshold: boolean = self.variancePercentage > 10 or self.variancePercentage < -10
 

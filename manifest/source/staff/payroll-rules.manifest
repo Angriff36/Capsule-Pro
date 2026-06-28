@@ -73,6 +73,9 @@ entity PayrollPeriod mixin TenantScoped, SoftDeletable {
     emit PayrollPeriodLocked
   }
 
+  relationship hasMany runs: PayrollRun
+  relationship hasMany tipPools: TipPool
+
   store PayrollPeriod in durable
 }
 
@@ -206,6 +209,9 @@ entity PayrollRun mixin TenantScoped, SoftDeletable {
   constraint validStatus: self.status in ["pending", "processing", "approved", "paid", "rejected"] "Invalid payroll run status"
 
   relationship belongsTo period: PayrollPeriod with payrollPeriodId
+  relationship hasMany approvalHistory: PayrollApprovalHistory
+  relationship hasMany lineItems: PayrollLineItem
+  relationship hasMany timecardApprovals: TimecardApproval
 
   default policy PayrollRunDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Payroll management"
   command create(optional payrollPeriodId: string, runDate: string) {

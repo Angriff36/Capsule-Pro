@@ -132,6 +132,9 @@ entity Driver mixin TenantScoped {
   }
 
   relationship belongsTo vehicle: Vehicle with vehicleId
+  relationship hasMany deliveryRoutes: DeliveryRoute
+  relationship hasMany dispatches: LogisticsDispatch
+  relationship hasMany routes: LogisticsRoute
 
   store Driver in durable
 }
@@ -176,6 +179,7 @@ entity Vehicle mixin TenantScoped, SoftDeletable {
   // Back-relations (U11): inverse hasMany for children that belongTo Vehicle
   relationship hasMany routes: LogisticsRoute
   relationship hasMany dispatches: LogisticsDispatch
+  relationship hasMany drivers: Driver
 
   default policy VehicleDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
   command create(make: string, model: string, year: int, plateNumber: string, vin: string, capacityWeight: decimal, capacityVolume: decimal, fuelType: string, mileage: decimal, status: string, notes: string) {

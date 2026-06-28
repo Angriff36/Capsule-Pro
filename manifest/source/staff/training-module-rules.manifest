@@ -158,6 +158,8 @@ entity TrainingModule mixin TenantScoped, SoftDeletable {
   relationship hasMany questions: TrainingQuestion
   relationship hasMany assignments: TrainingAssignment
   relationship hasMany attempts: TrainingAttempt
+  relationship hasMany trainingSignals: StaffTrainingSignal
+  relationship hasMany completions: TrainingCompletion
 
   computed isDeleted: boolean = self.deletedAt != null
   computed isDraft: boolean = self.status == "draft"
@@ -377,6 +379,7 @@ entity TrainingAssignment mixin TenantScoped {
 
   relationship belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
   relationship hasMany attempts: TrainingAttempt
+  relationship hasMany trainingSignals: StaffTrainingSignal
   relationship belongsTo employee: User fields [tenantId, employeeId] references [tenantId, id]
   relationship belongsTo lastAttempt: TrainingAttempt with lastAttemptId
 

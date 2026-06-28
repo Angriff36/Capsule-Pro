@@ -48,6 +48,7 @@ entity Dish mixin TenantScoped, SoftDeletable {
   relationship hasMany prepListItems: PrepListItem
   relationship hasMany menuDishes: MenuDish
   relationship hasMany allergenWarnings: AllergenWarning
+  relationship hasMany eventDishes: EventDish
 
   constraint validName: self.name != null and self.name != "" "Dish name is required"
   constraint positivePrice: self.pricePerPerson >= 0 "Price per person cannot be negative"
