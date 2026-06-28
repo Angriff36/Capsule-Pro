@@ -219,6 +219,16 @@ export function createDealLifecyclePropagationMiddleware(
       return;
     }
     const spec = CLOSE_OUTCOMES[outcome];
+    if (!spec) {
+      onDiagnostic({
+        stage: "outcome",
+        reason: `deal status "${outcome}" is not a won/lost close — skip`,
+        dealId,
+        tenantId,
+        status: outcome,
+      });
+      return;
+    }
 
     const leadId = asNonEmptyString(deal.leadId);
     if (!leadId) {

@@ -217,6 +217,10 @@ export const Base: Story = {
   render: () => {
     const [activeTeam, setActiveTeam] = useState(data.teams[0]);
 
+    if (!activeTeam) {
+      throw new Error("sidebar story requires at least one team fixture");
+    }
+
     return (
       <SidebarProvider>
         <Sidebar collapsible="icon">

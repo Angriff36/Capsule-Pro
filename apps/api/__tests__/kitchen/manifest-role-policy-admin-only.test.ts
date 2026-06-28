@@ -8,28 +8,17 @@
  * be denied access to all RolePolicy mutations.
  */
 
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
-import { inMemoryStoreProvider } from "../test-helpers";
+import {
+  compileManifestSourceForTest,
+  inMemoryStoreProvider,
+} from "../test-helpers";
 
-const MANIFEST_DIR = join(process.cwd(), "../../manifest/source");
+const ROLE_POLICY_MANIFEST = "platform/role-policy-rules.manifest";
 
 async function getRolePolicyRuntime(userRole: string) {
-  const manifestPath = join(
-    MANIFEST_DIR,
-    "platform/role-policy-rules.manifest"
-  );
-  const source = readFileSync(manifestPath, "utf-8");
-  const { ir, diagnostics } = await compileToIR(source);
-
-  if (!ir) {
-    throw new Error(
-      `Failed to compile role-policy-rules.manifest: ${diagnostics.map((d: { message: string }) => d.message).join(", ")}`
-    );
-  }
+  const ir = await compileManifestSourceForTest(ROLE_POLICY_MANIFEST);
 
   return new ManifestRuntimeEngine(
     ir,
@@ -93,33 +82,23 @@ const ALLOWED_ROLES = ["admin", "owner"];
 
 describe("RolePolicy adminOnly Policy Enforcement", () => {
   it("compiles role-policy-rules.manifest successfully", async () => {
-    const manifestPath = join(
-      MANIFEST_DIR,
-      "platform/role-policy-rules.manifest"
-    );
-    const source = readFileSync(manifestPath, "utf-8");
-    const { ir } = await compileToIR(source);
+    const ir = await compileManifestSourceForTest(ROLE_POLICY_MANIFEST);
 
     expect(ir).toBeDefined();
     expect(ir).not.toBeNull();
 
-    const entityNames = ir?.entities.map((e: { name: string }) => e.name);
+    const entityNames = ir.entities.map((e: { name: string }) => e.name);
     expect(entityNames).toContain("RolePolicy");
   });
 
   it("IR contains adminOnly policy with correct role restriction", async () => {
-    const manifestPath = join(
-      MANIFEST_DIR,
-      "platform/role-policy-rules.manifest"
-    );
-    const source = readFileSync(manifestPath, "utf-8");
-    const { ir } = await compileToIR(source);
+    const ir = await compileManifestSourceForTest(ROLE_POLICY_MANIFEST);
 
     expect(ir).toBeDefined();
-    expect(ir?.policies).toBeDefined();
-    expect(ir?.policies.length).toBeGreaterThan(0);
+    expect(ir.policies).toBeDefined();
+    expect(ir.policies.length).toBeGreaterThan(0);
 
-    const adminPolicy = ir?.policies.find(
+    const adminPolicy = ir.policies.find(
       (p: { name: string }) => p.name === "adminOnly"
     );
     expect(

@@ -44,7 +44,7 @@ vi.mock("@/lib/manifest/execute-command", () => ({
 }));
 vi.mock("@/app/lib/invariant", () => ({
   InvariantError: class extends Error {
-    name = "InvariantError";
+    override name = "InvariantError";
   },
 }));
 vi.mock("@/app/lib/webhook-dispatch", () => ({

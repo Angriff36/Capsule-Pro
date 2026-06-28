@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-06-18T12:17:35.076Z",
+  "generatedAt": "2026-06-25T07:15:54.543Z",
   "basePath": "/api",
   "routes": [
     {
@@ -2430,6 +2430,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "FacilityWorkOrder"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "FeatureFlag.get.list",
+      "path": "/api/featureflag/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "FeatureFlag"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "FeatureFlag.get.detail",
+      "path": "/api/featureflag/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "FeatureFlag"
       },
       "auth": true,
       "tenant": true
@@ -6386,7 +6416,7 @@
           "name": "disciplinaryActionId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "title",
@@ -6516,12 +6546,6 @@
           "type": "string",
           "location": "body",
           "required": true
-        },
-        {
-          "name": "userId",
-          "type": "string",
-          "location": "body",
-          "required": true
         }
       ],
       "source": {
@@ -6643,7 +6667,7 @@
           "name": "status",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "priority",
@@ -6673,7 +6697,7 @@
           "name": "createdBy",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "sourceType",
@@ -7610,7 +7634,7 @@
           "name": "createdByUserId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -9587,12 +9611,6 @@
       "method": "POST",
       "params": [
         {
-          "name": "userId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
           "name": "sourceType",
           "type": "string",
           "location": "body",
@@ -9633,12 +9651,6 @@
       "params": [
         {
           "name": "sourceType",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "userId",
           "type": "string",
           "location": "body",
           "required": true
@@ -10446,19 +10458,19 @@
           "name": "clientId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "firstName",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "lastName",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "title",
@@ -10470,13 +10482,13 @@
           "name": "email",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "phone",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "phoneMobile",
@@ -10697,12 +10709,6 @@
           "type": "string",
           "location": "body",
           "required": true
-        },
-        {
-          "name": "correlationId",
-          "type": "string",
-          "location": "body",
-          "required": true
         }
       ],
       "source": {
@@ -10850,7 +10856,7 @@
           "name": "clientId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "preferenceType",
@@ -11712,7 +11718,7 @@
           "name": "boardId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "title",
@@ -11766,7 +11772,7 @@
           "name": "color",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "metadata",
@@ -11944,7 +11950,7 @@
           "name": "boardId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "fromCardId",
@@ -12138,12 +12144,6 @@
       "params": [
         {
           "name": "boardId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "userId",
           "type": "string",
           "location": "body",
           "required": true
@@ -12902,12 +12902,6 @@
           "required": true
         },
         {
-          "name": "userId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
           "name": "barcode",
           "type": "string",
           "location": "body",
@@ -13083,12 +13077,6 @@
         },
         {
           "name": "notes",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "userId",
           "type": "string",
           "location": "body",
           "required": true
@@ -14195,12 +14183,6 @@
           "type": "string",
           "location": "body",
           "required": true
-        },
-        {
-          "name": "createdById",
-          "type": "string",
-          "location": "body",
-          "required": true
         }
       ],
       "source": {
@@ -14329,7 +14311,7 @@
           "name": "vehicleId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "status",
@@ -15293,7 +15275,7 @@
           "name": "versionedEntityId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "versionNumber",
@@ -15321,12 +15303,6 @@
         },
         {
           "name": "summary",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "userId",
           "type": "string",
           "location": "body",
           "required": true
@@ -17463,12 +17439,6 @@
           "type": "string",
           "location": "body",
           "required": true
-        },
-        {
-          "name": "userId",
-          "type": "string",
-          "location": "body",
-          "required": true
         }
       ],
       "source": {
@@ -17668,7 +17638,7 @@
           "name": "eventId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "budgetedRevenue",
@@ -18223,7 +18193,7 @@
           "name": "eventId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "highlights",
@@ -19063,7 +19033,7 @@
           "name": "code",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "areaType",
@@ -19183,7 +19153,7 @@
           "name": "facilityId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "areaId",
@@ -19432,7 +19402,7 @@
           "name": "facilityId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "areaId",
@@ -19742,6 +19712,104 @@
         "kind": "command",
         "entity": "FacilityWorkOrder",
         "command": "start"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "FeatureFlag.create",
+      "path": "/api/manifest/FeatureFlag/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "flagKey",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "rolloutPercent",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "FeatureFlag",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "FeatureFlag.disable",
+      "path": "/api/manifest/FeatureFlag/commands/disable",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "FeatureFlag",
+        "command": "disable"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "FeatureFlag.enable",
+      "path": "/api/manifest/FeatureFlag/commands/enable",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "FeatureFlag",
+        "command": "enable"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "FeatureFlag.setRollout",
+      "path": "/api/manifest/FeatureFlag/commands/set-rollout",
+      "method": "POST",
+      "params": [
+        {
+          "name": "rolloutPercent",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "FeatureFlag",
+        "command": "setRollout"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "FeatureFlag.softDelete",
+      "path": "/api/manifest/FeatureFlag/commands/soft-delete",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "FeatureFlag",
+        "command": "softDelete"
       },
       "auth": true,
       "tenant": true
@@ -20855,7 +20923,7 @@
           "name": "storageLocationId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "quantityOnHand",
@@ -21825,7 +21893,7 @@
           "name": "severity",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "message",
@@ -23278,13 +23346,13 @@
           "name": "vehicleId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "driverId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "scheduledDate",
@@ -23561,7 +23629,7 @@
           "name": "equipmentId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "assignedTo",
@@ -23901,7 +23969,7 @@
           "name": "menuId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "dishId",
@@ -24243,12 +24311,6 @@
         },
         {
           "name": "actionUrl",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "correlationId",
           "type": "string",
           "location": "body",
           "required": true
@@ -25150,7 +25212,7 @@
           "name": "payrollRunId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "action",
@@ -25428,7 +25490,7 @@
           "name": "payrollPeriodId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "runDate",
@@ -26105,7 +26167,7 @@
           "name": "prepListId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "stationId",
@@ -27843,7 +27905,7 @@
           "name": "proposalNumber",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "leadId",
@@ -28190,12 +28252,6 @@
           "required": true
         },
         {
-          "name": "userId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
           "name": "title",
           "type": "string",
           "location": "body",
@@ -28507,7 +28563,7 @@
           "name": "proposalId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "itemType",
@@ -29100,7 +29156,7 @@
           "name": "purchaseOrderId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "itemId",
@@ -30427,7 +30483,7 @@
           "name": "recipeVersionId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "ingredientId",
@@ -30549,7 +30605,7 @@
           "name": "recipeVersionId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "stepNumber",
@@ -32004,7 +32060,7 @@
           "name": "scheduleId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "employeeId",
@@ -32542,7 +32598,7 @@
           "name": "shipmentId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "itemId",
@@ -34188,13 +34244,13 @@
           "name": "timeEntryId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "employeeId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "requestedClockIn",
@@ -34961,7 +35017,7 @@
           "name": "moduleId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "moduleCode",
@@ -35305,13 +35361,13 @@
           "name": "assignmentId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "moduleId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "staffMemberId",
@@ -35347,7 +35403,7 @@
           "name": "managerReviewRequired",
           "type": "boolean",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "answersJson",
@@ -35680,13 +35736,13 @@
           "name": "moduleId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "code",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "sectionTitle",
@@ -38053,7 +38109,7 @@
           "name": "entityVersionId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "approverId",

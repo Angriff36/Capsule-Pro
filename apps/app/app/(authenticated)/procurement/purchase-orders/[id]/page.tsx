@@ -21,6 +21,7 @@ import { ArrowLeft, DollarSign, Loader2, Package } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { OperationalPageShell } from "../../../components/operational-page-shell";
 import {
   getPurchaseOrder,
   listPurchaseOrderItems,
@@ -196,27 +197,15 @@ export default function PODetailPage() {
     totalOrdered > 0 ? Math.round((totalReceived / totalOrdered) * 100) : 0;
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/procurement/purchase-orders">
-          <Button size="icon" variant="ghost">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="font-semibold text-2xl">{order.po_number}</h1>
-            <Badge className={config.color}>
-              <Icon className="mr-1 h-3 w-3" />
-              {config.label}
-            </Badge>
-          </div>
-          <p className="text-muted-foreground">
-            {order.vendor_name || "No vendor"} · {formatDate(order.order_date)}
-          </p>
-        </div>
-        <div className="flex gap-2">
+    <>
+    <OperationalPageShell
+      actions={
+        <>
+          <Link href="/procurement/purchase-orders">
+            <Button size="icon" variant="ghost">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </Link>
           {workflowActions.map((action: string) => {
             const actionConfig = STATUS_CONFIG[action];
             return (
@@ -248,8 +237,20 @@ export default function PODetailPage() {
               Receive Items
             </Button>
           )}
-        </div>
-      </div>
+        </>
+      }
+      description={`${order.vendor_name || "No vendor"} · ${formatDate(order.order_date)}`}
+      eyebrow="Procurement / Purchase orders"
+      title={
+        <span className="inline-flex items-center gap-3">
+          {order.po_number}
+          <Badge className={config.color}>
+            <Icon className="mr-1 h-3 w-3" />
+            {config.label}
+          </Badge>
+        </span>
+      }
+    >
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -331,6 +332,8 @@ export default function PODetailPage() {
         </Card>
       )}
 
+      </OperationalPageShell>
+
       {/* Receive Dialog */}
       <Dialog onOpenChange={setShowReceiveDialog} open={showReceiveDialog}>
         <DialogContent className="max-w-2xl">
@@ -395,6 +398,6 @@ export default function PODetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

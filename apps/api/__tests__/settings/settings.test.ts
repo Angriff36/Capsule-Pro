@@ -286,7 +286,7 @@ describe("Settings API", () => {
         );
         await listApiKeysRoot(request);
 
-        const call = vi.mocked(database.apiKey.findMany).mock.calls[0][0] as {
+        const call = vi.mocked(database.apiKey.findMany).mock.calls[0]?.[0] as {
           select: Record<string, boolean>;
         };
         expect(call.select.hashedKey).toBeUndefined();
@@ -2078,7 +2078,7 @@ describe("Settings API", () => {
       await getAuditLog(request);
 
       const where = (
-        vi.mocked(database.audit_log.findMany).mock.calls[0][0] as {
+        vi.mocked(database.audit_log.findMany).mock.calls[0]?.[0] as {
           where: Record<string, unknown>;
         }
       ).where;
@@ -2137,7 +2137,7 @@ describe("Settings API", () => {
       await getAuditLog(request);
 
       const firstCall = vi.mocked(database.audit_log.findMany).mock
-        .calls[0][0] as {
+        .calls[0]?.[0] as {
         take: number;
       };
       expect(firstCall.take).toBe(200);

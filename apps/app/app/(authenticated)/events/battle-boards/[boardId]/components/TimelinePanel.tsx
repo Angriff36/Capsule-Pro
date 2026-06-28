@@ -37,7 +37,11 @@ export function TimelinePanel({ board, onChange }: TimelinePanelProps) {
     value: string | boolean
   ) {
     const updated = [...board.timeline];
-    updated[index] = { ...updated[index], [field]: value };
+    const existing = updated[index];
+    if (!existing) {
+      return;
+    }
+    updated[index] = { ...existing, [field]: value };
     onChange({ ...board, timeline: updated });
   }
 
@@ -50,7 +54,11 @@ export function TimelinePanel({ board, onChange }: TimelinePanelProps) {
   }
 
   function toggleHighlight(index: number) {
-    updateEntry(index, "highlighted", !board.timeline[index].highlighted);
+    const entry = board.timeline[index];
+    if (!entry) {
+      return;
+    }
+    updateEntry(index, "highlighted", !entry.highlighted);
   }
 
   return (

@@ -18,6 +18,7 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { ArrowLeft, Loader2, Package, Plus, Search } from "lucide-react";
 import Link from "next/link";
+import { OperationalPageShell } from "../../../components/operational-page-shell";
 import { useRouter } from "next/navigation";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useState } from "react";
@@ -180,22 +181,19 @@ export default function NewPOPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      {/* Header */}
-      <div className="flex items-center gap-4">
+    <>
+      <OperationalPageShell
+      actions={
         <Link href="/procurement/purchase-orders">
           <Button size="icon" variant="ghost">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
-        <div className="flex-1">
-          <h1 className="font-semibold text-2xl">New Purchase Order</h1>
-          <p className="text-muted-foreground">
-            Create a new purchase order for your vendor.
-          </p>
-        </div>
-      </div>
-
+      }
+      description="Create a new purchase order for your vendor."
+      eyebrow="Procurement / Purchase orders"
+      title="New purchase order"
+    >
       <form onSubmit={handleCreate}>
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           {/* Main form */}
@@ -317,6 +315,7 @@ export default function NewPOPage() {
           </div>
         </div>
       </form>
+      </OperationalPageShell>
 
       {/* Add Item Dialog */}
       <Dialog onOpenChange={setShowItemDialog} open={showItemDialog}>
@@ -379,6 +378,6 @@ export default function NewPOPage() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

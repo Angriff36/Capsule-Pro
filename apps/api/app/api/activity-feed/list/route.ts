@@ -8,6 +8,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
+import { getReactionLogActivities } from "@/app/lib/activity-feed-service";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
@@ -32,12 +33,6 @@ export interface ActivityFeedItem {
   tenantId: string;
   title: string;
   visibility: string;
-}
-
-interface ActivityFeedResponse {
-  activities: ActivityFeedItem[];
-  hasMore: boolean;
-  totalCount: number;
 }
 
 // GET /api/activity-feed - List activities with filtering and pagination
@@ -112,7 +107,7 @@ export async function GET(request: NextRequest) {
     const totalCount = await database.activityFeed.count({ where });
 
     // Fetch activities with pagination
-    const activities = await database.activityFeed.findMany({
+    let activities = await database.activityFeed.findMany({
       where,
       orderBy: {
         createdAt: "desc",
@@ -121,12 +116,37 @@ export async function GET(request: NextRequest) {
       skip: offset,
     });
 
-    const hasMore = offset + activities.length < totalCount;
+    let effectiveTotal = totalCount;
+
+    // When ActivityFeed is empty, surface historical command activity from
+    // reaction_logs (written on every governed command) until feed rows exist.
+    const hasActivityFeedOnlyFilters = Boolean(
+      activityType ||
+        entityId ||
+        performedBy ||
+        importance ||
+        sourceType ||
+        correlationId
+    );
+
+    if (totalCount === 0 && !hasActivityFeedOnlyFilters) {
+      const fallback = await getReactionLogActivities(tenantId, {
+        limit,
+        offset,
+        startDate: startDate ? new Date(startDate) : undefined,
+        endDate: endDate ? new Date(endDate) : undefined,
+        entityType: entityType ?? undefined,
+      });
+      activities = fallback.activities as typeof activities;
+      effectiveTotal = fallback.totalCount;
+    }
+
+    const hasMore = offset + activities.length < effectiveTotal;
 
     return manifestSuccessResponse({
       activities: activities as ActivityFeedItem[],
       hasMore,
-      totalCount,
+      totalCount: effectiveTotal,
     });
   } catch (error) {
     captureException(error);

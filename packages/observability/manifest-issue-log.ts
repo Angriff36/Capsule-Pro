@@ -16,7 +16,8 @@ export type ManifestIssueKind =
   | "auth_error"
   | "prisma_error"
   | "server_action_error"
-  | "request_error";
+  | "request_error"
+  | "invalid_params";
 
 export interface ManifestIssueEntry {
   command?: string;
@@ -50,6 +51,8 @@ export interface ManifestIssueEntry {
  */
 const EXPECTED_KINDS: ReadonlySet<ManifestIssueKind> = new Set([
   "guard_failed",
+  // A 400 from the pre-flight Zod gate is expected client input, not a fault.
+  "invalid_params",
 ]);
 
 type IssueInput = Omit<ManifestIssueEntry, "ts">;

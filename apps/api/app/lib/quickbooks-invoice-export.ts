@@ -141,7 +141,7 @@ function escapeCSV(value: string | number | undefined | null): string {
  */
 function formatDateForQB(date: Date, format: "us" | "iso" = "us"): string {
   if (format === "iso") {
-    return date.toISOString().split("T")[0];
+    return date.toISOString().split("T")[0] ?? "";
   }
   // US format: MM/DD/YYYY
   const month = String(date.getMonth() + 1).padStart(2, "0");

@@ -22,7 +22,7 @@ entity PrepList mixin TenantScoped {
   property totalEstimatedTime: int = 0
   searchable property notes: string = ""
   property generatedAt: datetime
-  property finalizedAt: datetime
+  property finalizedAt: datetime?
   property isActive: boolean = true
 
   timestamps
@@ -77,6 +77,7 @@ entity PrepList mixin TenantScoped {
   transition status from "draft" to ["draft", "finalized", "cancelled"]
   transition status from "finalized" to ["completed", "cancelled", "draft"]
   transition status from "completed" to ["draft", "cancelled"]
+  transition status from "cancelled" to ["cancelled"]
 
   default policy PrepListDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Prep list management"
   command update(newName: string, newDietaryRestrictions: array<string>, newNotes: string) {
@@ -341,7 +342,7 @@ entity PrepListItem mixin TenantScoped, SoftDeletable {
     emit PrepListItemUncompleted
   }
 
-  command create(prepListId: string, stationId: string, stationName: string, ingredientId: string, ingredientName: string, category: string, baseQuantity: number, baseUnit: string, scaledQuantity: number, scaledUnit: string, isOptional: boolean, preparationNotes: string, allergens: array<string>, dietarySubstitutions: array<string>, dishId: string, dishName: string, recipeVersionId: string, sortOrder: number) {
+  command create(optional prepListId: string, stationId: string, stationName: string, ingredientId: string, ingredientName: string, category: string, baseQuantity: number, baseUnit: string, scaledQuantity: number, scaledUnit: string, isOptional: boolean, preparationNotes: string, allergens: array<string>, dietarySubstitutions: array<string>, dishId: string, dishName: string, recipeVersionId: string, sortOrder: number) {
     guard prepListId != null and prepListId != "" "Prep list ID is required"
     guard ingredientId != null and ingredientId != "" "Ingredient ID is required"
     guard ingredientName != null and ingredientName != "" "Ingredient name is required"

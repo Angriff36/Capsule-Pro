@@ -22,6 +22,7 @@
     ".next",
     ".next-dev",
     "dist",
-    "app/api/command-board/**"
+    "app/api/command-board/**",
+    "__tests__/**/__snapshots__/**"
   ]
 }

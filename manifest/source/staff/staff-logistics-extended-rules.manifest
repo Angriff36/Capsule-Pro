@@ -14,7 +14,7 @@ entity TimecardApproval mixin TenantScoped {
   property required submittedBy: string
   indexed property status: string = "pending"
   property approvedBy: string = ""
-  property approvedAt: datetime
+  property approvedAt: datetime?
   searchable property notes: string = ""
   timestamps
 
@@ -160,7 +160,7 @@ entity TipPool mixin TenantScoped {
   property fixedShares: string = "{}"
   // Distribution tracking
   property distributedAmount: money = 0
-  property distributedAt: datetime
+  property distributedAt: datetime?
   property distributedBy: string = ""
   timestamps
 
@@ -255,7 +255,7 @@ entity DisciplinaryAction mixin TenantScoped {
   property issuedBy: string = ""
   property escalatedTo: string = ""
   property escalationReason: string = ""
-  property escalatedAt: datetime
+  property escalatedAt: datetime?
   property issuedDate: datetime = now()
   timestamps
 
@@ -274,6 +274,7 @@ entity DisciplinaryAction mixin TenantScoped {
   constraint requireReason: self.reason != "" "Reason is required"
 
   relationship belongsTo employee: User with employeeId
+  relationship hasMany actionMilestones: ActionMilestone
 
   default policy DisciplinaryActionDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(employeeId: string, actionType: string, reason: string, severity: string, issuedBy: string) {
@@ -332,7 +333,7 @@ entity ActionMilestone mixin TenantScoped {
   searchable property title: string = ""
   property dueDate: datetime
   indexed property status: string = "pending"
-  property completedDate: datetime
+  property completedDate: datetime?
   timestamps
 
   computed isPending: boolean = self.status == "pending"
@@ -348,7 +349,7 @@ entity ActionMilestone mixin TenantScoped {
   relationship belongsTo disciplinaryAction: DisciplinaryAction fields [tenantId, disciplinaryActionId] references [tenantId, id]
 
   default policy ActionMilestoneDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(disciplinaryActionId: string, title: string, dueDate: datetime) {
+  command create(optional disciplinaryActionId: string, title: string, dueDate: datetime) {
     guard disciplinaryActionId != null and disciplinaryActionId != "" "Disciplinary action ID is required"
     guard title != null and title != "" "Milestone title is required"
     guard dueDate != null "Due date is required"
@@ -388,8 +389,8 @@ entity PerformanceReview mixin TenantScoped {
   property scheduledDate: datetime
   property rating: decimal = 0
   indexed property status: string = "draft"
-  property completedDate: datetime
-  property employeeAcknowledgedAt: datetime
+  property completedDate: datetime?
+  property employeeAcknowledgedAt: datetime?
   timestamps
 
   computed isDraft: boolean = self.status == "draft"
@@ -533,6 +534,8 @@ entity OnboardingTask mixin TenantScoped, SoftDeletable {
     emit OnboardingTaskRemoved
   }
 
+  relationship hasMany completions: OnboardingCompletion
+
   store OnboardingTask in durable
 }
 
@@ -652,6 +655,7 @@ entity DeliveryRoute mixin TenantScoped {
   transition status from "in_progress" to ["completed"]
 
   relationship belongsTo driver: Driver with driverId
+  relationship hasMany stops: RouteStop
 
   default policy DeliveryRouteDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(name: string, routeNumber: string, driverId: string, scheduledDate: datetime, totalDistance: number) {
@@ -704,7 +708,7 @@ entity RouteStop mixin TenantScoped {
   property stopNumber: int = 0
   property plannedArrival: datetime
   indexed property status: string = "pending"
-  property actualArrival: datetime
+  property actualArrival: datetime?
   timestamps
 
   computed isPending: boolean = self.status == "pending"
@@ -818,7 +822,7 @@ entity PreventiveMaintenanceSchedule mixin TenantScoped {
   property frequency: string = "monthly"
   property intervalDays: int = 30
   property nextDueAt: datetime
-  property lastCompletedAt: datetime
+  property lastCompletedAt: datetime?
   property assignedTo: string = ""
   property estimatedHours: decimal = 0
   property estimatedCost: money = 0

@@ -21,7 +21,7 @@ entity Deal mixin TenantScoped {
   indexed property status: DealStatus = open
   property probability: decimal = 0
   property expectedCloseDate: datetime
-  property actualCloseDate: datetime
+  property actualCloseDate: datetime?
   property assignedTo: string = ""
   searchable property notes: string = ""
   timestamps

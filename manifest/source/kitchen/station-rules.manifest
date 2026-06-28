@@ -25,7 +25,7 @@ entity Station mixin TenantScoped {
   // without full deactivation — tasks cannot be assigned but existing ones aren't dropped.
   property inMaintenance: boolean = false
   property maintenanceReason: string = ""
-  property maintenanceStartAt: datetime
+  property maintenanceStartAt: datetime?
   property currentTaskCount: int = 0
   searchable property notes: string = ""
   timestamps
@@ -35,6 +35,19 @@ entity Station mixin TenantScoped {
   computed capacityRemaining: int = self.capacitySimultaneousTasks - self.currentTaskCount
   computed availablePercentage: number = percent(self.capacityRemaining, self.capacitySimultaneousTasks)
   computed isAvailable: boolean = self.isActive and self.inMaintenance == false
+  // Open-backlog rollups over the prepTasks back-relation (station workload lens). Filter on
+  // the `open` state — PrepTask's initial/default status (PrepTaskStatus enum:
+  // open|pending|in_progress|done|canceled), i.e. tasks routed to this station that nobody has
+  // started yet. Complementary to the stored `currentTaskCount`, which the syncTaskCount
+  // middleware keeps at the in_progress/active load: currentTaskCount = work in flight,
+  // openPrepTask* = work still waiting. `estimatedMinutes` is each task's planned duration, so
+  // the sum is the estimated remaining prep minutes queued at the station — a load-balancing
+  // signal. Flip the predicate literal off "open" and the rollup silently reports a different
+  // cohort with no compile error; the station-aggregate regression test locks
+  // aggregate/relationship/predicate/selector. IR-only computeds (no stored column, no
+  // migration); request-cached like the capacity computeds above.
+  computed openPrepTaskCount: int = count_of(filter(self.prepTasks, (t) => t.status == "open")) cache request
+  computed openPrepTaskMinutes: int = sum(filter(self.prepTasks, (t) => t.status == "open"), (t) => t.estimatedMinutes) cache request
 
   constraint positiveCapacity: self.capacitySimultaneousTasks > 0 "Station capacity must be positive"
   constraint validStationType: self.stationType in ["hot-line", "cold-prep", "bakery", "garnish", "prep-station"] "Invalid station type"

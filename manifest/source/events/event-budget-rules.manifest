@@ -19,6 +19,7 @@ entity EventBudget mixin TenantScoped, SoftDeletable {
   computed isFinalized: boolean = self.status == "finalized"
   computed isOverBudget: boolean = self.totalActualAmount > self.totalBudgetAmount
   relationship belongsTo linkedEvent: Event fields [tenantId, eventId] references [tenantId, id]
+  relationship hasMany lineItems: BudgetLineItem
   computed hasVariance: boolean = self.varianceAmount != 0
   computed varianceExceedsThreshold: boolean = self.variancePercentage > 10 or self.variancePercentage < -10
 
@@ -26,7 +27,7 @@ entity EventBudget mixin TenantScoped, SoftDeletable {
   constraint validStatus: self.status in ["draft", "approved", "finalized"] "Status must be valid"
   constraint positiveBudget: self.totalBudgetAmount >= 0 "Total budget amount must be non-negative"
 
-  transition status from "draft" to ["approved"]
+  transition status from "draft" to ["approved", "finalized"]
   transition status from "approved" to ["finalized"]
 
   constraint overrideable warnOverBudget:warn self.totalActualAmount > self.totalBudgetAmount {

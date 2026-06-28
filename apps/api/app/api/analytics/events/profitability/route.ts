@@ -1,5 +1,7 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+// OLAP reads route to the read replica; the account provisioning write below
+// stays on the primary `database` (a read replica rejects writes).
+import { analyticsDatabase, database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
@@ -47,7 +49,7 @@ export async function GET(request: Request) {
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - months);
 
-    const result = await database.$queryRaw<
+    const result = await analyticsDatabase.$queryRaw<
       Array<{
         month: string;
         total_events: string;

@@ -38,19 +38,6 @@ function arrayToManifestString(arr: string[]): string {
   return arr.join(",");
 }
 
-/**
- * Convert comma-separated string from manifest to array for API response.
- */
-function _manifestStringToArray(str: string): string[] {
-  if (!str || str === "") {
-    return [];
-  }
-  return str
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
-
 export async function POST(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();

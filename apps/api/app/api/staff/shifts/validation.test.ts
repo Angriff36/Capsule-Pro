@@ -208,7 +208,7 @@ describe("Shift Validation", () => {
 
       expect(result.severity).toBe("BLOCK");
       expect(result.expiredCerts).toHaveLength(1);
-      expect(result.expiredCerts[0].type).toBe("food_safety");
+      expect(result.expiredCerts[0]!.type).toBe("food_safety");
     });
 
     it("handles multiple required certifications", async () => {

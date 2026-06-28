@@ -28,6 +28,11 @@ projections:
     # schema has no field for projection name or surface strings (route/detail) — those
     # are CLI/wrapper internals. See https://manifest-b1e8623f.mintlify.app/cli/configuration
     options:
+      # ts.types datetime scalars → ISO `string` (Capsule wire convention:
+      # manifest/capsule-conventions.json). Default 'date' emits `Date`, which is a
+      # runtime lie over JSON. With this set, the stock `--surface types` output is
+      # directly usable — the old scalar-type-map.mjs `toTsTypes` post-process retired.
+      dateSerialization: iso-string
       # Auth: Clerk (auth().protect() on protected routes) — constitution / AGENTS.md.
       authProvider: clerk
       # Import the Clerk `auth()` helper from the repo wrapper (@repo/auth/server),

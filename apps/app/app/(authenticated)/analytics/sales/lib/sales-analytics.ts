@@ -1,5 +1,6 @@
 import type { WorkBook, WorkSheet } from "xlsx";
 import { invariant } from "@/app/lib/invariant";
+import { isPlainRecord } from "@/app/lib/is-record";
 
 // Lazy load xlsx utils to keep it out of initial bundle
 const getXlsxUtils = async () => {
@@ -152,7 +153,7 @@ const RAW_SHEETS = [
   "RAW_MasterEvents_2025",
   "RAW_Deals_Lost_2025",
   "RAW_LeadSource_2025",
-];
+] as const;
 const MAP_SHEET = "MAP_EventType_2025";
 const CALCS_SHEET = "CALCS_Funnel";
 const MASTER_EVENT_ALIASES = [
@@ -193,9 +194,6 @@ const CREATED_DATE_COL = "created_date";
 
 const CURRENCY_HINTS = ["total", "value", "amount", "budget", "revenue"];
 const DATE_HINTS = ["date", "created"];
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
 
 const normalizeName = (value: string): string => {
   const text = value.toLowerCase().replace(/[^a-z0-9]+/g, " ");
@@ -251,7 +249,7 @@ const resolveSheetName = (
   return candidates[0]?.name ?? null;
 };
 
-const normalizeMappingKey = (value: CellValue): string | null => {
+const normalizeMappingKey = (value: CellValue | undefined): string | null => {
   if (value === null || value === undefined) {
     return null;
   }
@@ -293,7 +291,7 @@ const findColumn = (rows: DataRow[], candidates: string[]): string | null => {
   return null;
 };
 
-const toNumber = (value: CellValue): number | null => {
+const toNumber = (value: CellValue | undefined): number | null => {
   if (value === null || value === undefined) {
     return null;
   }
@@ -325,7 +323,7 @@ const excelDateToJs = (value: number): Date | null => {
   return Number.isNaN(date.getTime()) ? null : date;
 };
 
-const toDate = (value: CellValue): Date | null => {
+const toDate = (value: CellValue | undefined): Date | null => {
   if (value === null || value === undefined) {
     return null;
   }
@@ -393,7 +391,7 @@ const parseSheetRows = async (sheet: WorkSheet): Promise<DataRow[]> => {
   }) as unknown;
   invariant(Array.isArray(rows), "Workbook sheet rows must be an array");
   return rows.map((row: unknown) => {
-    invariant(isRecord(row), "Each row must be an object");
+    invariant(isPlainRecord(row), "Each row must be an object");
     const parsed: DataRow = {};
     for (const [key, value] of Object.entries(row)) {
       parsed[key] = value as CellValue;
@@ -472,7 +470,7 @@ export const loadSalesData = async (workbook: WorkBook): Promise<SalesData> => {
   };
 };
 
-const normalizeStatus = (value: CellValue): string | null => {
+const normalizeStatus = (value: CellValue | undefined): string | null => {
   if (value === null || value === undefined) {
     return null;
   }
@@ -746,7 +744,7 @@ const groupBy = <T>(
   return grouped;
 };
 
-const formatGroupKey = (value: CellValue): string =>
+const formatGroupKey = (value: CellValue | undefined): string =>
   value === null || value === undefined || value === ""
     ? "Unknown"
     : String(value);
@@ -763,7 +761,7 @@ const meanValues = (values: Array<number | null>): number => {
 };
 
 const valueCounts = (
-  values: CellValue[]
+  values: Array<CellValue | undefined>
 ): Array<{
   label: string;
   count: number;
@@ -884,8 +882,8 @@ export const calculateWeeklyMetrics = (
 
   const createdWindow = filterByDate(masterEvents, createdCol, window);
   const eventWindow = filterByDate(masterEvents, eventCol, window);
-  const statusWindow = createdWindow.map((_, index) => {
-    const rowIndex = masterEvents.indexOf(createdWindow[index]);
+  const statusWindow = createdWindow.map((row) => {
+    const rowIndex = masterEvents.indexOf(row);
     return status[rowIndex] ?? null;
   });
   const statusEvent = eventWindow.map((row) => {
@@ -1516,9 +1514,9 @@ const calculateSegmentSummary = (
     .map(([key, value]) => {
       const [event_type, size_bucket, budget_tier] = key.split("||");
       return {
-        event_type,
-        size_bucket,
-        budget_tier,
+        event_type: event_type ?? "",
+        size_bucket: size_bucket ?? "",
+        budget_tier: budget_tier ?? "",
         count: value.count,
         revenue: value.revenue,
       };
@@ -1613,9 +1611,9 @@ const calculatePricingSummary = (
       actuals.push(actual);
     }
   });
-  const variance = budgets.map((budget, idx) => actuals[idx] - budget);
+  const variance = budgets.map((budget, idx) => (actuals[idx] ?? 0) - budget);
   const discountRate = budgets.map((budget, idx) =>
-    budget ? (budget - actuals[idx]) / budget : 0
+    budget ? (budget - (actuals[idx] ?? 0)) / budget : 0
   );
 
   return [
@@ -2121,7 +2119,7 @@ export const calculatePeriodSummary = (
   };
 };
 
-const parseNumber = (value: CellValue): number | null => {
+const parseNumber = (value: CellValue | undefined): number | null => {
   if (value === null || value === undefined) {
     return null;
   }
@@ -2269,7 +2267,7 @@ export const validateFunnel = (
 
   rows.forEach(({ key, label }) => {
     const expectedValue = expected[key];
-    const actualValue = actual[key];
+    const actualValue = actual[key] ?? null;
     if (expectedValue === undefined) {
       results.push({
         metric: label,
@@ -2282,7 +2280,7 @@ export const validateFunnel = (
       passed = false;
       return;
     }
-    const delta = actualValue - expectedValue;
+    const delta = (actualValue ?? 0) - expectedValue;
     const deltaPct = expectedValue ? delta / expectedValue : null;
     const status =
       deltaPct !== null && Math.abs(deltaPct) <= tolerance ? "Pass" : "Fail";

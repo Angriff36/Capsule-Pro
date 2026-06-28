@@ -3,7 +3,7 @@
  * Covers the mobile-offline-mode feature
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 // Mock React Native dependencies
 vi.mock("@react-native-async-storage/async-storage", () => ({

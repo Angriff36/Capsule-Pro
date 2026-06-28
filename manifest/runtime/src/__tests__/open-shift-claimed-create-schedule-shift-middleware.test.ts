@@ -215,7 +215,7 @@ describe("Middleware conformance: OpenShiftClaimed → ScheduleShift.create", ()
     const shifts = await shiftsOf(provider);
     // THE PROOF: exactly one shift, carrying the claim's identity + the schedule's location.
     expect(shifts).toHaveLength(1);
-    const shift = shifts[0];
+    const shift = shifts[0]!;
     expect(shift.employeeId).toBe("emp-alex");
     expect(shift.scheduleId).toBe(SCHEDULE_ID);
     expect(shift.locationId).toBe(LOCATION_ID);
@@ -272,8 +272,8 @@ describe("Middleware conformance: OpenShiftClaimed → ScheduleShift.create", ()
     // Still exactly one shift — the pre-existing one, untouched.
     const shifts = await shiftsOf(provider);
     expect(shifts).toHaveLength(1);
-    expect(shifts[0].id).toBe("existing-shift");
-    expect(shifts[0].notes).toBe("manually created earlier");
+    expect(shifts[0]!.id).toBe("existing-shift");
+    expect(shifts[0]!.notes).toBe("manually created earlier");
   });
 });
 

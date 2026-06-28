@@ -7,8 +7,8 @@ entity PurchaseOrder mixin TenantScoped, SoftDeletable {
   property required vendorId: string
   property required locationId: string
   property required orderDate: datetime = now()
-  property expectedDeliveryDate: datetime
-  property actualDeliveryDate: datetime
+  property expectedDeliveryDate: datetime?
+  property actualDeliveryDate: datetime?
   indexed property required status: string = "draft"
   property required subtotal: money = 0
   property required taxAmount: money = 0
@@ -16,9 +16,9 @@ entity PurchaseOrder mixin TenantScoped, SoftDeletable {
   property required total: money = 0
   searchable property notes: string = ""
   property submittedBy: string = ""
-  property submittedAt: datetime
+  property submittedAt: datetime?
   property receivedBy: string = ""
-  property receivedAt: datetime
+  property receivedAt: datetime?
   timestamps
   property itemCount: int = 0
 
@@ -39,6 +39,22 @@ entity PurchaseOrder mixin TenantScoped, SoftDeletable {
   computed isCancelled: boolean = self.status == "cancelled"
   computed hasItems: boolean = self.itemCount > 0
   computed isEditable: boolean = self.status == "draft"
+
+  // Quality-hold rollups over this PO's line-item children (the existing hasMany `items`
+  // back-relation — PurchaseOrderItem). The FILTER carries the business meaning: count and
+  // total ONLY the line items still in the "pending" qualityStatus — items received-but-not-
+  // yet-quality-cleared — NOT every line item (already-accepted/rejected items would inflate
+  // the signal into meaningless gross PO volume). Both facets filter the SAME "pending"
+  // literal so they tell one coherent story: count = how many line items are still awaiting
+  // quality acceptance, sum = the dollars tied up in that hold (each item's own totalCost,
+  // the extended line cost — NOT discrepancyAmount, which is a DIFFERENT cohort measuring only
+  // shorted/damaged value). count_of (1 arg) vs sum (2 args, value selector) = distinct facets,
+  // not a duplicate. Drop or flip the literal and the rollup silently reports a different
+  // cohort with no compile error; the purchase-order-aggregate-computeds regression test locks
+  // the shape. IR-only computeds (no stored column, no migration); request-cached like the
+  // boolean status computeds above.
+  computed pendingQualityItemCount: int = count_of(filter(self.items, (i) => i.qualityStatus == "pending")) cache request
+  computed pendingQualityValueTotal: money = sum(filter(self.items, (i) => i.qualityStatus == "pending"), (i) => i.totalCost) cache request
 
   constraint validStatus: self.status in ["draft", "submitted", "approved", "rejected", "ordered", "partially_received", "received", "cancelled"] "Invalid purchase order status"
 
@@ -183,6 +199,7 @@ entity PurchaseOrder mixin TenantScoped, SoftDeletable {
   transition status from "approved" to ["ordered", "cancelled"]
   transition status from "ordered" to ["partially_received", "received", "cancelled"]
   transition status from "partially_received" to ["received", "cancelled"]
+  transition status from "rejected" to ["cancelled"]
   // "rejected", "cancelled", "received" are terminal states
 
   store PurchaseOrder in durable
@@ -215,7 +232,7 @@ entity PurchaseOrderItem mixin TenantScoped, SoftDeletable {
   constraint positiveUnitCost: self.unitCost >= 0 "Unit cost cannot be negative"
 
   default policy PurchaseOrderItemDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Purchase order management"
-  command create(purchaseOrderId: string, itemId: string, quantityOrdered: decimal, unitId: number, unitCost: money, notes: string) {
+  command create(optional purchaseOrderId: string, itemId: string, quantityOrdered: decimal, unitId: number, unitCost: money, notes: string) {
     guard purchaseOrderId != null and purchaseOrderId != "" "Purchase order ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
     guard quantityOrdered != null and quantityOrdered > 0 "Quantity must be positive"

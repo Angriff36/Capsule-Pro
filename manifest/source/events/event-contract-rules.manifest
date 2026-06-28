@@ -14,9 +14,9 @@ entity EventContract mixin TenantScoped, SoftDeletable {
   searchable property notes: string = ""
   // Bug fix: expiresAt is a lifecycle datetime — no default
   property expiresAt: datetime
-  property sentAt: datetime
-  property viewedAt: datetime
-  property signedAt: datetime
+  property sentAt: datetime?
+  property viewedAt: datetime?
+  property signedAt: datetime?
   timestamps
   property canceledBy: string = ""
 
@@ -29,9 +29,10 @@ entity EventContract mixin TenantScoped, SoftDeletable {
   computed hasDocument: boolean = self.documentUrl != ""
   computed hasExpiration: boolean = self.expiresAt != null
 
-  transition status from "draft" to ["sent"]
-  transition status from "sent" to ["viewed", "expired", "cancelled"]
+  transition status from "draft" to ["sent", "cancelled", "expired"]
+  transition status from "sent" to ["viewed", "expired", "cancelled", "signed"]
   transition status from "viewed" to ["signed", "expired", "cancelled"]
+  transition status from "expired" to ["expired", "cancelled"]
 
   constraint requireEvent: self.eventId != null and self.eventId != "" "Event ID is required"
   constraint requireClient: self.clientId != null and self.clientId != "" "Client ID is required"
@@ -39,6 +40,8 @@ entity EventContract mixin TenantScoped, SoftDeletable {
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
+  relationship hasMany signatures: ContractSignature
+  relationship hasMany revenueSchedules: RevenueRecognitionSchedule
 
   default policy EventContractDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(eventId: string, clientId: string, contractNumber: string, title: string, documentUrl: string, documentType: string, notes: string, expiresAt: datetime) {
@@ -136,8 +139,8 @@ entity ContractSignature mixin TenantScoped, SoftDeletable {
   property signerEmail: string = ""
   property signerRole: string = ""
   property ipAddress: string = ""
-  property verifiedAt: datetime
-  property invalidatedAt: datetime
+  property verifiedAt: datetime?
+  property invalidatedAt: datetime?
   property invalidationReason: string = ""
   property isValid: boolean = true
   timestamps

@@ -18,6 +18,23 @@ entity StorageLocation mixin TenantScoped, SoftDeletable {
   timestamps
 
   computed isDeactivated: boolean = self.isActive == false
+  // Waste-burden rollups over this slot's transaction children (the hasMany
+  // transactions back-relation). Both FILTER on transactionType == "waste" to
+  // isolate spoilage/loss recorded at this physical storage location — the count
+  // answers "how many waste events happened here" (operational signal: which
+  // cooler/shelf loses product) and the money sum answers "how much value was
+  // lost to waste here" (financial impact). InventoryTransaction is an
+  // append-only ledger, so these only ever grow; that's intended (lifetime
+  // burden, not a live balance). Drop the filter and the count would tally
+  // EVERY transaction type (receipts/issues/transfers too), and the sum would
+  // add their cost — both massively overstating waste; flip the literal to any
+  // other type and the rollup silently reports an unrelated number with no
+  // compile error. The storage-location-aggregate-computeds regression test
+  // locks the predicate + shape. IR-only computeds (no stored column, no
+  // migration); request-cached like the Equipment/Vehicle/Event/Client/Invoice/
+  // Lead precedent.
+  computed wasteTransactionCount: int = count_of(filter(self.transactions, (t) => t.transactionType == "waste")) cache request
+  computed wasteCostTotal: money = sum(filter(self.transactions, (t) => t.transactionType == "waste"), (t) => t.totalCost) cache request
 
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
 
@@ -98,7 +115,7 @@ entity InventoryStock mixin TenantScoped {
   }
 
   default policy InventoryStockDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
-  command create(itemId: string, storageLocationId: string, quantityOnHand: decimal, unitId: int) {
+  command create(itemId: string, optional storageLocationId: string, quantityOnHand: decimal, unitId: int) {
     guard itemId != null and itemId != "" "Inventory item ID is required"
     guard storageLocationId != null and storageLocationId != "" "Storage location ID is required"
     guard quantityOnHand >= 0 "Initial quantity cannot be negative"
@@ -167,8 +184,8 @@ entity InventoryAlert mixin TenantScoped {
   property required notes: string
   indexed property required status: string = "active"
   property triggeredAt: datetime
-  property acknowledgedAt: datetime
-  property resolvedAt: datetime
+  property acknowledgedAt: datetime?
+  property resolvedAt: datetime?
   property acknowledgedBy: string = ""
   property resolvedBy: string = ""
   timestamps
@@ -184,7 +201,10 @@ entity InventoryAlert mixin TenantScoped {
   constraint validAlertType: self.alertType in ["low_stock", "out_of_stock", "expiry_warning", "expiry_critical", "overstock"] "Invalid alert type"
 
   // State transitions
-  transition status from "active" to ["acknowledged"]
+  // active -> resolved is required: markResolved guards `status != "resolved"`
+  // (callable from active OR acknowledged), so an active alert can be resolved
+  // directly without first being acknowledged (e.g. staff restocked the item).
+  transition status from "active" to ["acknowledged", "resolved"]
   transition status from "acknowledged" to ["resolved"]
 
   default policy InventoryAlertDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
@@ -253,8 +273,8 @@ entity InventoryForecast mixin TenantScoped {
   property required projectedQuantity: decimal = 0
   property required confidence: decimal = 0
   indexed property status: string = "draft"
-  property publishedAt: datetime
-  property approvedAt: datetime
+  property publishedAt: datetime?
+  property approvedAt: datetime?
   property approvedBy: string = ""
   timestamps
 
@@ -702,6 +722,8 @@ entity ProcurementBudget mixin TenantScoped {
     emit ProcurementBudgetClosed
   }
 
+  relationship hasMany alerts: ProcurementBudgetAlert
+
   store ProcurementBudget in durable
 }
 
@@ -716,7 +738,7 @@ entity ProcurementBudgetAlert mixin TenantScoped {
   property required alertType: string
   property required message: string
   property triggeredAt: datetime
-  property acknowledgedAt: datetime
+  property acknowledgedAt: datetime?
   property acknowledgedBy: string = ""
   property isAcknowledged: boolean = false
   timestamps
@@ -770,7 +792,7 @@ entity AuditSchedule mixin TenantScoped {
   property required time: string
   property required createdBy: string
   property nextRunAt: datetime
-  property lastRunAt: datetime
+  property lastRunAt: datetime?
   property isActive: boolean = true
   timestamps
 

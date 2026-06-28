@@ -296,7 +296,7 @@ const isCriticalControlPoint = (
 };
 
 /** Enhanced step card component with timer, temperature, equipment, and tips */
-function StepCard({ step, index }: { step: RecipeStepDisplay; index: number }) {
+function StepCard({ step }: { step: RecipeStepDisplay }) {
   const [tipsOpen, setTipsOpen] = useState(false);
   const [tempVerified, setTempVerified] = useState(false);
   const hasDuration = step.duration_minutes && step.duration_minutes > 0;
@@ -634,12 +634,13 @@ function HistoryTabContent({
   }, [recipeId]);
 
   useEffect(() => {
-    if (versions.length === 0) {
+    const firstVersion = versions[0];
+    if (!firstVersion) {
       return;
     }
     // Use functional updates to avoid needing compareFrom/compareTo in deps
-    setCompareFrom((prev) => prev ?? versions[0].id);
-    setCompareTo((prev) => prev ?? versions[1]?.id ?? versions[0].id);
+    setCompareFrom((prev) => prev ?? firstVersion.id);
+    setCompareTo((prev) => prev ?? versions[1]?.id ?? firstVersion.id);
   }, [versions]);
 
   const handleViewVersion = async (version: RecipeVersionRow) => {
@@ -1452,8 +1453,8 @@ export function RecipeDetailTabs({
           <CardContent>
             {steps?.length > 0 ? (
               <div className="space-y-4">
-                {steps?.map((step, index) => (
-                  <StepCard index={index} key={step.step_number} step={step} />
+                {steps?.map((step) => (
+                  <StepCard key={step.step_number} step={step} />
                 ))}
               </div>
             ) : recipe.instructions ? (

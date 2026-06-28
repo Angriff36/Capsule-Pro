@@ -6,8 +6,8 @@
     "entity",
     "method"
   ],
-  "note": "Baseline of Capsule-local direct-write audit findings. Each entry is a (file, governedEntity, method) triple currently in the 'reported, governed, no alias, no bypass' bucket. New triples are blocked by scripts/manifest/audit-direct-writes-baseline.mjs. Regenerate ONLY after intentionally migrating or bypassing a finding.",
-  "count": 7,
+  "note": "Baseline of Capsule-local direct-write audit findings. Each entry is a (file, governedEntity, method) triple currently in the 'reported, governed, no alias, no bypass' bucket. New triples are blocked by scripts/manifest/audit-direct-writes-baseline.mjs. Regenerate ONLY after intentionally migrating or bypassing a finding. 2026-06-21: hand-drained ProposalTemplate.updateMany (migrated to governed ProposalTemplate.update demote loop) — generator script absent on this branch.",
+  "count": 6,
   "violations": [
     {
       "file": "apps/api/app/api/accounting/payments/[id]/route.ts",
@@ -33,11 +33,6 @@
       "file": "apps/api/app/lib/inventory-forecasting.ts",
       "entity": "ReorderSuggestion",
       "method": "create"
-    },
-    {
-      "file": "apps/app/app/(authenticated)/crm/proposals/templates/actions.ts",
-      "entity": "ProposalTemplate",
-      "method": "updateMany"
     },
     {
       "file": "apps/app/app/(authenticated)/events/actions.ts",

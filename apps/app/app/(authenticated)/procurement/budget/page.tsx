@@ -24,10 +24,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 import {
   Select,
   SelectContent,
@@ -271,201 +271,32 @@ export default function BudgetPage() {
   const selectedBudgetObj = budgets.find((b) => b.id === selectedBudget);
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Budget Tracking
-          </h1>
-          <p className="text-muted-foreground">
-            Track procurement spend against budget allocations.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            disabled={refreshing}
-            onClick={handleRefresh}
-            variant="outline"
-          >
-            <RefreshCw
-              className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
-            />
-            Refresh Spend
-          </Button>
-          <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Budget
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg">
-              <DialogHeader>
-                <DialogTitle>Create Budget</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Budget Name *</Label>
-                    <Input
-                      onChange={(e) =>
-                        setForm({ ...form, name: e.target.value })
-                      }
-                      placeholder="e.g., Produce FY2026"
-                      value={form.name}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Category</Label>
-                    <Input
-                      onChange={(e) =>
-                        setForm({ ...form, category: e.target.value })
-                      }
-                      placeholder="e.g., Produce, Dairy, Dry Goods"
-                      value={form.category}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Fiscal Year *</Label>
-                    <Input
-                      onChange={(e) =>
-                        setForm({ ...form, fiscalYear: e.target.value })
-                      }
-                      type="number"
-                      value={form.fiscalYear}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Budget Amount *</Label>
-                    <Input
-                      onChange={(e) =>
-                        setForm({ ...form, budgetAmount: e.target.value })
-                      }
-                      placeholder="50000.00"
-                      step="0.01"
-                      type="number"
-                      value={form.budgetAmount}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Period Type</Label>
-                    <Select
-                      onValueChange={(v) => setForm({ ...form, periodType: v })}
-                      value={form.periodType}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {PERIOD_TYPE_OPTIONS.map((o) => (
-                          <SelectItem key={o.value} value={o.value}>
-                            {o.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Description</Label>
-                    <Input
-                      onChange={(e) =>
-                        setForm({ ...form, description: e.target.value })
-                      }
-                      placeholder="Optional description"
-                      value={form.description}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Period Start</Label>
-                    <DatePicker
-                      onChange={(e) =>
-                        setForm({ ...form, periodStart: e.target.value })
-                      }
-                      value={form.periodStart}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Period End</Label>
-                    <DatePicker
-                      onChange={(e) =>
-                        setForm({ ...form, periodEnd: e.target.value })
-                      }
-                      value={form.periodEnd}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Warning Threshold (%)</Label>
-                    <Input
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          thresholdWarningPct: e.target.value,
-                        })
-                      }
-                      type="number"
-                      value={form.thresholdWarningPct}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Critical Threshold (%)</Label>
-                    <Input
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          thresholdCriticalPct: e.target.value,
-                        })
-                      }
-                      type="number"
-                      value={form.thresholdCriticalPct}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Notes</Label>
-                  <Textarea
-                    onChange={(e) =>
-                      setForm({ ...form, notes: e.target.value })
-                    }
-                    placeholder="Internal notes..."
-                    rows={2}
-                    value={form.notes}
-                  />
-                </div>
-                <div className="flex justify-end gap-3 pt-2">
-                  <Button
-                    onClick={() => setDialogOpen(false)}
-                    variant="outline"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    disabled={
-                      !(form.name.trim() && form.budgetAmount) || saving
-                    }
-                    onClick={handleCreate}
-                  >
-                    {saving && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    Create Budget
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
+    <>
+      <OperationalPageShell
+        actions={
+          <>
+            <Button
+              disabled={refreshing}
+              onClick={handleRefresh}
+              variant="outline"
+            >
+              <RefreshCw
+                className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+              />
+              Refresh Spend
+            </Button>
+            <Button onClick={() => setDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Budget
+            </Button>
+          </>
+        }
+        description="Track procurement spend against budget allocations."
+        eyebrow="Procurement / Budget"
+        title="Budget tracking"
+      >
 
-      {/* Summary Cards */}
+            {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -878,6 +709,171 @@ export default function BudgetPage() {
         )}
       </div>
 
+      </OperationalPageShell>
+      <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Create Budget</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Budget Name *</Label>
+                    <Input
+                      onChange={(e) =>
+                        setForm({ ...form, name: e.target.value })
+                      }
+                      placeholder="e.g., Produce FY2026"
+                      value={form.name}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Category</Label>
+                    <Input
+                      onChange={(e) =>
+                        setForm({ ...form, category: e.target.value })
+                      }
+                      placeholder="e.g., Produce, Dairy, Dry Goods"
+                      value={form.category}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Fiscal Year *</Label>
+                    <Input
+                      onChange={(e) =>
+                        setForm({ ...form, fiscalYear: e.target.value })
+                      }
+                      type="number"
+                      value={form.fiscalYear}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Budget Amount *</Label>
+                    <Input
+                      onChange={(e) =>
+                        setForm({ ...form, budgetAmount: e.target.value })
+                      }
+                      placeholder="50000.00"
+                      step="0.01"
+                      type="number"
+                      value={form.budgetAmount}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Period Type</Label>
+                    <Select
+                      onValueChange={(v) => setForm({ ...form, periodType: v })}
+                      value={form.periodType}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PERIOD_TYPE_OPTIONS.map((o) => (
+                          <SelectItem key={o.value} value={o.value}>
+                            {o.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Input
+                      onChange={(e) =>
+                        setForm({ ...form, description: e.target.value })
+                      }
+                      placeholder="Optional description"
+                      value={form.description}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Period Start</Label>
+                    <DatePicker
+                      onChange={(e) =>
+                        setForm({ ...form, periodStart: e.target.value })
+                      }
+                      value={form.periodStart}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Period End</Label>
+                    <DatePicker
+                      onChange={(e) =>
+                        setForm({ ...form, periodEnd: e.target.value })
+                      }
+                      value={form.periodEnd}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Warning Threshold (%)</Label>
+                    <Input
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          thresholdWarningPct: e.target.value,
+                        })
+                      }
+                      type="number"
+                      value={form.thresholdWarningPct}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Critical Threshold (%)</Label>
+                    <Input
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          thresholdCriticalPct: e.target.value,
+                        })
+                      }
+                      type="number"
+                      value={form.thresholdCriticalPct}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Notes</Label>
+                  <Textarea
+                    onChange={(e) =>
+                      setForm({ ...form, notes: e.target.value })
+                    }
+                    placeholder="Internal notes..."
+                    rows={2}
+                    value={form.notes}
+                  />
+                </div>
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button
+                    onClick={() => setDialogOpen(false)}
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    disabled={
+                      !(form.name.trim() && form.budgetAmount) || saving
+                    }
+                    onClick={handleCreate}
+                  >
+                    {saving && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Create Budget
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
       {/* Delete Confirmation */}
       <AlertDialog
         onOpenChange={(open) => {
@@ -903,6 +899,6 @@ export default function BudgetPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }

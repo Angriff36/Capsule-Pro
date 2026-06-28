@@ -9,9 +9,9 @@ entity CycleCountSession mixin TenantScoped, SoftDeletable {
   property required sessionName: string
   property countType: string = "ad_hoc"
   property scheduledDate: datetime
-  property startedAt: datetime
-  property completedAt: datetime
-  property finalizedAt: datetime
+  property startedAt: datetime?
+  property completedAt: datetime?
+  property finalizedAt: datetime?
   indexed property status: string = "draft"
   property totalItems: int = 0
   property countedItems: int = 0
@@ -28,6 +28,19 @@ entity CycleCountSession mixin TenantScoped, SoftDeletable {
   computed isCancelled: boolean = self.status == "cancelled"
   computed countProgress: number = percent(self.countedItems, self.totalItems) cache request
   computed hasVariance: boolean = self.totalVariance != 0
+  // Variance-reconciliation rollups over the session's VarianceReport children (the
+  // hasMany varianceReports back-relation). The FILTERS carry the business meaning —
+  // count ONLY pending reports (not reviewed/approved/adjusted/rejected) as the
+  // unresolved reconciliation backlog for this count session, and sum ONLY adjusted
+  // reports' adjustmentAmount (not pending/approved estimates that were never booked)
+  // as the session's realized inventory-adjustment value. Drop or flip a predicate
+  // literal and the rollup silently reports the wrong number with no compile error;
+  // the cycle-count-session-aggregate-computeds regression test locks the shape.
+  // IR-only computeds (no stored column, no migration); request-cached, mirroring the
+  // Facility.openWorkOrderCount/completedWorkOrderCost precedent over its own
+  // FacilityWorkOrder children (pending=open backlog, adjusted=realized spend).
+  computed pendingVarianceReportCount: int = count_of(filter(self.varianceReports, (v) => v.status == "pending")) cache request
+  computed adjustedVarianceAmount: money = sum(filter(self.varianceReports, (v) => v.status == "adjusted"), (v) => v.adjustmentAmount) cache request
 
   belongsTo location: Facility with locationId
   belongsTo createdBy: User with createdById
@@ -45,7 +58,7 @@ entity CycleCountSession mixin TenantScoped, SoftDeletable {
   transition status from "cancelled" to ["draft"]
 
   default policy CycleCountSessionDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Cycle count management"
-  command create(locationId: string, sessionId: string, sessionName: string, countType: string, scheduledDate: datetime, notes: string, userId: string) {
+  command create(locationId: string, sessionId: string, sessionName: string, countType: string, scheduledDate: datetime, notes: string) {
     guard sessionName != null and sessionName != "" "Session name is required"
     guard locationId != null and locationId != "" "Location is required"
 
@@ -55,7 +68,7 @@ entity CycleCountSession mixin TenantScoped, SoftDeletable {
     mutate countType = countType
     mutate scheduledDate = scheduledDate
     mutate notes = notes
-    mutate createdById = userId
+    mutate createdById = user.id
     mutate totalItems = 0
     mutate countedItems = 0
     mutate totalVariance = 0
@@ -174,7 +187,7 @@ entity CycleCountRecord mixin TenantScoped, SoftDeletable {
   searchable property notes: string = ""
   property isVerified: boolean = false
   property verifiedById: string = ""
-  property verifiedAt: datetime
+  property verifiedAt: datetime?
   property syncStatus: string = "synced"
   property offlineId: string = ""
   timestamps
@@ -191,7 +204,7 @@ entity CycleCountRecord mixin TenantScoped, SoftDeletable {
   relationship belongsTo verifiedBy: User fields [tenantId, verifiedById] references [tenantId, id]
 
   default policy CycleCountRecordDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Cycle count management"
-  command create(sessionId: string, itemId: string, itemNumber: string, itemName: string, storageLocationId: string, expectedQuantity: number, countedQuantity: number, userId: string, barcode: string, notes: string) {
+  command create(sessionId: string, itemId: string, itemNumber: string, itemName: string, storageLocationId: string, expectedQuantity: number, countedQuantity: number, barcode: string, notes: string) {
     guard sessionId != null and sessionId != "" "Session ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
     guard countedQuantity != null and countedQuantity >= 0 "Counted quantity cannot be negative"
@@ -206,7 +219,7 @@ entity CycleCountRecord mixin TenantScoped, SoftDeletable {
     mutate variance = countedQuantity - expectedQuantity
     mutate variancePct = percent(countedQuantity - expectedQuantity, expectedQuantity)
     mutate countDate = now()
-    mutate countedById = userId
+    mutate countedById = user.id
     mutate barcode = barcode
     mutate notes = notes
     mutate isVerified = false
@@ -277,15 +290,15 @@ entity VarianceReport mixin TenantScoped, SoftDeletable {
   indexed property status: string = "pending"
   property adjustmentType: string = ""
   property adjustmentAmount: money = 0
-  property adjustmentDate: datetime
-  property rejectedAt: datetime
+  property adjustmentDate: datetime?
+  property rejectedAt: datetime?
   property rejectedBy: string = ""
   property rejectionReason: string = ""
   searchable property notes: string = ""
   property rootCause: string = ""
   property resolutionNotes: string = ""
   property resolvedById: string = ""
-  property resolvedAt: datetime
+  property resolvedAt: datetime?
   property generatedAt: datetime
   timestamps
 

@@ -17,8 +17,11 @@ export const parseISODateToLocal = (isoString: string | Date): Date => {
   if (isoString instanceof Date) {
     return isoString;
   }
-  const dateStr = isoString.split("T")[0];
+  const dateStr = isoString.split("T")[0] ?? isoString;
   const [year, month, day] = dateStr.split("-").map(Number);
+  if (year === undefined || month === undefined || day === undefined) {
+    return new Date(isoString);
+  }
   return new Date(year, month - 1, day);
 };
 

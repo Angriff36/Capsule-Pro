@@ -11,8 +11,8 @@ entity InventoryTransfer mixin TenantScoped {
   property approvedBy: string = ""
   property shippedBy: string = ""
   property receivedBy: string = ""
-  property shippedAt: datetime
-  property receivedAt: datetime
+  property shippedAt: datetime?
+  property receivedAt: datetime?
   property discrepancyNotes: string = ""
   property hasDiscrepancy: boolean = false
   searchable property notes: string = ""

@@ -76,6 +76,9 @@ export async function importPrepLists(
 
       for (let i = 0; i < listRows.length; i++) {
         const row = listRows[i];
+        if (!row) {
+          continue;
+        }
         const itemName = trimOpt(row.item_name) ?? `Item ${i + 1}`;
         const stationName = trimOpt(row.station_name) ?? "Unassigned";
         const baseQty = parseDecimalOpt(row.base_quantity) ?? 1;

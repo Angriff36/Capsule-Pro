@@ -10,7 +10,7 @@ entity EventPlanningDraft mixin TenantScoped, SoftDeletable {
   searchable property clientName: string = ""
   property clientContactId: string = ""
   property eventType: string = ""
-  property eventDate: datetime
+  property eventDate: datetime?
   property eventTime: string = ""
   property guestCount: int = 0
   property guestCountMin: int = 0
@@ -34,7 +34,7 @@ entity EventPlanningDraft mixin TenantScoped, SoftDeletable {
   property overallConfidence: decimal = 0
   property convertedEventId: string = ""
   property proposalId: string = ""
-  property expiresAt: datetime
+  property expiresAt: datetime?
   timestamps
 
   computed isActive: boolean = self.status == "active"
@@ -89,17 +89,20 @@ entity EventPlanningDraft mixin TenantScoped, SoftDeletable {
     }
   }
 
+  relationship belongsTo clientContact: ClientContact with clientContactId
+  relationship belongsTo venue: Venue with venueId
+  relationship belongsTo proposal: Proposal with proposalId
+
   default policy EventPlanningDraftDefaultAccess execute: user.role in ["staff", "event_coordinator", "manager", "admin"] "AI call planner drafts"
 
-  command create(sessionId: string, userId: string) {
+  command create(sessionId: string) {
     guard sessionId != null and sessionId != "" "Session ID is required"
-    guard userId != null and userId != "" "User ID is required"
 
     // `status` is intentionally NOT mutated: the property default seeds the
     // initial "active" state and active -> active is a rejected no-op
     // self-transition under the rules above.
     mutate sessionId = sessionId
-    mutate userId = userId
+    mutate userId = user.id
     mutate packageIds = []
     mutate addOnIds = []
     mutate openQuestions = []

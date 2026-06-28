@@ -17,8 +17,8 @@ entity QACheck mixin TenantScoped {
   property inspector: string = ""
   searchable property notes: string = ""
   // Bug fix: lifecycle timestamps must be nullable (no = now() default)
-  property completedAt: datetime
-  property reinspectedAt: datetime
+  property completedAt: datetime?
+  property reinspectedAt: datetime?
   timestamps
 
   computed isPending: boolean = self.status == "pending"
@@ -101,6 +101,8 @@ entity QACheck mixin TenantScoped {
     emit QACheckReinspected
   }
 
+  relationship hasMany correctiveActions: QACorrectiveAction
+
   store QACheck in durable
 }
 
@@ -117,8 +119,8 @@ entity QACorrectiveAction mixin TenantScoped {
   property escalationReason: string = ""
   // Bug fix: lifecycle datetimes must be nullable
   property dueDate: datetime
-  property resolvedAt: datetime
-  property escalatedAt: datetime
+  property resolvedAt: datetime?
+  property escalatedAt: datetime?
   timestamps
 
   computed isOpen: boolean = self.status == "open"
@@ -127,8 +129,8 @@ entity QACorrectiveAction mixin TenantScoped {
   computed isEscalated: boolean = self.status == "escalated"
   computed isDismissed: boolean = self.status == "dismissed"
 
-  transition status from "open" to ["in_progress", "escalated", "dismissed"]
-  transition status from "in_progress" to ["resolved", "escalated"]
+  transition status from "open" to ["in_progress", "escalated", "dismissed", "resolved"]
+  transition status from "in_progress" to ["resolved", "escalated", "dismissed"]
   transition status from "escalated" to ["in_progress", "resolved"]
 
   constraint validPriority: self.severity in ["low", "medium", "high", "critical"] "Invalid severity"
@@ -225,6 +227,8 @@ entity QATemperatureLog mixin TenantScoped {
       unit: self.unit
     }
   }
+
+  relationship belongsTo equipment: Equipment with equipmentId
 
   default policy QATemperatureLogDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Quality assurance"
   command log(logType: string, temperature: number, unit: string, equipmentId: string, loggedBy: string, notes: string) {

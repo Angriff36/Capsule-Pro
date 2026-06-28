@@ -16,7 +16,7 @@ export function parseQuantityText(
 
   const trimmed = value.trim();
   const fractionMatch = trimmed.match(/^(\d+)\s*\/\s*(\d+)\s+(.+)$/i);
-  if (fractionMatch) {
+  if (fractionMatch?.[1] && fractionMatch[2] && fractionMatch[3]) {
     const quantity =
       Number.parseInt(fractionMatch[1], 10) /
       Number.parseInt(fractionMatch[2], 10);
@@ -28,7 +28,7 @@ export function parseQuantityText(
   }
 
   const numericMatch = trimmed.match(/^([\d.]+)\s+(.+)$/);
-  if (numericMatch) {
+  if (numericMatch?.[2]) {
     const quantity = parseDecimalOpt(numericMatch[1]) ?? 1;
     return {
       quantity,

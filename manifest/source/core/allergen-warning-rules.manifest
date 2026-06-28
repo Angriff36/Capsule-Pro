@@ -17,12 +17,12 @@ entity AllergenWarning mixin TenantScoped, SoftDeletable {
   property isAcknowledged: boolean = false
   property acknowledgedBy: string = ""
   // BUG FIX: lifecycle timestamp — must NOT default to now()
-  property acknowledgedAt: datetime
+  property acknowledgedAt: datetime?
   property overrideReason: string = ""
   property resolved: boolean = false
   // BUG FIX: lifecycle timestamp — must NOT default to now()
-  property resolvedAt: datetime
-  property escalatedAt: datetime
+  property resolvedAt: datetime?
+  property escalatedAt: datetime?
   property escalatedTo: string = ""
   searchable property notes: string = ""
   timestamps

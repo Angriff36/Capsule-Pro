@@ -113,7 +113,7 @@ describe("Real-time Outbox - End-to-End Integration", () => {
   describe("Multi-Tenant Isolation", () => {
     it("should maintain separate events per tenant", async () => {
       // Create events for two tenants
-      const _event1 = await createOutboxEvent(database, {
+      await createOutboxEvent(database, {
         tenantId: TEST_TENANT_ID,
         aggregateType: "KitchenTask",
         aggregateId: "task-iso-001",
@@ -125,7 +125,7 @@ describe("Real-time Outbox - End-to-End Integration", () => {
         },
       });
 
-      const _event2 = await createOutboxEvent(database, {
+      await createOutboxEvent(database, {
         tenantId: TEST_TENANT_2_ID,
         aggregateType: "KitchenTask",
         aggregateId: "task-iso-002",
@@ -335,8 +335,8 @@ describe("Real-time Outbox - End-to-End Integration", () => {
 
       // Verify ordering
       for (let i = 1; i < events.length; i++) {
-        expect(events[i - 1].createdAt.getTime()).toBeLessThanOrEqual(
-          events[i].createdAt.getTime()
+        expect(events[i - 1]!.createdAt.getTime()).toBeLessThanOrEqual(
+          events[i]!.createdAt.getTime()
         );
       }
     });

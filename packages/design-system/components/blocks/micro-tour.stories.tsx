@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 import { Calendar, Package, Users } from "lucide-react";
 import {
   NoClientsState,

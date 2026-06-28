@@ -149,7 +149,7 @@ entity TrainingModule mixin TenantScoped, SoftDeletable {
   indexed property status: string = "draft"
   property version: int = 1
   property publishedAt: datetime
-  property archivedAt: datetime
+  property archivedAt: datetime?
   searchable property notes: string = ""
   property createdBy: string = ""
 
@@ -158,12 +158,23 @@ entity TrainingModule mixin TenantScoped, SoftDeletable {
   relationship hasMany questions: TrainingQuestion
   relationship hasMany assignments: TrainingAssignment
   relationship hasMany attempts: TrainingAttempt
+  relationship hasMany trainingSignals: StaffTrainingSignal
+  relationship hasMany completions: TrainingCompletion
 
   computed isDeleted: boolean = self.deletedAt != null
   computed isDraft: boolean = self.status == "draft"
   computed isPublished: boolean = self.status == "published"
   computed isArchived: boolean = self.status == "archived"
   computed isAssignable: boolean = self.status == "published" and self.deletedAt == null and self.isActive == true
+
+  // Rollup computeds over the already-declared hasMany attempts (IR-only, no column/migration).
+  // Two DISJOINT boolean facets over distinct TrainingAttempt properties: passedAttemptCount =
+  // total successful attempt volume across all staff for this module (training effectiveness);
+  // managerReviewAttemptCount = attempts that escalated to manager review (final failures) = a
+  // compliance-risk signal. Count-only on purpose — TrainingAttempt has no money/decimal field, and
+  // summing scorePercent (a percentage) would invent a meaningless number.
+  computed passedAttemptCount: int = count_of(filter(self.attempts, (a) => a.passed == true)) cache request
+  computed managerReviewAttemptCount: int = count_of(filter(self.attempts, (a) => a.managerReviewRequired == true)) cache request
 
   transition status from "draft" to ["published", "archived"]
   transition status from "published" to ["archived", "draft"]
@@ -309,7 +320,7 @@ entity TrainingQuestion mixin TenantScoped {
 
   default policy TrainingQuestionDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
 
-  command create(id: string, moduleId: string, code: string, sectionTitle: string, displayOrder: number, prompt: string, optionA: string, optionB: string, optionC: string, optionD: string, correctOptionKey: string, explanation: string, whyItMatters: string) {
+  command create(id: string, optional moduleId: string, optional code: string, sectionTitle: string, displayOrder: number, prompt: string, optionA: string, optionB: string, optionC: string, optionD: string, correctOptionKey: string, explanation: string, whyItMatters: string) {
     guard moduleId != ""
     guard code != ""
     guard prompt != ""
@@ -353,9 +364,9 @@ entity TrainingAssignment mixin TenantScoped {
   property dueDate: datetime
   property dueDateReviewNeeded: boolean = false
   property firstShiftAt: datetime
-  property startedAt: datetime
-  property completedAt: datetime
-  property waivedAt: datetime
+  property startedAt: datetime?
+  property completedAt: datetime?
+  property waivedAt: datetime?
   property waiverReason: string = ""
   property waiverApprovedBy: string = ""
   property attemptCount: int = 0
@@ -364,11 +375,12 @@ entity TrainingAssignment mixin TenantScoped {
   property passThresholdPercent: int = 80
   property maxAttempts: int = 3
   property managerReviewRequired: boolean = false
-  property reminderSentAt: datetime
+  property reminderSentAt: datetime?
 
   relationship belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
   relationship hasMany attempts: TrainingAttempt
-  relationship belongsTo employee: User with employeeId
+  relationship hasMany trainingSignals: StaffTrainingSignal
+  relationship belongsTo employee: User fields [tenantId, employeeId] references [tenantId, id]
   relationship belongsTo lastAttempt: TrainingAttempt with lastAttemptId
 
   timestamps
@@ -380,7 +392,7 @@ entity TrainingAssignment mixin TenantScoped {
   computed isSchedulableSatisfied: boolean = self.status in ["completed", "waived"]
 
   transition status from "assigned" to ["in_progress", "completed", "waived", "overdue", "manager_review"]
-  transition status from "in_progress" to ["completed", "waived", "overdue", "manager_review"]
+  transition status from "in_progress" to ["completed", "waived", "overdue", "manager_review", "in_progress"]
   transition status from "overdue" to ["in_progress", "completed", "waived", "manager_review"]
   transition status from "manager_review" to ["completed", "waived", "in_progress"]
 
@@ -391,7 +403,7 @@ entity TrainingAssignment mixin TenantScoped {
 
   default policy TrainingAssignmentDefaultAccess execute: user.role in ["staff", "hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
 
-  command create(id: string, moduleId: string, moduleCode: string, moduleTitle: string, staffMemberId: string, staffRole: string, passThresholdPercent: number, maxAttempts: number, firstShiftAt: datetime, dueAt: datetime, dueDateReviewNeeded: boolean) {
+  command create(id: string, optional moduleId: string, moduleCode: string, moduleTitle: string, staffMemberId: string, staffRole: string, passThresholdPercent: number, maxAttempts: number, firstShiftAt: datetime, dueAt: datetime, dueDateReviewNeeded: boolean) {
     guard moduleId != ""
     guard staffMemberId != ""
     guard staffRole == "staff"
@@ -559,7 +571,7 @@ entity TrainingAttempt mixin TenantScoped {
 
   default policy TrainingAttemptDefaultAccess execute: user.role in ["staff", "hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
 
-  command create(id: string, assignmentId: string, moduleId: string, staffMemberId: string, attemptNumber: number, scorePercent: number, passThresholdPercent: number, passed: boolean, managerReviewRequired: boolean, answersJson: string) {
+  command create(id: string, optional assignmentId: string, optional moduleId: string, staffMemberId: string, attemptNumber: number, scorePercent: number, passThresholdPercent: number, passed: boolean, optional managerReviewRequired: boolean, answersJson: string) {
     guard assignmentId != ""
     guard moduleId != ""
     guard staffMemberId != ""
@@ -626,9 +638,9 @@ entity StaffTrainingSignal mixin TenantScoped {
     emit StaffTrainingWaiverLogged
   }
 
-  relationship belongsTo staffMember: StaffMember with staffMemberId
-  relationship belongsTo module: TrainingModule with moduleId
-  relationship belongsTo assignment: TrainingAssignment with assignmentId
+  relationship belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
+  relationship belongsTo assignment: TrainingAssignment fields [tenantId, assignmentId] references [tenantId, id]
+  relationship belongsTo staffMember: StaffMember fields [tenantId, staffMemberId] references [tenantId, id]
 
   store StaffTrainingSignal in durable
 }

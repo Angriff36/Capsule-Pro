@@ -9,17 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@repo/design-system/components/ui/table";
-import Link from "next/link";
-import { notFound } from "next/navigation";
+  OperationalPageShell,
+} from "../../components/operational-page-shell";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { CreateTrainingModuleDialog } from "./components/create-training-module-dialog";
 
@@ -83,19 +75,12 @@ const StaffTrainingPage = async () => {
   }));
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h1 className="font-semibold text-2xl tracking-tight">Training</h1>
-          <p className="text-muted-foreground">
-            Create and manage training modules and assignments.
-          </p>
-        </div>
-        <CreateTrainingModuleDialog />
-      </div>
-
-      <Separator />
-
+    <OperationalPageShell
+      actions={<CreateTrainingModuleDialog />}
+      description="Create and manage training modules and assignments."
+      eyebrow="Staff / Training"
+      title="Training"
+    >
       <div className="grid gap-6">
         <Card tone="canvas">
           <CardHeader>
@@ -184,7 +169,7 @@ const StaffTrainingPage = async () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </OperationalPageShell>
   );
 };
 

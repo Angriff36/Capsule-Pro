@@ -429,7 +429,7 @@ describe("Global Search API — GET /api/search", () => {
 
       // Verify skip = (page - 1) * limit = 10
       const findManyCall = vi.mocked(database.event.findMany).mock
-        .calls[0][0] as {
+        .calls[0]?.[0] as {
         skip?: number;
         take?: number;
       };
@@ -497,7 +497,7 @@ describe("Global Search API — GET /api/search", () => {
 
       await GET(makeRequest({ q: "smith", type: "events" }));
 
-      const call = vi.mocked(database.event.findMany).mock.calls[0][0] as {
+      const call = vi.mocked(database.event.findMany).mock.calls[0]?.[0] as {
         where: { OR?: unknown[]; AND?: unknown[] };
       };
       expect(call.where.OR).toBeDefined();
@@ -511,7 +511,7 @@ describe("Global Search API — GET /api/search", () => {
 
       await GET(makeRequest({ q: "john smith catering", type: "events" }));
 
-      const call = vi.mocked(database.event.findMany).mock.calls[0][0] as {
+      const call = vi.mocked(database.event.findMany).mock.calls[0]?.[0] as {
         where: {
           AND?: Array<{ OR: Record<string, unknown>[] }>;
           OR?: unknown[];
@@ -522,7 +522,8 @@ describe("Global Search API — GET /api/search", () => {
       const tokenSubstrings = (call.where.AND ?? []).map((clause) => {
         const first = clause.OR[0] as Record<string, { contains: string }>;
         const firstField = Object.keys(first)[0];
-        return first[firstField].contains;
+        if (firstField === undefined) return undefined;
+        return first[firstField]?.contains;
       });
       expect(tokenSubstrings).toEqual(["john", "smith", "catering"]);
       expect(call.where.OR).toBeUndefined();
@@ -532,7 +533,7 @@ describe("Global Search API — GET /api/search", () => {
       mockAllModelsEmpty();
       await GET(makeRequest({ q: "john    smith", type: "events" }));
 
-      const call = vi.mocked(database.event.findMany).mock.calls[0][0] as {
+      const call = vi.mocked(database.event.findMany).mock.calls[0]?.[0] as {
         where: { AND?: unknown[] };
       };
       expect(call.where.AND).toHaveLength(2);
@@ -542,7 +543,7 @@ describe("Global Search API — GET /api/search", () => {
       mockAllModelsEmpty();
       await GET(makeRequest({ q: "convention center", type: "venues" }));
 
-      const call = vi.mocked(database.venue.findMany).mock.calls[0][0] as {
+      const call = vi.mocked(database.venue.findMany).mock.calls[0]?.[0] as {
         where: { AND?: unknown[]; isActive?: boolean };
       };
       expect(call.where.AND).toHaveLength(2);

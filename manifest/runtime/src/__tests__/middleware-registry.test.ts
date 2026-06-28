@@ -12,7 +12,6 @@ import {
   ASYNC_REACTION_HANDLER_MAP,
 } from "../async-reactions/handler-map";
 import {
-  type MiddlewareRegistryEntry,
   DEFAULT_REGISTRY_RETRY_POLICY,
   MIDDLEWARE_REGISTRY,
   assertRegistryIntegrity,

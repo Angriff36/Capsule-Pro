@@ -43,6 +43,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { PrintFooter, PrintViewButton } from "@/app/components/print-view";
 // NOTE: Keeping apiFetch for custom prep-lists endpoints (generate, mark-item-complete)
 // — generated client has prepListCreate/prepListItemMarkCompleted but these target different
 //   API routes and semantics (Manifest command dispatch vs. custom action endpoints)
@@ -670,6 +671,11 @@ export function PrepListClient({
             ))}
           </div>
         </section>
+
+        <PrintFooter
+          caption={`${prepList.eventTitle} — Prep List`}
+          path={`/kitchen/prep-lists?eventId=${selectedEventId || eventId}`}
+        />
       </div>
     );
   };
@@ -718,6 +724,7 @@ export function PrepListClient({
                   <FileText className="h-4 w-4" />
                 )}
               </Button>
+              <PrintViewButton />
               <PrepListSaveButton
                 disabled={prepList.totalIngredients === 0}
                 onSaved={setSavedPrepListId}

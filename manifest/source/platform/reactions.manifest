@@ -3,6 +3,10 @@ use "../_base.manifest"
 // Declarative event-to-command bindings that replace manual cross-entity Prisma writes.
 // Reactions fire synchronously within the same Manifest runtime turn after event emission.
 // See: docs/manifest-official/spec/semantics.md "Reactions" section
+//
+// Compiler ≥2.18: `on` reactions MUST live in the same .manifest file as a command
+// that `emit`s the trigger event (per-file reaction-completeness). Active `on` blocks
+// are co-located in domain files; this file keeps middleware-vs-reaction audit notes.
 
 // ── Finance: Payment → Invoice ──────────────────────────────────────────────
 
@@ -38,17 +42,7 @@ use "../_base.manifest"
 // ── Inventory: WasteEntry → InventoryItem ────────────────────────────────────
 
 // When a waste entry is created, automatically reduce the inventory item's stock.
-// Replaces raw Prisma update in apps/api/app/api/kitchen/waste/entries/route.ts
-// that bypasses governance. The WasteEntryCreated event carries the exact
-// inventoryItemId, quantity, and loggedBy needed for the waste command.
-on WasteEntryCreated run InventoryItem.waste
-  resolve payload.inventoryItemId
-  params {
-    quantity: payload.quantity
-    reason: "waste entry"
-    lotId: ""
-    userId: payload.loggedBy
-  }
+// Reaction lives in quality/waste-entry-rules.manifest (co-located with emit).
 
 // ── Collections: CollectionPayment → Invoice ─────────────────────────────────
 
@@ -149,93 +143,12 @@ on WasteEntryCreated run InventoryItem.waste
 
 // ── Sales: Proposal acceptance → Event creation ───────────────────────────
 
-// When a client accepts a proposal, automatically create an event planning
-// record. Eliminates manual proposal-to-event handoff and ensures accepted
-// proposals immediately enter the event planning workflow.
-//
-// Proposal.accept is a MUTATE command: payload.result is the LAST MUTATE'S
-// VALUE (acceptedAt = now()), NOT the Proposal instance — so payload.result.id
-// and payload.result.<field> are all undefined and this reaction silently
-// no-op'd. Fixed: clientId/proposalNumber/title/total are now command input
-// params on accept (supplied by the proposal-respond route), so they arrive as
-// payload.<field>. resolve null lets the engine auto-generate the new Event id
-// (same idiom as EventCreated -> BattleBoard.create above).
-on ProposalAccepted run Event.create
-  resolve null
-  params {
-    clientId: payload.clientId
-    eventNumber: payload.proposalNumber
-    title: payload.title
-    eventType: payload.eventType
-    eventDate: now()
-    guestCount: 1
-    venueName: ""
-    venueAddress: ""
-    notes: "Auto-created from accepted proposal"
-    tags: []
-    status: "draft"
-    budget: payload.total
-    ticketPrice: 0
-    ticketTier: ""
-    eventFormat: ""
-  }
+// Reaction lives in crm/proposal-rules.manifest (co-located with Proposal.accept emit).
 
 // ── Events: Event hub → BattleBoard propagation ─────────────────────────────
 
-// Governed Event.create emits EventCreated; this reaction auto-creates the
-// canonical event-specific BattleBoard. Parent-context propagation inherits
-// event date/client/venue/guest from eventId — callers supply only boardName
-// and boardType. resolve null lets the engine auto-generate the board id.
-on EventCreated run BattleBoard.create
-  resolve null
-  params {
-    boardName: payload.title + " - Battle Board"
-    boardType: "event-specific"
-    eventId: payload.result.id
-    description: ""
-    isTemplate: false
-    notes: ""
-    tags: []
-  }
-
-// ---------------------------------------------------------------------------
-// Event confirmation -> prep list auto-seed (notes §47)
-// ---------------------------------------------------------------------------
-// Confirming an event creates its prep list shell declaratively. The prep-list
-// seed middleware (manifest/runtime/src/middleware/prep-list-seed-middleware.ts)
-// then derives menu->ingredient items from EventDish/Dish/RecipeVersion/
-// RecipeIngredient stores and imports them via governed createFromSeed +
-// PrepListItem.create dispatches — the [auto-seed marker in notes is its
-// trigger. eventId uses payload._subject.id because Event.confirm is a mutate
-// command: its payload.result is the LAST MUTATE'S VALUE, not the Event
-// instance (runtime-engine emit path), so payload.result.id would be
-// undefined. _subject.id is engine-stamped from the runCommand instanceId.
-// The name is a placeholder: the seed middleware re-titles the list from the
-// real Event.title via createFromSeed (confirm's payload cannot carry title).
-on EventConfirmed run PrepList.create
-  resolve null
-  params {
-    eventId: payload._subject.id
-    name: "Prep List (seeding from confirmed event)"
-    batchMultiplier: 1
-    dietaryRestrictions: ""
-    totalItems: 0
-    totalEstimatedTime: 0
-    notes: "[auto-seed:event-confirmed]"
-  }
+// Reactions live in events/event-rules.manifest (co-located with Event.create/confirm emits).
 
 // ── Admin chat: message sent → thread activity timestamp ─────────────────────
 
-// Sending an admin chat message bumps its thread's `lastMessageAt` so thread
-// lists can order by recency (today the column is never written → threads can't
-// sort by activity). This is a REACTION (not middleware) because the target is a
-// single thread whose id IS reachable from the payload: `AdminChatMessage.create`
-// takes `threadId` as an INPUT PARAM, so it rides the emitted payload
-// `{ ...commandInput, result }` as `payload.threadId`. NOTE: resolve on
-// `payload.threadId` (the real create param), NOT `payload.adminChatThreadId`
-// (a declared event field — never auto-populated from self.*, so it would be a
-// silent no-op and fail the reaction-payload audit gate).
-// `recordLastMessage()` takes no params and mutates `lastMessageAt = now()`.
-on AdminChatMessageSent run AdminChatThread.recordLastMessage
-  resolve payload.threadId
-  params {}
+// Reaction lives in core/crm-admin-extended-rules.manifest (co-located with emit).

@@ -227,10 +227,9 @@ describe("Hydration Regression Tests", () => {
 
       // Each stat item should be rendered
       const statsItems = dictionary.web.home.stats.items;
-      expect(container.textContent).toContain(statsItems[0].title);
-      expect(container.textContent).toContain(statsItems[1].title);
-      expect(container.textContent).toContain(statsItems[2].title);
-      expect(container.textContent).toContain(statsItems[3].title);
+      for (const statsItem of statsItems) {
+        expect(container.textContent).toContain(statsItem.title);
+      }
     });
   });
 
@@ -249,8 +248,9 @@ describe("Hydration Regression Tests", () => {
       const { container } = render(<ContactForm dictionary={dictionary} />);
 
       const benefits = dictionary.web.contact.hero.benefits;
-      expect(container.textContent).toContain(benefits[0].title);
-      expect(container.textContent).toContain(benefits[1].title);
+      for (const benefit of benefits) {
+        expect(container.textContent).toContain(benefit.title);
+      }
     });
   });
 
@@ -261,12 +261,9 @@ describe("Hydration Regression Tests", () => {
 
       expect(container).toBeDefined();
       // FAQ items should be rendered
-      expect(container.textContent).toContain(
-        dictionary.web.home.faq.items[0].question
-      );
-      expect(container.textContent).toContain(
-        dictionary.web.home.faq.items[1].question
-      );
+      for (const faqItem of dictionary.web.home.faq.items) {
+        expect(container.textContent).toContain(faqItem.question);
+      }
     });
 
     it("should render FAQ items consistently across multiple renders", () => {
@@ -293,9 +290,11 @@ describe("Hydration Regression Tests", () => {
       const { container } = render(<Testimonials dictionary={dictionary} />);
 
       expect(container).toBeDefined();
-      expect(container.textContent).toContain(
-        dictionary.web.home.testimonials.items[0].title
-      );
+      const [firstTestimonial] = dictionary.web.home.testimonials.items;
+      if (!firstTestimonial) {
+        throw new Error("expected a testimonial item");
+      }
+      expect(container.textContent).toContain(firstTestimonial.title);
     });
 
     it("should handle setTimeout with proper cleanup", async () => {

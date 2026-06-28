@@ -2820,6 +2820,24 @@ export const MANIFEST_FIELD_HINTS: Record<string, EntityFieldHints> = {
       },
     ],
   },
+  "FeatureFlag": {
+    "flagKey": [
+      {
+        message: "Flag key is required",
+        severity: "block",
+        constraintName: "requireFlagKey",
+        overrideable: false,
+      },
+    ],
+    "rolloutPercent": [
+      {
+        message: "Rollout percent must be between 0 and 100",
+        severity: "block",
+        constraintName: "rolloutInRange",
+        overrideable: false,
+      },
+    ],
+  },
   "ForecastInput": {
     "actualUsage": [
       {
@@ -4521,7 +4539,7 @@ export const MANIFEST_FIELD_HINTS: Record<string, EntityFieldHints> = {
   "Proposal": {
     "clientId": [
       {
-        message: "Creating proposal 'proposal number' with no client or lead attached",
+        message: "Creating proposal with no client or lead attached",
         severity: "warn",
         constraintName: "warnNoClient",
         overrideable: false,

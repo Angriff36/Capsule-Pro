@@ -460,17 +460,17 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
     },
   ];
 
+  const recipesHead = {
+    eyebrow: "Recipes",
+    title: "Recipe collection",
+    description: "Ingredients, yields, and timing for every production build.",
+    count: `${recipeTotals?.count ?? 0} recipes`,
+  };
   const catalogHead: Record<
     string,
     { eyebrow: string; title: string; description: string; count: string }
   > = {
-    recipes: {
-      eyebrow: "Recipes",
-      title: "Recipe collection",
-      description:
-        "Ingredients, yields, and timing for every production build.",
-      count: `${recipeTotals?.count ?? 0} recipes`,
-    },
+    recipes: recipesHead,
     dishes: {
       eyebrow: "Dishes",
       title: "Dish library",
@@ -499,7 +499,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
     },
   };
 
-  const head = catalogHead[activeTab] ?? catalogHead.recipes;
+  const head = catalogHead[activeTab] ?? recipesHead;
 
   const getDishMargin = (dish: DishRow) => {
     if (!(dish.price_per_person && dish.cost_per_person)) {

@@ -29,6 +29,29 @@ entity Client mixin TenantScoped, SoftDeletable {
   computed displayName: string = self.clientType == "company" ? self.companyName : self.firstName + " " + self.lastName
   computed hasEmail: boolean = self.email != null and self.email != ""
   computed isArchived: boolean = self.deletedAt != null
+  // Lifetime financial rollups over the payments back-relation (LTV basis). Filter on
+  // COMPLETED only — cash actually collected, not pending/failed/refunded attempts —
+  // matching the proven Event.totalPaidAmount predicate. IR-only computeds (no stored
+  // column, no migration); request-cached like the Event/EventProfitability precedent.
+  computed totalPaidAmount: money = sum(filter(self.payments, (p) => p.status == "COMPLETED"), (p) => p.amount) cache request
+  computed completedPaymentCount: int = count_of(filter(self.payments, (p) => p.status == "COMPLETED")) cache request
+
+  // Accounts-receivable delinquency rollups over this client's invoice children (the
+  // hasMany `invoices` back-relation — a DIFFERENT child than the payments rollups
+  // above). The FILTER carries the business meaning: count and total ONLY the invoices
+  // in the terminal OVERDUE status — a client's past-due exposure — NOT every invoice
+  // (drafts, paid, and current SENT/VIEWED would otherwise inflate the signal into
+  // meaningless gross billing volume). Both facets filter the SAME "OVERDUE" literal so
+  // they tell one coherent story: count = how many invoices have gone past due, sum =
+  // the dollars still owed across them (each invoice's own amountDue, the outstanding
+  // balance — NOT total, which would double-count amounts already paid). count_of (1
+  // arg) vs sum (2 args, value selector) = distinct facets, not a duplicate. Drop or
+  // flip the literal and the rollup silently reports a different cohort with no compile
+  // error; the client-invoice-aggregate-computeds regression test locks the shape.
+  // IR-only computeds (no stored column, no migration); request-cached like the
+  // payments rollups above and the Invoice.isOverdue precedent.
+  computed overdueInvoiceCount: int = count_of(filter(self.invoices, (i) => i.status == "OVERDUE")) cache request
+  computed overdueBalanceTotal: money = sum(filter(self.invoices, (i) => i.status == "OVERDUE"), (i) => i.amountDue) cache request
 
   // Back-relations (U11): inverse hasMany for children that belongTo Client
   relationship hasMany contacts: ClientContact
@@ -37,6 +60,14 @@ entity Client mixin TenantScoped, SoftDeletable {
   relationship hasMany proposals: Proposal
   relationship hasMany invoices: Invoice
   relationship hasMany payments: Payment
+  relationship hasMany battleBoards: BattleBoard
+  relationship hasMany cateringOrders: CateringOrder
+  relationship hasMany collectionCases: CollectionCase
+  relationship hasMany events: Event
+  relationship hasMany eventContracts: EventContract
+  relationship hasMany leads: Lead
+  relationship hasMany paymentMethods: PaymentMethod
+  relationship hasMany revenueRecognitionSchedules: RevenueRecognitionSchedule
 
   constraint validClientType: self.clientType in ["company", "individual"] "Client type must be 'company' or 'individual'"
   constraint validPaymentTerms: self.defaultPaymentTerms >= 0 "Payment terms must be non-negative"
@@ -164,6 +195,7 @@ entity ClientContact mixin TenantScoped, SoftDeletable {
   constraint validLastName: self.lastName != null and self.lastName != "" "Last name is required"
 
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
+  relationship hasMany planningDrafts: EventPlanningDraft
 
   constraint warnNoContactInfo:warn self.email == "" and self.phone == "" and self.phoneMobile == "" {
     messageTemplate: "Contact '{contactName}' has no email or phone number"
@@ -174,7 +206,7 @@ entity ClientContact mixin TenantScoped, SoftDeletable {
   }
 
   default policy ClientContactDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Client management"
-  command create(clientId: string, firstName: string, lastName: string, title: string, email: string, phone: string, phoneMobile: string, isPrimary: boolean, isBillingContact: boolean, notes: string) {
+  command create(optional clientId: string, optional firstName: string, optional lastName: string, title: string, optional email: string, optional phone: string, phoneMobile: string, isPrimary: boolean, isBillingContact: boolean, notes: string) {
     guard clientId != null and clientId != "" "Client ID is required"
     guard firstName != null and firstName != "" "First name is required"
     guard lastName != null and lastName != "" "Last name is required"
@@ -252,7 +284,7 @@ entity ClientPreference mixin TenantScoped, SoftDeletable {
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
 
   default policy ClientPreferenceDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Client management"
-  command create(clientId: string, preferenceType: string, preferenceKey: string, preferenceValue: string, notes: string) {
+  command create(optional clientId: string, preferenceType: string, preferenceKey: string, preferenceValue: string, notes: string) {
     guard clientId != null and clientId != "" "Client ID is required"
     guard preferenceType != null and preferenceType != "" "Preference type is required"
     guard preferenceKey != null and preferenceKey != "" "Preference key is required"

@@ -23,7 +23,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
@@ -49,6 +48,7 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 import { SampleDataImportButton } from "../../components/sample-data-import-button";
 import {
   listVendors,
@@ -187,22 +187,178 @@ export default function VendorsPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h1 className="font-semibold text-2xl tracking-tight">Vendors</h1>
-          <p className="text-muted-foreground">
-            Manage suppliers and vendor relationships.
-          </p>
+    <>
+      <OperationalPageShell
+        actions={
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Vendor
+          </Button>
+        }
+        description="Manage suppliers and vendor relationships."
+        eyebrow="Procurement / Vendors"
+        title="Vendors"
+      >
+
+            {/* Summary Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="font-medium text-sm">Total Vendors</CardTitle>
+            <Building2 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="font-bold text-2xl">{vendors.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="font-medium text-sm">Catalog Items</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="font-bold text-2xl">{totalCatalogItems}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="font-medium text-sm">Avg Rating</CardTitle>
+            <Star className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="font-bold text-2xl">
+              {vendors.length
+                ? (
+                    vendors.reduce(
+                      (sum, v) => sum + (v.performance_rating || 0),
+                      0
+                    ) / vendors.filter((v) => v.performance_rating).length || 0
+                  ).toFixed(1)
+                : "—"}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="font-medium text-sm">
+              Total Contacts
+            </CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="font-bold text-2xl">
+              {vendors.reduce((sum, v) => sum + v.contact_count, 0)}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          className="pl-10"
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search by name, contact, email, or vendor #..."
+          value={searchQuery}
+        />
+      </div>
+
+      {/* Vendor List */}
+      {filtered.length === 0 ? (
+        vendors.length === 0 ? (
+          <EmptyListState
+            createButtonText="Add vendor"
+            description="Vendors are the suppliers you buy from. Add them here to track contacts, payment terms, and catalog items, and to raise purchase orders against them."
+            itemName="vendors"
+            onCreate={() => setDialogOpen(true)}
+            secondaryAction={<SampleDataImportButton onSeeded={loadVendors} />}
+            userRole="admin"
+          />
+        ) : (
+          <Card>
+            <CardContent className="py-12 text-center text-muted-foreground">
+              <Building2 className="mx-auto mb-4 h-12 w-12 opacity-50" />
+              <p>No vendors match your search.</p>
+            </CardContent>
+          </Card>
+        )
+      ) : (
+        <div className="space-y-3">
+          {filtered.map((vendor) => (
+            <Card
+              className="transition-shadow hover:border-primary/40"
+              key={vendor.id}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted/50 text-foreground">
+                    <Building2 className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex items-center gap-2">
+                      <Link
+                        className="font-semibold hover:underline"
+                        href={`/procurement/vendors/${vendor.id}`}
+                      >
+                        {vendor.name}
+                      </Link>
+                      <Badge className="text-xs" variant="secondary">
+                        {vendor.supplier_number}
+                      </Badge>
+                      {vendor.tax_id && (
+                        <Badge className="text-xs" variant="outline">
+                          Tax: {vendor.tax_id}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-4 text-muted-foreground text-sm">
+                      {vendor.contact_person && (
+                        <span>{vendor.contact_person}</span>
+                      )}
+                      {vendor.email && <span>{vendor.email}</span>}
+                      {vendor.phone && <span>{vendor.phone}</span>}
+                      <span>{formatPaymentTerms(vendor.payment_terms)}</span>
+                      <RatingStars rating={vendor.performance_rating} />
+                      {vendor.catalog_item_count > 0 && (
+                        <span className="flex items-center gap-1">
+                          <Package className="h-3 w-3" />
+                          {vendor.catalog_item_count} items
+                        </span>
+                      )}
+                      {vendor.contact_count > 0 && (
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          {vendor.contact_count} contacts
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Link href={`/procurement/vendors/${vendor.id}`}>
+                      <Button size="sm" variant="outline">
+                        View
+                      </Button>
+                    </Link>
+                    <Button
+                      className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                      onClick={(e) => handleDelete(vendor, e)}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-        <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Vendor
-            </Button>
-          </DialogTrigger>
+      )}
+
+      </OperationalPageShell>
+
+      <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
           <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add New Vendor</DialogTitle>
@@ -401,163 +557,6 @@ export default function VendorsPage() {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">Total Vendors</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">{vendors.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">Catalog Items</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">{totalCatalogItems}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">Avg Rating</CardTitle>
-            <Star className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">
-              {vendors.length
-                ? (
-                    vendors.reduce(
-                      (sum, v) => sum + (v.performance_rating || 0),
-                      0
-                    ) / vendors.filter((v) => v.performance_rating).length || 0
-                  ).toFixed(1)
-                : "—"}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">
-              Total Contacts
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">
-              {vendors.reduce((sum, v) => sum + v.contact_count, 0)}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          className="pl-10"
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search by name, contact, email, or vendor #..."
-          value={searchQuery}
-        />
-      </div>
-
-      {/* Vendor List */}
-      {filtered.length === 0 ? (
-        vendors.length === 0 ? (
-          <EmptyListState
-            createButtonText="Add vendor"
-            description="Vendors are the suppliers you buy from. Add them here to track contacts, payment terms, and catalog items, and to raise purchase orders against them."
-            itemName="vendors"
-            onCreate={() => setDialogOpen(true)}
-            secondaryAction={<SampleDataImportButton onSeeded={loadVendors} />}
-            userRole="admin"
-          />
-        ) : (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              <Building2 className="mx-auto mb-4 h-12 w-12 opacity-50" />
-              <p>No vendors match your search.</p>
-            </CardContent>
-          </Card>
-        )
-      ) : (
-        <div className="space-y-3">
-          {filtered.map((vendor) => (
-            <Card
-              className="transition-shadow hover:border-primary/40"
-              key={vendor.id}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted/50 text-foreground">
-                    <Building2 className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-1 flex items-center gap-2">
-                      <Link
-                        className="font-semibold hover:underline"
-                        href={`/procurement/vendors/${vendor.id}`}
-                      >
-                        {vendor.name}
-                      </Link>
-                      <Badge className="text-xs" variant="secondary">
-                        {vendor.supplier_number}
-                      </Badge>
-                      {vendor.tax_id && (
-                        <Badge className="text-xs" variant="outline">
-                          Tax: {vendor.tax_id}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap items-center gap-4 text-muted-foreground text-sm">
-                      {vendor.contact_person && (
-                        <span>{vendor.contact_person}</span>
-                      )}
-                      {vendor.email && <span>{vendor.email}</span>}
-                      {vendor.phone && <span>{vendor.phone}</span>}
-                      <span>{formatPaymentTerms(vendor.payment_terms)}</span>
-                      <RatingStars rating={vendor.performance_rating} />
-                      {vendor.catalog_item_count > 0 && (
-                        <span className="flex items-center gap-1">
-                          <Package className="h-3 w-3" />
-                          {vendor.catalog_item_count} items
-                        </span>
-                      )}
-                      {vendor.contact_count > 0 && (
-                        <span className="flex items-center gap-1">
-                          <Users className="h-3 w-3" />
-                          {vendor.contact_count} contacts
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Link href={`/procurement/vendors/${vendor.id}`}>
-                      <Button size="sm" variant="outline">
-                        View
-                      </Button>
-                    </Link>
-                    <Button
-                      className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                      onClick={(e) => handleDelete(vendor, e)}
-                      size="sm"
-                      variant="ghost"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
 
       {/* Delete Confirmation */}
       <AlertDialog
@@ -584,6 +583,6 @@ export default function VendorsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }

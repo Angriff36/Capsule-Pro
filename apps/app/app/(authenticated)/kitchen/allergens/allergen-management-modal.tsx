@@ -48,18 +48,6 @@ const COMMON_ALLERGENS = [
   { id: "sesame", label: "Sesame", description: "Sesame seeds and sesame oil" },
 ] as const;
 
-const _COMMON_ALLERGENS_IDS = [
-  "peanuts",
-  "tree-nuts",
-  "dairy",
-  "eggs",
-  "gluten",
-  "soy",
-  "fish",
-  "shellfish",
-  "sesame",
-] as const;
-
 const DIETARY_TAGS = [
   { id: "vegan", label: "Vegan", description: "No animal products" },
   {
@@ -101,7 +89,7 @@ export function AllergenManagementModal({
   name,
   currentAllergens,
   currentDietaryTags,
-  tenantId,
+  tenantId: _tenantId,
 }: AllergenManagementModalProps) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);

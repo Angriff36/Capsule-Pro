@@ -14,11 +14,11 @@ entity InventorySupplier mixin TenantScoped, SoftDeletable {
   property tags: array<string> = []
   property isActive: boolean = true
   property openPOCount: int = 0
-  property approvedAt: datetime
+  property approvedAt: datetime?
   property approvedBy: string = ""
-  property suspendedAt: datetime
+  property suspendedAt: datetime?
   property suspendedReason: string = ""
-  property blacklistedAt: datetime
+  property blacklistedAt: datetime?
   property blacklistedReason: string = ""
   property qualificationStatus: string = "pending"
   timestamps
@@ -28,6 +28,21 @@ entity InventorySupplier mixin TenantScoped, SoftDeletable {
   computed isApproved: boolean = self.qualificationStatus == "approved"
   computed isSuspended: boolean = self.qualificationStatus == "suspended"
   computed isBlacklisted: boolean = self.qualificationStatus == "blacklisted"
+  // Shipment-pipeline rollups over the supplier's Shipment children (the hasMany
+  // shipments back-relation — Shipments naming this supplier as their supplierId).
+  // The FILTERS carry the business meaning: count ONLY in_transit shipments (not
+  // draft/scheduled/preparing/delivered/returned/cancelled) as the supplier's OPEN
+  // inbound pipeline — what is currently in flight from them; and sum ONLY delivered
+  // shipments' totalValue (the realized goods value actually received, NOT
+  // shippingCost, NOT in-flight/cancelled estimates that were never received).
+  // Drop or flip a predicate literal and the rollup silently reports the wrong
+  // number with no compile error; the inventory-supplier-aggregate-computeds
+  // regression test locks the shape. IR-only computeds (no stored column, no
+  // migration); request-cached, mirroring the Facility.openWorkOrderCount/
+  // completedWorkOrderCost precedent over its own FacilityWorkOrder children
+  // (in_transit = open pipeline, delivered = realized value).
+  computed inTransitShipmentCount: int = count_of(filter(self.shipments, (s) => s.status == "in_transit")) cache request
+  computed deliveredShipmentValue: decimal = sum(filter(self.shipments, (s) => s.status == "delivered"), (s) => s.totalValue) cache request
 
   relationship hasMany items: InventoryItem
   relationship hasMany contacts: VendorContact

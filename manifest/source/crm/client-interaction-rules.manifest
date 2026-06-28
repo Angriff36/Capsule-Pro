@@ -15,7 +15,7 @@ entity ClientInteraction mixin TenantScoped, SoftDeletable {
   property followUpCompleted: boolean = false
   indexed property status: string = "open"
   property priority: string = "normal"
-  property escalatedAt: datetime
+  property escalatedAt: datetime?
   property escalatedTo: string = ""
   property correlationId: string = ""
   timestamps
@@ -33,6 +33,7 @@ entity ClientInteraction mixin TenantScoped, SoftDeletable {
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
   relationship belongsTo lead: Lead fields [tenantId, leadId] references [tenantId, id]
   relationship belongsTo employee: User fields [tenantId, employeeId] references [tenantId, id]
+  relationship hasMany attachments: InteractionAttachment
 
   constraint warnNoClientOrLead:warn self.clientId == "" and self.leadId == "" {
     messageTemplate: "Interaction '{subject}' is not linked to any client or lead"
@@ -49,7 +50,7 @@ entity ClientInteraction mixin TenantScoped, SoftDeletable {
   transition status from "open" to ["scheduled", "overdue", "completed", "escalated"]
   transition status from "scheduled" to ["overdue", "completed", "escalated"]
   transition status from "overdue" to ["scheduled", "completed", "escalated"]
-  transition status from "escalated" to ["open", "scheduled", "completed"]
+  transition status from "escalated" to ["open", "scheduled", "completed", "escalated"]
 
   constraint warnOverdueFollowUp:warn (self.followUpDate != null and self.followUpDate < now() and self.followUpCompleted == false) {
     messageTemplate: "Follow-up for '{subject}' is overdue (due {followUpDate})"
@@ -62,7 +63,7 @@ entity ClientInteraction mixin TenantScoped, SoftDeletable {
   }
 
   default policy ClientInteractionDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Client interaction tracking"
-  command create(clientId: string, leadId: string, employeeId: string, interactionType: string, interactionDate: datetime, subject: string, description: string, followUpDate: datetime, correlationId: string) {
+  command create(clientId: string, leadId: string, employeeId: string, interactionType: string, interactionDate: datetime, subject: string, description: string, followUpDate: datetime) {
     guard subject != null and subject != "" "Subject is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard interactionType != null and interactionType != "" "Interaction type is required"
@@ -84,7 +85,6 @@ entity ClientInteraction mixin TenantScoped, SoftDeletable {
     mutate description = description
     mutate followUpDate = followUpDate
     mutate followUpCompleted = false
-    mutate correlationId = correlationId
 
     emit ClientInteractionCreated
   }

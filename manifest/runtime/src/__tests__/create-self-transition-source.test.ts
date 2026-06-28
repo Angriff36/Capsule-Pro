@@ -49,7 +49,7 @@ function entities(source: string): Block[] {
     const open = source.indexOf("{", match.index);
     const close = findMatchingBrace(source, open);
     out.push({
-      name: match[1],
+      name: match[1]!,
       body: source.slice(open + 1, close),
       line: lineFor(source, match.index),
     });
@@ -76,7 +76,8 @@ function transitionFromValues(entityBody: string): Map<string, Set<string>> {
   for (const match of entityBody.matchAll(
     /^\s*transition\s+(\w+)\s+from\s+"([^"]+)"/gm
   )) {
-    const [, property, from] = match;
+    const property = match[1]!;
+    const from = match[2]!;
     const values = transitions.get(property) ?? new Set<string>();
     values.add(from);
     transitions.set(property, values);
@@ -89,7 +90,7 @@ function propertyDefaults(entityBody: string): Map<string, string> {
   for (const match of entityBody.matchAll(
     /^\s*property(?:\s+required)?\s+(\w+)\s*:[^=\n]+=\s*"([^"]+)"/gm
   )) {
-    defaults.set(match[1], match[2]);
+    defaults.set(match[1]!, match[2]!);
   }
   return defaults;
 }
@@ -100,10 +101,10 @@ function createParams(entityBody: string): Set<string> {
     return new Set();
   }
   return new Set(
-    match[1]
+    match[1]!
       .split(",")
       .map((part) => part.trim().split(":")[0]?.trim())
-      .filter(Boolean)
+      .filter((name): name is string => Boolean(name))
   );
 }
 
@@ -130,7 +131,9 @@ describe("Manifest create commands", () => {
         for (const match of create.body.matchAll(
           /^\s*mutate\s+(\w+)\s*=\s*"([^"]+)"/gm
         )) {
-          const [statement, property, value] = match;
+          const statement = match[0]!;
+          const property = match[1]!;
+          const value = match[2]!;
           if (
             defaults.get(property) === value &&
             transitions.get(property)?.has(value)
@@ -144,7 +147,9 @@ describe("Manifest create commands", () => {
         for (const match of create.body.matchAll(
           /^\s*mutate\s+(\w+)\s*=\s*(\w+)\s*$/gm
         )) {
-          const [statement, property, expression] = match;
+          const statement = match[0]!;
+          const property = match[1]!;
+          const expression = match[2]!;
           if (
             property === expression &&
             params.has(property) &&

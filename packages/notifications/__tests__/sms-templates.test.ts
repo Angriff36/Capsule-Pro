@@ -160,8 +160,9 @@ describe("SMS Templates", () => {
       ];
 
       for (const type of requiredTemplates) {
-        expect(SMS_TEMPLATES[type]).toBeDefined();
-        expect(SMS_TEMPLATES[type].template).toContain("{{");
+        const template = SMS_TEMPLATES[type];
+        expect(template).toBeDefined();
+        expect(template?.template).toContain("{{");
       }
     });
   });

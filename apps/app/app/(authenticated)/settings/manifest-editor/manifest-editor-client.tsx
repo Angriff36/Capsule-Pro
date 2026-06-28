@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
-import type { EntityDetail, EntityListItem } from "@repo/types/manifest-editor";
+import type { EntityDetail, EntityListItem } from "@repo/types/manifest-editor"
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 // NOTE: Keeping apiFetch for custom manifest-editor settings endpoints (no generated client equivalent)

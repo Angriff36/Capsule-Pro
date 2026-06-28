@@ -72,7 +72,6 @@ const mockGetTenantIdForOrg = vi.mocked(getTenantIdForOrg);
 const mockRequireCurrentUser = vi.mocked(requireCurrentUser);
 const mockCreateManifestRuntime = vi.mocked(createManifestRuntime);
 const mockConnection = vi.mocked(database.commandBoardConnection);
-const _mockBoardProjection = vi.mocked(database.boardProjection);
 const mockCommandBoardCard = vi.mocked(database.commandBoardCard);
 
 // Test constants
@@ -95,30 +94,6 @@ function createMockConnection(overrides: Partial<any> = {}) {
     relationshipType: "generic",
     label: null,
     visible: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: null,
-    ...overrides,
-  };
-}
-
-// Helper to create mock projection
-function _createMockProjection(overrides: Partial<any> = {}) {
-  return {
-    id: overrides.id || TEST_CARD_1_ID,
-    tenantId: TEST_TENANT_ID,
-    boardId: TEST_BOARD_ID,
-    entityType: "EVENT",
-    entityId: "event_123",
-    positionX: 0,
-    positionY: 0,
-    width: 200,
-    height: 150,
-    zIndex: 0,
-    colorOverride: null,
-    collapsed: false,
-    groupId: null,
-    pinned: false,
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,
@@ -352,7 +327,6 @@ describe("Command Board Connection Tests", () => {
         "http://localhost/api/command-board/connections/list"
       );
       const response = await listConnections(request);
-      const _body = await response.json();
 
       expect(response.status).toBe(200);
       expect(mockConnection.findMany).toHaveBeenCalledWith(

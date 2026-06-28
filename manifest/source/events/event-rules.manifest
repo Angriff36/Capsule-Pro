@@ -38,6 +38,11 @@ entity Event mixin TenantScoped, SoftDeletable {
   computed isFinalized: boolean = self.status == "completed" or self.status == "archived"
   computed isActive: boolean = self.status == "draft" or self.status == "confirmed"
   computed isLargeEvent: boolean = self.guestCount > 200
+  // Aggregate rollups over event children (runtime-only, request-cached — no stored column).
+  // Filters carry business meaning: only COMPLETED payments and confirmed staff/guests count.
+  computed totalPaidAmount: money = sum(filter(self.payments, (p) => p.status == "COMPLETED"), (p) => p.amount) cache request
+  computed confirmedStaffCount: int = count_of(filter(self.eventStaff, (s) => s.status == "confirmed")) cache request
+  computed confirmedGuestCount: int = count_of(filter(self.eventGuests, (g) => g.rsvpStatus == "confirmed")) cache request
 
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
@@ -60,9 +65,21 @@ entity Event mixin TenantScoped, SoftDeletable {
   relationship hasMany allergenWarnings: AllergenWarning
   relationship hasMany wasteEntries: WasteEntry
   relationship hasMany shipments: Shipment
-  relationship hasMany revenueLines: RevenueRecognitionLine
   relationship hasMany collectionCases: CollectionCase
   relationship hasMany prepTaskPlans: PrepTaskPlanWorkflow
+  relationship hasMany aiEventSetupSessions: AiEventSetupSession
+  relationship hasMany automatedFollowups: AutomatedFollowup
+  relationship hasMany battleBoards: BattleBoard
+  relationship hasMany cateringOrders: CateringOrder
+  relationship hasMany commandBoards: CommandBoard
+  relationship hasMany eventImportWorkflows: EventImportWorkflow
+  relationship hasMany eventTimelines: EventTimeline
+  relationship hasMany eventTimelineItems: EventTimelineItem
+  relationship hasMany eventWaitlistEntries: EventWaitlistEntry
+  relationship hasMany proposals: Proposal
+  relationship hasMany revenueRecognitionSchedules: RevenueRecognitionSchedule
+  relationship hasMany taskBundles: TaskBundle
+  relationship hasMany timelineTasks: TimelineTask
 
   constraint validTitle: self.title != null and self.title != "" "Event title is required"
   constraint validEventType: self.eventType != null and self.eventType != "" "Event type is required"
@@ -269,7 +286,7 @@ entity Event mixin TenantScoped, SoftDeletable {
   // State transitions (self-transitions allowed for idempotent mutations)
   transition status from "draft" to ["draft", "confirmed", "cancelled"]
   transition status from "confirmed" to ["confirmed", "completed", "cancelled"]
-  transition status from "completed" to ["completed", "archived"]
+  transition status from "completed" to ["completed", "confirmed", "archived"]
   // "cancelled" and "archived" are terminal states
 
   store Event in durable
@@ -328,7 +345,7 @@ entity EventProfitability mixin TenantScoped, SoftDeletable {
   }
 
   default policy EventProfitabilityDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(eventId: string, budgetedRevenue: money, budgetedFoodCost: money, budgetedLaborCost: money, budgetedOverhead: money, notes: string) {
+  command create(optional eventId: string, budgetedRevenue: money, budgetedFoodCost: money, budgetedLaborCost: money, budgetedOverhead: money, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
 
     mutate eventId = eventId
@@ -409,7 +426,7 @@ entity EventSummary mixin TenantScoped, SoftDeletable {
   constraint validEventId: self.eventId != null and self.eventId != "" "Event ID is required"
 
   default policy EventSummaryDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(eventId: string, highlights: string, issues: string, financialPerformance: string, clientFeedback: string, insights: string, overallSummary: string) {
+  command create(optional eventId: string, highlights: string, issues: string, financialPerformance: string, clientFeedback: string, insights: string, overallSummary: string) {
     guard eventId != null and eventId != "" "Event ID is required"
 
     mutate eventId = eventId
@@ -630,3 +647,28 @@ event EventFinalizationSagaCompleted: "events.finalization_saga.completed" {
   tenantId: string
   completedAt: datetime
 }
+
+// Co-located with Event.create/confirm emits so per-file reaction-completeness passes.
+on EventCreated run BattleBoard.create
+  resolve null
+  params {
+    boardName: payload.title + " - Battle Board"
+    boardType: "event-specific"
+    eventId: payload.result.id
+    description: ""
+    isTemplate: false
+    notes: ""
+    tags: []
+  }
+
+on EventConfirmed run PrepList.create
+  resolve null
+  params {
+    eventId: payload._subject.id
+    name: "Prep List (seeding from confirmed event)"
+    batchMultiplier: 1
+    dietaryRestrictions: ""
+    totalItems: 0
+    totalEstimatedTime: 0
+    notes: "[auto-seed:event-confirmed]"
+  }

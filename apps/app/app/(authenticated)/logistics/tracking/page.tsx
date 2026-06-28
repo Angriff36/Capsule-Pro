@@ -21,6 +21,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 import { apiFetch } from "@/app/lib/api";
 
 // Types
@@ -329,25 +330,8 @@ export default function TrackingPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Delivery Tracking
-            <Badge
-              className="ml-2 font-normal text-muted-foreground text-xs"
-              variant="outline"
-            >
-              Simulated Positions
-            </Badge>
-          </h1>
-          <p className="text-muted-foreground">
-            Tracking for active deliveries (map positions are simulated).
-            {deliveries.length === 0 &&
-              " No active shipments found — create shipments and assign them to routes to see tracking data here."}
-          </p>
-        </div>
+    <OperationalPageShell
+      actions={
         <div className="flex items-center gap-3">
           <span className="text-muted-foreground text-xs">
             Updated {formatTime(lastRefresh.toISOString())}
@@ -364,7 +348,27 @@ export default function TrackingPage() {
             Refresh
           </Button>
         </div>
-      </div>
+      }
+      description={
+        <>
+          Tracking for active deliveries (map positions are simulated).
+          {deliveries.length === 0 &&
+            " No active shipments found — create shipments and assign them to routes to see tracking data here."}
+        </>
+      }
+      eyebrow="Logistics / Tracking"
+      title={
+        <>
+          Delivery tracking
+          <Badge
+            className="ml-2 font-normal text-muted-foreground text-xs"
+            variant="outline"
+          >
+            Simulated Positions
+          </Badge>
+        </>
+      }
+    >
 
       {/* Summary */}
       <div className="grid gap-4 md:grid-cols-3">
@@ -626,6 +630,6 @@ export default function TrackingPage() {
           )}
         </>
       )}
-    </div>
+    </OperationalPageShell>
   );
 }

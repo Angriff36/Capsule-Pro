@@ -18,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -62,6 +61,10 @@ import {
   getUtilizationColor,
   updateBudget,
 } from "@/app/lib/labor-budgets";
+import {
+  OperationalPageShell,
+  OperationalSection,
+} from "@/app/(authenticated)/components/operational-page-shell";
 import { BudgetFormModal } from "./budget-form-modal";
 
 export function BudgetsClient() {
@@ -196,18 +199,9 @@ export function BudgetsClient() {
     .reduce((sum, spend) => sum + spend, 0);
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      {/* Page Header */}
-      <div className="space-y-0.5">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-semibold text-2xl tracking-tight">
-              Labor Budgets
-            </h1>
-            <p className="text-muted-foreground">
-              Manage and track labor budgets for your organization
-            </p>
-          </div>
+    <>
+      <OperationalPageShell
+        actions={
           <div className="flex gap-2">
             <Button
               disabled={loading}
@@ -226,17 +220,13 @@ export function BudgetsClient() {
               New Budget
             </Button>
           </div>
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* Performance Overview Section */}
-      <section className="space-y-4">
-        <h2 className="font-medium text-muted-foreground text-sm">
-          Performance Overview
-        </h2>
-        <div className="grid gap-4 md:grid-cols-3">
+        }
+        description="Manage and track labor budgets for your organization."
+        eyebrow="Scheduling / Budgets"
+        title="Labor budgets"
+      >
+        <OperationalSection title="Performance overview">
+          <div className="grid gap-4 md:grid-cols-3">
           <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="font-medium text-sm">
@@ -284,7 +274,7 @@ export function BudgetsClient() {
             </CardContent>
           </Card>
         </div>
-      </section>
+      </OperationalSection>
 
       {/* Filters Section */}
       <section className="space-y-4">
@@ -521,6 +511,7 @@ export function BudgetsClient() {
           </CardContent>
         </Card>
       </section>
+      </OperationalPageShell>
 
       {/* Create/Edit Modal */}
       <BudgetFormModal
@@ -545,7 +536,7 @@ export function BudgetsClient() {
         onConfirm={handleDelete}
         open={deleteConfirmOpen}
       />
-    </div>
+    </>
   );
 }
 

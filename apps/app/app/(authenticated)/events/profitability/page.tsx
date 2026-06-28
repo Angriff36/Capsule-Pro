@@ -9,9 +9,9 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 import { Header } from "../../components/header";
 import { ProfitabilityPageClient } from "./profitability-page-client";
 
@@ -182,25 +182,17 @@ const EventProfitabilityPage = async () => {
         pages={[{ label: "Events", href: "/events" }]}
       />
 
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        <div className="flex flex-col gap-1">
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Event Profitability
-          </h1>
-          <p className="text-muted-foreground">
-            Analyze budget vs actual performance across events, track margins,
-            and identify underperforming areas
-          </p>
-        </div>
-
-        <Separator />
-
+      <OperationalPageShell
+        description="Analyze budget vs actual performance across events, track margins, and identify underperforming areas."
+        eyebrow="Events / Profitability"
+        title="Event profitability"
+      >
         <ProfitabilityPageClient
           records={serializedRecords}
           summary={summary}
           tenantId={tenantId}
         />
-      </div>
+      </OperationalPageShell>
     </>
   );
 };

@@ -58,7 +58,7 @@ const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg, requireCurrentUser } = await import(
   "@/app/lib/tenant"
 );
-const { createManifestRuntime } = await import("@/lib/manifest-runtime");
+await import("@/lib/manifest-runtime");
 const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000001";

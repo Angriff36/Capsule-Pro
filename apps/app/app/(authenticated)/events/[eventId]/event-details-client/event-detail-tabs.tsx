@@ -42,11 +42,6 @@ const EXECUTION_TABS = [
 
 const REPORTS_TABS = ["overview", "reports", "followups", "explore"] as const;
 
-type PlanningTab = (typeof PLANNING_TABS)[number];
-type ExecutionTab = (typeof EXECUTION_TABS)[number];
-type ReportsTab = (typeof REPORTS_TABS)[number];
-type EventDetailTabValue = PlanningTab | ExecutionTab | ReportsTab;
-
 const ALL_TAB_VALUES = new Set<string>([
   ...PLANNING_TABS,
   ...EXECUTION_TABS,
@@ -182,7 +177,6 @@ export function EventDetailTabs({
         localStorage.setItem(`event-mode:${eventId}`, newMode);
       }
       // Reset tab to first tab of new mode
-      const _newTabs = getTabsForMode(newMode);
       const nextSearchParams = new URLSearchParams(
         searchParams?.toString() ?? ""
       );

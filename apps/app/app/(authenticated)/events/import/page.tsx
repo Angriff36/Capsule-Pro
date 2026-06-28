@@ -2,6 +2,7 @@ import { auth } from "@repo/auth/server";
 import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 import { Header } from "../../components/header";
 import { ImportForm } from "./import-form";
 
@@ -30,9 +31,13 @@ const ImportEventPage = async () => {
           </Button>
         </div>
       </Header>
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+      <OperationalPageShell
+        description="Import event documents to generate battle boards and pre-event reports."
+        eyebrow="Events / Import"
+        title="Import event documents"
+      >
         <ImportForm />
-      </div>
+      </OperationalPageShell>
     </>
   );
 };

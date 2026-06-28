@@ -4,8 +4,8 @@
  * Proposal Template CRUD Server Actions
  *
  * Server actions for proposal template management operations.
- * Write operations (create/update/delete/duplicate) route through
- * governed Manifest commands; reads and batch updateMany use direct Prisma
+ * All write operations — create/update/delete/duplicate AND the single-default
+ * demotion — route through governed Manifest commands; reads use direct Prisma
  * (constitution §3/§9/§10).
  */
 
@@ -67,6 +67,58 @@ export interface UpdateProposalTemplateInput {
   isActive?: boolean;
   isDefault?: boolean;
   name?: string;
+}
+
+/**
+ * Demote any currently-default templates to non-default via the governed
+ * ProposalTemplate.update command (constitution §9 — replaces a direct
+ * prisma.updateMany batch write). Each sibling's existing field values are
+ * re-passed with isDefault=false so the full-mutate `update` command clobbers
+ * nothing else. The read of the current defaults is an allowed read path (§10).
+ */
+async function demoteDefaultProposalTemplates(
+  actor: { id: string; role: string; tenantId: string },
+  excludeId?: string
+): Promise<void> {
+  const currentDefaults = await database.proposalTemplate.findMany({
+    where: {
+      tenantId: actor.tenantId,
+      isDefault: true,
+      deletedAt: null,
+      ...(excludeId ? { id: { not: excludeId } } : {}),
+    },
+  });
+
+  for (const tpl of currentDefaults) {
+    const result = await runManifestCommand({
+      entity: "ProposalTemplate",
+      command: "update",
+      body: {
+        id: tpl.id,
+        name: tpl.name,
+        description: tpl.description ?? "",
+        eventType: tpl.eventType ?? "",
+        defaultTerms: tpl.defaultTerms ?? "",
+        defaultTaxRate: Number(tpl.defaultTaxRate),
+        defaultNotes: tpl.defaultNotes ?? "",
+        defaultLineItems: tpl.defaultLineItems ?? "[]",
+        isActive: tpl.isActive,
+        isDefault: false,
+        logoUrl: tpl.logoUrl ?? "",
+        primaryColor: tpl.primaryColor ?? "",
+        secondaryColor: tpl.secondaryColor ?? "",
+        accentColor: tpl.accentColor ?? "",
+        fontFamily: tpl.fontFamily ?? "",
+      },
+      user: actor,
+    });
+    if (!result.ok) {
+      throw new Error(
+        result.message ||
+          `Failed to clear default flag on proposal template ${tpl.id}`
+      );
+    }
+  }
 }
 
 /**
@@ -185,11 +237,12 @@ export async function createProposalTemplate(
   // Validate input
   invariant(input.name?.trim(), "Template name is required");
 
-  // If setting as default, unset any existing default (batch — direct Prisma)
+  // If setting as default, demote any existing default (governed §9)
   if (input.isDefault) {
-    await database.proposalTemplate.updateMany({
-      where: { tenantId: user.tenantId, isDefault: true },
-      data: { isDefault: false },
+    await demoteDefaultProposalTemplates({
+      id: user.id,
+      role: user.role,
+      tenantId: user.tenantId,
     });
   }
 
@@ -250,12 +303,12 @@ export async function updateProposalTemplate(
   });
   invariant(existingTemplate, "Template not found");
 
-  // If setting as default, unset any existing default (batch — direct Prisma)
+  // If setting as default, demote any other existing default (governed §9)
   if (input.isDefault) {
-    await database.proposalTemplate.updateMany({
-      where: { tenantId: user.tenantId, isDefault: true, id: { not: id } },
-      data: { isDefault: false },
-    });
+    await demoteDefaultProposalTemplates(
+      { id: user.id, role: user.role, tenantId: user.tenantId },
+      id
+    );
   }
 
   // Governed write: ProposalTemplate.update

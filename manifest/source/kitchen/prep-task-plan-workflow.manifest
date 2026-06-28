@@ -42,11 +42,11 @@ entity PrepTaskPlanWorkflow mixin TenantScoped {
   property approvedCount: int = 0
   property instantiatedCount: int = 0
   property reviewedBy: string = ""
-  property reviewedAt: datetime
+  property reviewedAt: datetime?
   property approvedBy: string = ""
-  property approvedAt: datetime
-  property startedAt: datetime
-  property completedAt: datetime
+  property approvedAt: datetime?
+  property startedAt: datetime?
+  property completedAt: datetime?
   timestamps
 
   // Computed properties for state checks
@@ -69,10 +69,10 @@ entity PrepTaskPlanWorkflow mixin TenantScoped {
   // State transitions
   transition status from "created" to ["generating", "cancelled"]
   transition status from "generating" to ["awaiting_review", "failed"]
-  transition status from "awaiting_review" to ["reviewing", "cancelled"]
+  transition status from "awaiting_review" to ["reviewing", "instantiating", "cancelled"]
   transition status from "reviewing" to ["awaiting_approval", "failed"]
   transition status from "awaiting_approval" to ["approving", "cancelled"]
-  transition status from "approving" to ["instantiating", "cancelled"]
+  transition status from "approving" to ["instantiating", "cancelled", "failed"]
   transition status from "instantiating" to ["scheduling", "failed"]
   transition status from "scheduling" to ["completed", "failed"]
   transition status from "failed" to ["generating", "awaiting_review", "awaiting_approval", "instantiating", "scheduling", "cancelled"]

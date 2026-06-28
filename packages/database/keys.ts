@@ -35,13 +35,19 @@ export const keys = () => {
     skipValidation: !!process.env.SKIP_ENV_VALIDATION,
     server: {
       DATABASE_URL: z.url(),
+      /** Optional Neon read-replica URL for analytics/reporting reads. Falls back to primary when unset. */
+      ANALYTICS_DATABASE_URL: z.string().url().optional(),
     },
     runtimeEnv: {
       DATABASE_URL: process.env.DATABASE_URL,
+      ANALYTICS_DATABASE_URL: process.env.ANALYTICS_DATABASE_URL,
     },
   });
   return {
     ...env,
     DATABASE_URL: toNeonPoolerUrl(env.DATABASE_URL),
+    ANALYTICS_DATABASE_URL: env.ANALYTICS_DATABASE_URL
+      ? toNeonPoolerUrl(env.ANALYTICS_DATABASE_URL)
+      : undefined,
   };
 };

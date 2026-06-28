@@ -17,11 +17,11 @@ entity Ingredient mixin TenantScoped, SoftDeletable {
   property inventoryItemId: string = ""
   // Lot/recall tracking: last received lot number and expiry for kitchen food-safety audits.
   property currentLotNumber: string = ""
-  property currentLotReceivedAt: datetime
-  property currentLotExpiresAt: datetime
+  property currentLotReceivedAt: datetime?
+  property currentLotExpiresAt: datetime?
   property isRecalled: boolean = false
   property recallReason: string = ""
-  property recalledAt: datetime
+  property recalledAt: datetime?
   timestamps
 
   computed isExpirable: boolean = self.shelfLifeDays > 0

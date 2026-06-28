@@ -21,16 +21,16 @@ entity PurchaseRequisition mixin TenantScoped, SoftDeletable {
   property required estimatedShipping: money = 0
   property required estimatedTotal: money = 0
   property approvedBy: string = ""
-  property approvedAt: datetime
+  property approvedAt: datetime?
   property managerApprovalBy: string = ""
-  property managerApprovalAt: datetime
+  property managerApprovalAt: datetime?
   property financeApprovalBy: string = ""
-  property financeApprovalAt: datetime
+  property financeApprovalAt: datetime?
   property convertedToPoId: string = ""
-  property convertedAt: datetime
+  property convertedAt: datetime?
   property rejectionReason: string = ""
   searchable property notes: string = ""
-  property submittedAt: datetime
+  property submittedAt: datetime?
   property itemCategory: string = ""
   property required priority: string = "normal"
   timestamps

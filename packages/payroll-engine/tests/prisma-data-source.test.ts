@@ -114,7 +114,7 @@ describe("PrismaPayrollDataSource.savePayrollRecords", () => {
 
     await ds.savePayrollRecords([makeRecord()]);
 
-    const arg = payrollRunUpsert.mock.calls[0][0];
+    const arg = payrollRunUpsert.mock.calls[0]![0];
     expect(arg.create.status).toBe("processing");
     expect(arg.update.status).toBe("processing");
     // Hard guard against the regression: "completed" is not in the IR state machine.

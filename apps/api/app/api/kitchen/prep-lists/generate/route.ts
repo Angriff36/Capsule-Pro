@@ -566,6 +566,9 @@ function populateStations(
   for (const data of ingredientMap.values()) {
     const stations = Array.from(data.stations);
     const primaryStationId = stations[0];
+    if (!primaryStationId) {
+      continue;
+    }
 
     const dietarySubstitutions = applyDietaryRestrictions(
       data.ingredient.allergens ?? [],
@@ -735,7 +738,7 @@ export async function savePrepListToProductionBoard(
             (sum, ing) => sum + ing.scaledQuantity,
             0
           ),
-          dueDate: new Date(task.dueDate).toISOString().split("T")[0],
+          dueDate: new Date(task.dueDate).toISOString().slice(0, 10),
           priority: task.priority,
           ingredientsJson: JSON.stringify(
             station.ingredients.map((ing) => ({
@@ -833,7 +836,11 @@ export async function savePrepListToDatabaseCore(
       RETURNING id
     `;
 
-    const prepListId = result[0].id;
+    const insertedPrepList = result[0];
+    if (!insertedPrepList) {
+      return { success: false, error: "Failed to create prep list" };
+    }
+    const prepListId = insertedPrepList.id;
 
     // Batch insert all prep list items in a single query
     const allItems: Array<{

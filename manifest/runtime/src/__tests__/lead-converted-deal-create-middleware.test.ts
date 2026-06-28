@@ -203,7 +203,7 @@ describe("Middleware conformance: LeadConvertedToClient → Deal.create", () => 
       unknown
     >[];
     expect(deals).toHaveLength(1);
-    const deal = deals[0];
+    const deal = deals[0]!;
     expect(deal.leadId).toBe(LEAD_ID);
     expect(deal.title).toBe("Aurora Events Co");
     expect(Number(deal.value)).toBe(42_000);
@@ -236,7 +236,7 @@ describe("Middleware conformance: LeadConvertedToClient → Deal.create", () => 
     expect(deals).toHaveLength(1);
     // Deal.create guards `title != ""`; without the fallback the deal would never
     // be created (blank title → guard fails → silent no-op).
-    expect(deals[0].title).toBe("Sam Rivera");
+    expect(deals[0]!.title).toBe("Sam Rivera");
   });
 
   it("does not create a second deal when one already exists for the lead (idempotent)", async () => {
@@ -262,6 +262,6 @@ describe("Middleware conformance: LeadConvertedToClient → Deal.create", () => 
       unknown
     >[];
     expect(deals).toHaveLength(1);
-    expect(deals[0].id).toBe("deal-pre-existing");
+    expect(deals[0]!.id).toBe("deal-pre-existing");
   });
 });

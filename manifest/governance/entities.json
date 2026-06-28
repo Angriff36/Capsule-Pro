@@ -1,6 +1,6 @@
 {
-  "irHash": "854c175d98bfdece700230bfbaa44675b604f3416679bdcbd829025255815fb4",
-  "compilerVersion": "2.16.1",
+  "irHash": "adb771a3246262fcf8d548aa66ce531249a2ca02518609bbaa8e7372bdb14714",
+  "compilerVersion": "2.18.6",
   "entities": [
     {
       "name": "ActionMilestone",

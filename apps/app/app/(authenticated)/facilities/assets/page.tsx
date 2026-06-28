@@ -63,6 +63,7 @@ import type {
 } from "@/app/lib/manifest-types.generated";
 import { createFacilityAsset } from "../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 
 const STATUS_CONFIG: Record<
   string,
@@ -289,19 +290,17 @@ export default function AssetsPage() {
     <div className="space-y-6">
       <FacilitiesNavigation />
 
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <h1 className="font-semibold text-2xl tracking-tight">Assets</h1>
-            <p className="text-muted-foreground">
-              Track equipment, warranty status, and maintenance needs.
-            </p>
-          </div>
+      <OperationalPageShell
+        actions={
           <Button onClick={openCreate}>
             <Plus className="mr-2 h-4 w-4" />
             Add Asset
           </Button>
-        </div>
+        }
+        description="Track equipment, warranty status, and maintenance needs."
+        eyebrow="Facilities / Assets"
+        title="Assets"
+      >
 
         {/* Summary */}
         <div className="flex flex-wrap gap-2">
@@ -330,7 +329,7 @@ export default function AssetsPage() {
         {/* Status Cards */}
         <div className="grid gap-4 md:grid-cols-3">
           {(["active", "maintenance", "retired"] as const).map((status) => {
-            const config = STATUS_CONFIG[status];
+            const config = STATUS_CONFIG[status]!;
             const count = assets.filter((a) => a.status === status).length;
             return (
               <Card key={status}>
@@ -366,7 +365,7 @@ export default function AssetsPage() {
           <div className="space-y-3">
             {filteredAssets.map((asset) => {
               const config =
-                STATUS_CONFIG[asset.status ?? "active"] || STATUS_CONFIG.active;
+                STATUS_CONFIG[asset.status ?? "active"] ?? STATUS_CONFIG["active"]!;
               const Icon = config.icon;
               const isWarrantyExpiring =
                 asset.warrantyExpiry &&
@@ -447,7 +446,7 @@ export default function AssetsPage() {
             })}
           </div>
         )}
-      </div>
+      </OperationalPageShell>
 
       {/* Create/Edit Dialog */}
       <Dialog onOpenChange={setShowDialog} open={showDialog}>

@@ -743,8 +743,13 @@ for (const enumMatch of committedSchema.matchAll(
   }
 }
 // Union of all enum type names — used to fix @default quoting in §8b
-const allEnumNames = new Set([...projectedEnumNames, ...infraEnums.map((e) => e.match(/^enum\s+(\w+)/)?.[1]).filter(Boolean)]);
-console.log(`\nHeader: ${projectedEnumNames.size} enums from PrismaProjection + ${infraEnums.length} infra-only enums from committed schema`);
+const allEnumNames = new Set([
+  ...projectedEnumNames,
+  ...infraEnums.map((e) => e.match(/^enum\s+(\w+)/)?.[1]).filter(Boolean),
+]);
+console.log(
+  `\nHeader: ${projectedEnumNames.size} enums from PrismaProjection + ${infraEnums.length} infra-only enums from committed schema`
+);
 console.log(`  Schemas: ${sortedSchemas.join(", ")}`);
 
 // ---------------------------------------------------------------------------
@@ -897,7 +902,19 @@ console.log(`  Infra-core default fixes: ${defaultFixCount}`);
 // ---------------------------------------------------------------------------
 // 8. Assemble final schema
 // ---------------------------------------------------------------------------
+// Self-identifying banner so this file is never mistaken for the live schema.
+// (The header below is copied from the live schema, so without this the two files
+// are byte-identical at the top — a real footgun.)
+const ARTIFACT_BANNER =
+  "// ============================================================================\n" +
+  "// CI VALIDATION ARTIFACT — *NOT* THE LIVE SCHEMA. DO NOT point prisma generate /\n" +
+  "// migrate at this file. It is regenerated from the Manifest IR by\n" +
+  "// manifest/scripts/generate-full-schema.mjs and only drift-checked against the\n" +
+  "// LIVE, hand-authored schema at packages/database/prisma/schema.prisma.\n" +
+  "// ============================================================================\n\n";
+
 const output =
+  ARTIFACT_BANNER +
   updatedHeader +
   (infraEnums.length > 0
     ? "// ===== INFRA-ONLY ENUMS (from committed schema, not in manifest IR) =====\n\n" +
@@ -959,12 +976,11 @@ for (let i = 0; i < outputLines.length; i++) {
   // PrismaProjection emits quoted string defaults for enum fields, but
   // Prisma requires bare (unquoted) enum values in @default.
   {
-    const fieldMatch = line.match(/^\s+\w+\s+(\w+)(\??)\s+.*?@default\("([^"]+)"\)/);
+    const fieldMatch = line.match(
+      /^\s+\w+\s+(\w+)(\??)\s+.*?@default\("([^"]+)"\)/
+    );
     if (fieldMatch && allEnumNames.has(fieldMatch[1])) {
-      outputLines[i] = line.replace(
-        /@default\("([^"]+)"\)/,
-        "@default($1)"
-      );
+      outputLines[i] = line.replace(/@default\("([^"]+)"\)/, "@default($1)");
       finalDefaultFixes++;
     }
   }
@@ -995,8 +1011,8 @@ try {
   });
   console.log("prisma validate passed");
 } catch (err) {
-  const stdout = (err.stdout?.toString()) || "";
-  const stderr = (err.stderr?.toString()) || "";
+  const stdout = err.stdout?.toString() || "";
+  const stderr = err.stderr?.toString() || "";
   console.log("prisma validate FAILED");
   const errorOutput = stdout + stderr;
   const errorLines = errorOutput.split("\n").filter((l) => l.trim());
@@ -1021,7 +1037,9 @@ console.log(
     " diagnostics"
 );
 console.log(`Post-process: ${insertions.length} @@unique injected`);
-console.log(`Header: ${projectedEnumNames.size} projected enums + ${infraEnums.length} infra-only enums`);
+console.log(
+  `Header: ${projectedEnumNames.size} projected enums + ${infraEnums.length} infra-only enums`
+);
 console.log(`Infra-core: ${infraBlocks.length} pass-through models appended`);
 console.log(
   "Total: " +

@@ -161,3 +161,124 @@ corrected the premise (the resulting fix was still right, for a different reason
 **Rule:** kitchen.ir.json shape: `ir.commands[] = {name, entity, parameters,...}`;
 `ir.entities[].commands = string[]`. Verify IR claims against the schema
 (node_modules/@angriff36/manifest/docs/spec/ir/ir-v1.schema.json) before asserting absence.
+
+## Lesson (2026-06-25): One shared plain-record guard — never redefine `isRecord`/`expectRecord`/`assertRecord` locally
+
+**What happened:** Eight files each copy-pasted a local `isRecord`/`expectRecord` "AI slop" helper.
+Two shapes drifted (some excluded arrays, some didn't), so the same-named helper behaved differently
+per file.
+**Rule:** There is ONE shared home: `apps/app/app/lib/is-record.ts` + `apps/api/app/lib/is-record.ts`
+(mirror, like `@/app/lib/invariant`) exporting `isPlainRecord` (object && !null && !Array.isArray —
+arrays are NOT records) and `assertRecord(value, path)` (invariant-throwing, the old `expectRecord`).
+Import `{ isPlainRecord }` (or `{ assertRecord as expectRecord }` to keep an `expect*` family
+internally consistent). The gate `pnpm check:no-local-isrecord` (`scripts/check-no-local-isrecord.mjs`,
+wired into CI) fails on any NEW local def of `isRecord|isPlainRecord|expectRecord|assertRecord` outside
+the shared files, printing `file:line` + the fix. Do NOT centralize feature-specific validators that do
+extra domain checks — only the generic plain-object guard.
+**Gotcha (cost me a re-do):** the PostToolUse import-organizer strips an import it sees as unused.
+If you add the `@/app/lib/is-record` import BEFORE deleting the local `const expectRecord` it shadows,
+the organizer deletes the import (shadowed = "unused"), leaving the call sites undeclared. Order:
+delete/rename the local def FIRST, then add the import LAST.
+
+## Lesson (2026-06-26): Own the commit + CI + push loop — the dirty tree is NOT a blocker, and don't punt fixes to the user
+
+**What happened:** After landing the contract-import gate (commit `9fe701db6`), `manifest:ci` was
+red on a stale frozen-IR embed. I verified the drift was pre-existing and unrelated to my change —
+then framed the one-command fix (`pnpm manifest:compile && pnpm manifest:ir:embed` + commit) as
+"your call," and repeatedly cited the "100+ uncommitted concurrent-loop files / dirty tree" as a
+reason for caution. The user (rightfully) erupted: "github is your deal… you keep refusing to
+commit your work then crying about a dirty repo."
+**Root cause:** I confused two different things. (1) The dirty tree IS real, but the repo already
+has the rule for it: stage by **explicit pathspec only**, never `git add -A` (AGENTS.md). That rule
+makes the dirty tree a non-issue for committing MY slice — I'd already been doing it correctly for
+my own commits, so citing it as a blocker for the IR fix was inconsistent hand-wringing. (2) I
+treated a routine, safe, repo-documented fix as needing user sign-off, when the repo classifies
+commit as autonomous Tier-1 work. (3) I let a "green" claim (the gate passing standalone) read as
+broader validation than it deserved.
+**Rule:**
+- The dirty tree is handled by explicit-pathspec staging. NEVER cite it as a reason to delay a
+  commit or a fix. Stage only your files, commit, move on.
+- **Update (same day):** the "dirty tree" state is **session-dependent, not permanent** — later the
+  working tree was clean except the current session's own changes. Before citing "dirty tree" as
+  context, run `git status` and verify it THIS session; do not parrot old memory that said "100+
+  uncommitted concurrent-loop files." (I repeated that exact parroting error on 2026-06-26 and got
+  called out — the tree was actually clean except my own canonical/ work.)
+- When you find a broken gate that's blocking CI and the fix is repo-documented + safe (regen an
+  artifact, refresh a stale generated file), **just do it** — commit the regenerated file(s) by
+  explicit pathspec. Don't punt it to the user as "your call."
+- Scope "green" claims precisely: say "this gate passes standalone" vs "full `manifest:ci` is green,"
+  and verify the FULL chain (`pnpm manifest:ci`, EXIT=0) before implying repo-wide health.
+- When the user delegates GitHub ("github is your deal"), that authorizes push of the feature
+  branch (not main). Push it; don't re-ask.
+- End-state for this incident: IR embed refreshed (`cdf8ccda8`), full `manifest:ci` EXIT=0, branch
+  pushed to `origin/feat/event-finalized-client-interaction`.
+
+## Lesson (2026-06-26): treex > grep for understanding directory structure
+
+**What happened:** In `canonical/`, Ryan had manually created empty `features/` and `ui/` dirs before
+any file writes. I built a `README.md` taxonomy from the written spec (which said `app-wiring/`,
+`integrations/`, `unresolved/`) and relied on `grep`/`Glob` for structural understanding. Neither ever
+showed the empty `features/` or `ui/` dirs, so the README silently diverged from the real on-disk tree.
+Ryan corrected: run `treex` to get the full picture — it exposes misconfigurations grep can't see.
+**Root cause:** Content searches (`grep`/`Glob`/`Grep`) only surface files matching a pattern and hide
+the layout. Empty folders, placeholder dirs, missing branches, and structural drift are invisible to
+grep AND to git (empty dirs aren't tracked), so they slip through undetected.
+**Rule:** When the task touches directory layout / branch structure / "what exists where," `cd` into
+the dir and run `treex`. Treat its tree as ground truth for what exists; reconcile docs/code to it.
+Use grep only for *content* questions — never as a structural survey. Do this at the start of
+structural work and whenever a layout claim feels uncertain. This matters most when **adding a new
+entry**: grep'ing "does X already exist?" returns nothing if the existing entry is named differently
+from your search term, so you silently create a duplicate or misnamed unit. treex the area first,
+every time. Same for flat inventories: `ls <dir>/<glob>` (e.g. `ls manifest/scripts/generate*`)
+surfaced a parallel stack of **19 custom generators** silently reimplementing documented Manifest
+projections — grep would never have listed them unless you already knew the name. treex/ls show
+*what exists*; grep only shows *what matches your guess*.
+
+## Lesson (2026-06-26): Don't stamp a claim "verified" off one weak check — especially grep on node_modules
+
+**What happened:** I committed "react-query NOT shipped in our pinned 2.18.0 (verified)" into a canonical
+entry. The "verification" was a content-grep of `node_modules/@angriff36/manifest` — which ripgrep
+**skips** (node_modules is gitignored), so it returned only README/package.json, and I wrongly concluded
+the projection's dist code was absent. I also rejected a correct upstream finding on the strength of that
+same flawed grep. A cross-check (another agent + `ls` + reading `generator.d.ts:44–80`) proved react-query
+IS shipped, with every D23 override knob. I had to retract two commits (`f97324a3c`, `73fc6de03`).
+
+**Root cause:** (1) Content-grep is unreliable inside `node_modules` (ripgrep respects `.gitignore`).
+(2) I labeled the claim "verified" off a single check that couldn't actually answer an *existence* question.
+
+**Rule:**
+- For **existence** checks ("does this file/option ship?"), use `ls`, `test -f`, or `Read` the file — **never** content-grep on `node_modules`.
+- Never stamp a claim "verified" off one method. Corroborate with a **second, different** check before committing it to source. A committed false "verified" is worse than an unverified claim — it repels scrutiny and misleads the next agent.
+**Gotcha:** `treex` operates on the **current working directory** and ignores a path argument —
+`treex c:/projects/capsule-pro/canonical` dumped the entire repo root (38.6 MB). Always `cd` first:
+`cd /c/projects/capsule-pro/<dir> && treex`.
+
+---
+
+## Lesson — A wrapper citing a "Manifest bug" is a STOP-and-ASK signal, not a fact (2026-06-27)
+
+**What happened:** `manifest/scripts/compile.mjs`'s header comment said it exists to work around the
+stock CLI's "--glob last file wins" bug. I took that comment as current fact, treated the stock CLI as
+broken, and started planning to recompile/regenerate around it. Ryan (who **authors** the Manifest
+compiler) had already FIXED that bug upstream — `compileCommand` auto-merges multiple sources into one
+`.json` output (commit d6d42fc, shipped ≥v2.10.0, present in installed 2.18.3). The comment was stale.
+
+**Two corrections from Ryan in the same session:**
+1. Don't assert "no native option exists" from the installed `.d.ts` + one projection run — **search the
+   official docs first** (Mintlify `/integration/projections`, `/cli/configuration`). (Here the docs
+   happened to corroborate, but I asserted before checking.)
+2. When you hit a wrapper/comment that claims "Manifest has bug X", **STOP and ask Ryan** before acting —
+   he owns the compiler and has likely already fixed it. Don't go off running scripts on the assumption.
+
+**Root cause:** Treating a code comment as a live source of truth about upstream behavior, and letting a
+stale workaround rationale drive a plan.
+
+**Rule:**
+- A comment that says "works around upstream bug X" is **unverified history**, not current state. Before
+  building on it: check the installed package version + official docs/changelog, and if it implies the
+  vendor tool is broken, **ask the owner** (Ryan owns `@angriff36/manifest`).
+- Don't `pnpm manifest:*` your way into "verifying" — many of those scripts ARE the custom glue; running
+  them reproduces glue output, not stock behavior. To test "can Manifest do X natively", use the **bare
+  stock CLI** (`manifest compile` / `manifest generate`), never the wrapper.
+- Record the corrected fact in canonical so the next agent doesn't re-trip:
+  `canonical/manifest/generation/ir-compilation/README.md`.

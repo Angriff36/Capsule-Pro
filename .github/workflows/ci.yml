@@ -100,7 +100,7 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Typecheck (app, api, web)
         run: pnpm check
@@ -114,6 +114,11 @@ jobs:
         # to the baseline count. See docs/audits/hardcoded-routes-violations.md
         # for the migration plan; lower the baseline number to lock in wins.
         run: node scripts/check-hardcoded-routes.mjs
+
+      - name: Check for duplicated isRecord helpers (use shared @/app/lib/is-record)
+        # Blocks new local isRecord/isPlainRecord/expectRecord/assertRecord defs.
+        # Import { isPlainRecord, assertRecord } from "@/app/lib/is-record" instead.
+        run: node scripts/check-no-local-isrecord.mjs
 
       - name: Run tests
         run: pnpm test
@@ -176,7 +181,7 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
         env:
           NPM_TOKEN: ${{ github.token }}
 

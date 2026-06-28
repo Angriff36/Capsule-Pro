@@ -25,7 +25,7 @@ entity WorkOrder mixin TenantScoped {
   property scheduledDate: datetime
   property assignedTo: string = ""
   // completedDate: nullable — only set when work finishes
-  property completedDate: datetime
+  property completedDate: datetime?
   timestamps
 
   computed isCompleted: boolean = self.status == "completed"

@@ -46,6 +46,7 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { StatusTransitionBadge } from "@/app/components/status-transition-badge";
 import { getProposalById } from "../actions";
 import { ProposalExportButton } from "../components/proposal-export-button";
 import { SendProposalButton } from "../components/send-proposal-button";
@@ -213,16 +214,20 @@ export default async function ProposalDetailPage({
             </div>
             <div className="flex items-center gap-3">
               <DisplayHeading size="md">{proposal.title}</DisplayHeading>
-              <Badge
+              <StatusTransitionBadge
+                entity="Proposal"
+                id={proposal.id}
+                label={
+                  (proposal.status && statusLabels[proposal.status]) ||
+                  proposal.status ||
+                  "Unknown"
+                }
+                status={proposal.status ?? "draft"}
                 variant={
                   (proposal.status && statusVariants[proposal.status]) ||
                   "default"
                 }
-              >
-                {(proposal.status && statusLabels[proposal.status]) ||
-                  proposal.status ||
-                  "Unknown"}
-              </Badge>
+              />
             </div>
             <CommandBandLede>
               {proposal.proposalNumber} • Created{" "}

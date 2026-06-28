@@ -242,7 +242,7 @@ describe("POST /api/accounting/payments — Idempotency-Key contract", () => {
 
     // Successful 201 response must be persisted under the same composite key.
     expect(mocks.manifestIdempotencyUpsertMock).toHaveBeenCalledTimes(1);
-    const upsertArgs = mocks.manifestIdempotencyUpsertMock.mock.calls[0][0];
+    const upsertArgs = mocks.manifestIdempotencyUpsertMock.mock.calls[0]![0];
     expect(upsertArgs.where).toEqual({
       tenantId_key: {
         tenantId: TENANT_ID,

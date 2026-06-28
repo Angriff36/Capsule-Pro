@@ -12,12 +12,7 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-
-const _QuerySchema = z.object({
-  supplierId: z.uuid(),
-});
 
 /**
  * GET /api/inventory/supplier-sync/status

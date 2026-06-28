@@ -8,8 +8,6 @@
  * must run from ONE governed Event.confirm with no hand-wired glue, and the
  * order side must stop at a reviewable DRAFT.
  */
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import {
   createPrepInventoryDemandMiddleware,
@@ -22,12 +20,14 @@ import {
   ManifestRuntimeEngine,
 } from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
-import { inMemoryStoreProvider } from "../test-helpers";
+import {
+  inMemoryStoreProvider,
+  readManifestSourceWithBase,
+} from "../test-helpers";
 
 const TEST_TENANT_ID = "tenant-prep-seed";
 
 async function buildRuntime() {
-  const manifestRoot = join(process.cwd(), "../../manifest/source");
   const manifestFiles = [
     "events/event-rules.manifest",
     "events/event-dish-rules.manifest",
@@ -43,21 +43,37 @@ async function buildRuntime() {
   ];
   const compiled = [];
   for (const file of manifestFiles) {
-    const source = readFileSync(join(manifestRoot, file), "utf-8");
+    // Inline `_base.manifest` so the `TenantScoped`/`SoftDeletable` mixins (and
+    // tenant/role declarations) resolve under the single-source compiler.
+    const source = readManifestSourceWithBase(file);
     const { ir, diagnostics } = await compileToIR(source);
     if (!ir) {
       throw new Error(
         `${file}: ${diagnostics.map((diagnostic) => diagnostic.message).join("; ")}`
       );
     }
-    const manifestName = file.replace(".manifest", "").split("/").pop();
     compiled.push(ir);
   }
 
   const [base] = compiled;
+  if (!base) {
+    throw new Error("No manifest IR compiled");
+  }
+  // Each file's IR now also carries the inlined `_base` mixin source entities
+  // (TenantScoped/SoftDeletable). Dedupe entities by name so the merged IR holds
+  // exactly one of each (the inlined base repeats across all 11 files).
+  const dedupeByName = <T extends { name: string }>(items: T[]): T[] => {
+    const seen = new Map<string, T>();
+    for (const item of items) {
+      if (!seen.has(item.name)) {
+        seen.set(item.name, item);
+      }
+    }
+    return Array.from(seen.values());
+  };
   const mergedIr = {
     ...base,
-    entities: compiled.flatMap((item) => item.entities),
+    entities: dedupeByName(compiled.flatMap((item) => item.entities)),
     stores: compiled.flatMap((item) => item.stores),
     events: compiled.flatMap((item) => item.events),
     commands: compiled.flatMap((item) => item.commands),
@@ -352,8 +368,8 @@ describe("Event confirmation auto-seeds the prep list and feeds the order draft"
       totalItems: 3,
       isActive: true,
     });
-    expect(String(prepLists[0].notes)).toContain("[auto-seed:event-confirmed]");
-    const prepListId = String(prepLists[0].id);
+    expect(String(prepLists[0]!.notes)).toContain("[auto-seed:event-confirmed]");
+    const prepListId = String(prepLists[0]!.id);
 
     // --- Items: scaled = recipeQty * (servings / yield), latest version wins -
     const prepItems = await storeProvider("PrepListItem").getAll();
@@ -404,7 +420,7 @@ describe("Event confirmation auto-seeds the prep list and feeds the order draft"
       subtotal: 35,
       estimatedTotal: 35,
     });
-    expect(String(requisitions[0].notes)).toContain(`[prep:${prepListId}]`);
+    expect(String(requisitions[0]!.notes)).toContain(`[prep:${prepListId}]`);
 
     await expect(
       storeProvider("InventoryItem").getById("inventory-flour")

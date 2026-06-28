@@ -193,7 +193,7 @@ describe("bulk-assignment-suggestions route", () => {
     it("should filter by scheduleId query parameter", async () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([mockOpenShifts[0]]);
       vi.mocked(getAssignmentSuggestionsForMultipleShifts).mockResolvedValue([
-        mockBulkResults[0],
+        mockBulkResults[0]!,
       ]);
 
       const request = new NextRequest(
@@ -359,7 +359,7 @@ describe("bulk-assignment-suggestions route", () => {
     it("should support requiredSkills in request body", async () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([mockOpenShifts[0]]);
       vi.mocked(getAssignmentSuggestionsForMultipleShifts).mockResolvedValue([
-        mockBulkResults[0],
+        mockBulkResults[0]!,
       ]);
 
       const request = new NextRequest(

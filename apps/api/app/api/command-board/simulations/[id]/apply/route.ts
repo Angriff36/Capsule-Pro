@@ -343,9 +343,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       simulatedAnnotations
     );
 
-    // Optional: Check for force flag in body
-    const body = await request.json().catch(() => ({}));
-    const _force = body.force === true;
+    // Consume the request body (force flag reserved for future use)
+    await request.json().catch(() => ({}));
 
     // Apply changes in a transaction
     await database.$transaction(async (tx) => {

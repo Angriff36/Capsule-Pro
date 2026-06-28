@@ -23,11 +23,48 @@ let entities: any[];
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let commands: any[];
 
+/**
+ * Mixins (e.g. SoftDeletable, TenantScoped from `_base.manifest`) are declared
+ * with the `entity` keyword so the parser can resolve them as composition
+ * targets, but they are NOT real, persisted, governed entities — they are
+ * flattened into the consuming entity at compile time (entity-composition.js
+ * `expandComposition`). They therefore have no store, no defaultPolicy, and no
+ * commands of their own, and must be excluded from per-entity coverage
+ * assertions (giving a mixin a fake store/policy would be meaningless).
+ *
+ * Discriminator (no hardcoded names, future-proof): an entity is a mixin/abstract
+ * iff it is referenced as a `mixin` target by at least one OTHER entity — i.e. it
+ * appears in some entity's `entity.mixins` array. Such an entity is a composition
+ * source, not a standalone governed entity.
+ */
+function computeMixinNames(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  allEntities: any[]
+): Set<string> {
+  const mixinNames = new Set<string>();
+  for (const entity of allEntities) {
+    for (const mixin of entity.mixins ?? []) {
+      if (typeof mixin === "string") {
+        mixinNames.add(mixin);
+      }
+    }
+  }
+  return mixinNames;
+}
+
+let mixinNames: Set<string>;
+
 beforeAll(() => {
   const bundle = loadMergedPrecompiledIR();
   ir = bundle.ir;
-  entities = ir.entities ?? [];
+  const allEntities = ir.entities ?? [];
   commands = ir.commands ?? [];
+  mixinNames = computeMixinNames(allEntities);
+  // Governed entities only — mixins/abstract composition sources are not
+  // standalone entities and are excluded from coverage assertions.
+  entities = allEntities.filter(
+    (e: { name: string }) => !mixinNames.has(e.name)
+  );
 });
 
 // ── 1. Entity Coverage (§4) ──────────────────────────────────────────────

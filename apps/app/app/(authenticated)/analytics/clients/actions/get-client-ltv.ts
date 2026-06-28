@@ -155,7 +155,7 @@ export async function getClientLTVMetrics(): Promise<ClientLTVMetrics> {
   );
   const medianLTV =
     sortedByLTV.length > 0
-      ? sortedByLTV[Math.floor(sortedByLTV.length / 2)].lifetimeValue
+      ? (sortedByLTV[Math.floor(sortedByLTV.length / 2)]?.lifetimeValue ?? 0)
       : 0;
   const averageLTV =
     clientData.length > 0 ? totalRevenue / clientData.length : 0;
@@ -275,26 +275,28 @@ function calculateCohortAnalysis(clientData: ClientLTVData[]): Array<{
 
     for (const { monthsSinceFirst } of clients) {
       for (let i = 0; i <= monthsSinceFirst; i++) {
-        retentionByMonth[i]++;
+        retentionByMonth[i] = (retentionByMonth[i] ?? 0) + 1;
       }
     }
 
     const cohortSize = clients.length;
+    const retentionPct = (month: number): number =>
+      cohortSize > 0 ? ((retentionByMonth[month] ?? 0) / cohortSize) * 100 : 0;
 
     return {
       cohort,
       month0: cohortSize > 0 ? 100 : 0,
-      month1: cohortSize > 0 ? (retentionByMonth[1] / cohortSize) * 100 : 0,
-      month2: cohortSize > 0 ? (retentionByMonth[2] / cohortSize) * 100 : 0,
-      month3: cohortSize > 0 ? (retentionByMonth[3] / cohortSize) * 100 : 0,
-      month4: cohortSize > 0 ? (retentionByMonth[4] / cohortSize) * 100 : 0,
-      month5: cohortSize > 0 ? (retentionByMonth[5] / cohortSize) * 100 : 0,
-      month6: cohortSize > 0 ? (retentionByMonth[6] / cohortSize) * 100 : 0,
-      month7: cohortSize > 0 ? (retentionByMonth[7] / cohortSize) * 100 : 0,
-      month8: cohortSize > 0 ? (retentionByMonth[8] / cohortSize) * 100 : 0,
-      month9: cohortSize > 0 ? (retentionByMonth[9] / cohortSize) * 100 : 0,
-      month10: cohortSize > 0 ? (retentionByMonth[10] / cohortSize) * 100 : 0,
-      month11: cohortSize > 0 ? (retentionByMonth[11] / cohortSize) * 100 : 0,
+      month1: retentionPct(1),
+      month2: retentionPct(2),
+      month3: retentionPct(3),
+      month4: retentionPct(4),
+      month5: retentionPct(5),
+      month6: retentionPct(6),
+      month7: retentionPct(7),
+      month8: retentionPct(8),
+      month9: retentionPct(9),
+      month10: retentionPct(10),
+      month11: retentionPct(11),
     };
   });
 }

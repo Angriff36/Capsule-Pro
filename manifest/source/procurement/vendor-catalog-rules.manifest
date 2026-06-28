@@ -24,7 +24,7 @@ entity VendorCatalog mixin TenantScoped, SoftDeletable {
   property supplierSku: string = ""
   searchable property notes: string = ""
   property required tags: array<string>
-  property lastCostUpdate: datetime
+  property lastCostUpdate: datetime?
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null

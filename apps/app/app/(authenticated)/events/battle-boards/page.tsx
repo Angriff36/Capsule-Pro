@@ -17,11 +17,14 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@repo/design-system/components/ui/empty";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { FileText, LayoutGrid, Plus, Shield, Users } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
+import {
+  OperationalPageShell,
+  OperationalSection,
+} from "../../components/operational-page-shell";
 import { Header } from "../../components/header";
 
 const statusVariantMap = {
@@ -106,31 +109,23 @@ const BattleBoardsPage = async ({ searchParams }: BattleBoardsPageProps) => {
           </Button>
         </div>
       </Header>
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        {/* Page Header */}
-        <div className="flex flex-col gap-1">
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Battle Boards
-          </h1>
-          <p className="text-muted-foreground">
-            {filterEventId
-              ? "Battle boards linked to this event"
-              : "Print-ready event staff assignments and operational timelines"}
-          </p>
-          {filterEventId ? (
-            <Button asChild className="mt-2 w-fit" size="sm" variant="outline">
+      <OperationalPageShell
+        actions={
+          filterEventId ? (
+            <Button asChild size="sm" variant="outline">
               <Link href="/events/battle-boards">Show all boards</Link>
             </Button>
-          ) : null}
-        </div>
-
-        <Separator />
-
-        {/* Performance Overview Section */}
-        <section className="flex flex-col gap-4">
-          <h2 className="font-medium text-muted-foreground text-sm">
-            Performance Overview
-          </h2>
+          ) : undefined
+        }
+        description={
+          filterEventId
+            ? "Battle boards linked to this event."
+            : "Print-ready event staff assignments and operational timelines."
+        }
+        eyebrow="Events / Battle boards"
+        title="Battle boards"
+      >
+        <OperationalSection title="Performance overview">
           <div className="grid gap-6 lg:grid-cols-4">
             <Card tone="soft-stone">
               <CardHeader>
@@ -172,7 +167,7 @@ const BattleBoardsPage = async ({ searchParams }: BattleBoardsPageProps) => {
               </CardContent>
             </Card>
           </div>
-        </section>
+        </OperationalSection>
 
         {/* Battle Boards List Section */}
         {boards.length === 0 ? (
@@ -275,7 +270,7 @@ const BattleBoardsPage = async ({ searchParams }: BattleBoardsPageProps) => {
             </div>
           </section>
         )}
-      </div>
+      </OperationalPageShell>
     </>
   );
 };

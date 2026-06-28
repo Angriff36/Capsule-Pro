@@ -56,8 +56,12 @@ import {
   createEmployeeCertificationLapsedNotifyMiddleware,
   createEmployeeCertificationLapsedSuspendAvailabilityMiddleware,
   createEventCancelledCascadeMiddleware,
+  createEventContractEventActiveGuardMiddleware,
   createEventCreatedClientInteractionMiddleware,
   createEventDishPrepSyncMiddleware,
+  createEventFinalizedClientInteractionMiddleware,
+  createEventFinalizedFollowupCreateMiddleware,
+  createEventFinalizedReleaseReservationMiddleware,
   createEventGuestCountPrepRescaleMiddleware,
   createEventLocationCateringSyncMiddleware,
   createEventStaffActiveGuardMiddleware,
@@ -85,11 +89,13 @@ import {
   createPaymentRefundedInvoiceRecordMiddleware,
   createPayrollRunPaidCascadeMiddleware,
   createPayrollRunPaidPeriodLockMiddleware,
+  createPerformancePredictionRiskNotifyMiddleware,
   createPrepInventoryDemandMiddleware,
   createPrepListCancelledReleaseReservationMiddleware,
   createPrepListCompletedConsumeMiddleware,
   createPrepListSeedMiddleware,
   createPrepTaskStationCountMiddleware,
+  createProposalClientActiveGuardMiddleware,
   createProposalLifecycleLeadStatusMiddleware,
   createProposalLineItemCountMiddleware,
   createQaCheckFailedCorrectiveActionMiddleware,
@@ -878,6 +884,9 @@ export async function createManifestRuntime(
     "schedule-shift-count",
     "proposal-line-item-count",
     "event-created-client-interaction",
+    "event-finalized-client-interaction",
+    "event-finalized-followup",
+    "event-finalized-release-reservation",
     "event-updated-board-sync",
     "event-location-catering-sync",
     "event-staff-assigned-notify",
@@ -902,6 +911,21 @@ export async function createManifestRuntime(
     // short-circuits. Fail-open on missing store / not-found (only a positive
     // "inactive" signal blocks). See event-staff-active-guard-middleware.ts.
     createEventStaffActiveGuardMiddleware({ storeProvider }),
+    // Cross-entity precondition (before-guard): block Proposal.send when the
+    // linked Client is archived (soft-deleted). Same rationale as the EventStaff
+    // guard above — a Manifest guard cannot read another entity's state, and
+    // `clientId` is the Proposal's own field (not a `send` param), so it is a
+    // two-hop load (Proposal -> Client). Fail-open; only a positive "archived"
+    // signal blocks. See proposal-client-active-guard-middleware.ts.
+    createProposalClientActiveGuardMiddleware({ storeProvider }),
+    // Cross-entity precondition (before-guard): block EventContract.sign when the
+    // linked Event is no longer active (completed/archived/cancelled). Same
+    // rationale as the EventStaff/Proposal guards — a Manifest guard cannot read
+    // another entity's state, and `eventId` is the EventContract's own field
+    // (sign() takes no params), so it is a two-hop load (EventContract -> Event).
+    // Fail-open; only a positive inactive-status signal blocks. See
+    // event-contract-event-active-guard-middleware.ts.
+    createEventContractEventActiveGuardMiddleware({ storeProvider }),
     // Onboarding: SampleData.seed/reseed/clear -> actually populate/remove the
     // demo Event/Client/Recipe/PrepTask/Inventory rows via the existing
     // seedSampleData/clearSampleData helpers. The governed command only flips the
@@ -1501,6 +1525,17 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: dispatchNotificationAsSystem,
     }),
+    // Workforce AI: PerformancePredictionCreated -> Notification.create for the
+    // predicted employee, but ONLY when the prediction flags a real risk (a high
+    // overtime-risk score or a low productivity score). Middleware (not a reaction)
+    // because the propagation is CONDITIONAL on a per-type threshold — a reaction is
+    // an unconditional 1:1 mapping and would alert on every prediction or none — and
+    // the authoritative tenantId is loaded from the prediction (not on the payload).
+    // The event was an orphan (no consumer), so AI predictions surfaced to no one.
+    createPerformancePredictionRiskNotifyMiddleware({
+      storeProvider,
+      dispatchCommand: dispatchNotificationAsSystem,
+    }),
     // Staffing: TimeOffRequestApproved -> remove the employee's conflicting shifts.
     // Middleware (not a reaction) because it is a 1:N fan-out (one approved request
     // -> many ScheduleShift rows) AND the fields needed to find the conflicts
@@ -1586,6 +1621,47 @@ export async function createManifestRuntime(
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
       ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
+    }),
+    // Event: EventFinalized -> log a post-event CRM interaction on the client's
+    // timeline (the completion bookend of the EventCreated booking interaction
+    // above). Middleware (not a reaction) because ClientInteraction.create needs
+    // the event's clientId/title, which are the Event's OWN fields and never ride
+    // the EventFinalized payload — so it loads the finalized Event via _subject.id.
+    // Attribution = the finalizing user (a real finalize param). Skips clientless
+    // events; idempotent per event (completion-subject-namespaced so it coexists
+    // with the booking interaction). Sync: a single lightweight dispatch.
+    createEventFinalizedClientInteractionMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Event: EventFinalized -> open an actionable post-event EventFollowup task
+    // (the action-item counterpart of the passive ClientInteraction note above).
+    // Middleware (not a reaction) because EventFollowup.create needs eventId in
+    // the body (the source event's own id, only reachable via _subject.id — not a
+    // finalize param), enriches the description with the Event's title (its OWN
+    // field), and dedups against existing follow-ups. Assigned to the finalizing
+    // user; idempotent per event (namespaced by the auto taskType). Works for
+    // clientless events too. Sync: a single lightweight dispatch.
+    createEventFinalizedFollowupCreateMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Event: EventFinalized -> release reserved inventory stranded by prep lists
+    // that were finalized (reserved) but never completed/cancelled before the
+    // event closed. Middleware (not a reaction) because it is a 1:N fan-out
+    // (event -> prep lists -> prep items) and the reserved quantities are only
+    // reachable via store loads keyed off the finalized event, not the finalize
+    // payload. The releaseReservation `quantityReserved > 0` precondition makes
+    // it a clean no-op for already-completed/cancelled lists, so it recovers only
+    // genuinely-stranded reservations (an event is finalized XOR cancelled, so no
+    // overlap with the EventCancelled cascade's inventory leg). Sync, like the
+    // sibling finalized legs.
+    createEventFinalizedReleaseReservationMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
     }),
     // Events: EventUpdated/EventDateUpdated/EventLocationUpdated -> re-sync the
     // event's battle boards. Middleware (not a reaction) because boards are 1:N

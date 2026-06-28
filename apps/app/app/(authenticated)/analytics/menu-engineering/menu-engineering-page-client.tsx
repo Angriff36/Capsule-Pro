@@ -251,12 +251,13 @@ const QuadrantDistributionChart = ({
         </Pie>
         <Tooltip
           content={({ active, payload }) => {
-            if (active && payload?.length) {
+            const entry = payload?.[0];
+            if (active && entry) {
               return (
                 <div className="rounded-lg border bg-background p-2 shadow-lg">
-                  <p className="font-semibold">{payload[0].name}</p>
+                  <p className="font-semibold">{entry.name}</p>
                   <p className="text-muted-foreground text-sm">
-                    {payload[0].value} items
+                    {entry.value} items
                   </p>
                 </div>
               );

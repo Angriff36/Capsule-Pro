@@ -25,7 +25,7 @@ entity BattleBoard mixin TenantScoped, SoftDeletable {
   // These are NOT create-command parameters: they can only be populated by
   // parent-context propagation, so the board never asks the user to re-enter
   // event-owned data. See specs/parent-context-propagation.md.
-  property eventDate: datetime
+  property eventDate: datetime?
   property clientId: string = ""
   property guestCount: int = 0
   property venueName: string = ""

@@ -1,4 +1,5 @@
 import { SkeletonCardGrid } from "./components/skeleton-card";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 
 /**
  * Loading state for the recipes listing page.
@@ -6,7 +7,12 @@ import { SkeletonCardGrid } from "./components/skeleton-card";
  */
 export default function Loading() {
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+    <OperationalPageShell
+      description="Loading recipes…"
+      eyebrow="Kitchen / Recipes"
+      title="Recipes"
+      withCanvas={false}
+    >
       {/* Toolbar skeleton */}
       <div className="rounded-3xl border bg-card/80 p-4">
         <div className="flex items-center justify-between">
@@ -25,6 +31,6 @@ export default function Loading() {
       <div className="rounded-3xl border bg-muted/40 p-4">
         <SkeletonCardGrid count={12} />
       </div>
-    </div>
+    </OperationalPageShell>
   );
 }

@@ -79,6 +79,7 @@ import {
   getSchedules,
 } from "../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 
 interface Schedule {
   areaId: string | null;
@@ -217,7 +218,7 @@ export default function SchedulesPage() {
           title: form.title,
           description: form.description || undefined,
           frequency: form.frequency,
-          nextDueAt: form.nextDueDate || new Date().toISOString().split("T")[0],
+          nextDueAt: form.nextDueDate || new Date().toISOString().slice(0, 10),
           estimatedHours: form.estimatedHours
             ? Number.parseFloat(form.estimatedHours)
             : undefined,
@@ -301,17 +302,9 @@ export default function SchedulesPage() {
     <div className="space-y-6">
       <FacilitiesNavigation />
 
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <h1 className="font-semibold text-2xl tracking-tight">
-              PM Schedules
-            </h1>
-            <p className="text-muted-foreground">
-              Preventive maintenance scheduling and tracking.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
+      <OperationalPageShell
+        actions={
+          <>
             <Tabs
               onValueChange={(v) => setView(v as "cards" | "calendar")}
               value={view}
@@ -331,8 +324,12 @@ export default function SchedulesPage() {
               <Plus className="mr-2 h-4 w-4" />
               Add Schedule
             </Button>
-          </div>
-        </div>
+          </>
+        }
+        description="Preventive maintenance scheduling and tracking."
+        eyebrow="Facilities / Schedules"
+        title="PM schedules"
+      >
 
         <div className="flex gap-2">
           {overdueCount > 0 && (
@@ -632,6 +629,8 @@ export default function SchedulesPage() {
           </div>
         )}
 
+      </OperationalPageShell>
+
         {/* Create/Edit Schedule Dialog */}
         <Dialog onOpenChange={setShowDialog} open={showDialog}>
           <DialogContent className="max-w-lg">
@@ -820,7 +819,6 @@ export default function SchedulesPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </div>
     </div>
   );
 }

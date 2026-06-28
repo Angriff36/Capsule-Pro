@@ -7,7 +7,10 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+// Read-only OLAP queries route to the Neon read replica when
+// ANALYTICS_DATABASE_URL is set (else primary). Aliased as `database` so the
+// query call sites stay unchanged. See packages/database/analytics-database.ts.
+import { analyticsDatabase as database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -107,8 +110,6 @@ export async function GET(request: Request) {
       },
       orderBy: [{ isPrimary: "desc" }, { name: "asc" }],
     });
-
-    const _locationIds = locations.map((l) => l.id);
 
     // Date range filters
     const startDate = filters.startDate

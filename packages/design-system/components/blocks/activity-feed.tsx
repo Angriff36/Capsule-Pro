@@ -78,6 +78,8 @@ export interface ActivityFeedProps {
   emptyState?: React.ReactNode;
   hasMore?: boolean;
   isLoading?: boolean;
+  /** Hide the built-in card title when the page already uses PageLead */
+  showHeader?: boolean;
   onActivityClick?: (activity: ActivityFeedItem) => void;
   onEntityClick?: (entityType: string, entityId: string) => void;
   onFilterChange?: (filters: ActivityFilters) => void;
@@ -85,6 +87,8 @@ export interface ActivityFeedProps {
   onRefresh?: () => void;
   onSearchChange?: (query: string) => void;
   onUserClick?: (userId: string) => void;
+  /** `panel` matches the light operational shell (hairline, no Card chrome) */
+  variant?: "card" | "panel";
 }
 
 export interface ActivityFilters {
@@ -531,11 +535,13 @@ export function ActivityFeed({
   onLoadMore,
   onRefresh,
   onFilterChange,
-  onSearchChange,
+  onSearchChange: _onSearchChange,
   onActivityClick,
   onUserClick,
   onEntityClick,
   emptyState,
+  showHeader = true,
+  variant = "card",
 }: ActivityFeedProps) {
   const [filters, setFilters] = useState<ActivityFilters>({});
 
@@ -564,91 +570,110 @@ export function ActivityFeed({
     return groups;
   }, []);
 
-  return (
-    <Card className="w-full">
-      {/* Header */}
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-        <div>
-          <h2 className="font-semibold text-lg">Activity Feed</h2>
-          <p className="text-muted-foreground text-sm">
-            Track all system events and changes
+  const refreshButton =
+    onRefresh ? (
+      <Button
+        disabled={isLoading}
+        onClick={onRefresh}
+        size="sm"
+        variant="outline"
+      >
+        <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+        Refresh
+      </Button>
+    ) : null;
+
+  const timelineBody =
+    activities.length === 0 ? (
+      (emptyState ?? (
+        <div className="flex flex-col items-center justify-center px-4 py-16">
+          <div className="mb-4 rounded-full bg-muted/20 p-4">
+            <Activity className="h-8 w-8 text-muted-foreground/50" />
+          </div>
+          <h3 className="mb-1 font-medium text-lg">No activities yet</h3>
+          <p className="max-w-sm text-center text-muted-foreground text-sm">
+            Activities will appear here as you and your team make changes to the
+            system.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          {onRefresh && (
+      ))
+    ) : (
+      <div className="max-h-[600px] overflow-y-auto">
+        {groupedActivities.map((group) => (
+          <ActivityGroup
+            activities={group.activities}
+            groupDate={group.date}
+            key={group.date.toDateString()}
+            onActivityClick={onActivityClick}
+            onEntityClick={onEntityClick}
+            onUserClick={onUserClick}
+          />
+        ))}
+
+        {hasMore ? (
+          <div className="border-t p-4">
             <Button
+              className="w-full"
               disabled={isLoading}
-              onClick={onRefresh}
-              size="sm"
+              onClick={onLoadMore}
               variant="outline"
             >
-              <RefreshCw
-                className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-              />
-              Refresh
+              {isLoading ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                "Load More Activities"
+              )}
             </Button>
-          )}
-        </div>
-      </CardHeader>
+          </div>
+        ) : null}
+      </div>
+    );
 
-      {/* Filter Bar */}
+  if (variant === "panel") {
+    return (
+      <div className="w-full overflow-hidden rounded-[22px] border border-hairline bg-canvas">
+        {showHeader ? (
+          <div className="flex flex-row items-center justify-between gap-4 border-hairline border-b px-4 py-3 sm:px-6">
+            <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.22em]">
+              Timeline
+            </p>
+            {refreshButton}
+          </div>
+        ) : null}
+        <ActivityFilterBar
+          filters={filters}
+          onFiltersChange={handleFilterChange}
+          resultCount={activities.length}
+        />
+        {timelineBody}
+      </div>
+    );
+  }
+
+  return (
+    <Card className="w-full">
+      {showHeader ? (
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
+          <div>
+            <h2 className="font-semibold text-lg">Activity Feed</h2>
+            <p className="text-muted-foreground text-sm">
+              Track all system events and changes
+            </p>
+          </div>
+          <div className="flex items-center gap-2">{refreshButton}</div>
+        </CardHeader>
+      ) : null}
+
       <ActivityFilterBar
         filters={filters}
         onFiltersChange={handleFilterChange}
         resultCount={activities.length}
       />
 
-      {/* Content */}
-      <CardContent className="p-0">
-        {activities.length === 0 ? (
-          (emptyState ?? (
-            <div className="flex flex-col items-center justify-center px-4 py-16">
-              <div className="mb-4 rounded-full bg-muted/20 p-4">
-                <Activity className="h-8 w-8 text-muted-foreground/50" />
-              </div>
-              <h3 className="mb-1 font-medium text-lg">No activities yet</h3>
-              <p className="max-w-sm text-center text-muted-foreground text-sm">
-                Activities will appear here as you and your team make changes to
-                the system.
-              </p>
-            </div>
-          ))
-        ) : (
-          <div className="max-h-[600px] overflow-y-auto">
-            {groupedActivities.map((group) => (
-              <ActivityGroup
-                activities={group.activities}
-                groupDate={group.date}
-                key={group.date.toDateString()}
-                onActivityClick={onActivityClick}
-                onEntityClick={onEntityClick}
-                onUserClick={onUserClick}
-              />
-            ))}
-
-            {/* Load More */}
-            {hasMore && (
-              <div className="border-t p-4">
-                <Button
-                  className="w-full"
-                  disabled={isLoading}
-                  onClick={onLoadMore}
-                  variant="outline"
-                >
-                  {isLoading ? (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                      Loading...
-                    </>
-                  ) : (
-                    "Load More Activities"
-                  )}
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-      </CardContent>
+      <CardContent className="p-0">{timelineBody}</CardContent>
     </Card>
   );
 }
@@ -663,67 +688,90 @@ export interface ActivityStatsProps {
   todayCount: number;
   totalCount: number;
   weekCount: number;
+  variant?: "card" | "panel";
+}
+
+function StatTile({
+  icon,
+  label,
+  value,
+  iconClassName,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  iconClassName: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 p-4">
+      <div className={`rounded-lg p-2 ${iconClassName}`}>{icon}</div>
+      <div>
+        <p className="font-bold text-2xl">{value.toLocaleString()}</p>
+        <p className="text-muted-foreground text-xs">{label}</p>
+      </div>
+    </div>
+  );
 }
 
 export function ActivityStats({
   totalCount,
   todayCount,
   weekCount,
-  byType,
-  byEntity,
+  byType: _byType,
+  byEntity: _byEntity,
+  variant = "card",
 }: ActivityStatsProps) {
-  const _topEntities = Object.entries(byEntity)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 5);
+  const items = [
+    {
+      icon: <Activity className="h-5 w-5 text-primary" />,
+      iconClassName: "bg-primary/10",
+      label: "Total Activities",
+      value: totalCount,
+    },
+    {
+      icon: <Calendar className="h-5 w-5 text-blue-500" />,
+      iconClassName: "bg-blue-500/10",
+      label: "Today",
+      value: todayCount,
+    },
+    {
+      icon: <TrendingUp className="h-5 w-5 text-green-500" />,
+      iconClassName: "bg-green-500/10",
+      label: "This Week",
+      value: weekCount,
+    },
+  ] as const;
 
   return (
     <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-      {/* Total Activities */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-primary/10 p-2">
-              <Activity className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <p className="font-bold text-2xl">
-                {totalCount.toLocaleString()}
-              </p>
-              <p className="text-muted-foreground text-xs">Total Activities</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {items.map((item) => {
+        const tile = (
+          <StatTile
+            icon={item.icon}
+            iconClassName={item.iconClassName}
+            key={item.label}
+            label={item.label}
+            value={item.value}
+          />
+        );
 
-      {/* Today */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-blue-500/10 p-2">
-              <Calendar className="h-5 w-5 text-blue-500" />
+        if (variant === "panel") {
+          return (
+            <div
+              className="rounded-[22px] border border-hairline bg-canvas"
+              key={item.label}
+            >
+              {tile}
             </div>
-            <div>
-              <p className="font-bold text-2xl">{todayCount}</p>
-              <p className="text-muted-foreground text-xs">Today</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          );
+        }
 
-      {/* This Week */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-green-500/10 p-2">
-              <TrendingUp className="h-5 w-5 text-green-500" />
-            </div>
-            <div>
-              <p className="font-bold text-2xl">{weekCount}</p>
-              <p className="text-muted-foreground text-xs">This Week</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        return (
+          <Card key={item.label}>
+            <CardContent className="p-0">{tile}</CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }
@@ -740,7 +788,7 @@ export interface ActivityTimelineProps {
 
 export function ActivityTimeline({
   activities,
-  onActivityClick,
+  onActivityClick: _onActivityClick,
   limit = 10,
 }: ActivityTimelineProps) {
   const displayedActivities = activities.slice(0, limit);

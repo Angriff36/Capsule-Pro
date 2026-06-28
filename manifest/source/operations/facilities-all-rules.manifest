@@ -27,6 +27,19 @@ entity Facility mixin TenantScoped {
 
   computed isActive: boolean = self.status == "active"
   computed isUnderMaintenance: boolean = self.status == "maintenance"
+  // Maintenance-burden rollups over the Facility's work-order children (the
+  // hasMany workOrders back-relation). The FILTERS carry the business meaning —
+  // count ONLY open work orders (not assigned/in_progress/completed/cancelled) as
+  // the unaddressed maintenance backlog across the whole facility, and sum ONLY
+  // completed work orders' ACTUAL cost (not estimates on still-open ones) as the
+  // facility's realized maintenance spend. Drop or flip a predicate literal and
+  // the rollup silently reports the wrong number with no compile error; the
+  // facility-aggregate-computeds regression test locks the shape. IR-only
+  // computeds (no stored column, no migration); request-cached, mirroring the
+  // Equipment.openWorkOrderCount/completedWorkOrderCost precedent over its own
+  // MaintenanceWorkOrder children.
+  computed openWorkOrderCount: int = count_of(filter(self.workOrders, (w) => w.status == "open")) cache request
+  computed completedWorkOrderCost: money = sum(filter(self.workOrders, (w) => w.status == "completed"), (w) => w.actualCost) cache request
 
   // Back-relations (U11): inverse hasMany for children that belongTo Facility
   relationship hasMany stations: Station
@@ -36,13 +49,33 @@ entity Facility mixin TenantScoped {
   relationship hasMany areas: FacilityArea
   relationship hasMany schedules: FacilitySchedule
   relationship hasMany workOrders: FacilityWorkOrder
+  relationship hasMany battleBoards: BattleBoard
+  relationship hasMany cycleCountSessions: CycleCountSession
+  relationship hasMany events: Event
+  relationship hasMany facilityAssets: FacilityAsset
+  relationship hasMany laborBudgets: LaborBudget
+  relationship hasMany prepTasks: PrepTask
+  relationship hasMany purchaseOrders: PurchaseOrder
+  relationship hasMany purchaseRequisitions: PurchaseRequisition
+  relationship hasMany facilityScheduleShifts: ScheduleShift
+  relationship hasMany shipments: Shipment
+  relationship hasMany timeEntries: TimeEntry
+  relationship hasMany wasteEntries: WasteEntry
+  relationship hasMany workforceOptimizations: WorkforceOptimization
+  relationship hasMany facilitySchedulingSchedules: Schedule
 
   constraint validFacilityType: self.facilityType in ["kitchen", "warehouse", "commissary", "office", "other"] "Invalid facility type"
   constraint validStatus: self.status in ["active", "inactive", "maintenance"] "Invalid facility status"
 
   // State transitions
+  // `remove` (soft-delete) guards `status != "active"` and mutates -> "inactive",
+  // so it runs from "maintenance" or "inactive". Both edges must exist or the
+  // runtime FSM silently drops the mutate (the command was fully dead: "active"
+  // is guard-blocked, and neither maintenance->inactive nor the idempotent
+  // inactive->inactive self-loop was declared, so nothing could reach "inactive").
   transition status from "active" to ["inactive", "maintenance"]
-  transition status from "maintenance" to ["active"]
+  transition status from "maintenance" to ["active", "inactive"]
+  transition status from "inactive" to ["inactive"]
 
   default policy FacilityDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
   // NOTE: create does NOT `mutate status` — the entity default ("active") is seeded
@@ -132,14 +165,24 @@ entity FacilityArea mixin TenantScoped {
   constraint validAreaType: self.areaType in ["kitchen", "storage", "dining", "prep", "office", "loading_dock", "restroom", "other"] "Invalid area type"
 
   relationship belongsTo facility: Facility fields [tenantId, venueId] references [tenantId, id]
+  relationship hasMany facilityAssets: FacilityAsset
+  relationship hasMany facilitySchedules: FacilitySchedule
+  relationship hasMany facilityWorkOrders: FacilityWorkOrder
+  relationship hasMany maintenanceWorkOrders: MaintenanceWorkOrder
+  relationship hasMany preventiveMaintenanceSchedules: PreventiveMaintenanceSchedule
   constraint validStatus: self.status in ["active", "inactive", "maintenance"] "Invalid area status"
 
   // State transitions
+  // FacilityArea.remove (no guard) mutates -> "inactive" from any state; without
+  // maintenance->inactive + the idempotent inactive->inactive self-loop the
+  // runtime FSM silently drops the mutate for areas in maintenance or already
+  // inactive (only the active->inactive path worked).
   transition status from "active" to ["inactive", "maintenance"]
-  transition status from "maintenance" to ["active"]
+  transition status from "maintenance" to ["active", "inactive"]
+  transition status from "inactive" to ["inactive"]
 
   default policy FacilityAreaDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
-  command create(venueId: string, name: string, code: string, areaType: string, floor: string, description: string, squareFeet: number) {
+  command create(venueId: string, name: string, optional code: string, areaType: string, floor: string, description: string, squareFeet: number) {
     guard name != null and name != "" "Area name is required"
 
     mutate venueId = venueId
@@ -208,8 +251,8 @@ entity FacilityAsset mixin TenantScoped {
   property manufacturer: string = ""
   property model: string = ""
   property warrantyExpiry: datetime
-  property lastMaintenanceAt: datetime
-  property nextMaintenanceAt: datetime
+  property lastMaintenanceAt: datetime?
+  property nextMaintenanceAt: datetime?
   searchable property notes: string = ""
   timestamps
 
@@ -221,11 +264,19 @@ entity FacilityAsset mixin TenantScoped {
 
   relationship belongsTo facility: Facility fields [tenantId, facilityId] references [tenantId, id]
   relationship belongsTo area: FacilityArea fields [tenantId, areaId] references [tenantId, id]
+  relationship hasMany facilityWorkOrders: FacilityWorkOrder
   constraint validStatus: self.status in ["operational", "maintenance", "retired", "sold"] "Invalid asset status"
 
   // State transitions
+  // `remove` (soft-delete) has NO guard and mutates -> "retired", so it must reach
+  // "retired" from EVERY state or the runtime FSM silently drops the mutate. Without
+  // sold->retired and the idempotent retired->retired self-loop, remove was dead for
+  // a sold asset (couldn't retire it) and for an already-retired asset (double-remove
+  // / retry threw instead of a no-op). Mirrors the Facility/FacilityArea.remove fix.
   transition status from "operational" to ["maintenance", "retired", "sold"]
   transition status from "maintenance" to ["operational", "retired", "sold"]
+  transition status from "sold" to ["retired"]
+  transition status from "retired" to ["retired"]
 
   constraint warnMaintenanceOverdue:warn (self.nextMaintenanceAt != null and now() > self.nextMaintenanceAt and self.status == "operational") {
     messageTemplate: "Asset '{assetName}' is overdue for maintenance"
@@ -236,7 +287,7 @@ entity FacilityAsset mixin TenantScoped {
   }
 
   default policy FacilityAssetDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
-  command create(facilityId: string, areaId: string, name: string, assetType: string, purchaseDate: datetime, purchaseCost: money, serialNumber: string, manufacturer: string, model: string, warrantyExpiry: datetime, notes: string) {
+  command create(optional facilityId: string, areaId: string, name: string, assetType: string, purchaseDate: datetime, purchaseCost: money, serialNumber: string, manufacturer: string, model: string, warrantyExpiry: datetime, notes: string) {
     guard name != null and name != "" "Asset name is required"
 
     mutate facilityId = facilityId
@@ -325,7 +376,7 @@ entity FacilitySchedule mixin TenantScoped {
   property startDate: datetime
   property endDate: datetime
   property assignedTo: string = ""
-  property completedAt: datetime
+  property completedAt: datetime?
   searchable property notes: string = ""
   timestamps
 
@@ -338,11 +389,18 @@ entity FacilitySchedule mixin TenantScoped {
   relationship belongsTo area: FacilityArea fields [tenantId, areaId] references [tenantId, id]
   constraint validStatus: self.status in ["scheduled", "in_progress", "completed", "cancelled"] "Invalid schedule status"
 
+  // `remove` (soft-delete) has NO guard and mutates -> "cancelled", so it must reach
+  // "cancelled" from EVERY state or the runtime FSM silently drops the mutate. Without
+  // completed->cancelled and the idempotent cancelled->cancelled self-loop, remove was
+  // dead for a completed schedule (couldn't dismiss it) and for an already-cancelled
+  // one (double-remove / retry threw instead of a no-op).
   transition status from "scheduled" to ["in_progress", "cancelled"]
   transition status from "in_progress" to ["completed", "cancelled"]
+  transition status from "completed" to ["cancelled"]
+  transition status from "cancelled" to ["cancelled"]
 
   default policy FacilityScheduleDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
-  command create(facilityId: string, areaId: string, title: string, description: string, scheduleType: string, startDate: datetime, endDate: datetime, assignedTo: string, notes: string) {
+  command create(optional facilityId: string, areaId: string, title: string, description: string, scheduleType: string, startDate: datetime, endDate: datetime, assignedTo: string, notes: string) {
     guard title != null and title != "" "Schedule title is required"
     guard facilityId != null and facilityId != "" "Facility ID is required"
 
@@ -429,7 +487,7 @@ entity FacilityWorkOrder mixin TenantScoped {
   property actualCost: money = 0
   // scheduledDate/completedDate: lifecycle times — no = now() default
   property scheduledDate: datetime
-  property completedDate: datetime
+  property completedDate: datetime?
   searchable property notes: string = ""
   timestamps
 

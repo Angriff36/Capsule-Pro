@@ -40,7 +40,7 @@ entity RevenueRecognitionSchedule mixin TenantScoped {
 
   // Timestamps
   timestamps
-  property completedAt: datetime
+  property completedAt: datetime?
 
   // Computed properties
   computed recognitionPercentage: number = percent(self.recognizedAmount, self.totalAmount) cache request
@@ -54,6 +54,7 @@ entity RevenueRecognitionSchedule mixin TenantScoped {
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo contract: EventContract fields [tenantId, contractId] references [tenantId, id]
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
+  relationship hasMany lines: RevenueRecognitionLine
 
   constraint amount_positive: self.totalAmount > 0 "Total amount must be positive"
   constraint amount_consistent: self.totalAmount == self.recognizedAmount + self.remainingAmount "Total must equal recognized plus remaining"
@@ -198,8 +199,8 @@ entity RevenueRecognitionSchedule mixin TenantScoped {
   }
 
   // State transitions
-  transition status from "PENDING" to ["IN_PROGRESS", "CANCELLED", "SKIPPED"]
-  transition status from "IN_PROGRESS" to ["PAUSED", "COMPLETED", "CANCELLED"]
+  transition status from "PENDING" to ["IN_PROGRESS", "CANCELLED", "SKIPPED", "COMPLETED"]
+  transition status from "IN_PROGRESS" to ["PAUSED", "COMPLETED", "CANCELLED", "IN_PROGRESS"]
   transition status from "PAUSED" to ["IN_PROGRESS", "CANCELLED"]
   transition status from "COMPLETED" to ["IN_PROGRESS"]
   // "COMPLETED", "CANCELLED", "SKIPPED" are terminal states
@@ -219,7 +220,7 @@ entity RevenueRecognitionLine mixin TenantScoped {
 
   // Timing
   property required dueDate: datetime = now()
-  property recognizedAt: datetime
+  property recognizedAt: datetime?
 
   // Milestone info (for milestone-based recognition)
   property milestoneId: string = ""

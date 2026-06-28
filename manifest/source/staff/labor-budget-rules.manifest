@@ -13,7 +13,7 @@ entity LaborBudget mixin TenantScoped, SoftDeletable {
   indexed property status: string = "draft"
   searchable property description: string = ""
   property approvedBy: string = ""
-  property approvedAt: datetime
+  property approvedAt: datetime?
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -22,6 +22,7 @@ entity LaborBudget mixin TenantScoped, SoftDeletable {
   computed varianceAmount: money = self.actualSpend - self.budgetTarget
 
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
+  relationship hasMany alerts: BudgetAlert
 
   constraint validStatus: self.status in ["draft", "approved", "closed"] "Invalid labor budget status"
   constraint positiveBudget: self.budgetTarget > 0 "Budget amount must be positive"
@@ -126,9 +127,9 @@ entity BudgetAlert mixin TenantScoped {
   property message: string = ""
   property isAcknowledged: boolean = false
   property acknowledgedBy: string = ""
-  property acknowledgedAt: datetime
+  property acknowledgedAt: datetime?
   property resolved: boolean = false
-  property resolvedAt: datetime
+  property resolvedAt: datetime?
   timestamps
 
   computed isPending: boolean = self.isAcknowledged == false and self.resolved == false

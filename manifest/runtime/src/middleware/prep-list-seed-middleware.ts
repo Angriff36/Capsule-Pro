@@ -160,7 +160,7 @@ export function assignStation(category: string): {
   } else if (match(["garnish", "herb", "decoration"])) {
     stationId = "garnish";
   }
-  return { stationId, stationName: STATIONS[stationId] };
+  return { stationId, stationName: STATIONS[stationId] ?? stationId };
 }
 
 const defaultDiagnostic = (diag: PrepSeedDiagnostic): void => {

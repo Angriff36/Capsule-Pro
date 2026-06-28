@@ -218,7 +218,7 @@ function SummarySection({
 }
 
 export function EventSummaryDisplay({
-  eventId,
+  eventId: _eventId,
   eventTitle,
   initialSummary,
   onGenerate,
@@ -259,7 +259,7 @@ export function EventSummaryDisplay({
     let messageIndex = 0;
     const progressInterval = setInterval(() => {
       if (messageIndex < progressMessages.length) {
-        setGenerationProgress(progressMessages[messageIndex]);
+        setGenerationProgress(progressMessages[messageIndex] ?? "");
         messageIndex++;
       }
     }, 3000);
@@ -788,7 +788,7 @@ interface GenerateEventSummaryModalProps {
 }
 
 export function GenerateEventSummaryModal({
-  eventId,
+  eventId: _eventId,
   eventTitle,
   onGenerate,
   isOpen = false,

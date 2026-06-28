@@ -5,33 +5,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { Calendar, Settings, UserPlus, Users } from "lucide-react";
 import Link from "next/link";
+import {
+  OperationalPageShell,
+  OperationalSection,
+} from "../../components/operational-page-shell";
 import { Header } from "../../components/header";
 
 const KitchenTeamPage = () => {
   return (
     <>
       <Header page="Kitchen Team" pages={["Kitchen Ops"]} />
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        {/* Page Header */}
-        <div className="space-y-0.5">
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Kitchen Team
-          </h1>
-          <p className="text-muted-foreground">
-            Access team management features from the Staff module
-          </p>
-        </div>
-
-        <Separator />
-
-        {/* Team Management Section */}
-        <section className="space-y-4">
-          <h2 className="font-medium text-muted-foreground text-sm">
-            Team Management
-          </h2>
+      <OperationalPageShell
+        description="Access team management features from the Staff module."
+        eyebrow="Kitchen / Team"
+        title="Kitchen team"
+        withCanvas={false}
+      >
+        <OperationalSection title="Team management">
           <Card tone="canvas">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -55,13 +47,9 @@ const KitchenTeamPage = () => {
               </div>
             </CardContent>
           </Card>
-        </section>
+        </OperationalSection>
 
-        {/* Features Overview Section */}
-        <section className="space-y-4">
-          <h2 className="font-medium text-muted-foreground text-sm">
-            Features Overview
-          </h2>
+        <OperationalSection title="Features overview">
           <div className="grid gap-6 md:grid-cols-3">
             <Card tone="canvas">
               <CardHeader>
@@ -114,13 +102,9 @@ const KitchenTeamPage = () => {
               </CardContent>
             </Card>
           </div>
-        </section>
+        </OperationalSection>
 
-        {/* Common Tasks Section */}
-        <section className="space-y-4">
-          <h2 className="font-medium text-muted-foreground text-sm">
-            Common Tasks
-          </h2>
+        <OperationalSection title="Common tasks">
           <Card tone="canvas">
             <CardContent>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -167,8 +151,8 @@ const KitchenTeamPage = () => {
               </div>
             </CardContent>
           </Card>
-        </section>
-      </div>
+        </OperationalSection>
+      </OperationalPageShell>
     </>
   );
 };

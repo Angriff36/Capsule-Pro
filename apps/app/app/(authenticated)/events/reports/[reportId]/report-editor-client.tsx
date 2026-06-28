@@ -244,7 +244,7 @@ export function ReportEditorClient({ report, event }: ReportEditorProps) {
         {/* Checklist sections */}
         {checklistData.sections && checklistData.sections.length > 0 ? (
           <Accordion
-            defaultValue={[checklistData.sections[0]?.id]}
+            defaultValue={[checklistData.sections[0]?.id ?? ""]}
             type="multiple"
           >
             {checklistData.sections.map((section) => {

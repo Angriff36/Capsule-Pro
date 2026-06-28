@@ -28,7 +28,6 @@ export async function GET(request: Request) {
   const shiftStart = searchParams.get("shiftStart");
   const shiftEnd = searchParams.get("shiftEnd");
   const excludeShiftId = searchParams.get("excludeShiftId");
-  const _locationId = searchParams.get("locationId");
   const requiredRole = searchParams.get("requiredRole");
 
   if (!(shiftStart && shiftEnd)) {

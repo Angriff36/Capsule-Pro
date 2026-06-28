@@ -190,7 +190,7 @@ export class ManifestTelemetryCollector {
         const guardMatch = errorStr.match(/Guard[:\s]+([^\n]+)/i);
         if (guardMatch) {
           failedGuards.push({
-            guardExpression: guardMatch[1].trim(),
+            guardExpression: (guardMatch[1] ?? "").trim(),
             reason: errorStr,
           });
         } else {
@@ -208,7 +208,7 @@ export class ManifestTelemetryCollector {
           failedGuards.push({
             guardExpression: "constraint",
             reason: errorStr,
-            constraintId: constraintMatch[1].trim(),
+            constraintId: (constraintMatch[1] ?? "").trim(),
           });
           guardsFailed++;
         }
@@ -363,7 +363,7 @@ export class ManifestTelemetryCollector {
           }
           await txClient.manifestCommandTelemetry.createMany({
             data: recordsToWrite.map((r) =>
-              this.mapToPrismaCreate(r, recordsToWrite[0].correlationId ?? "")
+              this.mapToPrismaCreate(r, recordsToWrite[0]?.correlationId ?? "")
             ),
             skipDuplicates: true,
           });
@@ -626,17 +626,19 @@ function percentile(sorted: number[], p: number): number {
     return 0;
   }
   if (sorted.length === 1) {
-    return sorted[0];
+    return sorted[0]!;
   }
   const index = (p / 100) * (sorted.length - 1);
   const lower = Math.floor(index);
   const upper = Math.ceil(index);
+  const lowerValue = sorted[lower]!;
+  const upperValue = sorted[upper]!;
   if (lower === upper) {
-    return sorted[lower];
+    return lowerValue;
   }
   // Linear interpolation between adjacent values
   return Math.round(
-    sorted[lower] + (sorted[upper] - sorted[lower]) * (index - lower)
+    lowerValue + (upperValue - lowerValue) * (index - lower)
   );
 }
 

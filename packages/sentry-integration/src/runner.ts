@@ -414,13 +414,15 @@ export class SentryJobRunner {
     // Parse PR URL and number from output
     // Output format: https://github.com/owner/repo/pull/123
     const urlMatch = stdout.match(PR_URL_REGEX);
-    if (!urlMatch) {
+    const url = urlMatch?.[1];
+    const prNumber = urlMatch?.[2];
+    if (!url || !prNumber) {
       throw new Error(`Failed to parse PR URL from output: ${stdout}`);
     }
 
     return {
-      url: urlMatch[1],
-      number: Number.parseInt(urlMatch[2], 10),
+      url,
+      number: Number.parseInt(prNumber, 10),
     };
   }
 

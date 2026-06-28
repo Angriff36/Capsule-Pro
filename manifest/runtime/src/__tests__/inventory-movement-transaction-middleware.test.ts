@@ -225,7 +225,7 @@ describe("Middleware conformance: inventory movements → InventoryTransaction l
     // reaction could have supplied.
     const rows = await ledgerRows(provider);
     expect(rows).toHaveLength(1);
-    const row = rows[0];
+    const row = rows[0]!;
     expect(row.itemId).toBe(ITEM);
     expect(row.transactionType).toBe("issue");
     expect(Number(row.quantity)).toBe(-10);
@@ -250,7 +250,7 @@ describe("Middleware conformance: inventory movements → InventoryTransaction l
 
     const rows = await ledgerRows(provider);
     expect(rows).toHaveLength(1);
-    const row = rows[0];
+    const row = rows[0]!;
     expect(row.transactionType).toBe("waste");
     expect(Number(row.quantity)).toBe(-3);
     expect(Number(row.unitCost)).toBe(4);
@@ -271,7 +271,7 @@ describe("Middleware conformance: inventory movements → InventoryTransaction l
 
     const rows = await ledgerRows(provider);
     expect(rows).toHaveLength(1);
-    const row = rows[0];
+    const row = rows[0]!;
     expect(row.transactionType).toBe("receipt");
     expect(Number(row.quantity)).toBe(20);
     // receipt is valued from the command's own costPerUnit, not the stale item cost.
@@ -295,7 +295,7 @@ describe("Middleware conformance: inventory movements → InventoryTransaction l
 
     const rows = await ledgerRows(provider);
     expect(rows).toHaveLength(1);
-    const row = rows[0];
+    const row = rows[0]!;
     expect(row.transactionType).toBe("adjustment");
     expect(Number(row.quantity)).toBe(-4);
     expect(Number(row.unitCost)).toBe(6);

@@ -35,6 +35,7 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Eye, FileText, Loader2, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 import {
   listVendorContracts,
   vendorContractCreate,
@@ -149,21 +150,18 @@ export default function VendorContractsPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Vendor Contracts
-          </h1>
-          <p className="text-muted-foreground">
-            Manage vendor agreements and terms.
-          </p>
-        </div>
-        <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          New Contract
-        </Button>
-      </div>
+    <>
+      <OperationalPageShell
+        actions={
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            New Contract
+          </Button>
+        }
+        description="Manage vendor agreements and terms."
+        eyebrow="Procurement / Vendor contracts"
+        title="Vendor contracts"
+      >
 
       {/* Summary */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -309,6 +307,8 @@ export default function VendorContractsPage() {
         </TabsContent>
       </Tabs>
 
+      </OperationalPageShell>
+
       {/* Create Dialog */}
       <Dialog onOpenChange={setShowCreateDialog} open={showCreateDialog}>
         <DialogContent className="max-w-lg">
@@ -421,6 +421,6 @@ export default function VendorContractsPage() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

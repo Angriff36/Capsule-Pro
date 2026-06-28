@@ -224,7 +224,7 @@ describe("Middleware conformance: TrainingAttemptSubmitted → TrainingAttempt.c
       unknown
     >[];
     expect(attempts).toHaveLength(1);
-    const attempt = attempts[0];
+    const attempt = attempts[0]!;
     expect(attempt.id).toBe(ATTEMPT_ID);
     expect(attempt.assignmentId).toBe(ASSIGNMENT_ID);
     expect(attempt.moduleId).toBe(MODULE_ID);
@@ -262,7 +262,7 @@ describe("Middleware conformance: TrainingAttemptSubmitted → TrainingAttempt.c
       unknown
     >[];
     expect(attempts).toHaveLength(1);
-    const attempt = attempts[0];
+    const attempt = attempts[0]!;
     expect(Number(attempt.attemptNumber)).toBe(1);
     expect(Number(attempt.scorePercent)).toBe(50);
     // passed is derived in the middleware: 50 >= 80 → false.
@@ -294,6 +294,6 @@ describe("Middleware conformance: TrainingAttemptSubmitted → TrainingAttempt.c
     >[];
     expect(attempts).toHaveLength(1);
     // The original row is untouched (the middleware skipped on the dedupe guard).
-    expect(Number(attempts[0].scorePercent)).toBe(88);
+    expect(Number(attempts[0]!.scorePercent)).toBe(88);
   });
 });

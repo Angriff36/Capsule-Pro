@@ -11,7 +11,9 @@ import {
 } from "@repo/design-system/components/ui/card";
 import { cn } from "@repo/design-system/lib/utils";
 import { CopyIcon, PencilIcon } from "lucide-react";
+import type { ReactNode } from "react";
 import { toast } from "sonner";
+import { InlineEditField } from "@/app/components/inline-edit-field";
 
 type EventRecord = Omit<Event, "budget" | "ticketPrice"> & {
   budget: number | null;
@@ -93,11 +95,14 @@ async function copyValue(label: string, value: string | null | undefined) {
 function DetailItem({
   label,
   value,
+  valueNode,
   copyValue: copyableValue,
   className,
 }: {
   label: string;
   value: string;
+  /** When provided, renders instead of the plain `value` text (e.g. an inline editor). */
+  valueNode?: ReactNode;
   copyValue?: string | null;
   className?: string;
 }) {
@@ -128,7 +133,7 @@ function DetailItem({
         )}
       </div>
       <div className="break-words font-mono text-foreground text-xs">
-        {value}
+        {valueNode ?? value}
       </div>
     </div>
   );
@@ -204,7 +209,22 @@ export function EventRecordCard({ event, onEditEvent }: EventRecordCardProps) {
             label="Event Number"
             value={formatValue(event.eventNumber)}
           />
-          <DetailItem label="Event Date" value={formatDate(event.eventDate)} />
+          <DetailItem
+            label="Event Date"
+            value={formatDate(event.eventDate)}
+            valueNode={
+              <InlineEditField
+                command="updateDate"
+                display={formatDate(event.eventDate)}
+                entity="Event"
+                field="newEventDate"
+                id={event.id}
+                label="Event Date"
+                type="date"
+                value={event.eventDate}
+              />
+            }
+          />
           <DetailItem
             className="md:col-span-2"
             label="Title"
@@ -213,6 +233,18 @@ export function EventRecordCard({ event, onEditEvent }: EventRecordCardProps) {
           <DetailItem
             label="Guest Count"
             value={formatValue(event.guestCount)}
+            valueNode={
+              <InlineEditField
+                command="updateGuestCount"
+                display={formatValue(event.guestCount)}
+                entity="Event"
+                field="newGuestCount"
+                id={event.id}
+                label="Guest Count"
+                type="number"
+                value={event.guestCount}
+              />
+            }
           />
           <DetailItem
             label="Max Capacity"

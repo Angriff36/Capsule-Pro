@@ -54,6 +54,9 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+  OperationalPageShell,
+} from "../../components/operational-page-shell";
 import type {
   CycleCountSessionStatus,
   CycleCountSessionType,
@@ -296,22 +299,18 @@ export const CycleCountClient = () => {
   );
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Cycle Counts
-          </h1>
-          <p className="text-muted-foreground">
-            Track cycle counts, discrepancies, and variances.
-          </p>
-        </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <PlusIcon className="mr-2 h-4 w-4" />
-          New Session
-        </Button>
-      </div>
+    <>
+      <OperationalPageShell
+        actions={
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <PlusIcon className="mr-2 h-4 w-4" />
+            New Session
+          </Button>
+        }
+        description="Track cycle counts, discrepancies, and variances."
+        eyebrow="Warehouse / Audits"
+        title="Cycle counts"
+      >
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -635,6 +634,7 @@ export const CycleCountClient = () => {
           </Button>
         </div>
       </div>
+      </OperationalPageShell>
 
       {/* Create Session Dialog */}
       <AlertDialog
@@ -733,6 +733,6 @@ export const CycleCountClient = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 };

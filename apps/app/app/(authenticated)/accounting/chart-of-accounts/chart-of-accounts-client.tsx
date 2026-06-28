@@ -33,7 +33,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -54,6 +53,10 @@ import {
   getAccountTypeLabel,
   listChartOfAccounts,
 } from "@/app/lib/chart-of-accounts";
+import {
+  OperationalPageShell,
+  OperationalSection,
+} from "../../components/operational-page-shell";
 import { AccountModal } from "./components/account-modal";
 import { AccountTypeBadge } from "./components/account-type-badge";
 
@@ -167,25 +170,12 @@ export const ChartOfAccountsClient = () => {
 
   return (
     <>
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        {/* Page Header */}
-        <div>
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Chart of Accounts
-          </h1>
-          <p className="text-muted-foreground">
-            Manage your chart of accounts, organize financial categories, and
-            track account balances.
-          </p>
-        </div>
-
-        <Separator />
-
-        {/* Summary Cards */}
-        <section>
-          <h2 className="mb-4 font-medium text-muted-foreground text-sm">
-            Overview
-          </h2>
+      <OperationalPageShell
+        description="Manage your chart of accounts, organize financial categories, and track account balances."
+        eyebrow="Accounting / Chart of accounts"
+        title="Chart of accounts"
+      >
+        <OperationalSection title="Overview">
           <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="pb-2">
@@ -222,7 +212,7 @@ export const ChartOfAccountsClient = () => {
               </CardHeader>
             </Card>
           </div>
-        </section>
+        </OperationalSection>
 
         {/* Filters Section */}
         <section>
@@ -431,7 +421,7 @@ export const ChartOfAccountsClient = () => {
             </div>
           )}
         </section>
-      </div>
+      </OperationalPageShell>
 
       {/* Create/Edit Modal */}
       <AccountModal

@@ -33,7 +33,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -47,10 +46,12 @@ import { PackageIcon, PlusIcon, TrashIcon, UploadIcon } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+  OperationalPageShell,
+  OperationalSection,
+} from "../../components/operational-page-shell";
 import { SampleDataImportButton } from "../../components/sample-data-import-button";
 import {
-  batchDeleteItems,
-  batchUpdateItems,
   deleteInventoryItem,
   FSA_STATUSES,
   type FSAStatus,
@@ -282,25 +283,12 @@ export const InventoryItemsPageClient = () => {
 
   return (
     <>
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        {/* Page Header */}
-        <div>
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Inventory Items
-          </h1>
-          <p className="text-muted-foreground">
-            Manage ingredient inventory, track stock levels, and monitor reorder
-            points.
-          </p>
-        </div>
-
-        <Separator />
-
-        {/* Performance Overview */}
-        <section>
-          <h2 className="mb-4 font-medium text-muted-foreground text-sm">
-            Performance Overview
-          </h2>
+      <OperationalPageShell
+        description="Manage ingredient inventory, track stock levels, and monitor reorder points."
+        eyebrow="Inventory / Items"
+        title="Inventory items"
+      >
+        <OperationalSection title="Performance overview">
           <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="pb-2">
@@ -333,7 +321,7 @@ export const InventoryItemsPageClient = () => {
               </CardHeader>
             </Card>
           </div>
-        </section>
+        </OperationalSection>
 
         {/* Filters Section */}
         <section>
@@ -689,7 +677,7 @@ export const InventoryItemsPageClient = () => {
             </div>
           )}
         </section>
-      </div>
+      </OperationalPageShell>
 
       {/* Create/Edit Modal */}
       <CreateInventoryItemModal

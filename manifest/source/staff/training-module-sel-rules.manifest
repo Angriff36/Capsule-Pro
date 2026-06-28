@@ -24,7 +24,7 @@ event SelOnboardingTrainingQuestionDefinitionCreated: "training.sel-onboarding.q
 entity SelOnboardingTrainingModuleDefinition mixin TenantScoped {
   key [tenantId, id]
 
-  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
   property code: string = "sel_event_staff_onboarding"
   searchable property title: string = "SEL Event Staff — Onboarding Training"
   searchable property description: string = "Required pre-shift training for all Mangia staff working SEL Friday Lunch events. Covers client context, compliance requirements, pre-event workflow, buffet service, and wrap-up procedures. Must be completed before first shift."
@@ -45,16 +45,14 @@ entity SelOnboardingTrainingModuleDefinition mixin TenantScoped {
     emit SelOnboardingTrainingDefinitionCreated
   }
 
-  relationship belongsTo module: TrainingModule with moduleId
-
-  store in memory
+  store SelOnboardingTrainingModuleDefinition in durable
 }
 
 entity SelOnboardingTrainingQuestion01Definition mixin TenantScoped {
   key [tenantId, id]
 
-  property questionId: string = "sel-event-staff-onboarding-q1"
-  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property questionId: string = "1a4f8a91-f4ee-48cd-9178-171c9c75fceb"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
   property code: string = "Q1"
   property sectionTitle: string = "Context"
   property displayOrder: int = 1
@@ -75,17 +73,14 @@ entity SelOnboardingTrainingQuestion01Definition mixin TenantScoped {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
 
-  relationship belongsTo question: TrainingQuestion with questionId
-  relationship belongsTo module: TrainingModule with moduleId
-
-  store in memory
+  store SelOnboardingTrainingQuestion01Definition in durable
 }
 
 entity SelOnboardingTrainingQuestion02Definition mixin TenantScoped {
   key [tenantId, id]
 
-  property questionId: string = "sel-event-staff-onboarding-q2"
-  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property questionId: string = "cad9ca72-2f74-430f-9b04-d9956b865509"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
   property code: string = "Q2"
   property sectionTitle: string = "Context"
   property displayOrder: int = 2
@@ -106,17 +101,14 @@ entity SelOnboardingTrainingQuestion02Definition mixin TenantScoped {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
 
-  relationship belongsTo question: TrainingQuestion with questionId
-  relationship belongsTo module: TrainingModule with moduleId
-
-  store in memory
+  store SelOnboardingTrainingQuestion02Definition in durable
 }
 
 entity SelOnboardingTrainingQuestion03Definition mixin TenantScoped {
   key [tenantId, id]
 
-  property questionId: string = "sel-event-staff-onboarding-q3"
-  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property questionId: string = "c0d36c00-3b06-4d74-a026-b619883d0578"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
   property code: string = "Q3"
   property sectionTitle: string = "Compliance"
   property displayOrder: int = 3
@@ -137,17 +129,14 @@ entity SelOnboardingTrainingQuestion03Definition mixin TenantScoped {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
 
-  relationship belongsTo question: TrainingQuestion with questionId
-  relationship belongsTo module: TrainingModule with moduleId
-
-  store in memory
+  store SelOnboardingTrainingQuestion03Definition in durable
 }
 
 entity SelOnboardingTrainingQuestion04Definition mixin TenantScoped {
   key [tenantId, id]
 
-  property questionId: string = "sel-event-staff-onboarding-q4"
-  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property questionId: string = "05e4752c-e786-42d0-91e8-c0b638e0ba33"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
   property code: string = "Q4"
   property sectionTitle: string = "Compliance"
   property displayOrder: int = 4
@@ -168,17 +157,14 @@ entity SelOnboardingTrainingQuestion04Definition mixin TenantScoped {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
 
-  relationship belongsTo question: TrainingQuestion with questionId
-  relationship belongsTo module: TrainingModule with moduleId
-
-  store in memory
+  store SelOnboardingTrainingQuestion04Definition in durable
 }
 
 entity SelOnboardingTrainingQuestion05Definition mixin TenantScoped {
   key [tenantId, id]
 
-  property questionId: string = "sel-event-staff-onboarding-q5"
-  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property questionId: string = "2c8fb412-5928-4410-97fe-c8d3fa90fd5f"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
   property code: string = "Q5"
   property sectionTitle: string = "Compliance"
   property displayOrder: int = 5
@@ -199,17 +185,14 @@ entity SelOnboardingTrainingQuestion05Definition mixin TenantScoped {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
 
-  relationship belongsTo question: TrainingQuestion with questionId
-  relationship belongsTo module: TrainingModule with moduleId
-
-  store in memory
+  store SelOnboardingTrainingQuestion05Definition in durable
 }
 
 entity SelOnboardingTrainingQuestion06Definition mixin TenantScoped {
   key [tenantId, id]
 
-  property questionId: string = "sel-event-staff-onboarding-q6"
-  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property questionId: string = "504c8378-1eee-4e4c-a489-a746c417d489"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
   property code: string = "Q6"
   property sectionTitle: string = "Pre-Event Workflow"
   property displayOrder: int = 6
@@ -230,17 +213,14 @@ entity SelOnboardingTrainingQuestion06Definition mixin TenantScoped {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
 
-  relationship belongsTo question: TrainingQuestion with questionId
-  relationship belongsTo module: TrainingModule with moduleId
-
-  store in memory
+  store SelOnboardingTrainingQuestion06Definition in durable
 }
 
 entity SelOnboardingTrainingQuestion07Definition mixin TenantScoped {
   key [tenantId, id]
 
-  property questionId: string = "sel-event-staff-onboarding-q7"
-  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property questionId: string = "fab41a4d-86bb-4587-991f-8a60f02466df"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
   property code: string = "Q7"
   property sectionTitle: string = "Pre-Event Workflow"
   property displayOrder: int = 7
@@ -261,17 +241,14 @@ entity SelOnboardingTrainingQuestion07Definition mixin TenantScoped {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
 
-  relationship belongsTo question: TrainingQuestion with questionId
-  relationship belongsTo module: TrainingModule with moduleId
-
-  store in memory
+  store SelOnboardingTrainingQuestion07Definition in durable
 }
 
 entity SelOnboardingTrainingQuestion08Definition mixin TenantScoped {
   key [tenantId, id]
 
-  property questionId: string = "sel-event-staff-onboarding-q8"
-  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property questionId: string = "d7cbf992-dde5-4af1-8f96-a25e162ab385"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
   property code: string = "Q8"
   property sectionTitle: string = "Buffet Service"
   property displayOrder: int = 8
@@ -292,17 +269,14 @@ entity SelOnboardingTrainingQuestion08Definition mixin TenantScoped {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
 
-  relationship belongsTo question: TrainingQuestion with questionId
-  relationship belongsTo module: TrainingModule with moduleId
-
-  store in memory
+  store SelOnboardingTrainingQuestion08Definition in durable
 }
 
 entity SelOnboardingTrainingQuestion09Definition mixin TenantScoped {
   key [tenantId, id]
 
-  property questionId: string = "sel-event-staff-onboarding-q9"
-  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property questionId: string = "4f71378e-8c1d-4f01-b4a7-9393df1da0f8"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
   property code: string = "Q9"
   property sectionTitle: string = "Buffet Service"
   property displayOrder: int = 9
@@ -323,17 +297,14 @@ entity SelOnboardingTrainingQuestion09Definition mixin TenantScoped {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
 
-  relationship belongsTo question: TrainingQuestion with questionId
-  relationship belongsTo module: TrainingModule with moduleId
-
-  store in memory
+  store SelOnboardingTrainingQuestion09Definition in durable
 }
 
 entity SelOnboardingTrainingQuestion10Definition mixin TenantScoped {
   key [tenantId, id]
 
-  property questionId: string = "sel-event-staff-onboarding-q10"
-  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property questionId: string = "67760aa3-4fca-4c3d-92ef-bdad9c8d7b89"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
   property code: string = "Q10"
   property sectionTitle: string = "Wrap-Up"
   property displayOrder: int = 10
@@ -354,10 +325,7 @@ entity SelOnboardingTrainingQuestion10Definition mixin TenantScoped {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
 
-  relationship belongsTo question: TrainingQuestion with questionId
-  relationship belongsTo module: TrainingModule with moduleId
-
-  store in memory
+  store SelOnboardingTrainingQuestion10Definition in durable
 }
 
 // REMOVED: saga InstallSelOnboardingTraining — was vestigial; no code caller

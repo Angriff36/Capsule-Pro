@@ -23,6 +23,7 @@ Last updated: 2025-02-07
 ### Technology Stack
 
 - **Database**: PostgreSQL (hosted on Neon)
+- **Neon branches**: `ep-square-dust` = **dev** (local + CI migration preview); `ep-divine-math` = **prod**. Never point local `DATABASE_URL` at prod.
 - **ORM**: Prisma with `relationMode = "prisma"`
 - **Migration Tool**: Prisma Migrate (NOT `db push`)
 - **Multi-tenancy**: Shared database with `tenant_id` column isolation

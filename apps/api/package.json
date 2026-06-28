@@ -3,7 +3,7 @@
   "dependencies": {
     "@ai-sdk/google": "^3.0.30",
     "@ai-sdk/openai": "^3.0.71",
-    "@angriff36/manifest": "2.16.1",
+    "@angriff36/manifest": "2.18.6",
     "@capsule-pro/sales-reporting": "workspace:*",
     "@react-pdf/renderer": "^4.5.1",
     "@repo/analytics": "workspace:*",
@@ -72,7 +72,7 @@
     "test": "cross-env NODE_ENV=test vitest run --passWithNoTests",
     "test:quarantine": "cross-env NODE_ENV=test vitest run --config vitest.config.quarantine.mts --passWithNoTests || true",
     "test:integration": "cross-env NODE_ENV=test vitest --config vitest.config.integration.mts run --passWithNoTests",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "typecheck": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsc --noEmit --emitDeclarationOnly false",
     "next:infisical": "cross-env NEXT_DIST_DIR=.next-dev next dev --turbopack -p 2223",
     "dev:infisical": "infisical run --env=dev --path=/apps/capsule-pro/api --project-config-dir=../.. -- concurrently \"pnpm:next:infisical\" \"pnpm:stripe\""
   }

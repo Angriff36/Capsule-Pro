@@ -30,6 +30,7 @@ import { LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
+import { BoardOnboardingOverlay } from "../events/components/board-onboarding-overlay";
 import { NewBoardDialog } from "./new-board-dialog";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -97,6 +98,7 @@ const CommandBoardPage = async () => {
 
   return (
     <PageCanvas>
+      <BoardOnboardingOverlay surface="event-tree" />
       <CommandBand>
         <CommandBandHeader>
           <div className="space-y-4">

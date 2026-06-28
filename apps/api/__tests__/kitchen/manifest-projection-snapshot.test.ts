@@ -30,11 +30,10 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { IR } from "@angriff36/manifest/ir";
-import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { NextJsProjection } from "@angriff36/manifest/projections/nextjs";
 import { describe, expect, it } from "vitest";
+import { compileManifestSourceForTest } from "../test-helpers";
 
-const MANIFEST_ROOT = join(process.cwd(), "../../manifest/source");
 const SNAPSHOT_DIR = join(process.cwd(), "__tests__/kitchen/__snapshots__");
 
 const PROJECTION_OPTIONS = {
@@ -45,33 +44,16 @@ const PROJECTION_OPTIONS = {
 };
 
 /**
- * Compiles a .manifest source file to IR, applying normalization
- * so that standalone commands are linked to their entity.
+ * Compiles a .manifest source file (path relative to `manifest/source`) to IR.
+ *
+ * Delegates to the shared `compileManifestSourceForTest`, which inlines the
+ * `_base.manifest` mixin module so `mixin TenantScoped`/`SoftDeletable` resolve
+ * under @angriff36/manifest 2.18.6. The compiler already links each command to
+ * its entity (`command.entity` is populated), so no further normalization is
+ * needed here.
  */
-async function compileManifest(manifestPath: string): Promise<IR> {
-  const source = readFileSync(manifestPath, "utf-8");
-  const { ir, diagnostics } = await compileToIR(source);
-
-  if (!ir) {
-    throw new Error(
-      `Failed to compile ${manifestPath}: ${diagnostics.map((d: { message: string }) => d.message).join(", ")}`
-    );
-  }
-
-  // Normalize: link orphan commands to their entity
-  if (ir.entities.length === 1 && ir.entities[0].commands.length === 0) {
-    const [entity] = ir.entities;
-    const commandNames = ir.commands.map((command) => command.name);
-    return {
-      ...ir,
-      entities: [{ ...entity, commands: commandNames }],
-      commands: ir.commands.map((command) =>
-        command.entity ? command : { ...command, entity: entity.name }
-      ),
-    };
-  }
-
-  return ir;
+function compileManifest(relPath: string): Promise<IR> {
+  return compileManifestSourceForTest(relPath);
 }
 
 /**
@@ -99,7 +81,7 @@ function generateArtifact(
   }
 
   expect(result.artifacts).toHaveLength(1);
-  return result.artifacts[0].code;
+  return result.artifacts[0]!.code;
 }
 
 /**
@@ -164,9 +146,7 @@ describe("Projection Snapshot: Universal Dispatcher", () => {
   it("dispatcher snapshot matches golden file", async () => {
     // The dispatcher is a universal handler — not entity-specific.
     // Snapshot it once from any entity to catch generator-level changes.
-    const ir = await compileManifest(
-      join(MANIFEST_ROOT, "kitchen/prep-task-rules.manifest")
-    );
+    const ir = await compileManifest("kitchen/prep-task-rules.manifest");
     const code = generateArtifact(ir, "nextjs.dispatcher", "PrepTask", "claim");
     assertGoldenSnapshot("universal-dispatcher.snapshot.ts", code);
     assertDispatcherStructure(code);
@@ -175,36 +155,28 @@ describe("Projection Snapshot: Universal Dispatcher", () => {
 
 describe("Projection Snapshots: Entity Read Routes", () => {
   it("PrepTask read route matches golden file", async () => {
-    const ir = await compileManifest(
-      join(MANIFEST_ROOT, "kitchen/prep-task-rules.manifest")
-    );
+    const ir = await compileManifest("kitchen/prep-task-rules.manifest");
     const code = generateArtifact(ir, "nextjs.route", "PrepTask");
     assertGoldenSnapshot("preptask-route.snapshot.ts", code);
     assertRouteStructure(code, "PrepTask");
   });
 
   it("AdminTask read route matches golden file", async () => {
-    const ir = await compileManifest(
-      join(MANIFEST_ROOT, "core/admin-task-rules.manifest")
-    );
+    const ir = await compileManifest("core/admin-task-rules.manifest");
     const code = generateArtifact(ir, "nextjs.route", "AdminTask");
     assertGoldenSnapshot("admintask-route.snapshot.ts", code);
     assertRouteStructure(code, "AdminTask");
   });
 
   it("CateringOrder read route matches golden file", async () => {
-    const ir = await compileManifest(
-      join(MANIFEST_ROOT, "events/catering-order-rules.manifest")
-    );
+    const ir = await compileManifest("events/catering-order-rules.manifest");
     const code = generateArtifact(ir, "nextjs.route", "CateringOrder");
     assertGoldenSnapshot("cateringorder-route.snapshot.ts", code);
     assertRouteStructure(code, "CateringOrder");
   });
 
   it("BattleBoard read route matches golden file", async () => {
-    const ir = await compileManifest(
-      join(MANIFEST_ROOT, "events/battle-board-rules.manifest")
-    );
+    const ir = await compileManifest("events/battle-board-rules.manifest");
     const code = generateArtifact(ir, "nextjs.route", "BattleBoard");
     assertGoldenSnapshot("battleboard-route.snapshot.ts", code);
     assertRouteStructure(code, "BattleBoard");
@@ -223,20 +195,16 @@ describe("Projection Snapshots: Entity Read Routes", () => {
 
 describe("Projection determinism", () => {
   it("generates identical output on repeated calls", async () => {
-    const ir = await compileManifest(
-      join(MANIFEST_ROOT, "core/admin-task-rules.manifest")
-    );
+    const ir = await compileManifest("core/admin-task-rules.manifest");
     const code1 = generateArtifact(ir, "nextjs.route", "AdminTask");
     const code2 = generateArtifact(ir, "nextjs.route", "AdminTask");
     expect(code1).toBe(code2);
   });
 
   it("different entities produce different read routes", async () => {
-    const adminIR = await compileManifest(
-      join(MANIFEST_ROOT, "core/admin-task-rules.manifest")
-    );
+    const adminIR = await compileManifest("core/admin-task-rules.manifest");
     const battleIR = await compileManifest(
-      join(MANIFEST_ROOT, "events/battle-board-rules.manifest")
+      "events/battle-board-rules.manifest"
     );
     const adminRoute = generateArtifact(adminIR, "nextjs.route", "AdminTask");
     const battleRoute = generateArtifact(

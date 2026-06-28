@@ -8,7 +8,7 @@ entity WorkforceOptimization mixin TenantScoped {
   property optimizationType: string = "" // "schedule", "assignment", "performance"
   indexed property status: string = "pending" // "pending", "in_progress", "completed", "failed"
   timestamps
-  property completedAt: datetime
+  property completedAt: datetime?
 
   computed isPending: boolean = self.status == "pending"
   computed isInProgress: boolean = self.status == "in_progress"

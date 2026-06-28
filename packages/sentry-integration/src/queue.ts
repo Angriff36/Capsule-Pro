@@ -218,10 +218,13 @@ export class InMemoryJobStore implements JobQueueStore {
  * Handles deduplication, rate limiting, and job lifecycle
  */
 export class SentryJobQueue {
-  constructor(
-    private readonly store: JobQueueStore,
-    private readonly config: JobQueueConfig = DEFAULT_CONFIG
-  ) {}
+  private readonly store: JobQueueStore;
+  private readonly config: JobQueueConfig;
+
+  constructor(store: JobQueueStore, config: JobQueueConfig = DEFAULT_CONFIG) {
+    this.store = store;
+    this.config = config;
+  }
 
   /**
    * Check if we should process this alert or skip it

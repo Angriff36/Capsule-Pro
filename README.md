@@ -6,7 +6,6 @@ Monorepo for Capsule Pro — catering management platform.
 
 - **Node.js** (see `.nvmrc`)
 - **pnpm** (ONLY — no npm, no yarn)
-- GitHub Packages auth (one-time): `pnpm config set //npm.pkg.github.com/:_authToken <PAT> --location=user`
 
 ```sh
 pnpm install
@@ -47,25 +46,25 @@ pnpm dev
 
 ### Dev Script Reference
 
-| Script | What it runs | When to use |
-|--------|-------------|-------------|
-| `pnpm dev:app` | Web app (port 2221) | Frontend-only work |
-| `pnpm dev:api` | API (port 2223) | Backend-only work |
-| `pnpm dev:web` | App + API | Day-to-day web development |
-| `pnpm dev:apps` | App + API + Mobile | Mobile feature work |
-| `pnpm dev:mobile` | Expo dev server | Mobile-only (requires setup) |
-| `pnpm dev` | Everything | Full stack / integration testing |
-| `pnpm dev:check` | Env validation | First-time setup |
+| Script            | What it runs        | When to use                      |
+| ----------------- | ------------------- | -------------------------------- |
+| `pnpm dev:app`    | Web app (port 2221) | Frontend-only work               |
+| `pnpm dev:api`    | API (port 2223)     | Backend-only work                |
+| `pnpm dev:web`    | App + API           | Day-to-day web development       |
+| `pnpm dev:apps`   | App + API + Mobile  | Mobile feature work              |
+| `pnpm dev:mobile` | Expo dev server     | Mobile-only (requires setup)     |
+| `pnpm dev`        | Everything          | Full stack / integration testing |
+| `pnpm dev:check`  | Env validation      | First-time setup                 |
 
 ### Port Allocation
 
-| Port | Service |
-|------|---------|
-| 2221 | Web app (`apps/app`) |
-| 2222 | Content site (`apps/web`) |
-| 2223 | API (`apps/api`) |
-| 2224 | Docs (`apps/docs`) |
-| 2225 | Email preview (`apps/email`) |
+| Port | Service                       |
+| ---- | ----------------------------- |
+| 2221 | Web app (`apps/app`)          |
+| 2222 | Content site (`apps/web`)     |
+| 2223 | API (`apps/api`)              |
+| 2224 | Docs (`apps/docs`)            |
+| 2225 | Email preview (`apps/email`)  |
 | 2226 | Prisma Studio (`apps/studio`) |
 
 ## Validation

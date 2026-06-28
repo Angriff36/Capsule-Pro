@@ -88,7 +88,7 @@ export function TaskModal({
       try {
         const [hours, minutes] = startTime.split(":").map(Number);
         const startDateTime = new Date(eventDate);
-        startDateTime.setHours(hours, minutes, 0, 0);
+        startDateTime.setHours(hours ?? 0, minutes ?? 0, 0, 0);
 
         const endDateTime = addMinutes(startDateTime, duration);
 

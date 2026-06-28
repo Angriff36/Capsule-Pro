@@ -146,12 +146,12 @@ export function SalesDashboardClient() {
     }
     if (!createdChoice) {
       setCreatedChoice(
-        getCreatedDateCol(salesData.masterEvents) ?? columnOptions[0]
+        getCreatedDateCol(salesData.masterEvents) ?? columnOptions[0] ?? null
       );
     }
     if (!eventChoice) {
       setEventChoice(
-        getEventDateCol(salesData.masterEvents) ?? columnOptions[0]
+        getEventDateCol(salesData.masterEvents) ?? columnOptions[0] ?? null
       );
     }
   }, [salesData, columnOptions, createdChoice, eventChoice]);

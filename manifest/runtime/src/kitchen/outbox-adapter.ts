@@ -69,7 +69,7 @@ export function createOutboxAdapter({ db }: OutboxAdapterOptions): OutboxStore {
       }));
 
       if (rows.length === 1) {
-        await delegate.create({ data: rows[0] });
+        await delegate.create({ data: rows[0]! });
       } else {
         await delegate.createMany({ data: rows });
       }

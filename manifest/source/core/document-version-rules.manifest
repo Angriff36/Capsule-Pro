@@ -16,9 +16,9 @@ entity DocumentVersion mixin TenantScoped {
   // createdAt/updatedAt are audit timestamps — = now() is correct
   timestamps
   // Lifecycle datetimes — no default
-  property approvedAt: datetime
-  property publishedAt: datetime
-  property supersededAt: datetime
+  property approvedAt: datetime?
+  property publishedAt: datetime?
+  property supersededAt: datetime?
 
   computed isDraft: boolean = self.status == "draft"
   computed isApproved: boolean = self.status == "approved"
@@ -38,14 +38,14 @@ entity DocumentVersion mixin TenantScoped {
   relationship belongsTo document: Document with documentId
 
   default policy DocumentVersionDefaultAccess execute: user.role in ["staff", "editor", "manager", "admin"] "Document versioning"
-  command create(documentId: string, content: string, changeSummary: string, createdById: string) {
+  command create(documentId: string, content: string, changeSummary: string) {
     guard documentId != null and documentId != "" "Document ID is required"
     guard content != null and content != "" "Content is required"
 
     mutate documentId = documentId
     mutate content = content
     mutate changeSummary = changeSummary
-    mutate createdById = createdById
+    mutate createdById = user.id
     mutate versionNumber = 1
 
     emit DocumentVersionCreated

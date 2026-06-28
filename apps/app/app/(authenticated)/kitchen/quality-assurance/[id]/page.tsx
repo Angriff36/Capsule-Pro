@@ -86,8 +86,16 @@ export default async function CorrectiveActionDetailPage({
     return notFound();
   }
 
-  const severity = severityConfig[action.severity] ?? severityConfig.medium;
-  const status = statusConfig[action.status] ?? statusConfig.open;
+  const severity = severityConfig[action.severity] ?? {
+    label: "Medium",
+    variant: "secondary" as const,
+    color: "text-yellow-600",
+  };
+  const status = statusConfig[action.status] ?? {
+    label: "Open",
+    icon: "alert" as const,
+    color: "text-red-500",
+  };
 
   return (
     <div className="container mx-auto space-y-6 py-6">

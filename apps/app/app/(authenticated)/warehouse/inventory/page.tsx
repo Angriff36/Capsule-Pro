@@ -2,7 +2,6 @@ import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -12,6 +11,7 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { notFound } from "next/navigation";
+import { OperationalPageShell, OperationalSection } from "../../components/operational-page-shell";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 const statusVariant: Record<string, "secondary" | "destructive" | "outline"> = {
@@ -120,22 +120,12 @@ const WarehouseInventoryPage = async () => {
   });
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      <div className="space-y-0.5">
-        <h1 className="font-semibold text-2xl tracking-tight">
-          Warehouse Inventory
-        </h1>
-        <p className="text-muted-foreground">
-          Monitor on-hand and consumption trends for fast-moving goods.
-        </p>
-      </div>
-
-      <Separator />
-
-      <section className="space-y-4">
-        <h2 className="font-medium text-muted-foreground text-sm">
-          Stock by Location
-        </h2>
+    <OperationalPageShell
+      description="Monitor on-hand and consumption trends for fast-moving goods."
+      eyebrow="Warehouse / Inventory"
+      title="Warehouse inventory"
+    >
+      <OperationalSection title="Stock by location">
         <Card tone="canvas">
           <CardContent className="overflow-x-auto">
             <div className="rounded-md border">
@@ -180,8 +170,8 @@ const WarehouseInventoryPage = async () => {
             </div>
           </CardContent>
         </Card>
-      </section>
-    </div>
+      </OperationalSection>
+    </OperationalPageShell>
   );
 };
 

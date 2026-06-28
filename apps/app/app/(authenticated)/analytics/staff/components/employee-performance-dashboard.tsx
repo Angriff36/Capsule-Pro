@@ -258,12 +258,12 @@ export function EmployeePerformanceDashboard({
                       {
                         label: "Attendance Rate",
                         value: metrics.attendanceRate,
-                        threshold: [95, 90],
+                        threshold: [95, 90] as const,
                       },
                       {
                         label: "Punctuality Rate",
                         value: metrics.punctualityRate,
-                        threshold: [95, 90],
+                        threshold: [95, 90] as const,
                       },
                     ].map((item) => (
                       <div key={item.label}>

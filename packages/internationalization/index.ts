@@ -77,9 +77,18 @@ const dictionaries: Record<string, () => Promise<Dictionary>> =
 export const getDictionary = async (locale: string): Promise<Dictionary> => {
   const normalizedLocale = safeLocale(locale);
 
+  const loadEn = (): Promise<Dictionary> => {
+    const en = dictionaries.en;
+    if (!en) {
+      throw new Error("Default 'en' dictionary is not registered");
+    }
+    return en();
+  };
+
   try {
-    return await dictionaries[normalizedLocale]();
+    const loader = dictionaries[normalizedLocale];
+    return loader ? await loader() : await loadEn();
   } catch {
-    return dictionaries.en();
+    return loadEn();
   }
 };

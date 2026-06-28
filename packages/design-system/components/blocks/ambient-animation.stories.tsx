@@ -4,7 +4,7 @@
  * Stories for the ambient animation component used in empty states.
  */
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 import { AmbientAnimation } from "./ambient-animation";
 import { EmptyListState, NoDataState } from "./illustrated-empty-states";
 

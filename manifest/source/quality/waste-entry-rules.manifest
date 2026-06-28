@@ -13,7 +13,7 @@ entity WasteEntry mixin TenantScoped, SoftDeletable {
   property loggedBy: string = ""
   property loggedAt: datetime
   property approvedBy: string = ""
-  property approvedAt: datetime
+  property approvedAt: datetime?
   indexed property status: string = "logged"
   property unitCost: money = 0
   property totalCost: money = 0
@@ -188,3 +188,13 @@ event WasteEntryVoided: "kitchen.waste-entry.voided" {
   reason: string
   voidedAt: datetime
 }
+
+// Co-located with WasteEntry.create emit so per-file reaction-completeness passes.
+on WasteEntryCreated run InventoryItem.waste
+  resolve payload.inventoryItemId
+  params {
+    quantity: payload.quantity
+    reason: "waste entry"
+    lotId: ""
+    userId: payload.loggedBy
+  }

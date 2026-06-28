@@ -168,12 +168,17 @@ export function Timeline({
 
     for (let i = 0; i < taskList.length; i++) {
       const taskA = taskList[i];
+      if (!taskA) {
+        continue;
+      }
       const taskAStart = new Date(taskA.startTime).getTime();
       const taskAEnd = new Date(taskA.endTime).getTime();
-      const _taskAAssignees = taskA.assigneeId ? [taskA.assigneeId] : [];
 
       for (let j = i + 1; j < taskList.length; j++) {
         const taskB = taskList[j];
+        if (!taskB) {
+          continue;
+        }
         const taskBStart = new Date(taskB.startTime).getTime();
         const taskBEnd = new Date(taskB.endTime).getTime();
 
@@ -277,10 +282,8 @@ export function Timeline({
 
       const rect = container.getBoundingClientRect();
       const x = e.clientX - rect.left - dragState.startX;
-      const y = e.clientY - rect.top - dragState.startY;
 
       const newStartTime = Math.round(x / (PIXELS_PER_MINUTE * (zoom / 100)));
-      const _newRow = Math.max(0, Math.floor(y / ROW_HEIGHT));
 
       const snappedStartTime =
         Math.round(newStartTime / SNAP_INTERVAL) * SNAP_INTERVAL;
@@ -339,42 +342,6 @@ export function Timeline({
     toast.success("Task updated");
   }, [dragState, tasks, eventId]);
 
-  const _handleStatusChange = useCallback(
-    async (taskId: string, newStatus: TimelineTask["status"]) => {
-      await updateTimelineTask({
-        id: taskId,
-        eventId,
-        status: newStatus,
-      });
-
-      setTasks((prev) =>
-        prev.map((task) =>
-          task.id === taskId ? { ...task, status: newStatus } : task
-        )
-      );
-
-      toast.success(`Task marked as ${newStatus.replace("_", " ")}`);
-    },
-    [eventId]
-  );
-
-  const _handleProgressChange = useCallback(
-    async (taskId: string, newProgress: number) => {
-      await updateTimelineTask({
-        id: taskId,
-        eventId,
-        progress: newProgress,
-      });
-
-      setTasks((prev) =>
-        prev.map((task) =>
-          task.id === taskId ? { ...task, progress: newProgress } : task
-        )
-      );
-    },
-    [eventId]
-  );
-
   const requestDeleteTask = useCallback((taskId: string) => {
     setTaskToDelete(taskId);
     setDeleteDialogOpen(true);
@@ -420,10 +387,14 @@ export function Timeline({
     }
 
     const action = undoStack[0];
+    if (!action) {
+      return;
+    }
     const newUndoStack = undoStack.slice(1);
+    const previousState = action.previousState;
 
-    if (action.type === "delete" && action.previousState) {
-      setTasks((prev) => [...prev, action.previousState!]);
+    if (action.type === "delete" && previousState) {
+      setTasks((prev) => [...prev, previousState]);
       setRedoStack((prev) => [action, ...prev]);
     }
 
@@ -437,10 +408,14 @@ export function Timeline({
     }
 
     const action = redoStack[0];
+    if (!action) {
+      return;
+    }
     const newRedoStack = redoStack.slice(1);
+    const previousState = action.previousState;
 
-    if (action.type === "delete" && action.previousState) {
-      setTasks((prev) => prev.filter((t) => t.id !== action.previousState?.id));
+    if (action.type === "delete" && previousState) {
+      setTasks((prev) => prev.filter((t) => t.id !== previousState.id));
       setUndoStack((prev) => [action, ...prev]);
     }
 

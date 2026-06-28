@@ -210,7 +210,8 @@ describe("Middleware conformance: MaintenanceScheduleCompleted → MaintenanceWo
     // cycle's work order now exists, scheduled for the schedule's new nextDueAt.
     const orders = await workOrdersForTenant(provider);
     expect(orders).toHaveLength(1);
-    const wo = orders[0];
+    const wo = orders[0]!;
+    expect(wo).toBeDefined();
     expect(wo.workOrderType).toBe("preventive");
     expect(wo.equipmentId).toBe(EQUIPMENT_ID);
     expect(wo.areaId).toBe("area-kitchen");

@@ -114,7 +114,7 @@ Pick by need: routes→nextjs/express/hono; schema→prisma/drizzle/convex; vali
 
 ## capsule-pro conventions (real-world consumer)
 
-- **Layout**: `manifest/source/<domain>/*.manifest` (core, crm, events, finance, inventory, kitchen, staff…) each `use "../_base.manifest"`. `_base.manifest` holds the **single** `tenant` decl + 25-role hierarchy + `TenantScoped`/`SoftDeletable` mixins. Duplicate `tenant` = compile error (by design). ~212 entities.
+- **Layout**: `manifest/source/<domain>/*.manifest` (13 domains: ai, core, crm, events, finance, integrations, inventory, kitchen, operations, platform, procurement, quality, staff) — 104 files total (103 domain + `_base.manifest`), each domain file `use "../_base.manifest"`. `_base.manifest` holds the **single** `tenant` decl + role hierarchy + `TenantScoped`/`SoftDeletable` mixin sources. Duplicate `tenant` = compile error (by design). Merged IR: **213 entities**, **1059 commands**, **1034 events** (includes mixin source entities `TenantScoped`/`SoftDeletable`; `@angriff36/manifest@2.16.1`).
 - **Pipeline**: `pnpm manifest:compile` (→ `manifest/ir/kitchen.ir.json` + provenance/merge-report/commands.json) → `manifest:generate` → `manifest:build` → blocking `manifest:ci` = `verify-invariants && doctor && openapi:check && react-query:check && audit:strict && coverage:ci`.
 - **Schema placement** (`schema-placement.rules.json`): entities map to a Postgres schema by source-filename regex → name pattern → shared-infra → else FAIL `UNMAPPED_SCHEMA_PLACEMENT` (NEVER `public`). 13 schemas (`platform core tenant tenant_crm tenant_events tenant_kitchen …`). Add a rule when you add an entity.
 - **Drift gates are per-field & blocking** (`manifest:audit:strict`): schema-drift, route-drift, parent-context, reaction-payloads, accessor-config. Fix order when a required Prisma field is missing: **manifest first, then adapter, then schema**. Allowlists in `manifest/governance/*.json` FREEZE known violations — don't add new ones casually.
@@ -130,3 +130,4 @@ Pick by need: routes→nextjs/express/hono; schema→prisma/drizzle/convex; vali
 7. Schedules/webhooks are declarative; the projection emits the route, your platform must invoke it.
 8. Constraint severity `block` halts (default), `warn` logs, `ok` is info. Transitions validate before constraints.
 9. Any change that makes an invalid program succeed is a language violation, not a UX win.
+10. **Docs:** never `manifest docs manifest/source/` (per-file compile breaks mixins). Use **`pnpm manifest:docs`** → `manifest/scripts/generate-docs.mjs` reads `kitchen.ir.json`, writes gitignored `docs-site/`, and filters policies per entity (raw `manifest docs` dumps every global policy on every page).

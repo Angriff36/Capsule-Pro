@@ -74,6 +74,10 @@ entity StaffMember mixin TenantScoped, SoftDeletable {
     emit StaffMemberRoleChanged
   }
 
+  relationship hasMany eventStaff: EventStaff
+  relationship hasMany trainingSignals: StaffTrainingSignal
+  relationship hasMany trainingAttempts: TrainingAttempt
+
   store StaffMember in durable
 }
 

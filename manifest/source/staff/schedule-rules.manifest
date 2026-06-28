@@ -18,10 +18,10 @@ entity Schedule mixin TenantScoped, SoftDeletable {
   // Bug fix: scheduleDate and publishedAt are lifecycle timestamps — must be nullable
   property scheduleDate: datetime
   indexed property status: ScheduleStatus = draft
-  property publishedAt: datetime
+  property publishedAt: datetime?
   property publishedBy: string = ""
   property approvedBy: string = ""
-  property approvedAt: datetime
+  property approvedAt: datetime?
   searchable property notes: string = ""
   property shiftCount: int = 0
   timestamps
@@ -34,9 +34,10 @@ entity Schedule mixin TenantScoped, SoftDeletable {
   computed isEditable: boolean = self.status in ["draft", "approved"]
 
   relationship hasMany shifts: ScheduleShift
+  relationship hasMany openShifts: OpenShift
   relationship belongsTo location: Facility with locationId
 
-  transition status from "draft" to ["approved"]
+  transition status from "draft" to ["approved", "published"]
   transition status from "approved" to ["draft", "published"]
   transition status from "published" to ["closed", "draft"]
 
@@ -145,8 +146,8 @@ entity ScheduleShift mixin TenantScoped, SoftDeletable {
   // Swap offer fields
   property swapOfferedTo: string = ""
   property swapStatus: string = "none"
-  property swapOfferedAt: datetime
-  property swapAcceptedAt: datetime
+  property swapOfferedAt: datetime?
+  property swapAcceptedAt: datetime?
   versionProperty version: number
   versionAtProperty versionAt: number
   property inheritedContext: string = ""
@@ -160,6 +161,7 @@ entity ScheduleShift mixin TenantScoped, SoftDeletable {
   relationship belongsTo schedule: Schedule fields [tenantId, scheduleId] references [tenantId, id]
   relationship belongsTo employee: User with employeeId
   relationship belongsTo location: Facility with locationId
+  relationship hasMany timeEntries: TimeEntry
 
   constraint validShiftTimes: self.shiftEnd > self.shiftStart "Shift end must be after shift start"
   constraint validSwapStatus: self.swapStatus in ["none", "offered", "accepted", "declined"] "Invalid swap status"
@@ -174,7 +176,7 @@ entity ScheduleShift mixin TenantScoped, SoftDeletable {
   }
 
   default policy ScheduleShiftDefaultAccess execute: user.role in ["manager", "admin"] "Schedule management"
-  command create(scheduleId: string, employeeId: string, shiftStart: datetime, shiftEnd: datetime, roleDuringShift: string, notes: string) {
+  command create(optional scheduleId: string, employeeId: string, shiftStart: datetime, shiftEnd: datetime, roleDuringShift: string, notes: string) {
     guard scheduleId != null and scheduleId != "" "Schedule ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard shiftStart != null "Shift start time is required"

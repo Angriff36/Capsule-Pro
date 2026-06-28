@@ -6,7 +6,7 @@ import { MenuFormWithConstraints } from "./menu-form-with-constraints";
 export function NewMenuFormClient() {
   return (
     <MenuFormWithConstraints formMode="create">
-      {({ handleSubmit, isSubmitting, error, dishesSelector }) => (
+      {({ handleSubmit, isSubmitting, dishesSelector }) => (
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="grid gap-6">
             {/* Basic Info Section */}

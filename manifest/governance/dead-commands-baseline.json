@@ -1,0 +1,4 @@
+{
+  "$doc": "Pre-existing guarded dead/drifted commands (see audit-dead-commands.mjs). Guarded = a real status guard admits a state with no transition edge to the mutate target — the silently-rejected bug class. Entries may only be REMOVED as the transition is fixed — never added. --strict fails on NEW violations only. Unguarded gaps are review-only, not baselined.",
+  "violations": []
+}

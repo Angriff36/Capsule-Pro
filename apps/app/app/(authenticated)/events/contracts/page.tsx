@@ -14,10 +14,10 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@repo/design-system/components/ui/alert";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { AlertTriangle } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 import { Header } from "../../components/header";
 import { ContractsPageClient } from "./components/contracts-page-client";
 
@@ -164,18 +164,11 @@ const ContractsPage = async () => {
         {/* New Contract button is in ContractsPageClient */}
       </Header>
 
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        {/* Page Header */}
-        <div className="flex flex-col gap-1">
-          <h1 className="font-semibold text-2xl tracking-tight">Contracts</h1>
-          <p className="text-muted-foreground">
-            Manage event contracts, track signatures, and monitor expiration
-            dates
-          </p>
-        </div>
-
-        <Separator />
-
+      <OperationalPageShell
+        description="Manage event contracts, track signatures, and monitor expiration dates."
+        eyebrow="Events / Contracts"
+        title="Contracts"
+      >
         {/* Expiring Contracts Alert */}
         {expiringContracts.length > 0 && (
           <Alert variant="destructive">
@@ -222,7 +215,7 @@ const ContractsPage = async () => {
           uniqueDocumentTypes={uniqueDocumentTypes}
           uniqueStatuses={uniqueStatuses}
         />
-      </div>
+      </OperationalPageShell>
     </>
   );
 };

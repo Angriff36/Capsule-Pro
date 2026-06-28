@@ -28,12 +28,13 @@
     "./run-manifest-saga-core": "./src/run-manifest-saga-core.ts",
     "./bottleneck-detector": "./src/bottleneck-detector/index.ts",
     "./entity-accessor": "./src/generated/entity-accessor.generated.ts",
+    "./routes-manifest": "./src/routes-manifest.ts",
     "./prep-list-autogeneration": "./src/prep-list-autogeneration.ts",
     "./flag-provider": "./src/flag-provider.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.71",
-    "@angriff36/manifest": "2.16.1",
+    "@angriff36/manifest": "2.18.6",
     "@js-temporal/polyfill": "^0.5.1",
     "@opentelemetry/api": "^1.9.0",
     "@repo/database": "workspace:*",

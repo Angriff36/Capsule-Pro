@@ -135,10 +135,6 @@ function manifestSuccess(result: Record<string, unknown> = {}) {
   });
 }
 
-function _manifestError(message: string, status = 500) {
-  return NextResponse.json({ success: false, message }, { status });
-}
-
 const params = Promise.resolve({ id: CASE_ID });
 
 describe("PATCH /api/accounting/collections/cases/[id]", () => {

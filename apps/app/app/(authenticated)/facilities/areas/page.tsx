@@ -47,6 +47,7 @@ import {
   listFacilityAreas,
 } from "@/app/lib/manifest-client.generated";
 import { createFacilityArea } from "../actions";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
 export default function AreasPage() {
@@ -198,21 +199,17 @@ export default function AreasPage() {
     <div className="space-y-6">
       <FacilitiesNavigation />
 
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <h1 className="font-semibold text-2xl tracking-tight">
-              Facility Areas
-            </h1>
-            <p className="text-muted-foreground">
-              Define and manage areas within your facility.
-            </p>
-          </div>
+      <OperationalPageShell
+        actions={
           <Button onClick={openCreate}>
             <Plus className="mr-2 h-4 w-4" />
             Add Area
           </Button>
-        </div>
+        }
+        description="Define and manage areas within your facility."
+        eyebrow="Facilities / Areas"
+        title="Facility areas"
+      >
 
         <div className="flex gap-2">
           <Badge variant="secondary">{areas.length} Areas</Badge>
@@ -306,6 +303,8 @@ export default function AreasPage() {
             ))}
           </div>
         )}
+
+      </OperationalPageShell>
 
         {/* Create/Edit Area Dialog */}
         <Dialog onOpenChange={setShowDialog} open={showDialog}>
@@ -465,7 +464,6 @@ export default function AreasPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </div>
     </div>
   );
 }

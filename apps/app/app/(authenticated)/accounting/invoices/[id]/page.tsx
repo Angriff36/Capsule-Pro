@@ -44,6 +44,8 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { PermissionGate } from "@/app/components/permission-gate";
+import { StatusTransitionBadge } from "@/app/components/status-transition-badge";
 import {
   getInvoice,
   invoiceApplyPayment,
@@ -109,20 +111,6 @@ interface Invoice {
   total: string;
   updatedAt: string;
 }
-
-const statusConfig: Record<string, { label: string; className: string }> = {
-  DRAFT: { label: "Draft", className: "bg-gray-100 text-gray-800" },
-  SENT: { label: "Sent", className: "bg-blue-100 text-blue-800" },
-  VIEWED: { label: "Viewed", className: "bg-blue-100 text-blue-800" },
-  OVERDUE: { label: "Overdue", className: "bg-red-100 text-red-800" },
-  PARTIALLY_PAID: {
-    label: "Partially Paid",
-    className: "bg-orange-100 text-orange-800",
-  },
-  PAID: { label: "Paid", className: "bg-green-100 text-green-800" },
-  VOID: { label: "Void", className: "bg-gray-100 text-gray-500" },
-  WRITE_OFF: { label: "Written Off", className: "bg-red-100 text-red-800" },
-};
 
 const typeLabels: Record<string, string> = {
   DEPOSIT: "Deposit",
@@ -279,10 +267,6 @@ export default function InvoiceDetailPage() {
     );
   }
 
-  const status = statusConfig[invoice.status] || {
-    label: invoice.status,
-    className: "bg-gray-100 text-gray-800",
-  };
   const typeLabel = typeLabels[invoice.invoiceType] || invoice.invoiceType;
 
   const canSend = invoice.status === "DRAFT";
@@ -325,7 +309,12 @@ export default function InvoiceDetailPage() {
               <h1 className="font-semibold text-2xl tracking-tight">
                 {invoice.invoiceNumber}
               </h1>
-              <Badge className={status.className}>{status.label}</Badge>
+              <StatusTransitionBadge
+                entity="Invoice"
+                id={id}
+                onChanged={() => loadInvoice()}
+                status={invoice.status}
+              />
               <Badge variant="outline">{typeLabel}</Badge>
             </div>
             <p className="text-muted-foreground text-sm">
@@ -391,15 +380,27 @@ export default function InvoiceDetailPage() {
             </Button>
           )}
           {canVoid && (
-            <Button
-              className="gap-1"
-              disabled={actionLoading}
-              onClick={() => setVoidDialogOpen(true)}
-              variant="destructive"
+            // PermissionGate is presentation-only; the authoritative check stays
+            // on the governed `voidInvoice` command (route/runtime guard). This is
+            // a "use client" route entry with no server parent, and the app has no
+            // client-exposed role source — so, matching every other PermissionGate
+            // call site in this codebase, the role is passed as "admin". When a
+            // client role channel exists (e.g. a useCurrentUser hook), swap it in.
+            <PermissionGate
+              action="void invoices"
+              allow="manager"
+              userRole="admin"
             >
-              <Ban className="size-4" />
-              Void
-            </Button>
+              <Button
+                className="gap-1"
+                disabled={actionLoading}
+                onClick={() => setVoidDialogOpen(true)}
+                variant="destructive"
+              >
+                <Ban className="size-4" />
+                Void
+              </Button>
+            </PermissionGate>
           )}
         </div>
       </div>

@@ -95,7 +95,7 @@ const marginFilterLabel: Record<MarginFilter, string> = {
 export const ProfitabilityPageClient = ({
   records,
   summary,
-  tenantId,
+  tenantId: _tenantId,
 }: ProfitabilityPageClientProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [marginFilter, setMarginFilter] = useState<MarginFilter>("all");

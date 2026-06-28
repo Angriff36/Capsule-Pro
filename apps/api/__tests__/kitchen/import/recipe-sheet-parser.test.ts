@@ -45,6 +45,9 @@ packaging,drop_off,PACKAGE AND LABEL`;
 
   it("parses a full pomodoro-style recipe sheet", () => {
     const [sheet] = parseRecipeSheets(parseCsv(sample));
+    if (!sheet) {
+      throw new Error("expected a parsed recipe sheet");
+    }
 
     expect(sheet.recipeName).toBe("POMODORO SAUCE");
     expect(sheet.yieldQuantity).toBe(10);

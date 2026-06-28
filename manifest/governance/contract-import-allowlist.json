@@ -1,0 +1,54 @@
+[
+  {
+    "path": "apps/app/next.config.ts",
+    "reason": "Next.js outputFileTracingIncludes bundles the routes manifest into the app deployment (build config, not a runtime import)."
+  },
+  {
+    "path": "apps/api/next.config.ts",
+    "reason": "Next.js outputFileTracingIncludes bundles manifest/ir + manifest/api-docs JSON into the API deployment (build config)."
+  },
+  {
+    "path": "apps/api/lib/manifest/frozen-ir.ts",
+    "reason": "Frozen-IR build-time embed; the .generated.json is drift-gated by manifest:ir:embed:check. Documented perf optimization (constitution §4a API transport glue)."
+  },
+  {
+    "path": "apps/api/app/api-docs/openapi.json/route.ts",
+    "reason": "Streams the committed OpenAPI spec at /api-docs; the spec's canonical home is manifest/api-docs/ (constitution §4a)."
+  },
+  {
+    "pathPrefix": "packages/mcp-server/",
+    "reason": "Manifest MCP server: tenant/admin introspection of IR, OpenAPI, and the routes manifest is its defined purpose (constitution §4a/§10 derived surface), so it reads those raw artifacts directly."
+  },
+  {
+    "path": "apps/api/__tests__/procurement/vendor-contract-lifecycle.test.ts",
+    "reason": "Test fixture loads merged IR as input data."
+  },
+  {
+    "path": "apps/api/__tests__/operations/facility-remove-lifecycle.test.ts",
+    "reason": "Test fixture loads merged IR as input data."
+  },
+  {
+    "path": "apps/api/__tests__/operations/facility-asset-schedule-remove-lifecycle.test.ts",
+    "reason": "Test fixture loads merged IR as input data."
+  },
+  {
+    "path": "apps/api/__tests__/manifest/latency.test.ts",
+    "reason": "Test fixture loads merged IR + commands JSON to measure runtime cold-start latency."
+  },
+  {
+    "path": "apps/api/__tests__/manifest/flip-durable-smoke.integration.test.ts",
+    "reason": "Test fixture imports generated prisma-model-metadata to smoke-test the store projection."
+  },
+  {
+    "path": "apps/api/__tests__/manifest/dispatcher-architecture.test.ts",
+    "reason": "Test fixture imports the commands registry to assert dispatcher architecture."
+  },
+  {
+    "path": "apps/api/__tests__/kitchen/manifest-repo-root-resolution.test.ts",
+    "reason": "Test fixture loads precompiled IR to verify repo-root resolution."
+  },
+  {
+    "path": "apps/api/__tests__/kitchen/manifest-projection-snapshot.test.ts",
+    "reason": "Test fixture loads merged IR for projection-snapshot comparison."
+  }
+]

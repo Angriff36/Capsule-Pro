@@ -164,6 +164,11 @@ describe("Activity Feed API", () => {
   // -------------------------------------------------------------------------
 
   describe("GET /api/activity-feed/list", () => {
+    beforeEach(() => {
+      vi.mocked(database.reactionLog.count).mockResolvedValue(0);
+      vi.mocked(database.reactionLog.findMany).mockResolvedValue([]);
+    });
+
     describe("auth guards", () => {
       it("returns 401 when user is not authenticated", async () => {
         mockUnauthenticated();
@@ -207,6 +212,8 @@ describe("Activity Feed API", () => {
         mockAuth();
         vi.mocked(database.activityFeed.count).mockResolvedValue(0);
         vi.mocked(database.activityFeed.findMany).mockResolvedValue([]);
+        vi.mocked(database.reactionLog.count).mockResolvedValue(0);
+        vi.mocked(database.reactionLog.findMany).mockResolvedValue([]);
 
         const response = await getList(makeListRequest());
 
@@ -256,6 +263,36 @@ describe("Activity Feed API", () => {
         expect(body.hasMore).toBe(true);
         expect(body.totalCount).toBe(50);
         expect(body.activities).toHaveLength(1);
+      });
+
+      it("falls back to reaction_logs when ActivityFeed is empty", async () => {
+        mockAuth();
+        vi.mocked(database.activityFeed.count).mockResolvedValue(0);
+        vi.mocked(database.activityFeed.findMany).mockResolvedValue([]);
+        vi.mocked(database.reactionLog.count).mockResolvedValue(1);
+        vi.mocked(database.reactionLog.findMany).mockResolvedValue([
+          {
+            id: "log-1",
+            tenantId: TEST_TENANT_ID,
+            entity: "Event",
+            command: "create",
+            status: "success",
+            emittedEvents: ["Event.created"],
+            errorMessage: null,
+            actorId: "user_001",
+            correlationId: "corr-1",
+            createdAt: new Date("2026-04-29T12:00:00.000Z"),
+          },
+        ] as never);
+
+        const response = await getList(makeListRequest());
+
+        expect(response.status).toBe(200);
+        const body = await response.json();
+        expect(body.activities).toHaveLength(1);
+        expect(body.activities[0].title).toBe("Event.create");
+        expect(body.totalCount).toBe(1);
+        expect(database.reactionLog.findMany).toHaveBeenCalled();
       });
     });
 
@@ -460,6 +497,10 @@ describe("Activity Feed API", () => {
   // -------------------------------------------------------------------------
 
   describe("GET /api/activity-feed/stats", () => {
+    beforeEach(() => {
+      vi.mocked(database.reactionLog.count).mockResolvedValue(0);
+    });
+
     describe("auth guards", () => {
       it("returns 401 when user is not authenticated", async () => {
         mockUnauthenticated();
@@ -472,7 +513,7 @@ describe("Activity Feed API", () => {
         expect(response.status).toBe(401);
         const body = await response.json();
         expect(body.message).toBe("Unauthorized");
-        expect(database.$queryRaw).not.toHaveBeenCalled();
+        expect(database.activityFeed.count).not.toHaveBeenCalled();
       });
 
       it("returns 400 when tenant lookup fails", async () => {
@@ -486,24 +527,21 @@ describe("Activity Feed API", () => {
         expect(response.status).toBe(400);
         const body = await response.json();
         expect(body.message).toBe("Tenant not found");
-        expect(database.$queryRaw).not.toHaveBeenCalled();
+        expect(database.activityFeed.count).not.toHaveBeenCalled();
       });
     });
 
     describe("happy path", () => {
-      it("returns a fully populated stats payload, coerces bigints to numbers, and folds rows into byType/byEntity maps", async () => {
+      it("returns a fully populated stats payload from ActivityFeed rows", async () => {
         mockAuth();
 
-        // Three serial $queryRaw calls in this order: stats, byType, byEntity.
+        vi.mocked(database.activityFeed.count)
+          .mockResolvedValueOnce(100)
+          .mockResolvedValueOnce(5)
+          .mockResolvedValueOnce(23);
+
         const queryRawMock = vi.mocked(database.$queryRaw);
         queryRawMock
-          .mockResolvedValueOnce([
-            {
-              total_activities: 100n,
-              today_count: 5n,
-              week_count: 23n,
-            },
-          ])
           .mockResolvedValueOnce([
             { activity_type: "entity.created", count: 40n },
             { activity_type: "entity.updated", count: 60n },
@@ -537,21 +575,18 @@ describe("Activity Feed API", () => {
           },
         });
 
-        // Three queries fired:
-        expect(queryRawMock).toHaveBeenCalledTimes(3);
+        expect(queryRawMock).toHaveBeenCalledTimes(2);
       });
 
       it("returns zeros and empty maps when the tenant has no activity rows", async () => {
         mockAuth();
 
+        vi.mocked(database.activityFeed.count)
+          .mockResolvedValueOnce(0)
+          .mockResolvedValueOnce(0)
+          .mockResolvedValueOnce(0);
+        vi.mocked(database.reactionLog.count).mockResolvedValue(0);
         vi.mocked(database.$queryRaw)
-          .mockResolvedValueOnce([
-            {
-              total_activities: 0n,
-              today_count: 0n,
-              week_count: 0n,
-            },
-          ])
           .mockResolvedValueOnce([])
           .mockResolvedValueOnce([]);
 
@@ -571,19 +606,44 @@ describe("Activity Feed API", () => {
         });
       });
 
+      it("falls back to reaction_logs counts when ActivityFeed is empty", async () => {
+        mockAuth();
+
+        vi.mocked(database.activityFeed.count)
+          .mockResolvedValueOnce(0)
+          .mockResolvedValueOnce(0)
+          .mockResolvedValueOnce(0);
+        vi.mocked(database.$queryRaw)
+          .mockResolvedValueOnce([])
+          .mockResolvedValueOnce([]);
+        vi.mocked(database.reactionLog.count)
+          .mockResolvedValueOnce(42)
+          .mockResolvedValueOnce(3)
+          .mockResolvedValueOnce(11);
+
+        const request = new NextRequest(
+          "http://localhost/api/activity-feed/stats"
+        );
+        const response = await getStats(request);
+
+        expect(response.status).toBe(200);
+        const body = await response.json();
+        expect(body.stats).toMatchObject({
+          totalActivities: 42,
+          todayCount: 3,
+          weekCount: 11,
+          byType: { entity_change: 42 },
+        });
+      });
+
       it("does not crash on bigint values larger than Number.MAX_SAFE_INTEGER (caller already guarantees safe range)", async () => {
         mockAuth();
 
-        // Stay within safe range — the route does Number(bigint) without checks.
-        // This pins the documented behavior: counts are coerced via Number().
+        vi.mocked(database.activityFeed.count)
+          .mockResolvedValueOnce(Number.MAX_SAFE_INTEGER)
+          .mockResolvedValueOnce(1)
+          .mockResolvedValueOnce(2);
         vi.mocked(database.$queryRaw)
-          .mockResolvedValueOnce([
-            {
-              total_activities: BigInt(Number.MAX_SAFE_INTEGER),
-              today_count: 1n,
-              week_count: 2n,
-            },
-          ])
           .mockResolvedValueOnce([])
           .mockResolvedValueOnce([]);
 
@@ -599,10 +659,10 @@ describe("Activity Feed API", () => {
     });
 
     describe("error handling", () => {
-      it("returns 500 when the first $queryRaw (totals) rejects", async () => {
+      it("returns 500 when activityFeed.count throws", async () => {
         mockAuth();
         const dbError = new Error("totals query failed");
-        vi.mocked(database.$queryRaw).mockRejectedValueOnce(dbError);
+        vi.mocked(database.activityFeed.count).mockRejectedValueOnce(dbError);
 
         const request = new NextRequest(
           "http://localhost/api/activity-feed/stats"
@@ -617,13 +677,15 @@ describe("Activity Feed API", () => {
         expect(captureException).toHaveBeenCalledWith(dbError);
       });
 
-      it("returns 500 when the second $queryRaw (byType) rejects after totals succeed", async () => {
+      it("returns 500 when the byType $queryRaw rejects after totals succeed", async () => {
         mockAuth();
-        vi.mocked(database.$queryRaw)
-          .mockResolvedValueOnce([
-            { total_activities: 1n, today_count: 0n, week_count: 0n },
-          ])
-          .mockRejectedValueOnce(new Error("byType query failed"));
+        vi.mocked(database.activityFeed.count)
+          .mockResolvedValueOnce(1)
+          .mockResolvedValueOnce(0)
+          .mockResolvedValueOnce(0);
+        vi.mocked(database.$queryRaw).mockRejectedValueOnce(
+          new Error("byType query failed")
+        );
 
         const request = new NextRequest(
           "http://localhost/api/activity-feed/stats"
@@ -633,12 +695,13 @@ describe("Activity Feed API", () => {
         expect(response.status).toBe(500);
       });
 
-      it("returns 500 when the third $queryRaw (byEntity) rejects after the first two succeed", async () => {
+      it("returns 500 when the byEntity $queryRaw rejects after the first two succeed", async () => {
         mockAuth();
+        vi.mocked(database.activityFeed.count)
+          .mockResolvedValueOnce(1)
+          .mockResolvedValueOnce(0)
+          .mockResolvedValueOnce(0);
         vi.mocked(database.$queryRaw)
-          .mockResolvedValueOnce([
-            { total_activities: 1n, today_count: 0n, week_count: 0n },
-          ])
           .mockResolvedValueOnce([])
           .mockRejectedValueOnce(new Error("byEntity query failed"));
 

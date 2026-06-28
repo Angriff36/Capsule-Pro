@@ -28,17 +28,17 @@ entity CollectionCase mixin TenantScoped {
 
   // Assignment
   property assignedTo: string = ""
-  property assignedAt: datetime
+  property assignedAt: datetime?
 
   // Payment plan
   property hasPaymentPlan: boolean = false
   property paymentPlanId: string = ""
-  property nextPaymentDue: datetime
+  property nextPaymentDue: datetime?
 
   // Dispute handling
   property isDisputed: boolean = false
   property disputeReason: string = ""
-  property disputeResolvedAt: datetime
+  property disputeResolvedAt: datetime?
 
   // Legal escalation
   property isEscalatedToLegal: boolean = false
@@ -52,8 +52,8 @@ entity CollectionCase mixin TenantScoped {
 
   // Timestamps
   timestamps
-  property resolvedAt: datetime
-  property closedAt: datetime
+  property resolvedAt: datetime?
+  property closedAt: datetime?
 
   // Computed properties
   computed collectionPercentage: number = percent(self.collectedAmount, self.originalAmount) cache request
@@ -64,6 +64,8 @@ entity CollectionCase mixin TenantScoped {
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo invoice: Invoice fields [tenantId, invoiceId] references [tenantId, id]
+  relationship hasMany actions: CollectionAction
+  relationship hasMany paymentPlans: CollectionPaymentPlan
 
   constraint amount_positive: self.originalAmount > 0 "Original amount must be positive"
   constraint collected_valid: self.collectedAmount <= self.originalAmount "Collected amount cannot exceed original"
@@ -236,10 +238,20 @@ entity CollectionCase mixin TenantScoped {
   // engine rejected every call ("Invalid state transition ... -> WRITTEN_OFF") before the
   // mutate ran, even though the route at accounting/collections/cases/[id] exposes it.
   // Same dead-target class already fixed for Invoice (VOIDED/WRITTEN_OFF -> VOID/WRITE_OFF).
-  transition status from "ACTIVE" to ["IN_PROGRESS", "LEGAL", "RESOLVED", "WRITTEN_OFF", "DEFAULTED", "CANCELLED"]
-  transition status from "IN_PROGRESS" to ["LEGAL", "RESOLVED", "WRITTEN_OFF", "DEFAULTED", "CANCELLED"]
+  //
+  // DISPUTE SUB-FSM (dead-command transition-drift fix): the dispute pair was unreachable
+  // for the common case. markDisputed (guard isDisputed == false, i.e. any active state)
+  // mutates status -> "DISPUTED", but only LEGAL -> DISPUTED was declared, so disputing an
+  // ACTIVE/IN_PROGRESS case was rejected. resolveDispute (guard isDisputed == true, only
+  // reachable in DISPUTED) mutates status -> "ACTIVE", but DISPUTED had no -> ACTIVE edge,
+  // so un-disputing back to active collection was rejected. Added ACTIVE/IN_PROGRESS ->
+  // DISPUTED and DISPUTED -> ACTIVE — exactly the guard-admitted-state x reachable-target
+  // pairs for the active workflow (terminals stay non-disputable). Same class as the
+  // EventGuest/InventoryAlert/Driver/Vendor transition fixes; IR-only (no schema/migration).
+  transition status from "ACTIVE" to ["IN_PROGRESS", "LEGAL", "DISPUTED", "RESOLVED", "WRITTEN_OFF", "DEFAULTED", "CANCELLED"]
+  transition status from "IN_PROGRESS" to ["LEGAL", "DISPUTED", "RESOLVED", "WRITTEN_OFF", "DEFAULTED", "CANCELLED"]
   transition status from "LEGAL" to ["RESOLVED", "WRITTEN_OFF", "DISPUTED"]
-  transition status from "DISPUTED" to ["IN_PROGRESS", "RESOLVED"]
+  transition status from "DISPUTED" to ["ACTIVE", "IN_PROGRESS", "RESOLVED"]
   // "RESOLVED", "WRITTEN_OFF", "DEFAULTED", "CANCELLED" are terminal states
 
   store CollectionCase in durable

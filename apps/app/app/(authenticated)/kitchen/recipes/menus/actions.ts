@@ -577,8 +577,14 @@ export const reorderMenuDishes = async (menuId: string, dishIds: string[]) => {
   const menuDishByDishId = new Map(menuDishes.map((md) => [md.dish_id, md]));
 
   for (let i = 0; i < dishIds.length; i++) {
-    const md = menuDishByDishId.get(dishIds[i]);
-    if (!md) continue;
+    const dishId = dishIds[i];
+    if (!dishId) {
+      continue;
+    }
+    const md = menuDishByDishId.get(dishId);
+    if (!md) {
+      continue;
+    }
 
     const result = await runManifestCommand({
       entity: "MenuDish",

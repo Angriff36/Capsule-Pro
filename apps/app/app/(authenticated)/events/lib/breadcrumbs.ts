@@ -57,6 +57,9 @@ export function generateEventBreadcrumbs(
 
   for (let i = 0; i < eventSegments.length; i++) {
     const segment = eventSegments[i];
+    if (segment === undefined) {
+      continue;
+    }
 
     // Skip UUIDs and numeric IDs - they're dynamic, caller handles labels
     const isDynamicSegment =

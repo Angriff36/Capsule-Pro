@@ -254,7 +254,7 @@ describe("Middleware conformance: SchedulePublished → Notification per shift e
 
     const notifications = await notificationsOf(provider);
     expect(notifications).toHaveLength(1);
-    expect(notifications[0].recipientEmployeeId).toBe("emp-active");
+    expect(notifications[0]!.recipientEmployeeId).toBe("emp-active");
   });
 
   it("only notifies employees of the published schedule, not other schedules", async () => {
@@ -273,6 +273,6 @@ describe("Middleware conformance: SchedulePublished → Notification per shift e
 
     const notifications = await notificationsOf(provider);
     expect(notifications).toHaveLength(1);
-    expect(notifications[0].recipientEmployeeId).toBe("emp-mine");
+    expect(notifications[0]!.recipientEmployeeId).toBe("emp-mine");
   });
 });

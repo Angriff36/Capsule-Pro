@@ -817,6 +817,16 @@ export function facilityWorkOrderDetailPath(id: string): string {
   return "/api/facilityworkorder/" + encodeURIComponent(id);
 }
 
+/** GET /api/featureflag/list */
+export function featureFlagListPath(): string {
+  return "/api/manifest/featureflag/commands/list";
+}
+
+/** GET /api/featureflag/:id */
+export function featureFlagDetailPath(id: string): string {
+  return "/api/featureflag/" + encodeURIComponent(id);
+}
+
 /** GET /api/forecastinput/list */
 export function forecastInputListPath(): string {
   return "/api/manifest/forecastinput/commands/list";
@@ -4336,6 +4346,31 @@ export function facilityWorkOrderStartPath(): string {
   return "/api/manifest/facilityworkorder/commands/start";
 }
 
+/** POST /api/manifest/featureflag/commands/create */
+export function featureFlagCreatePath(): string {
+  return "/api/manifest/featureflag/commands/create";
+}
+
+/** POST /api/manifest/featureflag/commands/disable */
+export function featureFlagDisablePath(): string {
+  return "/api/manifest/featureflag/commands/disable";
+}
+
+/** POST /api/manifest/featureflag/commands/enable */
+export function featureFlagEnablePath(): string {
+  return "/api/manifest/featureflag/commands/enable";
+}
+
+/** POST /api/manifest/featureflag/commands/set-rollout */
+export function featureFlagSetRolloutPath(): string {
+  return "/api/manifest/featureflag/commands/set-rollout";
+}
+
+/** POST /api/manifest/featureflag/commands/soft-delete */
+export function featureFlagSoftDeletePath(): string {
+  return "/api/manifest/featureflag/commands/soft-delete";
+}
+
 /** POST /api/manifest/forecastinput/commands/create */
 export function forecastInputCreatePath(): string {
   return "/api/manifest/forecastinput/commands/create";
@@ -7577,6 +7612,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "FacilitySchedule.get.detail", path: "/api/facilityschedule/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "FacilityWorkOrder.get.list", path: "/api/manifest/facilityworkorder/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "FacilityWorkOrder.get.detail", path: "/api/facilityworkorder/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "FeatureFlag.get.list", path: "/api/manifest/featureflag/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "FeatureFlag.get.detail", path: "/api/featureflag/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "ForecastInput.get.list", path: "/api/manifest/forecastinput/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "ForecastInput.get.detail", path: "/api/forecastinput/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Ingredient.get.list", path: "/api/manifest/Ingredient/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -8280,6 +8317,11 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "FacilityWorkOrder.complete", path: "/api/manifest/facilityworkorder/commands/complete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "FacilityWorkOrder.create", path: "/api/manifest/facilityworkorder/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "FacilityWorkOrder.start", path: "/api/manifest/facilityworkorder/commands/start", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "FeatureFlag.create", path: "/api/manifest/featureflag/commands/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "FeatureFlag.disable", path: "/api/manifest/featureflag/commands/disable", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "FeatureFlag.enable", path: "/api/manifest/featureflag/commands/enable", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "FeatureFlag.setRollout", path: "/api/manifest/featureflag/commands/set-rollout", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "FeatureFlag.softDelete", path: "/api/manifest/featureflag/commands/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "ForecastInput.create", path: "/api/manifest/forecastinput/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Ingredient.clearRecall", path: "/api/manifest/Ingredient/commands/clear-recall", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Ingredient.create", path: "/api/manifest/Ingredient/commands/create", method: "POST", source: "command", auth: true, tenant: true },

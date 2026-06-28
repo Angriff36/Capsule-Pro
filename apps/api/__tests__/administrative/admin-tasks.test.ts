@@ -37,7 +37,7 @@ vi.mock("@/lib/manifest-response", async () => {
 });
 vi.mock("@/app/lib/invariant", () => ({
   InvariantError: class extends Error {
-    name = "InvariantError";
+    override name = "InvariantError";
   },
 }));
 vi.mock("@/app/lib/webhook-dispatch", () => ({
@@ -260,7 +260,7 @@ describe("Admin Task API", () => {
       );
 
       const findManyMock = vi.mocked(database.adminTask.findMany);
-      const where = findManyMock.mock.calls[0][0] as Record<string, unknown>;
+      const where = findManyMock.mock.calls[0]![0] as Record<string, unknown>;
       const andClauses = (
         where.where
           ? (where.where as { AND: unknown[] }).AND
@@ -282,7 +282,7 @@ describe("Admin Task API", () => {
       );
 
       const findManyMock = vi.mocked(database.adminTask.findMany);
-      const where = findManyMock.mock.calls[0][0] as Record<string, unknown>;
+      const where = findManyMock.mock.calls[0]![0] as Record<string, unknown>;
       const andClauses = (
         where.where
           ? (where.where as { AND: unknown[] }).AND
@@ -304,7 +304,7 @@ describe("Admin Task API", () => {
       );
 
       const findManyMock = vi.mocked(database.adminTask.findMany);
-      const where = findManyMock.mock.calls[0][0] as Record<string, unknown>;
+      const where = findManyMock.mock.calls[0]![0] as Record<string, unknown>;
       const andClauses = (
         where.where
           ? (where.where as { AND: unknown[] }).AND
@@ -328,7 +328,7 @@ describe("Admin Task API", () => {
       expect(response.status).toBe(200);
 
       const findManyMock = vi.mocked(database.adminTask.findMany);
-      const callArgs = findManyMock.mock.calls[0][0] as Record<string, unknown>;
+      const callArgs = findManyMock.mock.calls[0]![0] as Record<string, unknown>;
       const andClauses = ((callArgs.where ?? callArgs) as { AND: unknown[] })
         .AND as unknown[];
       expect(
@@ -390,7 +390,7 @@ describe("Admin Task API", () => {
       await getTasksList(makeRequest("/api/administrative/tasks"));
 
       const findManyMock = vi.mocked(database.adminTask.findMany);
-      const where = findManyMock.mock.calls[0][0] as Record<string, unknown>;
+      const where = findManyMock.mock.calls[0]![0] as Record<string, unknown>;
       const andClauses = (
         where.where
           ? (where.where as { AND: unknown[] }).AND
@@ -655,7 +655,7 @@ describe("Admin Task API", () => {
 
       await postTaskRoot(request);
 
-      const callArgs = vi.mocked(runManifestCommand).mock.calls[0][0];
+      const callArgs = vi.mocked(runManifestCommand).mock.calls[0]![0];
       expect(callArgs.body.createdBy).toBe(TEST_USER_ID);
       expect(callArgs.body.status).toBe("backlog");
       expect(callArgs.body.priority).toBe("medium");

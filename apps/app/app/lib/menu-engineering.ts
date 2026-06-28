@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 // NOTE: Keeping apiFetch — analytics endpoint /api/analytics/menu-engineering has no generated client equivalent
 import { apiFetch } from "@/app/lib/api";
 import { invariant } from "@/app/lib/invariant";
+import { assertRecord as expectRecord } from "@/app/lib/is-record";
 
 export interface MenuEngineeringSummary {
   averageMarginPercent: number;
@@ -72,17 +73,6 @@ export interface UseMenuEngineeringOptions {
   locationId?: string;
   period?: "7d" | "30d" | "90d" | "12m" | string;
 }
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null;
-
-const expectRecord = (
-  value: unknown,
-  path: string
-): Record<string, unknown> => {
-  invariant(isRecord(value), `${path} must be an object`);
-  return value;
-};
 
 const expectArray = (value: unknown, path: string): unknown[] => {
   invariant(Array.isArray(value), `${path} must be an array`);

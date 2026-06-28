@@ -95,6 +95,12 @@ export async function GET(request: Request) {
     }
 
     const item = results[0];
+    if (!item) {
+      return NextResponse.json(
+        { message: "No item found with this barcode" },
+        { status: 404 }
+      );
+    }
     const quantityOnHand = Number(item.quantity_on_hand);
     const reorderLevel = Number(item.reorder_level);
 

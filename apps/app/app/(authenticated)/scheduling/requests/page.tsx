@@ -1,6 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import type { Metadata } from "next";
+import { OperationalPageShell } from "@/app/(authenticated)/components/operational-page-shell";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { RequestsClient } from "./requests-client";
 
@@ -188,20 +189,17 @@ export default async function SchedulingRequestsPage() {
   ];
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      <div className="space-y-0.5">
-        <h1 className="font-semibold text-2xl tracking-tight">Request Queue</h1>
-        <p className="text-muted-foreground">
-          Review and approve time-off requests, timecard edits, and shift
-          changes.
-        </p>
-      </div>
-      {loadError && (
+    <OperationalPageShell
+      description="Review and approve time-off requests, timecard edits, and shift changes."
+      eyebrow="Scheduling / Requests"
+      title="Request queue"
+    >
+      {loadError ? (
         <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-amber-800 text-sm">
           {loadError}. The page shows available data below.
         </div>
-      )}
+      ) : null}
       <RequestsClient requests={unified} />
-    </div>
+    </OperationalPageShell>
   );
 }

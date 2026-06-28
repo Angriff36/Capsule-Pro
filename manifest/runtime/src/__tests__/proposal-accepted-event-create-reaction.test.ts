@@ -212,7 +212,7 @@ describe("Reaction conformance: ProposalAccepted → Event.create", () => {
       unknown
     >[];
     expect(events.length).toBe(1);
-    const event = events[0];
+    const event = events[0]!;
     expect(event.clientId).toBe("client-aurora");
     expect(event.eventNumber).toBe("PROP-2026-042");
     expect(event.title).toBe("Aurora Gala Dinner");
@@ -260,7 +260,7 @@ describe("Reaction conformance: ProposalAccepted → Event.create", () => {
       unknown
     >[];
     expect(events.length).toBe(1);
-    const event = events[0];
+    const event = events[0]!;
     expect(event.clientId).toBe("client-zen");
     expect(event.eventNumber).toBe("PROP-2026-099");
     expect(event.title).toBe("Zen Rooftop Mixer");

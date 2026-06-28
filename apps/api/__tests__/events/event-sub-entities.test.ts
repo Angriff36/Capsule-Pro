@@ -182,9 +182,7 @@ function createContractSignatureHandler(command: string) {
 // ---------------------------------------------------------------------------
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000030";
-const _TEST_OTHER_TENANT_ID = "00000000-0000-0000-0000-000000000099";
 const TEST_USER_ID = "user_test_event_sub";
-const _TEST_ORG_ID = "org_test_event_sub";
 const TEST_EVENT_ID = "e0000000-0000-4000-a000-000000000030";
 const TEST_GUEST_ID = "g0000000-0000-4000-a000-000000000030";
 const TEST_STAFF_ID = "s0000000-0000-4000-a000-000000000030";

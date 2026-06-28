@@ -37,6 +37,8 @@ entity Venue mixin TenantScoped, SoftDeletable {
   constraint requireName: self.name != "" "Venue name is required"
   constraint positiveCapacity: self.capacity >= 0 "Capacity cannot be negative"
 
+  relationship hasMany planningDrafts: EventPlanningDraft
+
   default policy VenueDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(name: string, venueType: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, capacity: int, contactName: string, contactPhone: string, contactEmail: string, accessNotes: string, cateringNotes: string, layoutImageUrl: string, tags: array<string>) {
     guard name != null and name != "" "Venue name is required"
@@ -252,7 +254,7 @@ entity TimelineTask mixin TenantScoped, SoftDeletable {
   property assigneeId: string = ""
   searchable property notes: string = ""
   property sortOrder: int = 0
-  property completedAt: datetime
+  property completedAt: datetime?
   timestamps
 
   computed isPending: boolean = self.status == "pending"
@@ -400,7 +402,7 @@ entity EventImport mixin TenantScoped, SoftDeletable {
   property skippedRows: int = 0
   property parseErrors: array<string> = []
   timestamps
-  property parsedAt: datetime
+  property parsedAt: datetime?
 
   computed isPending: boolean = self.parseStatus == "pending"
   computed isProcessing: boolean = self.parseStatus == "parsing"
@@ -512,7 +514,7 @@ entity EventFollowup mixin TenantScoped, SoftDeletable {
   indexed property status: string = "pending"
   property assignedTo: string = ""
   searchable property notes: string = ""
-  property completedAt: datetime
+  property completedAt: datetime?
   timestamps
 
   computed isPending: boolean = self.status == "pending"

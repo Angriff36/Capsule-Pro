@@ -129,47 +129,6 @@ export function EventStaffClient({
   const [assignNotes, setAssignNotes] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  const _refreshData = () => {
-    startTransition(async () => {
-      try {
-        const [assignRes, _availRes] = await Promise.all([
-          fetch(`/api/events/staff/list?eventId=${eventId}`),
-          fetch(`/api/events/staff/available?eventId=${eventId}`).catch(
-            () => null
-          ),
-        ]);
-
-        const assignJson = await assignRes.json();
-        if (assignJson.eventStaffs) {
-          setAssignments(
-            assignJson.eventStaffs.map(
-              (s: {
-                id: string;
-                employeeId: string;
-                role: string;
-                startTime?: string | null;
-                endTime?: string | null;
-                notes?: string | null;
-              }) => ({
-                id: s.id,
-                employeeId: s.employeeId,
-                employeeName: "Staff", // The list endpoint doesn't join names
-                role: s.role,
-                startTime: s.startTime ?? null,
-                endTime: s.endTime ?? null,
-                notes: s.notes ?? null,
-              })
-            )
-          );
-        }
-
-        // Refresh available list via page reload for simplicity
-      } catch {
-        toast.error("Failed to refresh staff list");
-      }
-    });
-  };
-
   const handleAssign = () => {
     if (!selectedEmployee) {
       toast.error("Select an employee to assign");
@@ -233,9 +192,6 @@ export function EventStaffClient({
       }
     });
   };
-
-  // Group assignments by role for the OperationalColumn view
-  const _roles = [...new Set(assignments.map((a) => a.role))];
 
   return (
     <div className="space-y-6">
@@ -348,8 +304,10 @@ export function EventStaffClient({
                   assignment.startTime,
                   assignment.endTime
                 );
-                const statusCfg =
-                  SHIFT_STATUS[shiftStatus] ?? SHIFT_STATUS.no_shift;
+                const statusCfg = SHIFT_STATUS[shiftStatus] ?? {
+                  label: "No shift",
+                  variant: "outline" as const,
+                };
 
                 return (
                   <TableRow key={assignment.id}>

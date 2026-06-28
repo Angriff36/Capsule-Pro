@@ -24,11 +24,11 @@ entity CommandBoard mixin TenantScoped, SoftDeletable {
   constraint validStatus: self.status in ["draft", "active", "archived"] "Status must be valid"
 
   // State transitions
-  transition status from "draft" to ["active"]
+  transition status from "draft" to ["active", "archived"]
   transition status from "active" to ["archived"]
 
   default policy CommandBoardDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
-  command create(name: string, description: string, eventId: string, isTemplate: boolean, tags: array<string>, autoPopulate: boolean, scope: string) {
+  command create(name: string, optional description: string, optional eventId: string, optional isTemplate: boolean, optional tags: array<string>, optional autoPopulate: boolean, optional scope: string) {
     guard name != null and name != "" "Board name is required"
 
     // Auto-create seed persists the full command body in one INSERT; per-field
@@ -63,7 +63,7 @@ entity CommandBoard mixin TenantScoped, SoftDeletable {
     emit CommandBoardActivated
   }
 
-  command deactivate(reason: string, userId: string) {
+  command deactivate(optional reason: string, optional userId: string) {
     guard self.status != "archived" "Board is already archived"
 
     constraint warnHasActiveCards:warn true {
@@ -81,6 +81,12 @@ entity CommandBoard mixin TenantScoped, SoftDeletable {
   }
 
   relationship belongsTo event: Event with eventId
+  relationship hasMany annotations: BoardAnnotation
+  relationship hasMany projections: BoardProjection
+  relationship hasMany cards: CommandBoardCard
+  relationship hasMany connections: CommandBoardConnection
+  relationship hasMany groups: CommandBoardGroup
+  relationship hasMany layouts: CommandBoardLayout
 
   store CommandBoard in durable
 }
@@ -121,7 +127,7 @@ entity CommandBoardCard mixin TenantScoped, SoftDeletable {
   relationship belongsTo group: CommandBoardGroup fields [tenantId, groupId] references [tenantId, id]
 
   default policy CommandBoardCardDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
-  command create(boardId: string, title: string, content: string, cardType: string, status: string, positionX: number, positionY: number, width: number, height: number, color: string, metadata: string, groupId: string, entityId: string, entityType: string) {
+  command create(optional boardId: string, title: string, content: string, cardType: string, status: string, positionX: number, positionY: number, width: number, height: number, optional color: string, metadata: string, groupId: string, entityId: string, entityType: string) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard title != null and title != "" "Card title is required"
 
@@ -212,6 +218,7 @@ entity CommandBoardGroup mixin TenantScoped, SoftDeletable {
   constraint positiveHeight: self.height > 0 "Group height must be positive"
 
   relationship belongsTo board: CommandBoard fields [tenantId, boardId] references [tenantId, id]
+  relationship hasMany cards: CommandBoardCard
 
   default policy CommandBoardGroupDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
   command create(boardId: string, name: string, color: string, positionX: number, positionY: number, width: number, height: number) {
@@ -271,7 +278,7 @@ entity CommandBoardConnection mixin TenantScoped, SoftDeletable {
   relationship belongsTo toCard: CommandBoardCard fields [tenantId, toCardId] references [tenantId, id]
 
   default policy CommandBoardConnectionDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
-  command create(boardId: string, fromCardId: string, toCardId: string, relationshipType: string, label: string) {
+  command create(optional boardId: string, fromCardId: string, toCardId: string, relationshipType: string, label: string) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard fromCardId != null and fromCardId != "" "Source card ID is required"
     guard toCardId != null and toCardId != "" "Target card ID is required"
@@ -314,13 +321,19 @@ entity CommandBoardLayout mixin TenantScoped, SoftDeletable {
   relationship belongsTo user: User fields [tenantId, userId] references [tenantId, id]
 
   default policy CommandBoardLayoutDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
-  command create(boardId: string, userId: string, name: string, viewport: string, visibleCards: array<string>, gridSize: number, showGrid: boolean, snapToGrid: boolean) {
+  command create(boardId: string, name: string, viewport: string, visibleCards: array<string>, gridSize: number, showGrid: boolean, snapToGrid: boolean) {
     guard boardId != null and boardId != "" "Board ID is required"
-    guard userId != null and userId != "" "User ID is required"
     guard name != null and name != "" "Layout name is required"
 
-    // Auto-create seed persists the full command body in one INSERT; per-field
-    // `mutate x = x` echoes were redundant SELECT+UPDATE round-trips.
+    mutate userId = user.id
+    mutate boardId = boardId
+    mutate name = name
+    mutate viewport = viewport
+    mutate visibleCards = visibleCards
+    mutate gridSize = gridSize
+    mutate showGrid = showGrid
+    mutate snapToGrid = snapToGrid
+
     emit CommandBoardLayoutCreated
   }
 

@@ -12,6 +12,7 @@ import { PrismaNeon } from "@prisma/adapter-neon";
 import ws from "ws";
 import { PrismaClient } from "./generated/client";
 import { keys } from "./keys";
+import { createAnalyticsDatabase } from "./analytics-database";
 import { createTenantClient } from "./tenant";
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
@@ -67,6 +68,10 @@ export const database =
   (adapter
     ? new PrismaClient({ adapter })
     : (undefined as unknown as PrismaClient));
+/** Read-replica client for analytics/reporting; falls back to `database` when unset. */
+export const analyticsDatabase = database
+  ? createAnalyticsDatabase(database)
+  : database;
 export const db = database;
 
 if (process.env.NODE_ENV !== "production" && adapter) {

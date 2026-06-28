@@ -24,6 +24,21 @@ import { toast } from "sonner";
 // — these are not entity CRUD routes and have no generated client equivalents.
 import { apiFetch } from "@/app/lib/api";
 
+/** Unwrap manifestSuccessResponse payloads ({ success, ...fields }). */
+function unwrapManifestPayload<T extends Record<string, unknown>>(
+  body: Record<string, unknown>,
+  key: keyof T
+): T[keyof T] | undefined {
+  if (body[key] !== undefined) {
+    return body[key] as T[keyof T];
+  }
+  const nested = body.data;
+  if (nested && typeof nested === "object" && key in nested) {
+    return (nested as Record<string, unknown>)[key as string] as T[keyof T];
+  }
+  return;
+}
+
 interface ActivityFeedClientProps {
   enableRealtime?: boolean;
   pollInterval?: number;
@@ -32,8 +47,8 @@ interface ActivityFeedClientProps {
 }
 
 export function ActivityFeedClient({
-  tenantId,
-  userId,
+  tenantId: _tenantId,
+  userId: _userId,
   pollInterval = 30_000,
   enableRealtime = false,
 }: ActivityFeedClientProps) {
@@ -62,15 +77,23 @@ export function ActivityFeedClient({
           throw new Error("Failed to fetch activities");
         }
 
-        const data: ActivityFeedResponse = await response.json();
+        const body = (await response.json()) as Record<string, unknown>;
+        const activitiesPayload =
+          (unwrapManifestPayload<ActivityFeedResponse>(body, "activities") as
+            | ActivityFeedItem[]
+            | undefined) ?? [];
+        const hasMorePayload =
+          (unwrapManifestPayload<ActivityFeedResponse>(body, "hasMore") as
+            | boolean
+            | undefined) ?? false;
 
         if (currentOffset === 0) {
-          setActivities(data.activities);
+          setActivities(activitiesPayload);
         } else {
-          setActivities((prev) => [...prev, ...data.activities]);
+          setActivities((prev) => [...prev, ...activitiesPayload]);
         }
 
-        setHasMore(data.hasMore);
+        setHasMore(hasMorePayload);
         setOffset(currentOffset);
       } catch (error) {
         console.error("Error fetching activities:", error);
@@ -86,8 +109,12 @@ export function ActivityFeedClient({
     try {
       const response = await apiFetch("/api/activity-feed/stats");
       if (response.ok) {
-        const data = await response.json();
-        const raw = data.stats;
+        const body = (await response.json()) as Record<string, unknown>;
+        const raw =
+          (unwrapManifestPayload<{ stats: ActivityStatsProps }>(body, "stats") as
+            | ActivityStatsProps
+            | undefined) ??
+          (body.stats as ActivityStatsProps | undefined);
         if (raw) {
           // API returns `totalActivities` (locked by route tests); the shared
           // ActivityStats component expects `totalCount`. Map at this seam so a
@@ -161,10 +188,8 @@ export function ActivityFeedClient({
 
   return (
     <div className="space-y-4">
-      {/* Stats */}
-      {stats && <ActivityStats {...stats} />}
+      {stats ? <ActivityStats {...stats} variant="panel" /> : null}
 
-      {/* Activity Feed */}
       <ActivityFeed
         activities={activities}
         hasMore={hasMore}
@@ -175,6 +200,8 @@ export function ActivityFeedClient({
         onLoadMore={handleLoadMore}
         onRefresh={handleRefresh}
         onUserClick={handleUserClick}
+        showHeader={false}
+        variant="panel"
       />
     </div>
   );

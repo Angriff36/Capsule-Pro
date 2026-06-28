@@ -58,6 +58,8 @@ entity RolePolicy mixin TenantScoped, SoftDeletable {
     emit RolePolicyPermissionRevoked
   }
 
+  relationship hasMany users: User
+
   store RolePolicy in durable
 }
 

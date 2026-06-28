@@ -23,9 +23,9 @@ entity Shipment mixin TenantScoped, SoftDeletable {
   property supplierId: string = ""
   property locationId: string = ""
   property scheduledDate: datetime
-  property shippedDate: datetime
-  property estimatedDeliveryDate: datetime
-  property actualDeliveryDate: datetime
+  property shippedDate: datetime?
+  property estimatedDeliveryDate: datetime?
+  property actualDeliveryDate: datetime?
   property totalItems: int = 0
   property shippingCost: money = 0
   property totalValue: decimal = 0
@@ -47,6 +47,19 @@ entity Shipment mixin TenantScoped, SoftDeletable {
   computed isCancelled: boolean = self.status == "cancelled"
   computed hasItems: boolean = self.totalItems > 0
   computed hasTracking: boolean = self.trackingNumber != ""
+
+  // Receipt-quality rollups over this shipment's ShipmentItem children (the hasMany
+  // `items` back-relation). Both FILTER on condition == "good" — the line items that
+  // arrived intact — to answer "how much of this shipment landed in good condition,
+  // and what is that clean stock worth?" The complement (totalItems − count,
+  // totalValue − value) is the damage/shrink exposure. The "good" literal is
+  // load-bearing: flip it to "damaged" and the rollups report the opposite population.
+  // Distinct from the stored totalItems/totalValue counters, which count EVERY line
+  // regardless of condition and can drift from the actual children. IR-only
+  // request-cached aggregates: they read existing children, project NO Prisma column,
+  // need NO migration.
+  computed goodConditionItemCount: int = count_of(filter(self.items, (i) => i.condition == "good")) cache request
+  computed goodConditionValue: money = sum(filter(self.items, (i) => i.condition == "good"), (i) => i.totalCost) cache request
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo supplier: InventorySupplier fields [tenantId, supplierId] references [tenantId, id]
@@ -169,9 +182,10 @@ entity Shipment mixin TenantScoped, SoftDeletable {
   }
 
   transition status from "draft" to ["scheduled", "cancelled"]
-  transition status from "scheduled" to ["preparing", "cancelled"]
+  transition status from "scheduled" to ["preparing", "cancelled", "delivered"]
   transition status from "preparing" to ["in_transit", "cancelled"]
   transition status from "in_transit" to ["delivered", "cancelled"]
+  transition status from "returned" to ["cancelled"]
 
   store Shipment in durable
 }
@@ -203,7 +217,7 @@ entity ShipmentItem mixin TenantScoped, SoftDeletable {
 
   default policy ShipmentItemDefaultAccess execute: user.role in ["driver", "logistics_manager", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Shipment management"
 
-  command create(shipmentId: string, itemId: string, quantityShipped: number, unitId: number, unitCost: money, lotNumber: string, expirationDate: datetime) {
+  command create(optional shipmentId: string, itemId: string, quantityShipped: number, unitId: number, unitCost: money, lotNumber: string, expirationDate: datetime) {
     guard shipmentId != null and shipmentId != "" "Shipment ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
     guard quantityShipped != null and quantityShipped > 0 "Quantity shipped must be positive"

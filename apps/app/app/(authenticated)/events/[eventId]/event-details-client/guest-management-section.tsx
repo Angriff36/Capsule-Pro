@@ -15,8 +15,8 @@ interface GuestManagementSectionProps {
 
 export function GuestManagementSection({
   eventId,
-  eventTitle,
-  isSoldOut,
+  eventTitle: _eventTitle,
+  isSoldOut: _isSoldOut,
   onQuickRsvp,
 }: GuestManagementSectionProps) {
   return (

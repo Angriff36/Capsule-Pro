@@ -455,7 +455,7 @@ describe("PATCH /api/accounting/invoices/[id] — action dispatcher", () => {
       );
       expect(mocks.resendSendMock).toHaveBeenCalledTimes(1);
 
-      const sendArgs = mocks.resendSendMock.mock.calls[0][0];
+      const sendArgs = mocks.resendSendMock.mock.calls[0]![0];
       expect(sendArgs.to).toBe("client@example.com");
       expect(sendArgs.subject).toMatch(/reminder/i);
       expect(sendArgs.subject).toContain("INV-2026-0001");

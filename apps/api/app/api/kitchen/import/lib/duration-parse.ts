@@ -11,12 +11,16 @@ export function parseDurationToMinutes(value: string | null | undefined): number
 
   const hourMatches = normalized.matchAll(/(\d+)\s*(?:hour|hr|hrs)\b/g);
   for (const match of hourMatches) {
-    total += Number.parseInt(match[1], 10) * 60;
+    if (match[1]) {
+      total += Number.parseInt(match[1], 10) * 60;
+    }
   }
 
   const minuteMatches = normalized.matchAll(/(\d+)\s*(?:minutes|minute|min|mins)\b/g);
   for (const match of minuteMatches) {
-    total += Number.parseInt(match[1], 10);
+    if (match[1]) {
+      total += Number.parseInt(match[1], 10);
+    }
   }
 
   if (total > 0) {

@@ -69,10 +69,10 @@ interface InitialMetrics {
   total: number;
 }
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; icon: React.ReactNode; variant: string }
-> = {
+const STATUS_CONFIG: {
+  active: { label: string; icon: React.ReactNode; variant: string };
+  inactive: { label: string; icon: React.ReactNode; variant: string };
+} = {
   active: {
     label: "Active",
     icon: <CheckCircle className="mr-1 size-3" />,
@@ -115,14 +115,6 @@ function formatCapacity(container: ContainerRecord): string {
     return `${container.capacityPortions} portions`;
   }
   return "\u2014";
-}
-
-function _formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
 }
 
 interface ContainersClientProps {
@@ -173,7 +165,6 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
       }
 
       setTotalCount(filtered.length);
-      const _totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
       const start = (page - 1) * PAGE_SIZE;
       setContainers(filtered.slice(start, start + PAGE_SIZE));
     } catch (err) {

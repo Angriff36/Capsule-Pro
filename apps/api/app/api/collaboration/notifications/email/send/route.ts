@@ -14,6 +14,10 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import {
+  humanizeNotificationType,
+  mirrorSendsToNotifications,
+} from "@/app/lib/notification-mirror";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 const sendEmailSchema = z.object({
@@ -104,6 +108,19 @@ export async function POST(request: NextRequest) {
       const successCount = results.filter((r) => r.success).length;
       const failureCount = results.filter((r) => !r.success).length;
 
+      // Mirror delivered template emails into governed in-app notifications.
+      // Template subject lives in the stored template (not in route scope), so
+      // the title is derived from the notification type.
+      await mirrorSendsToNotifications({
+        tenantId,
+        notificationType,
+        title: humanizeNotificationType(notificationType),
+        body: "",
+        correlationId: workflowId,
+        recipients,
+        results,
+      });
+
       return NextResponse.json({
         success: failureCount === 0,
         message: `Sent ${successCount} email(s), ${failureCount} failed`,
@@ -140,6 +157,17 @@ export async function POST(request: NextRequest) {
 
     const successCount = results.filter((r) => r.success).length;
     const failureCount = results.filter((r) => !r.success).length;
+
+    // Mirror delivered emails into governed in-app notifications.
+    await mirrorSendsToNotifications({
+      tenantId,
+      notificationType,
+      title: subject,
+      body: "",
+      correlationId: workflowId,
+      recipients,
+      results,
+    });
 
     return NextResponse.json({
       success: failureCount === 0,

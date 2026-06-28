@@ -11,7 +11,7 @@ entity EmailWorkflow mixin TenantScoped, SoftDeletable {
   property emailTemplateTenantId: string = ""
   property recipientConfig: string = "{}"
   property isActive: boolean = true
-  property lastTriggeredAt: datetime
+  property lastTriggeredAt: datetime?
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null

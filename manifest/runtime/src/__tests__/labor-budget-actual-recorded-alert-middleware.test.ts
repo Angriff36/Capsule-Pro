@@ -204,7 +204,8 @@ describe("Middleware conformance: LaborBudgetActualRecorded → BudgetAlert.crea
     // THE PROOF: the middleware dispatched BudgetAlert.create, so an alert now exists.
     const alerts = await alertsForTenant(provider);
     expect(alerts).toHaveLength(1);
-    const opened = alerts[0];
+    const opened = alerts[0]!;
+    expect(opened).toBeDefined();
     expect(opened.budgetId).toBe(BUDGET_ID);
     expect(opened.alertType).toBe("overage");
     expect(Number(opened.utilization)).toBe(120);
@@ -253,7 +254,7 @@ describe("Middleware conformance: LaborBudgetActualRecorded → BudgetAlert.crea
 
     const alerts = await alertsForTenant(provider);
     expect(alerts).toHaveLength(1);
-    expect(alerts[0].id).toBe("alert-pre-existing");
+    expect(alerts[0]!.id).toBe("alert-pre-existing");
   });
 
   it("opens a fresh alert once the prior overage alert has been resolved", async () => {

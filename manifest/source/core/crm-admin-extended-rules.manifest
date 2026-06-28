@@ -413,6 +413,8 @@ entity Document mixin TenantScoped, SoftDeletable {
     emit DocumentRemoved
   }
 
+  relationship hasMany documentVersions: DocumentVersion
+
   store Document in durable
 }
 
@@ -426,7 +428,7 @@ entity AdminChatThread mixin TenantScoped, SoftDeletable {
   unique property slug: string = ""
   property directKey: string = ""
   property createdBy: string = ""
-  property lastMessageAt: datetime
+  property lastMessageAt: datetime?
   timestamps
 
   default policy AdminChatThreadDefaultAccess execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Admin chat"
@@ -455,6 +457,9 @@ entity AdminChatThread mixin TenantScoped, SoftDeletable {
 
     emit AdminChatThreadLastMessageRecorded
   }
+
+  relationship hasMany messages: AdminChatMessage
+  relationship hasMany participants: AdminChatParticipant
 
   store AdminChatThread in durable
 }
@@ -717,3 +722,8 @@ event AdminChatThreadLastMessageRecorded: "admin.chat_thread.last_message_record
   tenantId: string
   lastMessageAt: datetime
 }
+
+// Co-located with AdminChatMessage.create emit so per-file reaction-completeness passes.
+on AdminChatMessageSent run AdminChatThread.recordLastMessage
+  resolve payload.threadId
+  params {}

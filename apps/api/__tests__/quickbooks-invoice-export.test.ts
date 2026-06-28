@@ -133,8 +133,8 @@ describe("QuickBooks Invoice Export", () => {
         .buildLines();
 
       expect(lines.length).toBeGreaterThan(0);
-      expect(lines[0][0]).toBe("INV-001");
-      expect(lines[0][1]).toBe("Acme Corporation");
+      expect(lines[0]?.[0]).toBe("INV-001");
+      expect(lines[0]?.[1]).toBe("Acme Corporation");
     });
 
     it("should throw error when invoice not set", () => {
@@ -165,7 +165,7 @@ describe("QuickBooks Invoice Export", () => {
 
     it("should generate unique filenames with timestamp", () => {
       const result1 = exportInvoices([sampleInvoice], "qbOnlineCsv");
-      const _result2 = exportInvoices([sampleInvoice], "qbOnlineCsv");
+      exportInvoices([sampleInvoice], "qbOnlineCsv");
 
       // Filenames should contain the date
       expect(result1.filename).toMatch(/invoices-\d{4}-\d{2}-\d{2}\.csv/);

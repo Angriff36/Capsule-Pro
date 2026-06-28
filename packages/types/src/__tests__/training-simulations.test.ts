@@ -2,7 +2,7 @@ import {
   getSimulationById,
   scoreSimulation,
 } from "@repo/types/training-simulations";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest"
 
 describe("training-simulations", () => {
   it("scores a perfect run as passed", () => {

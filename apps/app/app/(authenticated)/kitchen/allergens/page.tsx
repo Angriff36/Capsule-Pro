@@ -27,7 +27,10 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  OperationalPageShell,
+  OperationalSection,
+} from "../../components/operational-page-shell";
 import {
   Tabs,
   TabsContent,
@@ -283,23 +286,13 @@ export default function AllergenManagementPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      {/* Page Header */}
-      <div className="space-y-0.5">
-        <h1 className="font-semibold text-2xl tracking-tight">
-          Allergen Management
-        </h1>
-        <p className="text-muted-foreground">
-          Manage allergen warnings and dietary restrictions for events and
-          dishes
-        </p>
-      </div>
-
-      <Separator />
-
-      {/* Search Section */}
-      <section className="space-y-4">
-        <h2 className="font-medium text-muted-foreground text-sm">Search</h2>
+    <OperationalPageShell
+      description="Manage allergen warnings and dietary restrictions for events and dishes."
+      eyebrow="Kitchen / Allergens"
+      title="Allergen management"
+      withCanvas={false}
+    >
+      <OperationalSection title="Search">
         <div className="flex items-center gap-2">
           <SearchIcon className="size-4 text-muted-foreground" />
           <Input
@@ -309,18 +302,14 @@ export default function AllergenManagementPage() {
             value={searchTerm}
           />
         </div>
-      </section>
+      </OperationalSection>
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        /* Allergen Information Section */
-        <section className="space-y-4">
-          <h2 className="font-medium text-muted-foreground text-sm">
-            Allergen Information
-          </h2>
+        <OperationalSection title="Allergen information">
           <Tabs className="space-y-4" defaultValue="warnings">
             <TabsList>
               <TabsTrigger value="warnings">Allergen Warnings</TabsTrigger>
@@ -616,7 +605,7 @@ export default function AllergenManagementPage() {
               <AllergenMatrix itemType="dish" showDietaryTags showExport />
             </TabsContent>
           </Tabs>
-        </section>
+        </OperationalSection>
       )}
 
       {/* Resolve Warning Dialog */}
@@ -659,6 +648,6 @@ export default function AllergenManagementPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </OperationalPageShell>
   );
 }

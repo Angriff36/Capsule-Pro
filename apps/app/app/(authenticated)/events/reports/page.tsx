@@ -17,7 +17,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@repo/design-system/components/ui/empty";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   CheckCircle2,
   ClipboardList,
@@ -28,6 +27,10 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { formatDate } from "../../../lib/format";
+import {
+  OperationalPageShell,
+  OperationalSection,
+} from "../../components/operational-page-shell";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 
@@ -89,9 +92,6 @@ const EventReportsPage = async () => {
   }));
 
   // Calculate stats
-  const _draftCount = reportsWithEvents.filter(
-    (r) => r.status === "draft"
-  ).length;
   const inProgressCount = reportsWithEvents.filter(
     (r) => r.status === "in_progress"
   ).length;
@@ -127,24 +127,12 @@ const EventReportsPage = async () => {
           </Button>
         </div>
       </Header>
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        {/* Page Header */}
-        <div className="space-y-0.5">
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Event Reports
-          </h1>
-          <p className="text-muted-foreground">
-            Pre-Event Review checklists for upcoming events
-          </p>
-        </div>
-
-        <Separator />
-
-        {/* Performance Overview Section */}
-        <section className="space-y-4">
-          <h2 className="font-medium text-muted-foreground text-sm">
-            Performance Overview
-          </h2>
+      <OperationalPageShell
+        description="Pre-event review checklists for upcoming events."
+        eyebrow="Events / Reports"
+        title="Event reports"
+      >
+        <OperationalSection title="Performance overview">
           <div className="grid gap-6 lg:grid-cols-4">
             <Card tone="soft-stone">
               <CardHeader>
@@ -187,7 +175,7 @@ const EventReportsPage = async () => {
               </CardContent>
             </Card>
           </div>
-        </section>
+        </OperationalSection>
 
         {/* Reports List Section */}
         {reportsWithEvents.length === 0 ? (
@@ -286,7 +274,7 @@ const EventReportsPage = async () => {
             </div>
           </section>
         )}
-      </div>
+      </OperationalPageShell>
     </>
   );
 };

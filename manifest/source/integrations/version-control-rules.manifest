@@ -90,7 +90,7 @@ entity EntityVersion mixin TenantScoped {
   property snapshotData: string = {}
   property metadata: string = {}
   property isApproved: boolean = false
-  property approvedAt: datetime
+  property approvedAt: datetime?
   property approvedBy: string = ""
   timestamps
   property createdBy: string = ""
@@ -104,12 +104,11 @@ entity EntityVersion mixin TenantScoped {
   constraint validSnapshot: self.snapshotData != null "Snapshot data is required"
 
   default policy EntityVersionDefaultAccess execute: user.role in ["manager", "admin"] "Version control"
-  command create(versionedEntityId: string, versionNumber: number, changeType: string, snapshot: string, reason: string, summary: string, userId: string) {
+  command create(optional versionedEntityId: string, versionNumber: number, changeType: string, snapshot: string, reason: string, summary: string) {
     guard versionedEntityId != null and versionedEntityId != "" "Versioned entity ID is required"
     guard versionNumber != null and versionNumber > 0 "Version number must be positive"
     guard changeType in ["create", "update", "restore", "approve", "auto"] "Invalid change type"
     guard snapshot != null "Snapshot data is required"
-    guard userId != null and userId != "" "Creator user ID is required"
 
     mutate versionedEntityId = versionedEntityId
     mutate versionNumber = versionNumber
@@ -117,7 +116,7 @@ entity EntityVersion mixin TenantScoped {
     mutate snapshotData = snapshot
     mutate changeReason = reason
     mutate changeSummary = summary
-    mutate createdBy = userId
+    mutate createdBy = user.id
 
     emit EntityVersionCreated
   }
@@ -154,6 +153,7 @@ entity EntityVersion mixin TenantScoped {
     emit EntityVersionRestored
   }
   relationship belongsTo versionedEntity: VersionedEntity with versionedEntityId
+  relationship hasMany approvals: VersionApproval
 
   store EntityVersion in durable
 }
@@ -189,7 +189,7 @@ entity VersionApproval mixin TenantScoped {
   relationship belongsTo approver: User with approverId
 
   default policy VersionApprovalDefaultAccess execute: user.role in ["manager", "admin"] "Version control"
-  command create(entityVersionId: string, approverId: string) {
+  command create(optional entityVersionId: string, approverId: string) {
     guard entityVersionId != null and entityVersionId != "" "Entity version ID is required"
     guard approverId != null and approverId != "" "Approver ID is required"
 

@@ -105,7 +105,6 @@ export interface ClientInteractionCreateInput {
   subject?: string;
   description?: string;
   followUpDate?: string;
-  correlationId?: string;
 }
 export interface ClientInteractionEscalateInput {
   id?: string;

@@ -13,9 +13,9 @@ entity EventStaff mixin TenantScoped, SoftDeletable {
   property shiftEnd: datetime
   indexed property status: string = "assigned"
   // Day-of attendance timestamps — null until the transition actually happens.
-  property confirmedAt: datetime
-  property checkedInAt: datetime
-  property checkedOutAt: datetime
+  property confirmedAt: datetime?
+  property checkedInAt: datetime?
+  property checkedOutAt: datetime?
   property noShowReason: string = ""
   timestamps
 
@@ -131,11 +131,18 @@ entity EventStaff mixin TenantScoped, SoftDeletable {
     emit EventStaffUnassigned
   }
 
-  // State transitions
-  transition status from "assigned" to ["confirmed", "cancelled", "unassigned"]
-  transition status from "confirmed" to ["checked_in", "cancelled", "no_show", "unassigned"]
-  transition status from "checked_in" to ["completed", "no_show"]
-  // "completed", "no_show", "cancelled", "unassigned" are terminal states
+  // State transitions — every command's status mutation must be a declared edge:
+  // the engine validates EVERY mutation (incl. no-op self-transitions) and rejects
+  // any undeclared target (notes.md §21). The prior table targeted phantom states
+  // ("completed"/"cancelled") that no command writes and validStatus forbids, while
+  // omitting real edges — breaking assign re-call (assigned->assigned), checkIn/
+  // markNoShow from "assigned", and checkOut entirely (checked_in->checked_out).
+  // "assigned" carries a self-loop so re-running assign on an already-assigned row
+  // succeeds (same pattern as invoice PARTIALLY_PAID / equipment "active" self-loops).
+  transition status from "assigned" to ["assigned", "confirmed", "checked_in", "no_show", "unassigned"]
+  transition status from "confirmed" to ["checked_in", "no_show", "unassigned"]
+  transition status from "checked_in" to ["checked_out"]
+  // "checked_out", "no_show", "unassigned" are terminal states (no command exits them)
 
   store EventStaff in durable
 }

@@ -150,8 +150,8 @@ export async function getPDFAsBase64(
 
     // Convert to base64
     let binary = "";
-    for (let i = 0; i < uint8Array.length; i++) {
-      binary += String.fromCharCode(uint8Array[i]);
+    for (const byte of uint8Array) {
+      binary += String.fromCharCode(byte);
     }
     return btoa(binary);
   } catch (error) {
