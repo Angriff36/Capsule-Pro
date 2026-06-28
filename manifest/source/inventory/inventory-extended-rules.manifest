@@ -184,8 +184,8 @@ entity InventoryAlert mixin TenantScoped {
   property required notes: string
   indexed property required status: string = "active"
   property triggeredAt: datetime
-  property acknowledgedAt: datetime
-  property resolvedAt: datetime
+  property acknowledgedAt: datetime?
+  property resolvedAt: datetime?
   property acknowledgedBy: string = ""
   property resolvedBy: string = ""
   timestamps
@@ -273,8 +273,8 @@ entity InventoryForecast mixin TenantScoped {
   property required projectedQuantity: decimal = 0
   property required confidence: decimal = 0
   indexed property status: string = "draft"
-  property publishedAt: datetime
-  property approvedAt: datetime
+  property publishedAt: datetime?
+  property approvedAt: datetime?
   property approvedBy: string = ""
   timestamps
 
@@ -736,7 +736,7 @@ entity ProcurementBudgetAlert mixin TenantScoped {
   property required alertType: string
   property required message: string
   property triggeredAt: datetime
-  property acknowledgedAt: datetime
+  property acknowledgedAt: datetime?
   property acknowledgedBy: string = ""
   property isAcknowledged: boolean = false
   timestamps
@@ -790,7 +790,7 @@ entity AuditSchedule mixin TenantScoped {
   property required time: string
   property required createdBy: string
   property nextRunAt: datetime
-  property lastRunAt: datetime
+  property lastRunAt: datetime?
   property isActive: boolean = true
   timestamps
 

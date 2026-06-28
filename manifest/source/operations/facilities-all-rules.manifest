@@ -232,8 +232,8 @@ entity FacilityAsset mixin TenantScoped {
   property manufacturer: string = ""
   property model: string = ""
   property warrantyExpiry: datetime
-  property lastMaintenanceAt: datetime
-  property nextMaintenanceAt: datetime
+  property lastMaintenanceAt: datetime?
+  property nextMaintenanceAt: datetime?
   searchable property notes: string = ""
   timestamps
 
@@ -356,7 +356,7 @@ entity FacilitySchedule mixin TenantScoped {
   property startDate: datetime
   property endDate: datetime
   property assignedTo: string = ""
-  property completedAt: datetime
+  property completedAt: datetime?
   searchable property notes: string = ""
   timestamps
 
@@ -467,7 +467,7 @@ entity FacilityWorkOrder mixin TenantScoped {
   property actualCost: money = 0
   // scheduledDate/completedDate: lifecycle times — no = now() default
   property scheduledDate: datetime
-  property completedDate: datetime
+  property completedDate: datetime?
   searchable property notes: string = ""
   timestamps
 

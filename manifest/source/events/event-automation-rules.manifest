@@ -8,7 +8,7 @@ entity AutomatedFollowup mixin TenantScoped {
   indexed property status: string = "pending"
   // Bug fix: lifecycle datetimes — no default
   property scheduledDate: datetime
-  property sentDate: datetime
+  property sentDate: datetime?
   property recipientId: string = ""
   property subject: string = ""
   property body: string = ""

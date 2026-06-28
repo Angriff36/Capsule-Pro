@@ -23,8 +23,8 @@ entity Budget mixin TenantScoped {
   property category: string = "general"
   property departmentId: string = ""
   property approvedBy: string = ""
-  property approvedAt: datetime
-  property lockedAt: datetime
+  property approvedAt: datetime?
+  property lockedAt: datetime?
   timestamps
 
   computed remainingAmount: money = self.allocatedAmount - self.spentAmount

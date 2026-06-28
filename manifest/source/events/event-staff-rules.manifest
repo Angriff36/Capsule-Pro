@@ -13,9 +13,9 @@ entity EventStaff mixin TenantScoped, SoftDeletable {
   property shiftEnd: datetime
   indexed property status: string = "assigned"
   // Day-of attendance timestamps — null until the transition actually happens.
-  property confirmedAt: datetime
-  property checkedInAt: datetime
-  property checkedOutAt: datetime
+  property confirmedAt: datetime?
+  property checkedInAt: datetime?
+  property checkedOutAt: datetime?
   property noShowReason: string = ""
   timestamps
 

@@ -90,7 +90,7 @@ entity EntityVersion mixin TenantScoped {
   property snapshotData: string = {}
   property metadata: string = {}
   property isApproved: boolean = false
-  property approvedAt: datetime
+  property approvedAt: datetime?
   property approvedBy: string = ""
   timestamps
   property createdBy: string = ""

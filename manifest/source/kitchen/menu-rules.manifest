@@ -28,8 +28,8 @@ entity Menu mixin TenantScoped {
   property seasonYear: int = 0
   // Publication workflow: menus are drafted then published for client selection.
   indexed property status: MenuStatus = draft
-  property publishedAt: datetime
-  property archivedAt: datetime
+  property publishedAt: datetime?
+  property archivedAt: datetime?
   timestamps
 
   computed hasPricePerPerson: boolean = self.pricePerPerson > 0

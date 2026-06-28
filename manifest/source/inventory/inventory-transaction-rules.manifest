@@ -17,7 +17,7 @@ entity InventoryTransaction mixin TenantScoped {
   property employeeId: string = ""
   property storageLocationId: string = ""
   property transactionDate: datetime
-  property reversedAt: datetime
+  property reversedAt: datetime?
   property reversedBy: string = ""
   property reverseOfTransactionId: string = ""
   property isReversed: boolean = false

@@ -426,7 +426,7 @@ entity AdminChatThread mixin TenantScoped, SoftDeletable {
   unique property slug: string = ""
   property directKey: string = ""
   property createdBy: string = ""
-  property lastMessageAt: datetime
+  property lastMessageAt: datetime?
   timestamps
 
   default policy AdminChatThreadDefaultAccess execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Admin chat"

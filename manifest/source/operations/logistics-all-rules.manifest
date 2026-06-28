@@ -287,8 +287,8 @@ entity LogisticsRoute mixin TenantScoped {
   // scheduledDate/endTime and actualStartTime/actualEndTime: lifecycle times — no = now() default
   property scheduledDate: datetime
   property endTime: datetime
-  property actualStartTime: datetime
-  property actualEndTime: datetime
+  property actualStartTime: datetime?
+  property actualEndTime: datetime?
   property completedStops: int = 0
   property delayMinutes: int = 0
   searchable property description: string = ""

@@ -10,7 +10,7 @@ entity KnowledgeBaseEntry mixin TenantScoped {
   property tags: array<string> = []
   indexed property status: string = "draft"
   property authorId: string = ""
-  property publishedAt: datetime
+  property publishedAt: datetime?
   property viewCount: int = 0
   timestamps
 

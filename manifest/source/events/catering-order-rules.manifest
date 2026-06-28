@@ -20,9 +20,9 @@ entity CateringOrder mixin TenantScoped, SoftDeletable {
   property depositAmount: money = 0
   property depositPaid: boolean = false
   // Bug fix: depositPaidAt is a lifecycle datetime — no default
-  property depositPaidAt: datetime
-  property deliveredAt: datetime
-  property prepStartedAt: datetime
+  property depositPaidAt: datetime?
+  property deliveredAt: datetime?
+  property prepStartedAt: datetime?
   property venueName: string = ""
   property venueAddress: string = ""
   property venueCity: string = ""

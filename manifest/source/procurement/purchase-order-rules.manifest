@@ -7,8 +7,8 @@ entity PurchaseOrder mixin TenantScoped, SoftDeletable {
   property required vendorId: string
   property required locationId: string
   property required orderDate: datetime = now()
-  property expectedDeliveryDate: datetime
-  property actualDeliveryDate: datetime
+  property expectedDeliveryDate: datetime?
+  property actualDeliveryDate: datetime?
   indexed property required status: string = "draft"
   property required subtotal: money = 0
   property required taxAmount: money = 0
@@ -16,9 +16,9 @@ entity PurchaseOrder mixin TenantScoped, SoftDeletable {
   property required total: money = 0
   searchable property notes: string = ""
   property submittedBy: string = ""
-  property submittedAt: datetime
+  property submittedAt: datetime?
   property receivedBy: string = ""
-  property receivedAt: datetime
+  property receivedAt: datetime?
   timestamps
   property itemCount: int = 0
 

@@ -34,7 +34,7 @@ entity PaymentMethod mixin TenantScoped {
   property fraudFlagged: boolean = false
 
   // Verification
-  property verifiedAt: datetime
+  property verifiedAt: datetime?
   property verificationMethod: string = ""
 
   // Metadata
@@ -42,7 +42,7 @@ entity PaymentMethod mixin TenantScoped {
 
   // Timestamps
   timestamps
-  property expiresAt: datetime
+  property expiresAt: datetime?
 
   // Computed properties
   computed isExpired: boolean = self.expiresAt != null and self.expiresAt < now() cache request

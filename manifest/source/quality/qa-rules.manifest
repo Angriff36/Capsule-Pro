@@ -17,8 +17,8 @@ entity QACheck mixin TenantScoped {
   property inspector: string = ""
   searchable property notes: string = ""
   // Bug fix: lifecycle timestamps must be nullable (no = now() default)
-  property completedAt: datetime
-  property reinspectedAt: datetime
+  property completedAt: datetime?
+  property reinspectedAt: datetime?
   timestamps
 
   computed isPending: boolean = self.status == "pending"
@@ -117,8 +117,8 @@ entity QACorrectiveAction mixin TenantScoped {
   property escalationReason: string = ""
   // Bug fix: lifecycle datetimes must be nullable
   property dueDate: datetime
-  property resolvedAt: datetime
-  property escalatedAt: datetime
+  property resolvedAt: datetime?
+  property escalatedAt: datetime?
   timestamps
 
   computed isOpen: boolean = self.status == "open"

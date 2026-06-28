@@ -28,17 +28,17 @@ entity CollectionCase mixin TenantScoped {
 
   // Assignment
   property assignedTo: string = ""
-  property assignedAt: datetime
+  property assignedAt: datetime?
 
   // Payment plan
   property hasPaymentPlan: boolean = false
   property paymentPlanId: string = ""
-  property nextPaymentDue: datetime
+  property nextPaymentDue: datetime?
 
   // Dispute handling
   property isDisputed: boolean = false
   property disputeReason: string = ""
-  property disputeResolvedAt: datetime
+  property disputeResolvedAt: datetime?
 
   // Legal escalation
   property isEscalatedToLegal: boolean = false
@@ -52,8 +52,8 @@ entity CollectionCase mixin TenantScoped {
 
   // Timestamps
   timestamps
-  property resolvedAt: datetime
-  property closedAt: datetime
+  property resolvedAt: datetime?
+  property closedAt: datetime?
 
   // Computed properties
   computed collectionPercentage: number = percent(self.collectedAmount, self.originalAmount) cache request

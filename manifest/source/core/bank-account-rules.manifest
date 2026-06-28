@@ -12,8 +12,8 @@ entity BankAccount mixin TenantScoped {
   property bankName: string = ""
   property isDefault: boolean = false
   indexed property status: string = "active"
-  readonly property verifiedAt: datetime
-  property verificationFailedAt: datetime
+  readonly property verifiedAt: datetime?
+  property verificationFailedAt: datetime?
   property verificationFailureReason: string = ""
   timestamps
 

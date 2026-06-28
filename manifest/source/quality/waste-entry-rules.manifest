@@ -13,7 +13,7 @@ entity WasteEntry mixin TenantScoped, SoftDeletable {
   property loggedBy: string = ""
   property loggedAt: datetime
   property approvedBy: string = ""
-  property approvedAt: datetime
+  property approvedAt: datetime?
   indexed property status: string = "logged"
   property unitCost: money = 0
   property totalCost: money = 0

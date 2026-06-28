@@ -18,8 +18,8 @@ entity StaffPerformance mixin TenantScoped {
   searchable property notes: string = ""
   property acknowledgementNotes: string = ""
   // Bug fix: completedAt is a lifecycle timestamp — must be nullable
-  property completedAt: datetime
-  property acknowledgedAt: datetime
+  property completedAt: datetime?
+  property acknowledgedAt: datetime?
   timestamps
 
   computed isDraft: boolean = self.status == "draft"

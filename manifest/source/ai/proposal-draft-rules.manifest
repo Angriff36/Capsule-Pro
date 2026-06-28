@@ -29,12 +29,12 @@ entity ProposalDraft mixin TenantScoped, SoftDeletable {
   // (entity defaults must satisfy every block invariant at createInstance).
   property magicToken: string = ""
   property magicTokenExpiresAt: datetime
-  property sentAt: datetime
+  property sentAt: datetime?
   // sentVia: comma-separated delivery methods (the DSL has no array-append
   // expression; `array + array` is not supported by the engine).
   property sentVia: string = ""
-  property viewedAt: datetime
-  property respondedAt: datetime
+  property viewedAt: datetime?
+  property respondedAt: datetime?
   property depositAmount: money = 0
   property depositPaid: boolean = false
   property htmlContent: string = ""

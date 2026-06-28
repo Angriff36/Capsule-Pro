@@ -6,8 +6,8 @@ entity AdminChatParticipant mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property threadId: string = ""
   property userId: string = ""
-  property archivedAt: datetime
-  property clearedAt: datetime
+  property archivedAt: datetime?
+  property clearedAt: datetime?
   timestamps
 
   computed isArchived: boolean = self.archivedAt != null

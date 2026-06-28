@@ -14,11 +14,11 @@ entity InventorySupplier mixin TenantScoped, SoftDeletable {
   property tags: array<string> = []
   property isActive: boolean = true
   property openPOCount: int = 0
-  property approvedAt: datetime
+  property approvedAt: datetime?
   property approvedBy: string = ""
-  property suspendedAt: datetime
+  property suspendedAt: datetime?
   property suspendedReason: string = ""
-  property blacklistedAt: datetime
+  property blacklistedAt: datetime?
   property blacklistedReason: string = ""
   property qualificationStatus: string = "pending"
   timestamps

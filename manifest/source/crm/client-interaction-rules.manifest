@@ -15,7 +15,7 @@ entity ClientInteraction mixin TenantScoped, SoftDeletable {
   property followUpCompleted: boolean = false
   indexed property status: string = "open"
   property priority: string = "normal"
-  property escalatedAt: datetime
+  property escalatedAt: datetime?
   property escalatedTo: string = ""
   property correlationId: string = ""
   timestamps

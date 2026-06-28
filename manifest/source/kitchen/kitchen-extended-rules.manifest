@@ -14,7 +14,7 @@ entity TemperatureProbe mixin TenantScoped {
   property required minTemp: decimal
   property required maxTemp: decimal
   property isActive: boolean = true
-  property lastCalibration: datetime
+  property lastCalibration: datetime?
   timestamps
 
   // A probe that has never been calibrated needs attention before it can be trusted.
@@ -330,7 +330,7 @@ entity CorrectiveAction mixin TenantScoped {
   property assignedTo: string = ""
   indexed property required status: string = "open"
   property dueDate: datetime
-  property resolvedAt: datetime
+  property resolvedAt: datetime?
   timestamps
 
   computed isOpen: boolean = self.status == "open"
@@ -403,7 +403,7 @@ entity QualityCheck mixin TenantScoped {
   property required checkType: string
   property required completedBy: string
   indexed property required status: string = "pending"
-  property completedAt: datetime
+  property completedAt: datetime?
   searchable property notes: string = ""
   timestamps
 
@@ -820,7 +820,7 @@ entity PrepListImport mixin TenantScoped {
   property required source: string
   property required fileName: string
   indexed property required status: string = "pending"
-  property importedAt: datetime
+  property importedAt: datetime?
   property errorMessage: string = ""
   timestamps
 

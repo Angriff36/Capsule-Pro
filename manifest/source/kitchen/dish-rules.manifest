@@ -29,7 +29,7 @@ entity Dish mixin TenantScoped, SoftDeletable {
   // 86'd: temporarily pulled from service (out of stock or unavailable)
   property isEightySix: boolean = false
   property eightySixReason: string = ""
-  property eightySixAt: datetime
+  property eightySixAt: datetime?
   timestamps
 
   computed hasPrice: boolean = self.pricePerPerson > 0

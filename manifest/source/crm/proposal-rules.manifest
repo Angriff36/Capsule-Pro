@@ -20,7 +20,7 @@ entity Proposal mixin TenantScoped, SoftDeletable {
   property leadId: string = ""
   property eventId: string = ""
   searchable property title: string = ""
-  property eventDate: datetime
+  property eventDate: datetime?
   property eventType: string = ""
   property guestCount: int = 0
   property venueName: string = ""
@@ -32,10 +32,10 @@ entity Proposal mixin TenantScoped, SoftDeletable {
   property total: money = 0
   indexed property status: ProposalStatus = draft
   property validUntil: datetime
-  property sentAt: datetime
-  property viewedAt: datetime
-  property acceptedAt: datetime
-  property rejectedAt: datetime
+  property sentAt: datetime?
+  property viewedAt: datetime?
+  property acceptedAt: datetime?
+  property rejectedAt: datetime?
   searchable property notes: string = ""
   property termsAndConditions: string = ""
   property lineItemCount: int = 0

@@ -24,17 +24,17 @@ entity VendorContract mixin TenantScoped, SoftDeletable {
   property minimumOrderQuantity: decimal = 0
   property annualSpendCommitment: money = 0
   // spendToPeriod: the physical column is a DATE (spend_to_period @db.Date) — period boundary, not an amount; nullable, no default
-  property spendToPeriod: datetime
+  property spendToPeriod: datetime?
   property currencyCode: string = "USD"
   property approvedBy: string = ""
-  property approvedAt: datetime
+  property approvedAt: datetime?
   property terminatedBy: string = ""
-  property terminatedAt: datetime
+  property terminatedAt: datetime?
   property terminationReason: string = ""
   property contractUrl: string = ""
   searchable property notes: string = ""
   property complianceScore: int = 100
-  property lastComplianceReview: datetime
+  property lastComplianceReview: datetime?
   property slaBreachCount: int = 0
   property onTimeDeliveryRate: decimal = 0
   property qualityRating: decimal = 0

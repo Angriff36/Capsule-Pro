@@ -116,8 +116,8 @@ entity RecipeVersion mixin TenantScoped {
   property costPerYield: money = 0
   // Status lifecycle: draft -> published. Approved is a separate flag on top of published.
   indexed property status: RecipeVersionStatus = draft
-  property publishedAt: datetime
-  property approvedAt: datetime
+  property publishedAt: datetime?
+  property approvedAt: datetime?
   property approvedBy: string = ""
   timestamps
 
@@ -178,6 +178,10 @@ entity RecipeVersion mixin TenantScoped {
     mutate difficultyLevel = difficulty
     mutate instructions = instructionsText
     mutate notes = notesText
+    // versionNumber is non-null + unique in the store; the bare create is always the
+    // first version (subsequent versions are minted via the version-bump path that
+    // computes newVersionNum). Default to 1 so create never persists null.
+    mutate versionNumber = 1
 
     emit RecipeVersionCreated
   }

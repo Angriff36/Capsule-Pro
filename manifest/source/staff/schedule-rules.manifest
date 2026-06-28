@@ -18,10 +18,10 @@ entity Schedule mixin TenantScoped, SoftDeletable {
   // Bug fix: scheduleDate and publishedAt are lifecycle timestamps — must be nullable
   property scheduleDate: datetime
   indexed property status: ScheduleStatus = draft
-  property publishedAt: datetime
+  property publishedAt: datetime?
   property publishedBy: string = ""
   property approvedBy: string = ""
-  property approvedAt: datetime
+  property approvedAt: datetime?
   searchable property notes: string = ""
   property shiftCount: int = 0
   timestamps
@@ -145,8 +145,8 @@ entity ScheduleShift mixin TenantScoped, SoftDeletable {
   // Swap offer fields
   property swapOfferedTo: string = ""
   property swapStatus: string = "none"
-  property swapOfferedAt: datetime
-  property swapAcceptedAt: datetime
+  property swapOfferedAt: datetime?
+  property swapAcceptedAt: datetime?
   versionProperty version: number
   versionAtProperty versionAt: number
   property inheritedContext: string = ""

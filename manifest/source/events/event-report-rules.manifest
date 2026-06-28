@@ -16,9 +16,9 @@ entity EventReport mixin TenantScoped, SoftDeletable {
   property reviewNotes: string = ""
   property reviewedBy: string = ""
   // Bug fix: lifecycle datetimes — no default
-  property reviewedAt: datetime
-  property completedAt: datetime
-  property rejectedAt: datetime
+  property reviewedAt: datetime?
+  property completedAt: datetime?
+  property rejectedAt: datetime?
   property rejectedBy: string = ""
   property rejectionReason: string = ""
   timestamps

@@ -9,9 +9,9 @@ entity CycleCountSession mixin TenantScoped, SoftDeletable {
   property required sessionName: string
   property countType: string = "ad_hoc"
   property scheduledDate: datetime
-  property startedAt: datetime
-  property completedAt: datetime
-  property finalizedAt: datetime
+  property startedAt: datetime?
+  property completedAt: datetime?
+  property finalizedAt: datetime?
   indexed property status: string = "draft"
   property totalItems: int = 0
   property countedItems: int = 0
@@ -187,7 +187,7 @@ entity CycleCountRecord mixin TenantScoped, SoftDeletable {
   searchable property notes: string = ""
   property isVerified: boolean = false
   property verifiedById: string = ""
-  property verifiedAt: datetime
+  property verifiedAt: datetime?
   property syncStatus: string = "synced"
   property offlineId: string = ""
   timestamps
@@ -290,15 +290,15 @@ entity VarianceReport mixin TenantScoped, SoftDeletable {
   indexed property status: string = "pending"
   property adjustmentType: string = ""
   property adjustmentAmount: money = 0
-  property adjustmentDate: datetime
-  property rejectedAt: datetime
+  property adjustmentDate: datetime?
+  property rejectedAt: datetime?
   property rejectedBy: string = ""
   property rejectionReason: string = ""
   searchable property notes: string = ""
   property rootCause: string = ""
   property resolutionNotes: string = ""
   property resolvedById: string = ""
-  property resolvedAt: datetime
+  property resolvedAt: datetime?
   property generatedAt: datetime
   timestamps
 

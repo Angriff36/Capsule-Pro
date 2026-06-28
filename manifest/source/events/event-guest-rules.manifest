@@ -19,8 +19,8 @@ entity EventGuest mixin TenantScoped, SoftDeletable {
   property tableAssignment: string = ""
   property mealPreference: string = ""
   property rsvpStatus: string = "pending"
-  property rsvpRespondedAt: datetime
-  property checkedInAt: datetime
+  property rsvpRespondedAt: datetime?
+  property checkedInAt: datetime?
   versionProperty version: number
   versionAtProperty versionAt: number
   timestamps

@@ -14,7 +14,7 @@ entity TimeOffRequest mixin TenantScoped, SoftDeletable {
   indexed property status: string = "PENDING"
   property reviewedBy: string = ""
   // Bug fix: reviewedAt is a lifecycle timestamp — must be nullable
-  property reviewedAt: datetime
+  property reviewedAt: datetime?
   property rejectionReason: string = ""
   // Accrual balance at time of request for manager visibility
   property balanceSnapshot: decimal = 0

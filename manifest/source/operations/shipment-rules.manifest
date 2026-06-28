@@ -23,9 +23,9 @@ entity Shipment mixin TenantScoped, SoftDeletable {
   property supplierId: string = ""
   property locationId: string = ""
   property scheduledDate: datetime
-  property shippedDate: datetime
-  property estimatedDeliveryDate: datetime
-  property actualDeliveryDate: datetime
+  property shippedDate: datetime?
+  property estimatedDeliveryDate: datetime?
+  property actualDeliveryDate: datetime?
   property totalItems: int = 0
   property shippingCost: money = 0
   property totalValue: decimal = 0

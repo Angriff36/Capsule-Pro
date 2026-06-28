@@ -186,9 +186,9 @@ entity PayrollRun mixin TenantScoped, SoftDeletable {
   property totalDeductions: money = 0
   property totalNet: money = 0
   readonly property approvedBy: string = ""
-  readonly property approvedAt: datetime
+  readonly property approvedAt: datetime?
   property rejectedBy: string = ""
-  readonly property paidAt: datetime
+  readonly property paidAt: datetime?
   property rejectReason: string = ""
   timestamps
 

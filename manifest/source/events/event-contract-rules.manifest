@@ -14,9 +14,9 @@ entity EventContract mixin TenantScoped, SoftDeletable {
   searchable property notes: string = ""
   // Bug fix: expiresAt is a lifecycle datetime — no default
   property expiresAt: datetime
-  property sentAt: datetime
-  property viewedAt: datetime
-  property signedAt: datetime
+  property sentAt: datetime?
+  property viewedAt: datetime?
+  property signedAt: datetime?
   timestamps
   property canceledBy: string = ""
 
@@ -137,8 +137,8 @@ entity ContractSignature mixin TenantScoped, SoftDeletable {
   property signerEmail: string = ""
   property signerRole: string = ""
   property ipAddress: string = ""
-  property verifiedAt: datetime
-  property invalidatedAt: datetime
+  property verifiedAt: datetime?
+  property invalidatedAt: datetime?
   property invalidationReason: string = ""
   property isValid: boolean = true
   timestamps

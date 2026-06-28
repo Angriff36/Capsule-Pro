@@ -252,7 +252,7 @@ entity TimelineTask mixin TenantScoped, SoftDeletable {
   property assigneeId: string = ""
   searchable property notes: string = ""
   property sortOrder: int = 0
-  property completedAt: datetime
+  property completedAt: datetime?
   timestamps
 
   computed isPending: boolean = self.status == "pending"
@@ -400,7 +400,7 @@ entity EventImport mixin TenantScoped, SoftDeletable {
   property skippedRows: int = 0
   property parseErrors: array<string> = []
   timestamps
-  property parsedAt: datetime
+  property parsedAt: datetime?
 
   computed isPending: boolean = self.parseStatus == "pending"
   computed isProcessing: boolean = self.parseStatus == "parsing"
@@ -512,7 +512,7 @@ entity EventFollowup mixin TenantScoped, SoftDeletable {
   indexed property status: string = "pending"
   property assignedTo: string = ""
   searchable property notes: string = ""
-  property completedAt: datetime
+  property completedAt: datetime?
   timestamps
 
   computed isPending: boolean = self.status == "pending"

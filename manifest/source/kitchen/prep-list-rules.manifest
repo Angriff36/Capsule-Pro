@@ -22,7 +22,7 @@ entity PrepList mixin TenantScoped {
   property totalEstimatedTime: int = 0
   searchable property notes: string = ""
   property generatedAt: datetime
-  property finalizedAt: datetime
+  property finalizedAt: datetime?
   property isActive: boolean = true
 
   timestamps

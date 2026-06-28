@@ -10,7 +10,7 @@ entity EventPlanningDraft mixin TenantScoped, SoftDeletable {
   searchable property clientName: string = ""
   property clientContactId: string = ""
   property eventType: string = ""
-  property eventDate: datetime
+  property eventDate: datetime?
   property eventTime: string = ""
   property guestCount: int = 0
   property guestCountMin: int = 0
@@ -34,7 +34,7 @@ entity EventPlanningDraft mixin TenantScoped, SoftDeletable {
   property overallConfidence: decimal = 0
   property convertedEventId: string = ""
   property proposalId: string = ""
-  property expiresAt: datetime
+  property expiresAt: datetime?
   timestamps
 
   computed isActive: boolean = self.status == "active"

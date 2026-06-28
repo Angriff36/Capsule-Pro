@@ -16,9 +16,9 @@ entity DocumentVersion mixin TenantScoped {
   // createdAt/updatedAt are audit timestamps — = now() is correct
   timestamps
   // Lifecycle datetimes — no default
-  property approvedAt: datetime
-  property publishedAt: datetime
-  property supersededAt: datetime
+  property approvedAt: datetime?
+  property publishedAt: datetime?
+  property supersededAt: datetime?
 
   computed isDraft: boolean = self.status == "draft"
   computed isApproved: boolean = self.status == "approved"

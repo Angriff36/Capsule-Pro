@@ -42,11 +42,11 @@ entity PrepTaskPlanWorkflow mixin TenantScoped {
   property approvedCount: int = 0
   property instantiatedCount: int = 0
   property reviewedBy: string = ""
-  property reviewedAt: datetime
+  property reviewedAt: datetime?
   property approvedBy: string = ""
-  property approvedAt: datetime
-  property startedAt: datetime
-  property completedAt: datetime
+  property approvedAt: datetime?
+  property startedAt: datetime?
+  property completedAt: datetime?
   timestamps
 
   // Computed properties for state checks

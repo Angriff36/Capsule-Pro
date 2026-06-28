@@ -149,7 +149,7 @@ entity TrainingModule mixin TenantScoped, SoftDeletable {
   indexed property status: string = "draft"
   property version: int = 1
   property publishedAt: datetime
-  property archivedAt: datetime
+  property archivedAt: datetime?
   searchable property notes: string = ""
   property createdBy: string = ""
 
@@ -362,9 +362,9 @@ entity TrainingAssignment mixin TenantScoped {
   property dueDate: datetime
   property dueDateReviewNeeded: boolean = false
   property firstShiftAt: datetime
-  property startedAt: datetime
-  property completedAt: datetime
-  property waivedAt: datetime
+  property startedAt: datetime?
+  property completedAt: datetime?
+  property waivedAt: datetime?
   property waiverReason: string = ""
   property waiverApprovedBy: string = ""
   property attemptCount: int = 0
@@ -373,7 +373,7 @@ entity TrainingAssignment mixin TenantScoped {
   property passThresholdPercent: int = 80
   property maxAttempts: int = 3
   property managerReviewRequired: boolean = false
-  property reminderSentAt: datetime
+  property reminderSentAt: datetime?
 
   relationship belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
   relationship hasMany attempts: TrainingAttempt

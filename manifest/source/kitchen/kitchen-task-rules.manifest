@@ -22,7 +22,7 @@ entity KitchenTask mixin TenantScoped {
   property tags: string = ""
   property assignedTo: string = ""
   property dueDate: datetime
-  property completedAt: datetime
+  property completedAt: datetime?
   timestamps
 
   computed isOverdue: boolean = self.dueDate != null and now() > self.dueDate and self.status != "done" cache request

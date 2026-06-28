@@ -25,7 +25,7 @@ entity Station mixin TenantScoped {
   // without full deactivation — tasks cannot be assigned but existing ones aren't dropped.
   property inMaintenance: boolean = false
   property maintenanceReason: string = ""
-  property maintenanceStartAt: datetime
+  property maintenanceStartAt: datetime?
   property currentTaskCount: int = 0
   searchable property notes: string = ""
   timestamps

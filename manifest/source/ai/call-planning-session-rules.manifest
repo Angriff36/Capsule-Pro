@@ -12,7 +12,7 @@ entity CallPlanningSession mixin TenantScoped, SoftDeletable {
   // same pattern as CommandBoard.metadata).
   property metadata: string = "{}"
   property startedAt: datetime
-  property endedAt: datetime
+  property endedAt: datetime?
   timestamps
 
   computed isActive: boolean = self.status == "active"

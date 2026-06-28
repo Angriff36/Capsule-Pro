@@ -40,7 +40,7 @@ entity RevenueRecognitionSchedule mixin TenantScoped {
 
   // Timestamps
   timestamps
-  property completedAt: datetime
+  property completedAt: datetime?
 
   // Computed properties
   computed recognitionPercentage: number = percent(self.recognizedAmount, self.totalAmount) cache request
@@ -219,7 +219,7 @@ entity RevenueRecognitionLine mixin TenantScoped {
 
   // Timing
   property required dueDate: datetime = now()
-  property recognizedAt: datetime
+  property recognizedAt: datetime?
 
   // Milestone info (for milestone-based recognition)
   property milestoneId: string = ""
