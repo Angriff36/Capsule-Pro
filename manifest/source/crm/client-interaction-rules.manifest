@@ -62,7 +62,7 @@ entity ClientInteraction mixin TenantScoped, SoftDeletable {
   }
 
   default policy ClientInteractionDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Client interaction tracking"
-  command create(clientId: string, leadId: string, employeeId: string, interactionType: string, interactionDate: datetime, subject: string, description: string, followUpDate: datetime, correlationId: string) {
+  command create(clientId: string, leadId: string, employeeId: string, interactionType: string, interactionDate: datetime, subject: string, description: string, followUpDate: datetime) {
     guard subject != null and subject != "" "Subject is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard interactionType != null and interactionType != "" "Interaction type is required"
@@ -84,7 +84,6 @@ entity ClientInteraction mixin TenantScoped, SoftDeletable {
     mutate description = description
     mutate followUpDate = followUpDate
     mutate followUpCompleted = false
-    mutate correlationId = correlationId
 
     emit ClientInteractionCreated
   }

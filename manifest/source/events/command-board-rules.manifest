@@ -314,13 +314,13 @@ entity CommandBoardLayout mixin TenantScoped, SoftDeletable {
   relationship belongsTo user: User fields [tenantId, userId] references [tenantId, id]
 
   default policy CommandBoardLayoutDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
-  command create(boardId: string, userId: string, name: string, viewport: string, visibleCards: array<string>, gridSize: number, showGrid: boolean, snapToGrid: boolean) {
+  command create(boardId: string, name: string, viewport: string, visibleCards: array<string>, gridSize: number, showGrid: boolean, snapToGrid: boolean) {
     guard boardId != null and boardId != "" "Board ID is required"
-    guard userId != null and userId != "" "User ID is required"
     guard name != null and name != "" "Layout name is required"
 
     // Auto-create seed persists the full command body in one INSERT; per-field
     // `mutate x = x` echoes were redundant SELECT+UPDATE round-trips.
+    mutate userId = user.id
     emit CommandBoardLayoutCreated
   }
 

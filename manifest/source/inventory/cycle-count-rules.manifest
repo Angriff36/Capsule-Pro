@@ -45,7 +45,7 @@ entity CycleCountSession mixin TenantScoped, SoftDeletable {
   transition status from "cancelled" to ["draft"]
 
   default policy CycleCountSessionDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Cycle count management"
-  command create(locationId: string, sessionId: string, sessionName: string, countType: string, scheduledDate: datetime, notes: string, userId: string) {
+  command create(locationId: string, sessionId: string, sessionName: string, countType: string, scheduledDate: datetime, notes: string) {
     guard sessionName != null and sessionName != "" "Session name is required"
     guard locationId != null and locationId != "" "Location is required"
 
@@ -55,7 +55,7 @@ entity CycleCountSession mixin TenantScoped, SoftDeletable {
     mutate countType = countType
     mutate scheduledDate = scheduledDate
     mutate notes = notes
-    mutate createdById = userId
+    mutate createdById = user.id
     mutate totalItems = 0
     mutate countedItems = 0
     mutate totalVariance = 0
@@ -191,7 +191,7 @@ entity CycleCountRecord mixin TenantScoped, SoftDeletable {
   relationship belongsTo verifiedBy: User fields [tenantId, verifiedById] references [tenantId, id]
 
   default policy CycleCountRecordDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Cycle count management"
-  command create(sessionId: string, itemId: string, itemNumber: string, itemName: string, storageLocationId: string, expectedQuantity: number, countedQuantity: number, userId: string, barcode: string, notes: string) {
+  command create(sessionId: string, itemId: string, itemNumber: string, itemName: string, storageLocationId: string, expectedQuantity: number, countedQuantity: number, barcode: string, notes: string) {
     guard sessionId != null and sessionId != "" "Session ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
     guard countedQuantity != null and countedQuantity >= 0 "Counted quantity cannot be negative"
@@ -206,7 +206,7 @@ entity CycleCountRecord mixin TenantScoped, SoftDeletable {
     mutate variance = countedQuantity - expectedQuantity
     mutate variancePct = percent(countedQuantity - expectedQuantity, expectedQuantity)
     mutate countDate = now()
-    mutate countedById = userId
+    mutate countedById = user.id
     mutate barcode = barcode
     mutate notes = notes
     mutate isVerified = false
@@ -223,7 +223,7 @@ entity CycleCountRecord mixin TenantScoped, SoftDeletable {
     mutate variance = countedQuantity - self.expectedQuantity
     mutate variancePct = percent(countedQuantity - self.expectedQuantity, self.expectedQuantity)
     mutate notes = notes
-    mutate countedById = userId
+    mutate countedById = user.id
     mutate countDate = now()
 
     emit CycleCountRecordUpdated

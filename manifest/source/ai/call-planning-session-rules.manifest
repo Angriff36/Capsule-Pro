@@ -41,11 +41,10 @@ entity CallPlanningSession mixin TenantScoped, SoftDeletable {
   // `create` is the canonical entry point: the runtime auto-creates instances
   // only for commands named `create` (the command body is authoritative for
   // initial state; status seeds from its default — no self-transition mutate).
-  command create(userId: string, sourceType: string, optional transcriptText: string) {
-    guard userId != null and userId != "" "User ID is required"
+  command create(sourceType: string, optional transcriptText: string) {
     guard sourceType in ["manual", "ringcentral", "upload"] "Invalid source type"
 
-    mutate userId = userId
+    mutate userId = user.id
     mutate sourceType = sourceType
     mutate transcriptText = transcriptText != null ? transcriptText : self.transcriptText
     mutate startedAt = now()

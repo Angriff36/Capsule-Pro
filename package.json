@@ -8,7 +8,7 @@
     "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
-    "@angriff36/manifest": "2.16.1",
+    "@angriff36/manifest": "2.19.0",
     "@auto-it/first-time-contributor": "^11.3.6",
     "@babel/parser": "^7.29.7",
     "@biomejs/biome": "2.4.15",
@@ -66,6 +66,7 @@
     "check:staged-write-routes": "node scripts/check-staged-write-routes.mjs",
     "manifest:build": "node manifest/scripts/build.mjs",
     "manifest:check": "node manifest/scripts/check.mjs",
+    "manifest:all": "manifest compile manifest/source --merge -o manifest/ir/kitchen.ir.json && manifest generate --all",
     "manifest:update": "pnpm -r update @angriff36/manifest@latest",
     "manifest:compile": "node manifest/scripts/compile.mjs",
     "manifest:ir:embed": "node manifest/scripts/embed-ir.mjs",
@@ -90,10 +91,8 @@
     "manifest:openapi:check:self-test": "node manifest/scripts/check-openapi-drift.mjs --self-test",
     "manifest:react-query:check": "node manifest/scripts/check-react-query-drift.mjs",
     "manifest:react-query:check:self-test": "node manifest/scripts/check-react-query-drift.mjs --self-test",
-    "manifest:kysely": "node manifest/scripts/generate-kysely.mjs",
     "manifest:materialized-views": "node manifest/scripts/generate-materialized-views.mjs",
     "manifest:llm-context": "node manifest/scripts/generate-llm-context.mjs",
-    "manifest:drizzle": "node manifest/scripts/generate-drizzle.mjs",
     "manifest:analytics": "node manifest/scripts/generate-analytics.mjs",
     "manifest:doctor": "pnpm exec manifest doctor",
     "manifest:routes:ir": "tsx manifest/scripts/generate-route-manifest.ts",

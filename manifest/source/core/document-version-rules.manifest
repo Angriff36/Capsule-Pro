@@ -38,14 +38,14 @@ entity DocumentVersion mixin TenantScoped {
   relationship belongsTo document: Document with documentId
 
   default policy DocumentVersionDefaultAccess execute: user.role in ["staff", "editor", "manager", "admin"] "Document versioning"
-  command create(documentId: string, content: string, changeSummary: string, createdById: string) {
+  command create(documentId: string, content: string, changeSummary: string) {
     guard documentId != null and documentId != "" "Document ID is required"
     guard content != null and content != "" "Content is required"
 
     mutate documentId = documentId
     mutate content = content
     mutate changeSummary = changeSummary
-    mutate createdById = createdById
+    mutate createdById = user.id
     mutate versionNumber = 1
 
     emit DocumentVersionCreated

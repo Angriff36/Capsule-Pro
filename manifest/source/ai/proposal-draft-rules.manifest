@@ -90,14 +90,13 @@ entity ProposalDraft mixin TenantScoped, SoftDeletable {
 
   default policy ProposalDraftDefaultAccess execute: user.role in ["staff", "event_coordinator", "manager", "admin"] "AI call planner proposal drafts"
 
-  command create(draftId: string, userId: string, title: string, clientName: string, optional clientEmail: string, optional clientPhone: string, eventSummary: string, menuSections: string, servicePlan: string, pricingBreakdown: string, optional timeline: string, optional upgradeOptions: string, optional visionSummary: string, optional notes: string, optional nextSteps: string, optional templateId: string) {
+  command create(draftId: string, title: string, clientName: string, optional clientEmail: string, optional clientPhone: string, eventSummary: string, menuSections: string, servicePlan: string, pricingBreakdown: string, optional timeline: string, optional upgradeOptions: string, optional visionSummary: string, optional notes: string, optional nextSteps: string, optional templateId: string) {
     guard draftId != null and draftId != "" "Draft ID is required"
-    guard userId != null and userId != "" "User ID is required"
     guard title != null and title != "" "Proposal title is required"
     guard clientName != null and clientName != "" "Client name is required"
 
     mutate draftId = draftId
-    mutate userId = userId
+    mutate userId = user.id
     mutate title = title
     mutate clientName = clientName
     mutate clientEmail = clientEmail != null ? clientEmail : ""
