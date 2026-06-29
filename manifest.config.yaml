@@ -71,224 +71,3568 @@ projections:
       # Base path prefix prepended to every route entry.
       basePath: /api
   prisma:
-    # Native multi-schema schema generation (manifest >= 2.20.0). Manifest OWNS
-    # packages/database/prisma/schema.prisma; placement lives in entitySchema below.
+    # Native multi-schema schema generation (manifest >= 2.22.0). Manifest OWNS
+    # packages/database/prisma/schema.prisma. Options lifted from
+    # manifest/prisma-options.config.json, PRUNED to the current IR (drifted/stale
+    # entries removed) and with literal @default(...) field attrs dropped (the IR
+    # emits those natively).
     output: packages/database/prisma
     options:
-      output: schema.prisma
-      provider: postgresql
-      relationMode: prisma
-      naming: snake_case
-      # Manifest auto-emits inverse hasMany for one-sided belongsTo/ref (manifest >= 2.21.0),
-      # so hub entities (User, Event, Facility...) don't hand-author dozens of back-relations.
+      output: "schema.prisma"
+      provider: "postgresql"
+      relationMode: "prisma"
+      naming: "snake_case"
       autoBackRelations: true
       generator:
-        provider: prisma-client
+        provider: "prisma-client"
         output: "../generated"
-        moduleFormat: esm
-        generatedFileExtension: ts
-        importFileExtension: ts
+        moduleFormat: "esm"
+        generatedFileExtension: "ts"
+        importFileExtension: "ts"
       multiSchema:
         enabled: true
-        defaultSchema: public
-        schemas: [core, platform, public, tenant, tenant_accounting, tenant_admin, tenant_crm, tenant_events, tenant_facilities, tenant_inventory, tenant_kitchen, tenant_logistics, tenant_staff]
+        defaultSchema: "public"
+        schemas: ["core", "platform", "public", "tenant", "tenant_accounting", "tenant_admin", "tenant_crm", "tenant_events", "tenant_facilities", "tenant_inventory", "tenant_kitchen", "tenant_logistics", "tenant_staff"]
         entitySchema:
-          ActionMilestone: tenant_staff
-          AdminChatMessage: tenant_admin
-          AdminChatParticipant: tenant_admin
-          AdminChatThread: tenant_admin
-          AdminTask: tenant_admin
-          AdminTaskAttachment: tenant_admin
-          AdminTaskComment: tenant_admin
-          AdminTaskDevMeta: tenant_admin
-          AdminTaskFileRef: tenant_admin
-          AiEventSetupSession: public
-          AlertsConfig: tenant_inventory
-          AllergenWarning: tenant_kitchen
-          ApiKey: platform
-          AuditSchedule: tenant_inventory
-          AutomatedFollowup: public
-          BankAccount: tenant_staff
-          BattleBoard: tenant_events
-          BoardAnnotation: tenant_events
-          BoardConfig: tenant_admin
-          BoardProjection: tenant_events
-          Budget: public
-          BudgetAlert: tenant_staff
-          BudgetLineItem: tenant_events
-          BulkCombineRule: tenant_kitchen
-          BulkOrderRule: tenant_inventory
-          CallPlanningSession: tenant_crm
-          CateringOrder: tenant_events
-          ChartOfAccount: tenant_accounting
-          Client: tenant_crm
-          ClientContact: tenant_crm
-          ClientInteraction: tenant_crm
-          ClientPreference: tenant_crm
-          CollectionAction: tenant_accounting
-          CollectionCase: tenant_accounting
-          CollectionPaymentPlan: tenant_accounting
-          CommandBoard: tenant_events
-          CommandBoardCard: tenant_events
-          CommandBoardConnection: tenant_events
-          CommandBoardGroup: tenant_events
-          CommandBoardLayout: tenant_events
-          Container: tenant_kitchen
-          ContractSignature: tenant_events
-          CorrectiveAction: tenant_kitchen
-          CrmScoringRule: tenant_crm
-          CycleCountRecord: tenant_inventory
-          CycleCountSession: tenant_inventory
-          Deal: public
-          DeliveryRoute: tenant_logistics
-          DisciplinaryAction: tenant_staff
-          Dish: tenant_kitchen
-          Document: tenant
-          DocumentVersion: tenant_events
-          Driver: tenant_logistics
-          EmailTemplate: tenant_admin
-          EmailWorkflow: tenant_admin
-          EmployeeAvailability: tenant_staff
-          EmployeeCertification: tenant_staff
-          EmployeeDeduction: tenant_staff
-          EntityVersion: public
-          Equipment: tenant_kitchen
-          Event: tenant_events
-          EventBudget: tenant_events
-          EventContract: tenant_events
-          EventDish: tenant_events
-          EventFollowup: tenant_events
-          EventGuest: tenant_events
-          EventImport: tenant_events
-          EventImportWorkflow: tenant_events
-          EventPlanningDraft: tenant_crm
-          EventProfitability: tenant_events
-          EventReport: tenant_events
-          EventStaff: tenant_events
-          EventSummary: tenant_events
-          EventTimeline: tenant_events
-          EventTimelineItem: tenant_events
-          EventWaitlistEntry: public
-          Facility: tenant_facilities
-          FacilityArea: tenant_facilities
-          FacilityAsset: tenant_facilities
-          FacilitySchedule: public
-          FacilityWorkOrder: public
-          ForecastInput: tenant_inventory
-          Ingredient: tenant_kitchen
-          InteractionAttachment: tenant_crm
-          InventoryAlert: tenant_inventory
-          InventoryForecast: tenant_inventory
-          InventoryItem: tenant_inventory
-          InventoryStock: tenant_inventory
-          InventorySupplier: tenant_inventory
-          InventoryTransaction: tenant_inventory
-          InventoryTransfer: tenant_inventory
-          InventoryTransferItem: tenant_inventory
-          Invoice: tenant_accounting
-          IoTAlert: tenant_kitchen
-          IotAlertRule: tenant_kitchen
-          KitchenTask: tenant_kitchen
-          KitchenTaskClaim: tenant_kitchen
-          KitchenTaskProgress: tenant_kitchen
-          KnowledgeBaseEntry: tenant
-          LaborBudget: tenant_staff
-          Lead: tenant_crm
-          LogisticsDispatch: public
-          LogisticsRoute: tenant_logistics
-          MaintenanceWorkOrder: tenant_facilities
-          Menu: tenant_kitchen
-          MenuDish: tenant_kitchen
-          MethodVideo: tenant_kitchen
-          Note: tenant_events
-          Notification: tenant_admin
-          OnboardingCompletion: tenant_staff
-          OnboardingTask: tenant_staff
-          OpenShift: tenant_staff
-          OverrideAudit: tenant_kitchen
-          Payment: tenant_accounting
-          PaymentMethod: tenant_accounting
-          PaymentRefundAttempt: tenant_accounting
-          PayrollApprovalHistory: tenant_staff
-          PayrollLineItem: tenant_staff
-          PayrollPeriod: tenant_staff
-          PayrollRun: tenant_staff
-          PerformancePrediction: public
-          PerformanceReview: tenant_staff
-          PrepComment: tenant_kitchen
-          PrepList: tenant_kitchen
-          PrepListImport: tenant_kitchen
-          PrepListItem: tenant_kitchen
-          PrepMethod: tenant_kitchen
-          PrepTask: tenant_kitchen
-          PrepTaskPlanWorkflow: tenant_kitchen
-          PreventiveMaintenanceSchedule: tenant_facilities
-          PricingTier: tenant_inventory
-          ProcurementBudget: tenant_inventory
-          ProcurementBudgetAlert: tenant_inventory
-          Proposal: tenant_crm
-          ProposalDraft: tenant_crm
-          ProposalLineItem: tenant_crm
-          ProposalTemplate: tenant_crm
-          PurchaseOrder: tenant_inventory
-          PurchaseOrderItem: tenant_inventory
-          PurchaseRequisition: tenant_inventory
-          PurchaseRequisitionItem: tenant_inventory
-          QACheck: tenant_kitchen
-          QACorrectiveAction: tenant_kitchen
-          QATemperatureLog: tenant_kitchen
-          QualityCheck: tenant_kitchen
-          QualityCheckItem: tenant_kitchen
-          RateLimitConfig: tenant_admin
-          Recipe: tenant_kitchen
-          RecipeIngredient: tenant_kitchen
-          RecipeStep: tenant_kitchen
-          RecipeVersion: tenant_kitchen
-          ReorderSuggestion: tenant_inventory
-          Report: tenant_admin
-          RevenueRecognitionLine: tenant_accounting
-          RevenueRecognitionSchedule: tenant_accounting
-          RolePolicy: tenant_staff
-          RouteStop: tenant_logistics
-          SampleData: public
-          Schedule: tenant_staff
-          ScheduleShift: tenant_staff
-          Shipment: tenant_inventory
-          ShipmentItem: tenant_inventory
-          SmsAutomationRule: tenant_admin
-          StaffMember: tenant_staff
-          StaffPerformance: public
-          Station: tenant_kitchen
-          StorageLocation: tenant_inventory
-          TaskBundle: tenant_kitchen
-          TaskBundleItem: tenant_kitchen
-          TemperatureLog: tenant_kitchen
-          TemperatureProbe: tenant_kitchen
-          TemperatureReading: tenant_kitchen
-          TimeEntry: tenant_staff
-          TimeOffRequest: tenant_staff
-          TimecardApproval: tenant_staff
-          TimecardEditRequest: tenant_staff
-          TimelineTask: tenant_events
-          TipPool: tenant_staff
-          TrainingAssignment: tenant_staff
-          TrainingCompletion: tenant_staff
-          TrainingModule: tenant_staff
-          User: tenant_staff
-          VarianceReport: tenant_inventory
-          Vehicle: tenant_logistics
-          Vendor: public
-          VendorCatalog: tenant_inventory
-          VendorContact: tenant_inventory
-          VendorContract: tenant_inventory
-          VendorRating: tenant_inventory
-          Venue: tenant
-          VersionApproval: public
-          VersionedEntity: public
-          WasteEntry: tenant_kitchen
-          WorkOrder: tenant_kitchen
-          Workflow: tenant_admin
-          WorkforceOptimization: public
+          ActionMilestone: "tenant_staff"
+          AdminChatMessage: "tenant_admin"
+          AdminChatParticipant: "tenant_admin"
+          AdminChatThread: "tenant_admin"
+          AdminTask: "tenant_admin"
+          AdminTaskAttachment: "tenant_admin"
+          AdminTaskComment: "tenant_admin"
+          AdminTaskDevMeta: "tenant_admin"
+          AdminTaskFileRef: "tenant_admin"
+          AiEventSetupSession: "public"
+          AlertsConfig: "tenant_inventory"
+          AllergenWarning: "tenant_kitchen"
+          ApiKey: "platform"
+          AuditSchedule: "tenant_inventory"
+          AutomatedFollowup: "public"
+          BankAccount: "tenant_staff"
+          BattleBoard: "tenant_events"
+          BoardAnnotation: "tenant_events"
+          BoardConfig: "tenant_admin"
+          BoardProjection: "tenant_events"
+          Budget: "public"
+          BudgetAlert: "tenant_staff"
+          BudgetLineItem: "tenant_events"
+          BulkCombineRule: "tenant_kitchen"
+          BulkOrderRule: "tenant_inventory"
+          CallPlanningSession: "tenant_crm"
+          CateringOrder: "tenant_events"
+          ChartOfAccount: "tenant_accounting"
+          Client: "tenant_crm"
+          ClientContact: "tenant_crm"
+          ClientInteraction: "tenant_crm"
+          ClientPreference: "tenant_crm"
+          CollectionAction: "tenant_accounting"
+          CollectionCase: "tenant_accounting"
+          CollectionPaymentPlan: "tenant_accounting"
+          CommandBoard: "tenant_events"
+          CommandBoardCard: "tenant_events"
+          CommandBoardConnection: "tenant_events"
+          CommandBoardGroup: "tenant_events"
+          CommandBoardLayout: "tenant_events"
+          Container: "tenant_kitchen"
+          ContractSignature: "tenant_events"
+          CorrectiveAction: "tenant_kitchen"
+          CrmScoringRule: "tenant_crm"
+          CycleCountRecord: "tenant_inventory"
+          CycleCountSession: "tenant_inventory"
+          Deal: "public"
+          DeliveryRoute: "tenant_logistics"
+          DisciplinaryAction: "tenant_staff"
+          Dish: "tenant_kitchen"
+          Document: "tenant"
+          DocumentVersion: "tenant_events"
+          Driver: "tenant_logistics"
+          EmailTemplate: "tenant_admin"
+          EmailWorkflow: "tenant_admin"
+          EmployeeAvailability: "tenant_staff"
+          EmployeeCertification: "tenant_staff"
+          EmployeeDeduction: "tenant_staff"
+          EntityVersion: "public"
+          Equipment: "tenant_kitchen"
+          Event: "tenant_events"
+          EventBudget: "tenant_events"
+          EventContract: "tenant_events"
+          EventDish: "tenant_events"
+          EventFollowup: "tenant_events"
+          EventGuest: "tenant_events"
+          EventImport: "tenant_events"
+          EventImportWorkflow: "tenant_events"
+          EventPlanningDraft: "tenant_crm"
+          EventProfitability: "tenant_events"
+          EventReport: "tenant_events"
+          EventStaff: "tenant_events"
+          EventSummary: "tenant_events"
+          EventTimeline: "tenant_events"
+          EventTimelineItem: "tenant_events"
+          EventWaitlistEntry: "public"
+          Facility: "tenant_facilities"
+          FacilityArea: "tenant_facilities"
+          FacilityAsset: "tenant_facilities"
+          FacilitySchedule: "public"
+          FacilityWorkOrder: "public"
+          ForecastInput: "tenant_inventory"
+          Ingredient: "tenant_kitchen"
+          InteractionAttachment: "tenant_crm"
+          InventoryAlert: "tenant_inventory"
+          InventoryForecast: "tenant_inventory"
+          InventoryItem: "tenant_inventory"
+          InventoryStock: "tenant_inventory"
+          InventorySupplier: "tenant_inventory"
+          InventoryTransaction: "tenant_inventory"
+          InventoryTransfer: "tenant_inventory"
+          InventoryTransferItem: "tenant_inventory"
+          Invoice: "tenant_accounting"
+          IoTAlert: "tenant_kitchen"
+          IotAlertRule: "tenant_kitchen"
+          KitchenTask: "tenant_kitchen"
+          KitchenTaskClaim: "tenant_kitchen"
+          KitchenTaskProgress: "tenant_kitchen"
+          KnowledgeBaseEntry: "tenant"
+          LaborBudget: "tenant_staff"
+          Lead: "tenant_crm"
+          LogisticsDispatch: "public"
+          LogisticsRoute: "tenant_logistics"
+          MaintenanceWorkOrder: "tenant_facilities"
+          Menu: "tenant_kitchen"
+          MenuDish: "tenant_kitchen"
+          MethodVideo: "tenant_kitchen"
+          Note: "tenant_events"
+          Notification: "tenant_admin"
+          OnboardingCompletion: "tenant_staff"
+          OnboardingTask: "tenant_staff"
+          OpenShift: "tenant_staff"
+          OverrideAudit: "tenant_kitchen"
+          Payment: "tenant_accounting"
+          PaymentMethod: "tenant_accounting"
+          PaymentRefundAttempt: "tenant_accounting"
+          PayrollApprovalHistory: "tenant_staff"
+          PayrollLineItem: "tenant_staff"
+          PayrollPeriod: "tenant_staff"
+          PayrollRun: "tenant_staff"
+          PerformancePrediction: "public"
+          PerformanceReview: "tenant_staff"
+          PrepComment: "tenant_kitchen"
+          PrepList: "tenant_kitchen"
+          PrepListImport: "tenant_kitchen"
+          PrepListItem: "tenant_kitchen"
+          PrepMethod: "tenant_kitchen"
+          PrepTask: "tenant_kitchen"
+          PrepTaskPlanWorkflow: "tenant_kitchen"
+          PreventiveMaintenanceSchedule: "tenant_facilities"
+          PricingTier: "tenant_inventory"
+          ProcurementBudget: "tenant_inventory"
+          ProcurementBudgetAlert: "tenant_inventory"
+          Proposal: "tenant_crm"
+          ProposalDraft: "tenant_crm"
+          ProposalLineItem: "tenant_crm"
+          ProposalTemplate: "tenant_crm"
+          PurchaseOrder: "tenant_inventory"
+          PurchaseOrderItem: "tenant_inventory"
+          PurchaseRequisition: "tenant_inventory"
+          PurchaseRequisitionItem: "tenant_inventory"
+          QACheck: "tenant_kitchen"
+          QACorrectiveAction: "tenant_kitchen"
+          QATemperatureLog: "tenant_kitchen"
+          QualityCheck: "tenant_kitchen"
+          QualityCheckItem: "tenant_kitchen"
+          RateLimitConfig: "tenant_admin"
+          Recipe: "tenant_kitchen"
+          RecipeIngredient: "tenant_kitchen"
+          RecipeStep: "tenant_kitchen"
+          RecipeVersion: "tenant_kitchen"
+          ReorderSuggestion: "tenant_inventory"
+          Report: "tenant_admin"
+          RevenueRecognitionLine: "tenant_accounting"
+          RevenueRecognitionSchedule: "tenant_accounting"
+          RolePolicy: "tenant_staff"
+          RouteStop: "tenant_logistics"
+          SampleData: "public"
+          Schedule: "tenant_staff"
+          ScheduleShift: "tenant_staff"
+          Shipment: "tenant_inventory"
+          ShipmentItem: "tenant_inventory"
+          SmsAutomationRule: "tenant_admin"
+          StaffMember: "tenant_staff"
+          StaffPerformance: "public"
+          Station: "tenant_kitchen"
+          StorageLocation: "tenant_inventory"
+          TaskBundle: "tenant_kitchen"
+          TaskBundleItem: "tenant_kitchen"
+          TemperatureLog: "tenant_kitchen"
+          TemperatureProbe: "tenant_kitchen"
+          TemperatureReading: "tenant_kitchen"
+          TimecardApproval: "tenant_staff"
+          TimecardEditRequest: "tenant_staff"
+          TimeEntry: "tenant_staff"
+          TimelineTask: "tenant_events"
+          TimeOffRequest: "tenant_staff"
+          TipPool: "tenant_staff"
+          TrainingAssignment: "tenant_staff"
+          TrainingCompletion: "tenant_staff"
+          TrainingModule: "tenant_staff"
+          User: "tenant_staff"
+          VarianceReport: "tenant_inventory"
+          Vehicle: "tenant_logistics"
+          Vendor: "public"
+          VendorCatalog: "tenant_inventory"
+          VendorContact: "tenant_inventory"
+          VendorContract: "tenant_inventory"
+          VendorRating: "tenant_inventory"
+          Venue: "tenant"
+          VersionApproval: "public"
+          VersionedEntity: "public"
+          WasteEntry: "tenant_kitchen"
+          Workflow: "tenant_admin"
+          WorkforceOptimization: "public"
+          WorkOrder: "tenant_kitchen"
+      precision:
+        AdminTask:
+          estimatedHours:
+            precision: 6
+            scale: 2
+        AiEventSetupSession:
+          confidence:
+            precision: 12
+            scale: 2
+        Budget:
+          totalAmount:
+            precision: 12
+            scale: 2
+          allocatedAmount:
+            precision: 12
+            scale: 2
+          spentAmount:
+            precision: 12
+            scale: 2
+        BudgetAlert:
+          utilization:
+            precision: 5
+            scale: 2
+        BudgetLineItem:
+          budgetedAmount:
+            precision: 12
+            scale: 2
+          actualAmount:
+            precision: 12
+            scale: 2
+          varianceAmount:
+            precision: 12
+            scale: 2
+        BulkOrderRule:
+          minimumQuantity:
+            precision: 12
+            scale: 3
+          thresholdQuantity:
+            precision: 12
+            scale: 3
+          discountPercent:
+            precision: 5
+            scale: 2
+        CateringOrder:
+          totalAmount:
+            precision: 12
+            scale: 2
+        Container:
+          capacityVolumeMl:
+            precision: 10
+            scale: 2
+          capacityWeightG:
+            precision: 10
+            scale: 2
+        CycleCountRecord:
+          expectedQuantity:
+            precision: 12
+            scale: 3
+          countedQuantity:
+            precision: 12
+            scale: 3
+          variance:
+            precision: 12
+            scale: 3
+          variancePct:
+            precision: 5
+            scale: 2
+        CycleCountSession:
+          totalVariance:
+            precision: 12
+            scale: 3
+          variancePercentage:
+            precision: 5
+            scale: 2
+        Deal:
+          value:
+            precision: 12
+            scale: 2
+          probability:
+            precision: 12
+            scale: 2
+        DeliveryRoute:
+          totalDistance:
+            precision: 10
+            scale: 2
+        Dish:
+          pricePerPerson:
+            precision: 10
+            scale: 2
+          costPerPerson:
+            precision: 10
+            scale: 2
+        EmployeeDeduction:
+          amount:
+            precision: 10
+            scale: 2
+          percentage:
+            precision: 5
+            scale: 2
+          maxAnnualAmount:
+            precision: 10
+            scale: 2
+        Event:
+          budget:
+            precision: 12
+            scale: 2
+          ticketPrice:
+            precision: 10
+            scale: 2
+        EventBudget:
+          totalBudgetAmount:
+            precision: 12
+            scale: 2
+          totalActualAmount:
+            precision: 12
+            scale: 2
+          varianceAmount:
+            precision: 12
+            scale: 2
+        EventPlanningDraft:
+          budgetMin:
+            precision: 12
+            scale: 2
+          budgetMax:
+            precision: 12
+            scale: 2
+          overallConfidence:
+            precision: 3
+            scale: 2
+        EventProfitability:
+          budgetedRevenue:
+            precision: 12
+            scale: 2
+          budgetedFoodCost:
+            precision: 12
+            scale: 2
+          budgetedLaborCost:
+            precision: 12
+            scale: 2
+          budgetedOverhead:
+            precision: 12
+            scale: 2
+          budgetedTotalCost:
+            precision: 12
+            scale: 2
+          budgetedGrossMargin:
+            precision: 12
+            scale: 2
+          actualRevenue:
+            precision: 12
+            scale: 2
+          actualFoodCost:
+            precision: 12
+            scale: 2
+          actualLaborCost:
+            precision: 12
+            scale: 2
+          actualOverhead:
+            precision: 12
+            scale: 2
+          actualTotalCost:
+            precision: 12
+            scale: 2
+          actualGrossMargin:
+            precision: 12
+            scale: 2
+          revenueVariance:
+            precision: 12
+            scale: 2
+          foodCostVariance:
+            precision: 12
+            scale: 2
+          laborCostVariance:
+            precision: 12
+            scale: 2
+          totalCostVariance:
+            precision: 12
+            scale: 2
+          marginVariancePct:
+            precision: 5
+            scale: 2
+        FacilityAsset:
+          purchaseCost:
+            precision: 12
+            scale: 2
+          currentValue:
+            precision: 12
+            scale: 2
+        FacilityWorkOrder:
+          estimatedCost:
+            precision: 12
+            scale: 2
+          actualCost:
+            precision: 12
+            scale: 2
+        Ingredient:
+          densityGPerMl:
+            precision: 10
+            scale: 4
+        InventoryForecast:
+          confidence:
+            precision: 3
+            scale: 2
+        InventoryItem:
+          unitCost:
+            precision: 10
+            scale: 2
+          quantityOnHand:
+            precision: 12
+            scale: 3
+          parLevel:
+            precision: 12
+            scale: 3
+          reorder_level:
+            precision: 12
+            scale: 3
+        InventoryTransaction:
+          quantity:
+            precision: 12
+            scale: 3
+        InventoryTransferItem:
+          quantity:
+            precision: 12
+            scale: 3
+        IoTAlert:
+          temperature:
+            precision: 6
+            scale: 2
+          value:
+            precision: 6
+            scale: 2
+        KitchenTaskProgress:
+          progressPct:
+            precision: 5
+            scale: 2
+        LaborBudget:
+          budgetTarget:
+            precision: 10
+            scale: 2
+          actualSpend:
+            precision: 10
+            scale: 2
+        Lead:
+          estimatedValue:
+            precision: 12
+            scale: 2
+        LogisticsRoute:
+          totalDistance:
+            precision: 10
+            scale: 2
+        MaintenanceWorkOrder:
+          totalCost:
+            precision: 10
+            scale: 2
+          estimatedCost:
+            precision: 10
+            scale: 2
+        Menu:
+          basePrice:
+            precision: 10
+            scale: 2
+          pricePerPerson:
+            precision: 10
+            scale: 2
+        MenuDish:
+          priceOverride:
+            precision: 10
+            scale: 2
+        PayrollLineItem:
+          hoursRegular:
+            precision: 6
+            scale: 2
+          hoursOvertime:
+            precision: 6
+            scale: 2
+          rateRegular:
+            precision: 10
+            scale: 2
+          rateOvertime:
+            precision: 10
+            scale: 2
+          grossPay:
+            precision: 10
+            scale: 2
+          netPay:
+            precision: 10
+            scale: 2
+          totalDeductions:
+            precision: 10
+            scale: 2
+          hoursWorked:
+            precision: 6
+            scale: 2
+        PayrollRun:
+          totalGross:
+            precision: 12
+            scale: 2
+          totalDeductions:
+            precision: 12
+            scale: 2
+          totalNet:
+            precision: 12
+            scale: 2
+        PerformancePrediction:
+          predictionScore:
+            precision: 12
+            scale: 2
+        PerformanceReview:
+          rating:
+            precision: 3
+            scale: 2
+        PrepList:
+          batchMultiplier:
+            precision: 10
+            scale: 2
+        PrepListItem:
+          baseQuantity:
+            precision: 10
+            scale: 2
+          scaledQuantity:
+            precision: 10
+            scale: 2
+        PrepTask:
+          quantityTotal:
+            precision: 10
+            scale: 2
+          quantityCompleted:
+            precision: 10
+            scale: 2
+        PreventiveMaintenanceSchedule:
+          estimatedHours:
+            precision: 4
+            scale: 1
+          estimatedCost:
+            precision: 10
+            scale: 2
+        PricingTier:
+          minQuantity:
+            precision: 12
+            scale: 3
+          maxQuantity:
+            precision: 12
+            scale: 3
+          unitCost:
+            precision: 12
+            scale: 2
+          discountPercent:
+            precision: 5
+            scale: 2
+        ProcurementBudget:
+          budgetAmount:
+            precision: 12
+            scale: 2
+          spentAmount:
+            precision: 12
+            scale: 2
+        ProcurementBudgetAlert:
+          utilizationPct:
+            precision: 5
+            scale: 2
+        Proposal:
+          subtotal:
+            precision: 12
+            scale: 2
+          taxRate:
+            precision: 5
+            scale: 4
+          taxAmount:
+            precision: 12
+            scale: 2
+          discountAmount:
+            precision: 12
+            scale: 2
+          total:
+            precision: 12
+            scale: 2
+        ProposalDraft:
+          depositAmount:
+            precision: 12
+            scale: 2
+        ProposalLineItem:
+          quantity:
+            precision: 10
+            scale: 2
+          unitPrice:
+            precision: 12
+            scale: 2
+          total:
+            precision: 12
+            scale: 2
+          totalPrice:
+            precision: 12
+            scale: 2
+        ProposalTemplate:
+          defaultTaxRate:
+            precision: 5
+            scale: 4
+        PurchaseOrder:
+          subtotal:
+            precision: 12
+            scale: 2
+          taxAmount:
+            precision: 12
+            scale: 2
+          shippingAmount:
+            precision: 12
+            scale: 2
+          total:
+            precision: 12
+            scale: 2
+        PurchaseOrderItem:
+          quantityOrdered:
+            precision: 10
+            scale: 2
+          quantityReceived:
+            precision: 10
+            scale: 2
+          unitCost:
+            precision: 10
+            scale: 4
+          totalCost:
+            precision: 12
+            scale: 2
+          discrepancyAmount:
+            precision: 10
+            scale: 2
+        PurchaseRequisition:
+          subtotal:
+            precision: 12
+            scale: 2
+          estimatedTax:
+            precision: 12
+            scale: 2
+          estimatedShipping:
+            precision: 12
+            scale: 2
+          estimatedTotal:
+            precision: 12
+            scale: 2
+        PurchaseRequisitionItem:
+          quantityRequested:
+            precision: 10
+            scale: 2
+          estimatedUnitCost:
+            precision: 10
+            scale: 4
+          estimatedTotalCost:
+            precision: 12
+            scale: 2
+        QATemperatureLog:
+          temperature:
+            precision: 6
+            scale: 2
+        RecipeIngredient:
+          quantity:
+            precision: 10
+            scale: 4
+          wasteFactor:
+            precision: 5
+            scale: 4
+        RecipeStep:
+          temperatureValue:
+            precision: 5
+            scale: 1
+        RecipeVersion:
+          yieldQuantity:
+            precision: 10
+            scale: 2
+          costPerYield:
+            precision: 12
+            scale: 2
+          totalCost:
+            precision: 12
+            scale: 2
+        Shipment:
+          shippingCost:
+            precision: 12
+            scale: 2
+          totalValue:
+            precision: 12
+            scale: 2
+        ShipmentItem:
+          quantityShipped:
+            precision: 12
+            scale: 3
+          quantityReceived:
+            precision: 12
+            scale: 3
+          quantityDamaged:
+            precision: 12
+            scale: 3
+          unitCost:
+            precision: 10
+            scale: 4
+          totalCost:
+            precision: 12
+            scale: 2
+        StaffPerformance:
+          rating:
+            precision: 12
+            scale: 2
+        TemperatureLog:
+          temperature:
+            precision: 6
+            scale: 2
+        TemperatureProbe:
+          minTemp:
+            precision: 6
+            scale: 2
+          maxTemp:
+            precision: 6
+            scale: 2
+        TemperatureReading:
+          temperature:
+            precision: 6
+            scale: 2
+        TimeOffRequest:
+          balanceSnapshot:
+            precision: 6
+            scale: 2
+        TipPool:
+          totalTips:
+            precision: 10
+            scale: 2
+          distributedAmount:
+            precision: 10
+            scale: 2
+        TrainingCompletion:
+          score:
+            precision: 5
+            scale: 2
+        User:
+          hourlyRate:
+            precision: 10
+            scale: 2
+          salaryAnnual:
+            precision: 12
+            scale: 2
+        VarianceReport:
+          expectedQuantity:
+            precision: 12
+            scale: 3
+          countedQuantity:
+            precision: 12
+            scale: 3
+          variance:
+            precision: 12
+            scale: 3
+          variancePct:
+            precision: 5
+            scale: 2
+          accuracyScore:
+            precision: 5
+            scale: 2
+          adjustmentAmount:
+            precision: 12
+            scale: 3
+        Vehicle:
+          capacityWeight:
+            precision: 10
+            scale: 2
+          capacityVolume:
+            precision: 10
+            scale: 2
+          mileage:
+            precision: 10
+            scale: 2
+        Vendor:
+          rating:
+            precision: 12
+            scale: 2
+        VendorCatalog:
+          baseUnitCost:
+            precision: 12
+            scale: 2
+          minimumOrderQuantity:
+            precision: 12
+            scale: 3
+          orderMultiple:
+            precision: 12
+            scale: 3
+        VendorContract:
+          minimumOrderQuantity:
+            precision: 12
+            scale: 2
+          annualSpendCommitment:
+            precision: 12
+            scale: 2
+          onTimeDeliveryRate:
+            precision: 5
+            scale: 2
+          qualityRating:
+            precision: 2
+            scale: 1
+        WasteEntry:
+          quantity:
+            precision: 10
+            scale: 3
+          unitCost:
+            precision: 10
+            scale: 2
+          totalCost:
+            precision: 10
+            scale: 2
+      indexes:
+        AdminChatParticipant:
+          - ["tenantId", "threadId", "userId"]
+        AdminChatThread:
+          - ["tenantId", "slug"]
+          - ["tenantId", "directKey"]
+        AdminTaskDevMeta:
+          - ["tenantId", "taskId"]
+        AllergenWarning:
+          - ["eventId"]
+          - ["dishId"]
+          - ["warningType"]
+          - ["isAcknowledged"]
+        ApiKey:
+          - ["tenantId", "keyPrefix"]
+          - ["tenantId", "createdByUserId"]
+          - ["tenantId", "expiresAt"]
+          - ["tenantId", "name"]
+        AuditSchedule:
+          - ["tenantId", "isActive"]
+          - ["tenantId", "frequency"]
+        BoardAnnotation:
+          - ["boardId"]
+        BoardProjection:
+          - ["boardId"]
+          - ["entityType", "entityId"]
+          - ["boardId", "entityType", "entityId"]
+        BulkOrderRule:
+          - ["tenantId", "catalogEntryId"]
+          - ["tenantId", "ruleType"]
+        ChartOfAccount:
+          - ["tenantId"]
+          - ["tenantId", "accountNumber"]
+          - ["id"]
+        Client:
+          - ["id"]
+        ClientContact:
+          - ["clientId"]
+        ClientInteraction:
+          - ["clientId"]
+          - ["leadId"]
+        CollectionAction:
+          - ["tenantId"]
+          - ["tenantId", "collectionCaseId"]
+          - ["id"]
+        CollectionCase:
+          - ["tenantId"]
+          - ["tenantId", "invoiceId"]
+          - ["tenantId", "clientId"]
+          - ["tenantId", "status"]
+          - ["tenantId", "daysOverdue"]
+          - ["id"]
+        CollectionPaymentPlan:
+          - ["tenantId"]
+          - ["tenantId", "collectionCaseId"]
+          - ["id"]
+        CommandBoard:
+          - ["eventId"]
+        CommandBoardCard:
+          - ["boardId"]
+          - ["zIndex"]
+          - ["groupId"]
+          - ["entityId", "entityType"]
+        CommandBoardConnection:
+          - ["boardId"]
+          - ["fromCardId"]
+          - ["toCardId"]
+          - ["boardId", "fromCardId", "toCardId", "relationshipType"]
+        CommandBoardGroup:
+          - ["boardId"]
+        CommandBoardLayout:
+          - ["boardId"]
+          - ["userId"]
+          - ["boardId", "userId", "name"]
+        ContractSignature:
+          - ["tenantId", "contractId"]
+          - ["tenantId", "signedAt"]
+          - ["tenantId", "signerEmail"]
+        CorrectiveAction:
+          - ["tenantId", "status"]
+          - ["tenantId", "actionNumber"]
+        DeliveryRoute:
+          - ["tenantId", "status"]
+          - ["tenantId", "scheduledDate"]
+          - ["tenantId", "routeNumber"]
+        Dish:
+          - ["recipeId"]
+        Document:
+          - ["tenantId", "id"]
+        DocumentVersion:
+          - ["tenantId", "createdAt"]
+        Driver:
+          - ["tenantId", "status"]
+          - ["tenantId", "vehicleId"]
+        EmailTemplate:
+          - ["tenantId", "templateType"]
+          - ["tenantId", "isActive"]
+          - ["tenantId", "isDefault"]
+        EmailWorkflow:
+          - ["tenantId", "triggerType"]
+          - ["tenantId", "isActive"]
+        Equipment:
+          - ["tenantId", "locationId"]
+          - ["tenantId", "status"]
+          - ["tenantId", "nextMaintenanceDate"]
+          - ["tenantId", "id"]
+        Event:
+          - ["clientId"]
+          - ["locationId"]
+          - ["tenantId", "id"]
+        EventContract:
+          - ["tenantId", "status"]
+          - ["tenantId", "eventId"]
+          - ["tenantId", "clientId"]
+          - ["tenantId", "expiresAt"]
+          - ["tenantId", "contractNumber"]
+          - ["tenantId", "documentType"]
+        EventFollowup:
+          - ["tenantId", "eventId"]
+          - ["tenantId", "status"]
+        EventGuest:
+          - ["eventId"]
+          - ["eventId", "rsvpStatus"]
+        EventProfitability:
+          - ["eventId"]
+          - ["tenantId", "eventId"]
+          - ["calculatedAt"]
+        EventSummary:
+          - ["eventId"]
+          - ["tenantId", "eventId"]
+          - ["generatedAt"]
+        EventTimeline:
+          - ["eventId"]
+        EventTimelineItem:
+          - ["eventId"]
+        Facility:
+          - ["tenantId", "status"]
+          - ["tenantId", "facilityType"]
+          - ["tenantId", "code"]
+        FacilityArea:
+          - ["tenantId", "venueId"]
+          - ["tenantId", "areaType"]
+          - ["tenantId", "code"]
+        FacilityAsset:
+          - ["tenantId", "status"]
+          - ["tenantId", "areaId"]
+          - ["tenantId", "assetType"]
+        InventoryItem:
+          - ["supplierId"]
+          - ["tenantId", "id"]
+        InventoryStock:
+          - ["tenantId", "itemId", "storageLocationId"]
+        InventorySupplier:
+          - ["tenantId", "id"]
+          - ["tenantId", "supplierNumber"]
+        InventoryTransfer:
+          - ["tenantId", "status"]
+          - ["tenantId", "fromLocationId"]
+          - ["tenantId", "toLocationId"]
+        InventoryTransferItem:
+          - ["tenantId", "transferId"]
+          - ["tenantId", "itemId"]
+        Invoice:
+          - ["tenantId"]
+          - ["tenantId", "status"]
+          - ["tenantId", "clientId"]
+          - ["tenantId", "eventId"]
+          - ["tenantId", "dueDate"]
+          - ["id"]
+        IoTAlert:
+          - ["tenantId", "status"]
+          - ["tenantId", "alertType"]
+          - ["tenantId", "probeId"]
+          - ["tenantId", "triggeredAt"]
+          - ["tenantId", "alertNumber"]
+        IotAlertRule:
+          - ["tenantId", "equipmentId"]
+          - ["tenantId", "isActive"]
+          - ["tenantId", "id"]
+        KitchenTaskClaim:
+          - ["taskId"]
+          - ["employeeId"]
+        KitchenTaskProgress:
+          - ["employeeId"]
+          - ["taskId"]
+        KnowledgeBaseEntry:
+          - ["tenantId", "status"]
+          - ["tenantId", "category"]
+        Lead:
+          - ["id"]
+        LogisticsRoute:
+          - ["tenantId", "status"]
+          - ["tenantId", "scheduledDate"]
+        MaintenanceWorkOrder:
+          - ["tenantId", "status"]
+          - ["tenantId", "priority"]
+          - ["tenantId", "areaId"]
+          - ["tenantId", "scheduledDate"]
+          - ["tenantId", "workOrderNumber"]
+        MenuDish:
+          - ["menuId"]
+          - ["dishId"]
+          - ["tenantId", "menuId", "dishId"]
+        OnboardingCompletion:
+          - ["tenantId", "employeeId", "taskId"]
+        OverrideAudit:
+          - ["tenantId", "entityType", "entityId"]
+          - ["tenantId", "overriddenBy"]
+          - ["tenantId", "createdAt"]
+          - ["tenantId", "id"]
+        Payment:
+          - ["tenantId"]
+          - ["tenantId", "status"]
+          - ["tenantId", "invoiceId"]
+          - ["tenantId", "eventId"]
+          - ["tenantId", "clientId"]
+          - ["id"]
+        PaymentMethod:
+          - ["tenantId"]
+          - ["tenantId", "clientId"]
+          - ["tenantId", "isDefault"]
+          - ["id"]
+        PaymentRefundAttempt:
+          - ["tenantId", "paymentId"]
+          - ["tenantId", "createdAt"]
+          - ["id"]
+        PayrollApprovalHistory:
+          - ["tenantId", "payrollRunId"]
+          - ["tenantId", "performedBy"]
+        PrepComment:
+          - ["taskId"]
+          - ["employeeId"]
+        PrepList:
+          - ["eventId"]
+          - ["status"]
+          - ["generatedAt"]
+        PrepListItem:
+          - ["prepListId"]
+          - ["stationId"]
+          - ["ingredientId"]
+          - ["isCompleted"]
+        PrepTask:
+          - ["eventId"]
+          - ["locationId"]
+          - ["dishId"]
+        PrepTaskPlanWorkflow:
+          - ["tenantId", "eventId"]
+          - ["tenantId", "status"]
+          - ["tenantId", "createdAt"]
+          - ["tenantId", "idempotencyKey"]
+        PreventiveMaintenanceSchedule:
+          - ["tenantId", "nextDueAt"]
+          - ["tenantId", "status"]
+          - ["tenantId", "scheduleNumber"]
+        PricingTier:
+          - ["tenantId", "catalogEntryId"]
+          - ["tenantId", "catalogEntryId", "minQuantity"]
+        Proposal:
+          - ["clientId"]
+          - ["leadId"]
+          - ["eventId"]
+          - ["tenantId", "id"]
+        ProposalLineItem:
+          - ["tenantId", "proposalId"]
+        ProposalTemplate:
+          - ["tenantId", "eventType"]
+          - ["tenantId", "isActive"]
+          - ["tenantId", "isDefault"]
+          - ["tenantId", "id"]
+        PurchaseOrder:
+          - ["tenantId", "id"]
+        PurchaseRequisition:
+          - ["tenantId", "id"]
+        QACheck:
+          - ["tenantId", "status"]
+          - ["tenantId", "checkType"]
+        QACorrectiveAction:
+          - ["tenantId", "status"]
+          - ["tenantId", "severity"]
+        QATemperatureLog:
+          - ["tenantId", "logType"]
+          - ["tenantId", "loggedAt"]
+        QualityCheck:
+          - ["tenantId", "status"]
+          - ["tenantId", "checkType"]
+          - ["tenantId", "checkNumber"]
+        QualityCheckItem:
+          - ["tenantId", "checkId"]
+        RateLimitConfig:
+          - ["tenantId", "isActive"]
+          - ["tenantId", "priority"]
+          - ["tenantId", "name"]
+        RecipeIngredient:
+          - ["recipeVersionId"]
+          - ["ingredientId"]
+        RecipeStep:
+          - ["tenantId", "recipeVersionId", "stepNumber"]
+        RecipeVersion:
+          - ["recipeId"]
+          - ["tenantId", "recipeId", "versionNumber"]
+        RevenueRecognitionLine:
+          - ["tenantId"]
+          - ["tenantId", "scheduleId"]
+          - ["tenantId", "scheduleId", "sequence"]
+          - ["id"]
+        RevenueRecognitionSchedule:
+          - ["tenantId"]
+          - ["tenantId", "invoiceId"]
+          - ["tenantId", "eventId"]
+          - ["tenantId", "clientId"]
+          - ["tenantId", "status"]
+          - ["id"]
+        RolePolicy:
+          - ["tenantId", "isActive"]
+          - ["tenantId", "roleId"]
+        RouteStop:
+          - ["routeId", "status"]
+          - ["routeId", "stopNumber"]
+        Shipment:
+          - ["tenantId", "status"]
+          - ["tenantId", "eventId"]
+          - ["tenantId", "supplierId"]
+          - ["locationId"]
+          - ["trackingNumber"]
+          - ["tenantId", "id"]
+        ShipmentItem:
+          - ["tenantId", "shipmentId"]
+          - ["tenantId", "itemId"]
+          - ["tenantId", "lotNumber"]
+          - ["tenantId", "id"]
+        SmsAutomationRule:
+          - ["tenantId", "isActive"]
+          - ["tenantId", "triggerType"]
+          - ["tenantId", "priority"]
+        Station:
+          - ["tenantId", "locationId"]
+          - ["tenantId", "id"]
+        TaskBundle:
+          - ["eventId"]
+        TemperatureLog:
+          - ["tenantId", "logType"]
+          - ["tenantId", "loggedAt"]
+          - ["tenantId", "logNumber"]
+        TemperatureProbe:
+          - ["tenantId", "locationId"]
+          - ["tenantId", "probeId"]
+        TemperatureReading:
+          - ["tenantId", "probeId"]
+          - ["tenantId", "loggedAt"]
+        TimecardEditRequest:
+          - ["tenantId", "timeEntryId"]
+        TimelineTask:
+          - ["eventId"]
+          - ["assigneeId"]
+          - ["status"]
+          - ["startTime"]
+        TrainingCompletion:
+          - ["tenantId", "employeeId", "moduleId"]
+        User:
+          - ["roleId"]
+          - ["tenantId", "id"]
+          - ["tenantId", "authUserId"]
+        Vehicle:
+          - ["tenantId", "status"]
+        VendorCatalog:
+          - ["tenantId", "supplierId"]
+          - ["tenantId", "itemNumber"]
+          - ["tenantId", "category"]
+          - ["tenantId", "supplierId", "itemNumber"]
+        VendorContract:
+          - ["tenantId", "id"]
+        Venue:
+          - ["tenantId", "city"]
+          - ["tenantId", "venueType"]
+          - ["tenantId", "isActive"]
+          - ["tenantId", "id"]
+        WasteEntry:
+          - ["inventoryItemId"]
+          - ["reasonId"]
+          - ["locationId"]
+          - ["eventId"]
+          - ["loggedBy"]
+          - ["tenantId", "loggedAt"]
+        WorkOrder:
+          - ["tenantId", "equipmentId"]
+          - ["tenantId", "status"]
+          - ["tenantId", "priority"]
+          - ["tenantId", "scheduledDate"]
+          - ["tenantId", "id"]
+      foreignKeys: {}
+      dbAttributes:
+        ActionMilestone:
+          id: "Uuid"
+        AdminChatMessage:
+          tenantId: "Uuid"
+          id: "Uuid"
+          threadId: "Uuid"
+          authorId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        AdminChatParticipant:
+          tenantId: "Uuid"
+          id: "Uuid"
+          threadId: "Uuid"
+          userId: "Uuid"
+          archivedAt: "Timestamptz(6)"
+          clearedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        AdminChatThread:
+          tenantId: "Uuid"
+          id: "Uuid"
+          createdBy: "Uuid"
+          lastMessageAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        AdminTask:
+          tenantId: "Uuid"
+          id: "Uuid"
+          estimatedHours: "Decimal(6, 2)"
+          dueDate: "Date"
+          assignedTo: "Uuid"
+          createdBy: "Uuid"
+          sourceId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        AdminTaskAttachment:
+          tenantId: "Uuid"
+          id: "Uuid"
+          taskId: "Uuid"
+          uploadedBy: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        AdminTaskComment:
+          tenantId: "Uuid"
+          id: "Uuid"
+          taskId: "Uuid"
+          authorId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        AdminTaskDevMeta:
+          tenantId: "Uuid"
+          id: "Uuid"
+          taskId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        AdminTaskFileRef:
+          tenantId: "Uuid"
+          id: "Uuid"
+          taskId: "Uuid"
+          refId: "Uuid"
+          linkedBy: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        AiEventSetupSession:
+          confidence: "Decimal(12, 2)"
+        AlertsConfig:
+          tenantId: "Uuid"
+          id: "Uuid"
+          createdAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        AllergenWarning:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          dishId: "Uuid"
+          acknowledgedBy: "Uuid"
+          acknowledgedAt: "Timestamptz(6)"
+          resolvedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          escalatedAt: "Timestamptz(6)"
+        ApiKey:
+          tenantId: "Uuid"
+          id: "Uuid"
+          lastUsedAt: "Timestamptz(6)"
+          expiresAt: "Timestamptz(6)"
+          revokedAt: "Timestamptz(6)"
+          createdByUserId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        AuditSchedule:
+          tenantId: "Uuid"
+          id: "Uuid"
+          createdBy: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          nextRunAt: "Timestamptz(6)"
+          lastRunAt: "Timestamptz(6)"
+        BankAccount:
+          tenantId: "Uuid"
+          id: "Uuid"
+          employeeId: "Uuid"
+          verifiedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          verificationFailedAt: "Timestamptz(6)"
+        BattleBoard:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          eventDate: "Timestamptz(6)"
+        BoardAnnotation:
+          tenantId: "Uuid"
+          id: "Uuid"
+          boardId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        BoardConfig:
+          tenantId: "Uuid"
+          id: "Uuid"
+          createdBy: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        BoardProjection:
+          tenantId: "Uuid"
+          id: "Uuid"
+          boardId: "Uuid"
+          entityId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        Budget:
+          totalAmount: "Decimal(12, 2)"
+          allocatedAmount: "Decimal(12, 2)"
+          spentAmount: "Decimal(12, 2)"
+        BudgetAlert:
+          tenantId: "Uuid"
+          id: "Uuid"
+          budgetId: "Uuid"
+          utilization: "Decimal(5, 2)"
+          acknowledgedBy: "Uuid"
+          acknowledgedAt: "Timestamptz(6)"
+          resolvedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        BudgetLineItem:
+          tenantId: "Uuid"
+          id: "Uuid"
+          budgetId: "Uuid"
+          budgetedAmount: "Decimal(12, 2)"
+          actualAmount: "Decimal(12, 2)"
+          varianceAmount: "Decimal(12, 2)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        BulkCombineRule:
+          id: "Uuid"
+        BulkOrderRule:
+          tenantId: "Uuid"
+          id: "Uuid"
+          catalogEntryId: "Uuid"
+          minimumQuantity: "Decimal(12, 3)"
+          thresholdQuantity: "Decimal(12, 3)"
+          discountPercent: "Decimal(5, 2)"
+          effectiveFrom: "Timestamptz(6)"
+          effectiveTo: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        CallPlanningSession:
+          tenantId: "Uuid"
+          id: "Uuid"
+          transcriptText: "Text"
+          startedAt: "Timestamptz(6)"
+          endedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        CateringOrder:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          totalAmount: "Decimal(12, 2)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        ChartOfAccount:
+          tenantId: "Uuid"
+          id: "Uuid"
+          parentId: "Uuid"
+          description: "Text"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        Client:
+          tenantId: "Uuid"
+          id: "Uuid"
+          countryCode: "Char(2)"
+          defaultPaymentTerms: "SmallInt"
+          assignedTo: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        ClientContact:
+          tenantId: "Uuid"
+          id: "Uuid"
+          clientId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        ClientInteraction:
+          tenantId: "Uuid"
+          id: "Uuid"
+          clientId: "Uuid"
+          leadId: "Uuid"
+          employeeId: "Uuid"
+          interactionDate: "Timestamptz(6)"
+          followUpDate: "Date"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          escalatedAt: "Timestamptz(6)"
+        ClientPreference:
+          tenantId: "Uuid"
+          id: "Uuid"
+          clientId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        CollectionAction:
+          tenantId: "Uuid"
+          id: "Uuid"
+          collectionCaseId: "Uuid"
+          description: "Text"
+          outcome: "Text"
+          createdAt: "Timestamptz(6)"
+          nextActionDate: "Timestamptz(6)"
+          promiseAmount: "Money"
+          promiseDate: "Timestamptz(6)"
+          scheduledFor: "Timestamptz(6)"
+          completedAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        CollectionCase:
+          tenantId: "Uuid"
+          id: "Uuid"
+          invoiceId: "Uuid"
+          eventId: "Uuid"
+          clientId: "Uuid"
+          originalAmount: "Money"
+          outstandingAmount: "Money"
+          collectedAmount: "Money"
+          notes: "Text"
+          assignedTo: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          assignedAt: "Timestamptz(6)"
+          paymentPlanId: "Uuid"
+          nextPaymentDue: "Timestamptz(6)"
+          disputeReason: "Text"
+          disputeResolvedAt: "Timestamptz(6)"
+          lastActivityAt: "Timestamptz(6)"
+          resolvedAt: "Timestamptz(6)"
+          closedAt: "Timestamptz(6)"
+        CollectionPaymentPlan:
+          tenantId: "Uuid"
+          id: "Uuid"
+          collectionCaseId: "Uuid"
+          totalAmount: "Money"
+          startDate: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          installmentAmount: "Money"
+          completedAt: "Timestamptz(6)"
+          defaultedAt: "Timestamptz(6)"
+        CommandBoard:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        CommandBoardCard:
+          tenantId: "Uuid"
+          id: "Uuid"
+          boardId: "Uuid"
+          groupId: "Uuid"
+          entityId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        CommandBoardConnection:
+          tenantId: "Uuid"
+          id: "Uuid"
+          boardId: "Uuid"
+          fromCardId: "Uuid"
+          toCardId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        CommandBoardGroup:
+          tenantId: "Uuid"
+          id: "Uuid"
+          boardId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        CommandBoardLayout:
+          tenantId: "Uuid"
+          id: "Uuid"
+          boardId: "Uuid"
+          userId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        Container:
+          tenantId: "Uuid"
+          id: "Uuid"
+          locationId: "Uuid"
+          capacityVolumeMl: "Decimal(10, 2)"
+          capacityWeightG: "Decimal(10, 2)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        ContractSignature:
+          tenantId: "Uuid"
+          id: "Uuid"
+          contractId: "Uuid"
+          signedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          verifiedAt: "Timestamptz(6)"
+          invalidatedAt: "Timestamptz(6)"
+        CorrectiveAction:
+          tenantId: "Uuid"
+          id: "Uuid"
+          description: "Text"
+          assignedTo: "Uuid"
+          dueDate: "Timestamptz(6)"
+          resolvedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        CrmScoringRule:
+          tenantId: "Uuid"
+          id: "Uuid"
+          ruleName: "VarChar(255)"
+          field: "VarChar(100)"
+          condition: "VarChar(50)"
+          value: "VarChar(255)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        CycleCountRecord:
+          tenantId: "Uuid"
+          id: "Uuid"
+          sessionId: "Uuid"
+          itemId: "Uuid"
+          storageLocationId: "Uuid"
+          expectedQuantity: "Decimal(12, 3)"
+          countedQuantity: "Decimal(12, 3)"
+          variance: "Decimal(12, 3)"
+          variancePct: "Decimal(5, 2)"
+          countDate: "Timestamptz(6)"
+          countedById: "Uuid"
+          verifiedById: "Uuid"
+          verifiedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        CycleCountSession:
+          tenantId: "Uuid"
+          id: "Uuid"
+          locationId: "Uuid"
+          scheduledDate: "Timestamptz(6)"
+          startedAt: "Timestamptz(6)"
+          completedAt: "Timestamptz(6)"
+          finalizedAt: "Timestamptz(6)"
+          totalVariance: "Decimal(12, 3)"
+          variancePercentage: "Decimal(5, 2)"
+          createdById: "Uuid"
+          approvedById: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        Deal:
+          value: "Decimal(12, 2)"
+          probability: "Decimal(12, 2)"
+        DeliveryRoute:
+          tenantId: "Uuid"
+          id: "Uuid"
+          scheduledDate: "Date"
+          totalDistance: "Decimal(10, 2)"
+          driverId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        DisciplinaryAction:
+          id: "Uuid"
+        Dish:
+          tenantId: "Uuid"
+          id: "Uuid"
+          recipeId: "Uuid"
+          defaultContainerId: "Uuid"
+          minPrepLeadDays: "SmallInt"
+          maxPrepLeadDays: "SmallInt"
+          pricePerPerson: "Decimal(10, 2)"
+          costPerPerson: "Decimal(10, 2)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          seasonStartMonth: "SmallInt"
+          seasonEndMonth: "SmallInt"
+          eightySixAt: "Timestamptz(6)"
+        Document:
+          id: "Uuid"
+        DocumentVersion:
+          tenantId: "Uuid"
+          id: "Uuid"
+          documentId: "Uuid"
+          content: "Text"
+          changeSummary: "Text"
+          createdById: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          supersededBy: "Uuid"
+          approvedAt: "Timestamptz(6)"
+          publishedAt: "Timestamptz(6)"
+          supersededAt: "Timestamptz(6)"
+        Driver:
+          tenantId: "Uuid"
+          id: "Uuid"
+          licenseExpiry: "Date"
+          vehicleId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        EmailTemplate:
+          tenantId: "Uuid"
+          id: "Uuid"
+          body: "Text"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        EmailWorkflow:
+          tenantId: "Uuid"
+          id: "Uuid"
+          emailTemplateId: "Uuid"
+          emailTemplateTenantId: "Uuid"
+          lastTriggeredAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        EmployeeAvailability:
+          tenantId: "Uuid"
+          id: "Uuid"
+          employeeId: "Uuid"
+          dayOfWeek: "SmallInt"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          suspendedAt: "Timestamptz(6)"
+          reinstatedAt: "Timestamptz(6)"
+        EmployeeCertification:
+          tenantId: "Uuid"
+          id: "Uuid"
+          employeeId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        EmployeeDeduction:
+          tenantId: "Uuid"
+          id: "Uuid"
+          employeeId: "Uuid"
+          amount: "Decimal(10, 2)"
+          percentage: "Decimal(5, 2)"
+          maxAnnualAmount: "Decimal(10, 2)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        Equipment:
+          tenantId: "Uuid"
+          id: "Uuid"
+          locationId: "Uuid"
+          purchaseDate: "Date"
+          warrantyExpiry: "Date"
+          lastMaintenanceDate: "Date"
+          nextMaintenanceDate: "Date"
+          notes: "Text"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        Event:
+          tenantId: "Uuid"
+          id: "Uuid"
+          clientId: "Uuid"
+          locationId: "Uuid"
+          venueId: "Uuid"
+          venueEntityId: "Uuid"
+          eventDate: "Date"
+          budget: "Decimal(12, 2)"
+          ticketPrice: "Decimal(10, 2)"
+          assignedTo: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        EventBudget:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          totalBudgetAmount: "Decimal(12, 2)"
+          totalActualAmount: "Decimal(12, 2)"
+          varianceAmount: "Decimal(12, 2)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        EventContract:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          clientId: "Uuid"
+          expiresAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          sentAt: "Timestamptz(6)"
+          viewedAt: "Timestamptz(6)"
+          signedAt: "Timestamptz(6)"
+          canceledBy: "Uuid"
+        EventDish:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          dishId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        EventFollowup:
+          id: "Uuid"
+        EventGuest:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          rsvpRespondedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          checkedInAt: "Timestamptz(6)"
+        EventImport:
+          tenantId: "Uuid"
+          id: "Uuid"
+          parsedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        EventImportWorkflow:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        EventPlanningDraft:
+          tenantId: "Uuid"
+          id: "Uuid"
+          sessionId: "Uuid"
+          clientContactId: "Uuid"
+          eventDate: "Date"
+          venueId: "Uuid"
+          budgetMin: "Decimal(12, 2)"
+          budgetMax: "Decimal(12, 2)"
+          aiSummary: "Text"
+          overallConfidence: "Decimal(3, 2)"
+          convertedEventId: "Uuid"
+          proposalId: "Uuid"
+          expiresAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        EventProfitability:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          budgetedRevenue: "Decimal(12, 2)"
+          budgetedFoodCost: "Decimal(12, 2)"
+          budgetedLaborCost: "Decimal(12, 2)"
+          budgetedOverhead: "Decimal(12, 2)"
+          budgetedTotalCost: "Decimal(12, 2)"
+          budgetedGrossMargin: "Decimal(12, 2)"
+          actualRevenue: "Decimal(12, 2)"
+          actualFoodCost: "Decimal(12, 2)"
+          actualLaborCost: "Decimal(12, 2)"
+          actualOverhead: "Decimal(12, 2)"
+          actualTotalCost: "Decimal(12, 2)"
+          actualGrossMargin: "Decimal(12, 2)"
+          revenueVariance: "Decimal(12, 2)"
+          foodCostVariance: "Decimal(12, 2)"
+          laborCostVariance: "Decimal(12, 2)"
+          totalCostVariance: "Decimal(12, 2)"
+          marginVariancePct: "Decimal(5, 2)"
+          calculatedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        EventReport:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          reviewedBy: "Uuid"
+          reviewedAt: "Timestamptz(6)"
+          completedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          rejectedAt: "Timestamptz(6)"
+          rejectedBy: "Uuid"
+        EventStaff:
+          shiftStart: "Timestamptz(6)"
+          shiftEnd: "Timestamptz(6)"
+        EventSummary:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          generatedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        EventTimeline:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          timelineTime: "Time(6)"
+          sortOrder: "SmallInt"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        EventTimelineItem:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          completedAt: "Timestamptz(6)"
+          sortOrder: "SmallInt"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        Facility:
+          tenantId: "Uuid"
+          id: "Uuid"
+          notes: "Text"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        FacilityArea:
+          tenantId: "Uuid"
+          id: "Uuid"
+          venueId: "Uuid"
+          description: "Text"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        FacilityAsset:
+          tenantId: "Uuid"
+          id: "Uuid"
+          purchaseDate: "Date"
+          purchaseCost: "Decimal(12, 2)"
+          warrantyExpiry: "Date"
+          areaId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          facilityId: "Uuid"
+          currentValue: "Decimal(12, 2)"
+          lastMaintenanceAt: "Timestamptz(6)"
+          nextMaintenanceAt: "Timestamptz(6)"
+        FacilityWorkOrder:
+          estimatedCost: "Decimal(12, 2)"
+          actualCost: "Decimal(12, 2)"
+        ForecastInput:
+          tenantId: "Uuid"
+          id: "Uuid"
+        Ingredient:
+          tenantId: "Uuid"
+          id: "Uuid"
+          defaultUnitId: "SmallInt"
+          densityGPerMl: "Decimal(10, 4)"
+          shelfLifeDays: "SmallInt"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          inventoryItemId: "Uuid"
+          currentLotReceivedAt: "Timestamptz(6)"
+          currentLotExpiresAt: "Timestamptz(6)"
+          recalledAt: "Timestamptz(6)"
+        InteractionAttachment:
+          tenantId: "Uuid"
+          id: "Uuid"
+          interactionId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        InventoryAlert:
+          tenantId: "Uuid"
+          id: "Uuid"
+          itemId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          acknowledgedAt: "Timestamptz(6)"
+        InventoryForecast:
+          tenantId: "Uuid"
+          id: "Uuid"
+          confidence: "Decimal(3, 2)"
+        InventoryItem:
+          tenantId: "Uuid"
+          id: "Uuid"
+          unitCost: "Decimal(10, 2)"
+          quantityOnHand: "Decimal(12, 3)"
+          parLevel: "Decimal(12, 3)"
+          reorder_level: "Decimal(12, 3)"
+          supplierId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        InventoryStock:
+          tenantId: "Uuid"
+          id: "Uuid"
+          itemId: "Uuid"
+          storageLocationId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        InventorySupplier:
+          tenantId: "Uuid"
+          id: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          approvedAt: "Timestamptz(6)"
+          suspendedAt: "Timestamptz(6)"
+          blacklistedAt: "Timestamptz(6)"
+        InventoryTransaction:
+          tenantId: "Uuid"
+          id: "Uuid"
+          itemId: "Uuid"
+          quantity: "Decimal(12, 3)"
+          createdAt: "Timestamptz(6)"
+          referenceId: "Uuid"
+          reversedAt: "Timestamptz(6)"
+          reverseOfTransactionId: "Uuid"
+        InventoryTransfer:
+          tenantId: "Uuid"
+          id: "Uuid"
+          fromLocationId: "Uuid"
+          toLocationId: "Uuid"
+          requestedBy: "Uuid"
+          approvedBy: "Uuid"
+          shippedBy: "Uuid"
+          receivedBy: "Uuid"
+          shippedAt: "Timestamptz(6)"
+          receivedAt: "Timestamptz(6)"
+          notes: "Text"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        InventoryTransferItem:
+          tenantId: "Uuid"
+          id: "Uuid"
+          transferId: "Uuid"
+          itemId: "Uuid"
+          quantity: "Decimal(12, 3)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        Invoice:
+          tenantId: "Uuid"
+          id: "Uuid"
+          clientId: "Uuid"
+          eventId: "Uuid"
+          subtotal: "Money"
+          taxAmount: "Money"
+          discountAmount: "Money"
+          total: "Money"
+          amountPaid: "Money"
+          amountDue: "Money"
+          dueDate: "Timestamptz(6)"
+          issuedAt: "Timestamptz(6)"
+          depositRequired: "Money"
+          depositPaid: "Money"
+          notes: "Text"
+          internalNotes: "Text"
+          sentAt: "Timestamptz(6)"
+          viewedAt: "Timestamptz(6)"
+          paidAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          overdueSince: "Timestamptz(6)"
+          lastReminderAt: "Timestamptz(6)"
+        IoTAlert:
+          tenantId: "Uuid"
+          id: "Uuid"
+          probeId: "Uuid"
+          message: "Text"
+          temperature: "Decimal(6, 2)"
+          triggeredAt: "Timestamptz(6)"
+          acknowledgedBy: "Uuid"
+          resolvedBy: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          ruleId: "Uuid"
+          value: "Decimal(6, 2)"
+        IotAlertRule:
+          tenantId: "Uuid"
+          id: "Uuid"
+          equipmentId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        KitchenTask:
+          tenantId: "Uuid"
+          id: "Uuid"
+          priority: "SmallInt"
+          complexity: "SmallInt"
+          dueDate: "Timestamptz(6)"
+          completedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        KitchenTaskClaim:
+          tenantId: "Uuid"
+          id: "Uuid"
+          taskId: "Uuid"
+          employeeId: "Uuid"
+          claimedAt: "Timestamptz(6)"
+          releasedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        KitchenTaskProgress:
+          tenantId: "Uuid"
+          id: "Uuid"
+          taskId: "Uuid"
+          employeeId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          progressPct: "Decimal(5, 2)"
+          recordedAt: "Timestamptz(6)"
+        KnowledgeBaseEntry:
+          tenantId: "Uuid"
+          id: "Uuid"
+          content: "Text"
+          authorId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          publishedAt: "Timestamptz(6)"
+        LaborBudget:
+          tenantId: "Uuid"
+          id: "Uuid"
+          locationId: "Uuid"
+          budgetTarget: "Decimal(10, 2)"
+          actualSpend: "Decimal(10, 2)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          approvedBy: "Uuid"
+          approvedAt: "Timestamptz(6)"
+        Lead:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventDate: "Date"
+          estimatedValue: "Decimal(12, 2)"
+          assignedTo: "Uuid"
+          convertedToClientId: "Uuid"
+          convertedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        LogisticsRoute:
+          tenantId: "Uuid"
+          id: "Uuid"
+          scheduledDate: "Date"
+          endTime: "Timestamptz(6)"
+          totalDistance: "Decimal(10, 2)"
+          driverId: "Uuid"
+          vehicleId: "Uuid"
+          actualStartTime: "Timestamptz(6)"
+          actualEndTime: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        MaintenanceWorkOrder:
+          tenantId: "Uuid"
+          id: "Uuid"
+          areaId: "Uuid"
+          equipmentId: "Uuid"
+          description: "Text"
+          reportedBy: "Uuid"
+          assignedTo: "Uuid"
+          scheduledDate: "Timestamptz(6)"
+          completedAt: "Timestamptz(6)"
+          totalCost: "Decimal(10, 2)"
+          notes: "Text"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          estimatedCost: "Decimal(10, 2)"
+        Menu:
+          tenantId: "Uuid"
+          id: "Uuid"
+          basePrice: "Decimal(10, 2)"
+          pricePerPerson: "Decimal(10, 2)"
+          minGuests: "SmallInt"
+          maxGuests: "SmallInt"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          publishedAt: "Timestamptz(6)"
+          archivedAt: "Timestamptz(6)"
+        MenuDish:
+          tenantId: "Uuid"
+          id: "Uuid"
+          menuId: "Uuid"
+          dishId: "Uuid"
+          sortOrder: "SmallInt"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          priceOverride: "Decimal(10, 2)"
+        MethodVideo:
+          id: "Uuid"
+        Note:
+          tenantId: "Uuid"
+          id: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          entityId: "Uuid"
+        Notification:
+          tenantId: "Uuid"
+          id: "Uuid"
+          readAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        OnboardingCompletion:
+          id: "Uuid"
+        OnboardingTask:
+          id: "Uuid"
+        OpenShift:
+          id: "Uuid"
+        OverrideAudit:
+          tenantId: "Uuid"
+          id: "Uuid"
+          entityId: "Uuid"
+          guardExpression: "Text"
+          overriddenBy: "Uuid"
+          overrideReason: "Text"
+          authorizedBy: "Uuid"
+          authorizedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+        Payment:
+          tenantId: "Uuid"
+          id: "Uuid"
+          amount: "Money"
+          invoiceId: "Uuid"
+          eventId: "Uuid"
+          clientId: "Uuid"
+          processedAt: "Timestamptz(6)"
+          completedAt: "Timestamptz(6)"
+          refundedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          chargebackAt: "Timestamptz(6)"
+          reviewedAt: "Timestamptz(6)"
+        PaymentMethod:
+          tenantId: "Uuid"
+          id: "Uuid"
+          clientId: "Uuid"
+          cardLastFour: "Char(4)"
+          status: "Text"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          verifiedAt: "Timestamptz(6)"
+          expiresAt: "Timestamptz(6)"
+        PaymentRefundAttempt:
+          tenantId: "Uuid"
+          id: "Uuid"
+          paymentId: "Uuid"
+          requestedAmount: "Money"
+          effectiveAmount: "Money"
+          createdAt: "Timestamptz(6)"
+        PayrollApprovalHistory:
+          tenantId: "Uuid"
+          id: "Uuid"
+          payrollRunId: "Uuid"
+          performedBy: "Uuid"
+          performedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+        PayrollLineItem:
+          tenantId: "Uuid"
+          id: "Uuid"
+          payrollRunId: "Uuid"
+          employeeId: "Uuid"
+          hoursRegular: "Decimal(6, 2)"
+          hoursOvertime: "Decimal(6, 2)"
+          rateRegular: "Decimal(10, 2)"
+          rateOvertime: "Decimal(10, 2)"
+          grossPay: "Decimal(10, 2)"
+          netPay: "Decimal(10, 2)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          totalDeductions: "Decimal(10, 2)"
+          hoursWorked: "Decimal(6, 2)"
+        PayrollPeriod:
+          tenantId: "Uuid"
+          id: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        PayrollRun:
+          tenantId: "Uuid"
+          id: "Uuid"
+          payrollPeriodId: "Uuid"
+          totalGross: "Decimal(12, 2)"
+          totalDeductions: "Decimal(12, 2)"
+          totalNet: "Decimal(12, 2)"
+          approvedBy: "Uuid"
+          approvedAt: "Timestamptz(6)"
+          paidAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          rejectedBy: "Uuid"
+        PerformancePrediction:
+          predictionScore: "Decimal(12, 2)"
+        PerformanceReview:
+          id: "Uuid"
+          rating: "Decimal(3, 2)"
+        PrepComment:
+          tenantId: "Uuid"
+          id: "Uuid"
+          taskId: "Uuid"
+          employeeId: "Uuid"
+          resolvedAt: "Timestamptz(6)"
+          resolvedBy: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        PrepList:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          batchMultiplier: "Decimal(10, 2)"
+          generatedAt: "Timestamptz(6)"
+          finalizedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        PrepListImport:
+          id: "Uuid"
+        PrepListItem:
+          tenantId: "Uuid"
+          id: "Uuid"
+          prepListId: "Uuid"
+          ingredientId: "Uuid"
+          baseQuantity: "Decimal(10, 2)"
+          scaledQuantity: "Decimal(10, 2)"
+          dishId: "Uuid"
+          recipeVersionId: "Uuid"
+          completedAt: "Timestamptz(6)"
+          completedBy: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        PrepMethod:
+          tenantId: "Uuid"
+          id: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        PrepTask:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          dishId: "Uuid"
+          locationId: "Uuid"
+          quantityTotal: "Decimal(10, 2)"
+          quantityUnitId: "SmallInt"
+          quantityCompleted: "Decimal(10, 2)"
+          startByDate: "Date"
+          dueByDate: "Date"
+          dueByTime: "Time(6)"
+          priority: "SmallInt"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          prepListId: "Uuid"
+        PrepTaskPlanWorkflow:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          generationOptions: "Text"
+          generatedTasks: "Text"
+          reviewedTasks: "Text"
+          approvedTaskIds: "Text"
+          rejectedTaskIds: "Text"
+          instantiatedTaskIds: "Text"
+          scheduledWindows: "Text"
+          constraintOutcomes: "Text"
+          errors: "Text"
+          warnings: "Text"
+          reviewedAt: "Timestamptz(6)"
+          approvedAt: "Timestamptz(6)"
+          startedAt: "Timestamptz(6)"
+          completedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        PreventiveMaintenanceSchedule:
+          tenantId: "Uuid"
+          id: "Uuid"
+          areaId: "Uuid"
+          equipmentId: "Uuid"
+          description: "Text"
+          lastCompletedAt: "Timestamptz(6)"
+          nextDueAt: "Timestamptz(6)"
+          assignedTo: "Uuid"
+          estimatedHours: "Decimal(4, 1)"
+          estimatedCost: "Decimal(10, 2)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        PricingTier:
+          tenantId: "Uuid"
+          id: "Uuid"
+          catalogEntryId: "Uuid"
+          minQuantity: "Decimal(12, 3)"
+          maxQuantity: "Decimal(12, 3)"
+          unitCost: "Decimal(12, 2)"
+          discountPercent: "Decimal(5, 2)"
+          effectiveFrom: "Timestamptz(6)"
+          effectiveTo: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        ProcurementBudget:
+          tenantId: "Uuid"
+          id: "Uuid"
+          periodStart: "Date"
+          periodEnd: "Date"
+          budgetAmount: "Decimal(12, 2)"
+          spentAmount: "Decimal(12, 2)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        ProcurementBudgetAlert:
+          tenantId: "Uuid"
+          id: "Uuid"
+          budgetId: "Uuid"
+          utilizationPct: "Decimal(5, 2)"
+          acknowledgedBy: "Uuid"
+          acknowledgedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          triggeredAt: "Timestamptz(6)"
+        Proposal:
+          tenantId: "Uuid"
+          id: "Uuid"
+          clientId: "Uuid"
+          leadId: "Uuid"
+          eventId: "Uuid"
+          eventDate: "Date"
+          subtotal: "Decimal(12, 2)"
+          taxRate: "Decimal(5, 4)"
+          taxAmount: "Decimal(12, 2)"
+          discountAmount: "Decimal(12, 2)"
+          total: "Decimal(12, 2)"
+          publicToken: "Uuid"
+          validUntil: "Date"
+          sentAt: "Timestamptz(6)"
+          viewedAt: "Timestamptz(6)"
+          acceptedAt: "Timestamptz(6)"
+          rejectedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        ProposalDraft:
+          tenantId: "Uuid"
+          id: "Uuid"
+          draftId: "Uuid"
+          visionSummary: "Text"
+          templateId: "Uuid"
+          magicTokenExpiresAt: "Timestamptz(6)"
+          sentAt: "Timestamptz(6)"
+          viewedAt: "Timestamptz(6)"
+          respondedAt: "Timestamptz(6)"
+          depositAmount: "Decimal(12, 2)"
+          htmlContent: "Text"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        ProposalLineItem:
+          tenantId: "Uuid"
+          id: "Uuid"
+          proposalId: "Uuid"
+          quantity: "Decimal(10, 2)"
+          unitPrice: "Decimal(12, 2)"
+          total: "Decimal(12, 2)"
+          totalPrice: "Decimal(12, 2)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        ProposalTemplate:
+          tenantId: "Uuid"
+          id: "Uuid"
+          defaultTerms: "Text"
+          defaultTaxRate: "Decimal(5, 4)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        PurchaseOrder:
+          tenantId: "Uuid"
+          id: "Uuid"
+          vendorId: "Uuid"
+          locationId: "Uuid"
+          orderDate: "Date"
+          expectedDeliveryDate: "Date"
+          actualDeliveryDate: "Date"
+          subtotal: "Decimal(12, 2)"
+          taxAmount: "Decimal(12, 2)"
+          shippingAmount: "Decimal(12, 2)"
+          total: "Decimal(12, 2)"
+          submittedBy: "Uuid"
+          submittedAt: "Timestamptz(6)"
+          receivedBy: "Uuid"
+          receivedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        PurchaseOrderItem:
+          tenantId: "Uuid"
+          id: "Uuid"
+          purchaseOrderId: "Uuid"
+          itemId: "Uuid"
+          quantityOrdered: "Decimal(10, 2)"
+          quantityReceived: "Decimal(10, 2)"
+          unitId: "SmallInt"
+          unitCost: "Decimal(10, 4)"
+          totalCost: "Decimal(12, 2)"
+          discrepancyAmount: "Decimal(10, 2)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        PurchaseRequisition:
+          tenantId: "Uuid"
+          id: "Uuid"
+          requestedBy: "Uuid"
+          requestDate: "Date"
+          requiredBy: "Date"
+          locationId: "Uuid"
+          subtotal: "Decimal(12, 2)"
+          estimatedTax: "Decimal(12, 2)"
+          estimatedShipping: "Decimal(12, 2)"
+          estimatedTotal: "Decimal(12, 2)"
+          approvedBy: "Uuid"
+          approvedAt: "Timestamptz(6)"
+          managerApprovalBy: "Uuid"
+          managerApprovalAt: "Timestamptz(6)"
+          financeApprovalBy: "Uuid"
+          financeApprovalAt: "Timestamptz(6)"
+          convertedToPoId: "Uuid"
+          convertedAt: "Timestamptz(6)"
+          submittedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        PurchaseRequisitionItem:
+          tenantId: "Uuid"
+          id: "Uuid"
+          requisitionId: "Uuid"
+          itemId: "Uuid"
+          quantityRequested: "Decimal(10, 2)"
+          unitId: "SmallInt"
+          estimatedUnitCost: "Decimal(10, 4)"
+          estimatedTotalCost: "Decimal(12, 2)"
+          suggestedVendorId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        QACheck:
+          tenantId: "Uuid"
+          id: "Uuid"
+          notes: "Text"
+          completedAt: "Timestamptz(6)"
+          reinspectedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        QACorrectiveAction:
+          tenantId: "Uuid"
+          id: "Uuid"
+          relatedCheckId: "Uuid"
+          description: "Text"
+          assignedTo: "Uuid"
+          dueDate: "Timestamptz(6)"
+          resolvedAt: "Timestamptz(6)"
+          resolutionNotes: "Text"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          escalatedTo: "Uuid"
+          escalationReason: "Text"
+          escalatedAt: "Timestamptz(6)"
+        QATemperatureLog:
+          tenantId: "Uuid"
+          id: "Uuid"
+          equipmentId: "Uuid"
+          temperature: "Decimal(6, 2)"
+          loggedAt: "Timestamptz(6)"
+          loggedBy: "Uuid"
+          notes: "Text"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        QualityCheck:
+          tenantId: "Uuid"
+          id: "Uuid"
+          completedAt: "Timestamptz(6)"
+          completedBy: "Uuid"
+          notes: "Text"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        QualityCheckItem:
+          tenantId: "Uuid"
+          id: "Uuid"
+          checkId: "Uuid"
+          criterion: "Text"
+          notes: "Text"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        RateLimitConfig:
+          tenantId: "Uuid"
+          id: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        Recipe:
+          tenantId: "Uuid"
+          id: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        RecipeIngredient:
+          tenantId: "Uuid"
+          id: "Uuid"
+          recipeVersionId: "Uuid"
+          ingredientId: "Uuid"
+          quantity: "Decimal(10, 4)"
+          unitId: "SmallInt"
+          sortOrder: "SmallInt"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          wasteFactor: "Decimal(5, 4)"
+        RecipeStep:
+          tenantId: "Uuid"
+          id: "Uuid"
+          recipeVersionId: "Uuid"
+          stepNumber: "SmallInt"
+          temperatureValue: "Decimal(5, 1)"
+          temperatureUnit: "Char(1)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        RecipeVersion:
+          tenantId: "Uuid"
+          id: "Uuid"
+          recipeId: "Uuid"
+          yieldQuantity: "Decimal(10, 2)"
+          yieldUnitId: "SmallInt"
+          difficultyLevel: "SmallInt"
+          instructions: "Text"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          costPerYield: "Decimal(12, 2)"
+          totalCost: "Decimal(12, 2)"
+          publishedAt: "Timestamptz(6)"
+          approvedAt: "Timestamptz(6)"
+        ReorderSuggestion:
+          tenantId: "Uuid"
+          id: "Uuid"
+        Report:
+          tenantId: "Uuid"
+          id: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        RevenueRecognitionLine:
+          tenantId: "Uuid"
+          id: "Uuid"
+          scheduleId: "Uuid"
+          amount: "Money"
+          recognizedAmount: "Money"
+          status: "Text"
+          dueDate: "Timestamptz(6)"
+          recognizedAt: "Timestamptz(6)"
+          milestoneId: "Uuid"
+          milestoneName: "Text"
+          milestoneDescription: "Text"
+          description: "Text"
+          notes: "Text"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        RevenueRecognitionSchedule:
+          tenantId: "Uuid"
+          id: "Uuid"
+          invoiceId: "Uuid"
+          eventId: "Uuid"
+          contractId: "Uuid"
+          clientId: "Uuid"
+          totalAmount: "Money"
+          recognizedAmount: "Money"
+          remainingAmount: "Money"
+          method: "Text"
+          status: "Text"
+          startDate: "Timestamptz(6)"
+          endDate: "Timestamptz(6)"
+          serviceStartDate: "Timestamptz(6)"
+          serviceEndDate: "Timestamptz(6)"
+          description: "Text"
+          notes: "Text"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          completedAt: "Timestamptz(6)"
+        RolePolicy:
+          tenantId: "Uuid"
+          id: "Uuid"
+          roleId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        RouteStop:
+          tenantId: "Uuid"
+          id: "Uuid"
+          routeId: "Uuid"
+          plannedArrival: "Timestamptz(6)"
+          actualArrival: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        Schedule:
+          tenantId: "Uuid"
+          id: "Uuid"
+          locationId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          approvedBy: "Uuid"
+          approvedAt: "Timestamptz(6)"
+        ScheduleShift:
+          tenantId: "Uuid"
+          id: "Uuid"
+          scheduleId: "Uuid"
+          employeeId: "Uuid"
+          locationId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          swapOfferedTo: "Uuid"
+          swapOfferedAt: "Timestamptz(6)"
+          swapAcceptedAt: "Timestamptz(6)"
+        Shipment:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          supplierId: "Uuid"
+          locationId: "Uuid"
+          scheduledDate: "Timestamptz(6)"
+          shippedDate: "Timestamptz(6)"
+          estimatedDeliveryDate: "Timestamptz(6)"
+          actualDeliveryDate: "Timestamptz(6)"
+          shippingCost: "Decimal(12, 2)"
+          totalValue: "Decimal(12, 2)"
+          deliveredBy: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        ShipmentItem:
+          tenantId: "Uuid"
+          id: "Uuid"
+          shipmentId: "Uuid"
+          itemId: "Uuid"
+          quantityShipped: "Decimal(12, 3)"
+          quantityReceived: "Decimal(12, 3)"
+          quantityDamaged: "Decimal(12, 3)"
+          unitId: "SmallInt"
+          unitCost: "Decimal(10, 4)"
+          totalCost: "Decimal(12, 2)"
+          expirationDate: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        SmsAutomationRule:
+          id: "Uuid"
+          description: "Text"
+        StaffPerformance:
+          rating: "Decimal(12, 2)"
+        Station:
+          tenantId: "Uuid"
+          id: "Uuid"
+          locationId: "Uuid"
+          notes: "Text"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          maintenanceStartAt: "Timestamptz(6)"
+        StorageLocation:
+          id: "Uuid"
+        TaskBundle:
+          id: "Uuid"
+        TemperatureLog:
+          tenantId: "Uuid"
+          id: "Uuid"
+          equipmentId: "Uuid"
+          temperature: "Decimal(6, 2)"
+          loggedAt: "Timestamptz(6)"
+          loggedBy: "Uuid"
+          notes: "Text"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        TemperatureProbe:
+          tenantId: "Uuid"
+          id: "Uuid"
+          locationId: "Uuid"
+          minTemp: "Decimal(6, 2)"
+          maxTemp: "Decimal(6, 2)"
+          lastCalibration: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        TemperatureReading:
+          tenantId: "Uuid"
+          id: "Uuid"
+          probeId: "Uuid"
+          temperature: "Decimal(6, 2)"
+          loggedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+        TimecardApproval:
+          tenantId: "Uuid"
+          id: "Uuid"
+          payrollRunId: "Uuid"
+          employeeId: "Uuid"
+          submittedBy: "Uuid"
+          approvedBy: "Uuid"
+          approvedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        TimecardEditRequest:
+          tenantId: "Uuid"
+          id: "Uuid"
+          timeEntryId: "Uuid"
+          employeeId: "Uuid"
+          requestedClockIn: "Timestamptz(6)"
+          requestedClockOut: "Timestamptz(6)"
+          requestedBreakMinutes: "SmallInt"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        TimeEntry:
+          tenantId: "Uuid"
+          id: "Uuid"
+          employeeId: "Uuid"
+          locationId: "Uuid"
+          shiftId: "Uuid"
+          clockIn: "Timestamptz(6)"
+          clockOut: "Timestamptz(6)"
+          breakMinutes: "SmallInt"
+          approvedBy: "Uuid"
+          approvedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        TimelineTask:
+          tenantId: "Uuid"
+          id: "Uuid"
+          eventId: "Uuid"
+          startTime: "Timestamptz(6)"
+          endTime: "Timestamptz(6)"
+          assigneeId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          completedAt: "Timestamptz(6)"
+        TimeOffRequest:
+          tenantId: "Uuid"
+          id: "Uuid"
+          employeeId: "Uuid"
+          reviewedBy: "Uuid"
+          reviewedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          balanceSnapshot: "Decimal(6, 2)"
+        TipPool:
+          tenantId: "Uuid"
+          id: "Uuid"
+          periodId: "Uuid"
+          totalTips: "Decimal(10, 2)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          distributedAmount: "Decimal(10, 2)"
+          distributedAt: "Timestamptz(6)"
+          distributedBy: "Uuid"
+        TrainingAssignment:
+          tenantId: "Uuid"
+          id: "Uuid"
+          moduleId: "Uuid"
+          employeeId: "Uuid"
+          dueDate: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          firstShiftAt: "Timestamptz(6)"
+          startedAt: "Timestamptz(6)"
+          completedAt: "Timestamptz(6)"
+          waivedAt: "Timestamptz(6)"
+          reminderSentAt: "Timestamptz(6)"
+        TrainingCompletion:
+          tenantId: "Uuid"
+          id: "Uuid"
+          assignmentId: "Uuid"
+          employeeId: "Uuid"
+          moduleId: "Uuid"
+          completedAt: "Timestamptz(6)"
+          score: "Decimal(5, 2)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+        TrainingModule:
+          tenantId: "Uuid"
+          id: "Uuid"
+          durationMinutes: "SmallInt"
+          createdBy: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          publishedAt: "Timestamptz(6)"
+          archivedAt: "Timestamptz(6)"
+        User:
+          tenantId: "Uuid"
+          id: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          hourlyRate: "Decimal(10, 2)"
+          salaryAnnual: "Decimal(12, 2)"
+          hireDate: "Date"
+          terminationDate: "Date"
+          roleId: "Uuid"
+        VarianceReport:
+          tenantId: "Uuid"
+          id: "Uuid"
+          sessionId: "Uuid"
+          itemId: "Uuid"
+          expectedQuantity: "Decimal(12, 3)"
+          countedQuantity: "Decimal(12, 3)"
+          variance: "Decimal(12, 3)"
+          variancePct: "Decimal(5, 2)"
+          accuracyScore: "Decimal(5, 2)"
+          adjustmentAmount: "Decimal(12, 3)"
+          adjustmentDate: "Timestamptz(6)"
+          resolvedById: "Uuid"
+          resolvedAt: "Timestamptz(6)"
+          generatedAt: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          rejectedAt: "Timestamptz(6)"
+        Vehicle:
+          tenantId: "Uuid"
+          id: "Uuid"
+          capacityWeight: "Decimal(10, 2)"
+          capacityVolume: "Decimal(10, 2)"
+          mileage: "Decimal(10, 2)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        Vendor:
+          rating: "Decimal(12, 2)"
+        VendorCatalog:
+          tenantId: "Uuid"
+          id: "Uuid"
+          supplierId: "Uuid"
+          baseUnitCost: "Decimal(12, 2)"
+          minimumOrderQuantity: "Decimal(12, 3)"
+          orderMultiple: "Decimal(12, 3)"
+          effectiveFrom: "Timestamptz(6)"
+          effectiveTo: "Timestamptz(6)"
+          lastCostUpdate: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        VendorContact:
+          tenantId: "Uuid"
+          id: "Uuid"
+          supplierId: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        VendorContract:
+          tenantId: "Uuid"
+          id: "Uuid"
+          vendorId: "Uuid"
+          startDate: "Date"
+          endDate: "Date"
+          renewalTermDays: "SmallInt"
+          noticeDaysBeforeRenewal: "SmallInt"
+          minimumOrderQuantity: "Decimal(12, 2)"
+          annualSpendCommitment: "Decimal(12, 2)"
+          spendToPeriod: "Date"
+          approvedBy: "Uuid"
+          approvedAt: "Timestamptz(6)"
+          terminatedBy: "Uuid"
+          terminatedAt: "Timestamptz(6)"
+          complianceScore: "SmallInt"
+          lastComplianceReview: "Timestamptz(6)"
+          onTimeDeliveryRate: "Decimal(5, 2)"
+          qualityRating: "Decimal(2, 1)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        VendorRating:
+          tenantId: "Uuid"
+          id: "Uuid"
+          supplierId: "Uuid"
+          rating: "SmallInt"
+          ratedBy: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          ratedAt: "Timestamptz(6)"
+        Venue:
+          tenantId: "Uuid"
+          id: "Uuid"
+          countryCode: "Char(2)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        WasteEntry:
+          tenantId: "Uuid"
+          id: "Uuid"
+          inventoryItemId: "Uuid"
+          reasonId: "SmallInt"
+          quantity: "Decimal(10, 3)"
+          unitId: "SmallInt"
+          locationId: "Uuid"
+          eventId: "Uuid"
+          loggedBy: "Uuid"
+          loggedAt: "Timestamptz(6)"
+          unitCost: "Decimal(10, 2)"
+          totalCost: "Decimal(10, 2)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+          approvedBy: "Uuid"
+          approvedAt: "Timestamptz(6)"
+        Workflow:
+          tenantId: "Uuid"
+          id: "Uuid"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+          deletedAt: "Timestamptz(6)"
+        WorkOrder:
+          tenantId: "Uuid"
+          id: "Uuid"
+          equipmentId: "Uuid"
+          description: "Text"
+          assignedTo: "Uuid"
+          scheduledDate: "Timestamptz(6)"
+          completedDate: "Timestamptz(6)"
+          createdAt: "Timestamptz(6)"
+          updatedAt: "Timestamptz(6)"
+      fieldAttributes:
+        ActionMilestone:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        AdminChatMessage:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        AdminChatParticipant:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        AdminChatThread:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        AdminTask:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        AdminTaskAttachment:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        AdminTaskComment:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        AdminTaskDevMeta:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        AdminTaskFileRef:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        AlertsConfig:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        AllergenWarning:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isAcknowledged: ["@default(false)"]
+          resolved: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        ApiKey:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        AuditSchedule:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        BankAccount:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isDefault: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        BattleBoard:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        BoardAnnotation:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        BoardConfig:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        BoardProjection:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        BudgetAlert:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isAcknowledged: ["@default(false)"]
+          resolved: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        BudgetLineItem:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        BulkCombineRule:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        BulkOrderRule:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          shippingIncluded: ["@default(false)"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        CallPlanningSession:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        CateringOrder:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        ChartOfAccount:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        Client:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          taxExempt: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        ClientContact:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isPrimary: ["@default(false)"]
+          isBillingContact: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        ClientInteraction:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          followUpCompleted: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        ClientPreference:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        CollectionAction:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        CollectionCase:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          hasPaymentPlan: ["@default(false)"]
+          isDisputed: ["@default(false)"]
+          isEscalatedToLegal: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        CollectionPaymentPlan:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        CommandBoard:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isTemplate: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+          autoPopulate: ["@default(false)"]
+        CommandBoardCard:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        CommandBoardConnection:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          visible: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        CommandBoardGroup:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          collapsed: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        CommandBoardLayout:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          showGrid: ["@default(true)"]
+          snapToGrid: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        Container:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isReusable: ["@default(true)"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        ContractSignature:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+          isValid: ["@default(true)"]
+        CorrectiveAction:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        CrmScoringRule:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        CycleCountRecord:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isVerified: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        CycleCountSession:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        DeliveryRoute:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        DisciplinaryAction:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        Dish:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+          isSeasonal: ["@default(false)"]
+          isEightySix: ["@default(false)"]
+        Document:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        DocumentVersion:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        Driver:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        EmailTemplate:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          isDefault: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        EmailWorkflow:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        EmployeeAvailability:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isAvailable: ["@default(true)"]
+          effectiveFrom: ["@default(dbgenerated(\"CURRENT_DATE\"))"]
+          updatedAt: ["@updatedAt"]
+          isSuspended: ["@default(false)"]
+        EmployeeCertification:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        EmployeeDeduction:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isPreTax: ["@default(false)"]
+        EntityVersion:
+          isApproved: ["@default(false)"]
+        Equipment:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        Event:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        EventBudget:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        EventContract:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        EventDish:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        EventFollowup:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        EventGuest:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isPrimaryContact: ["@default(false)"]
+          specialMealRequired: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        EventImport:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        EventImportWorkflow:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        EventPlanningDraft:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        EventProfitability:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        EventReport:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        EventSummary:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        EventTimeline:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        EventTimelineItem:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        Facility:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        FacilityArea:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        FacilityAsset:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        ForecastInput:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        Ingredient:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+          isRecalled: ["@default(false)"]
+        InteractionAttachment:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        InventoryAlert:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        InventoryForecast:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        InventoryItem:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+          fsa_temp_logged: ["@default(false)"]
+          fsa_allergen_info: ["@default(false)"]
+          fsa_traceable: ["@default(false)"]
+        InventoryStock:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        InventorySupplier:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+          isActive: ["@default(true)"]
+        InventoryTransaction:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isReversed: ["@default(false)"]
+        InventoryTransfer:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+          hasDiscrepancy: ["@default(false)"]
+        InventoryTransferItem:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        Invoice:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        IoTAlert:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        IotAlertRule:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        KitchenTask:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        KitchenTaskClaim:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        KitchenTaskProgress:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        KnowledgeBaseEntry:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        LaborBudget:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        Lead:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        LogisticsRoute:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        MaintenanceWorkOrder:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        Menu:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+          isSeasonal: ["@default(false)"]
+        MenuDish:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isOptional: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        MethodVideo:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        Note:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        Notification:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isRead: ["@default(false)"]
+        OnboardingCompletion:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        OnboardingTask:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        OpenShift:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        OverrideAudit:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        Payment:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        PaymentMethod:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isDefault: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        PaymentRefundAttempt:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        PayrollApprovalHistory:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        PayrollLineItem:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        PayrollPeriod:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        PayrollRun:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        PerformanceReview:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        PrepComment:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isResolved: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        PrepList:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+          isActive: ["@default(true)"]
+        PrepListImport:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        PrepListItem:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isOptional: ["@default(false)"]
+          isCompleted: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        PrepMethod:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        PrepTask:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        PrepTaskPlanWorkflow:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        PreventiveMaintenanceSchedule:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        PricingTier:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        ProcurementBudget:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        ProcurementBudgetAlert:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isAcknowledged: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        Proposal:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        ProposalDraft:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          depositPaid: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        ProposalLineItem:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        ProposalTemplate:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          isDefault: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        PurchaseOrder:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        PurchaseOrderItem:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        PurchaseRequisition:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        PurchaseRequisitionItem:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        QACheck:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        QACorrectiveAction:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        QATemperatureLog:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        QualityCheck:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        QualityCheckItem:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        RateLimitConfig:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        Recipe:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        RecipeIngredient:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isOptional: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        RecipeStep:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        RecipeVersion:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        ReorderSuggestion:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        Report:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+          isShared: ["@default(false)"]
+        RevenueRecognitionLine:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        RevenueRecognitionSchedule:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        RolePolicy:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        RouteStop:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        SampleData:
+          isSeeded: ["@default(false)"]
+        Schedule:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        ScheduleShift:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        Shipment:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        ShipmentItem:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        SmsAutomationRule:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        Station:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        StorageLocation:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        TaskBundle:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        TemperatureLog:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        TemperatureProbe:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        TemperatureReading:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        TimecardApproval:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        TimecardEditRequest:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        TimeEntry:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        TimelineTask:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        TimeOffRequest:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        TipPool:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        TrainingAssignment:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+        TrainingCompletion:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          passed: ["@default(false)"]
+        TrainingModule:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isRequired: ["@default(false)"]
+          isActive: ["@default(true)"]
+        User:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+          hireDate: ["@default(dbgenerated(\"CURRENT_DATE\"))"]
+          isActive: ["@default(true)"]
+        VarianceReport:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        Vehicle:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        VendorCatalog:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        VendorContact:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isPrimary: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        VendorContract:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          autoRenew: ["@default(false)"]
+          updatedAt: ["@updatedAt"]
+        VendorRating:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        Venue:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        VersionedEntity:
+          isLocked: ["@default(false)"]
+        WasteEntry:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+        Workflow:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          isActive: ["@default(true)"]
+          updatedAt: ["@updatedAt"]
+        WorkOrder:
+          id: ["@default(dbgenerated(\"gen_random_uuid()\"))"]
+          updatedAt: ["@updatedAt"]
+
   # Manifest IR → Prisma store metadata (keys by IR entity name, not Prisma model name).
   # Runtime authority: manifest-prisma-store-metadata.generated.ts via prisma-store-registry.generated.ts.
   # Options bag: manifest/scripts/prisma-store-options.generated.json (built from THIS config).
