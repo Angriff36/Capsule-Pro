@@ -12,7 +12,7 @@
     "embla-carousel-react": "^8.6.0",
     "geist": "^1.7.2",
     "input-otp": "^1.4.2",
-    "lucide-react": "^1.18.0",
+    "lucide-react": "^1.22.0",
     "radix-ui": "^1.5.0",
     "react-day-picker": "^10.0.1",
     "react-hook-form": "^7.79.0",
