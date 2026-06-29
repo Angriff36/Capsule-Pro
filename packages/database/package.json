@@ -49,7 +49,7 @@
     "dotenv": "^17.4.2",
     "prisma": "7.8.0",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.9"
   },
   "scripts": {
     "build": "prisma generate --no-hints --schema=./prisma/schema.prisma",
