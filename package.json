@@ -8,7 +8,7 @@
     "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
-    "@angriff36/manifest": "2.19.3",
+    "@angriff36/manifest": "2.19.5",
     "@auto-it/first-time-contributor": "^11.3.6",
     "@babel/parser": "^7.29.7",
     "@biomejs/biome": "2.4.15",
@@ -66,7 +66,7 @@
     "check:staged-write-routes": "node scripts/check-staged-write-routes.mjs",
     "manifest:build": "node manifest/scripts/build.mjs",
     "manifest:check": "node manifest/scripts/check.mjs",
-    "manifest:all": "manifest compile manifest/source --merge -o manifest/ir/kitchen.ir.json && manifest generate --all",
+    "manifest:all": "manifest compile manifest/source --merge -o manifest/ir/kitchen.ir.json && manifest generate --all manifest/ir/kitchen.ir.json",
     "manifest:update": "pnpm -r update @angriff36/manifest@latest",
     "manifest:compile": "node manifest/scripts/compile.mjs",
     "manifest:ir:embed": "node manifest/scripts/embed-ir.mjs",
