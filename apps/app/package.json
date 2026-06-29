@@ -48,7 +48,7 @@
     "geist": "^1.7.2",
     "html5-qrcode": "^2.3.8",
     "import-in-the-middle": "^3.0.2",
-    "lucide-react": "^1.18.0",
+    "lucide-react": "^1.22.0",
     "next": "16.2.6",
     "pdfjs-dist": "^5.7.284",
     "posthog-js": "^1.386.6",
