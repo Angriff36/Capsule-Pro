@@ -57,7 +57,6 @@ entity Invoice mixin TenantScoped {
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
   relationship hasMany payments: Payment
   // Back-relations (U11): inverse hasMany for children that belongTo Invoice
-  relationship hasMany revenueLines: RevenueRecognitionLine
   relationship hasMany collectionCases: CollectionCase
   // Constraints
   constraint amount_non_negative: self.subtotal >= 0 and self.total >= 0 "Amounts cannot be negative"

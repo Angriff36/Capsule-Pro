@@ -28,7 +28,7 @@ entity InventoryTransfer mixin TenantScoped {
   computed isApproved: boolean = self.status == "approved"
   computed isInTransit: boolean = self.status == "in_transit"
 
-  relationship hasMany items: InventoryTransferItem
+  relationship hasMany lineItems: InventoryTransferItem
   relationship belongsTo fromLocation: StorageLocation fields [tenantId, fromLocationId] references [tenantId, id]
   relationship belongsTo toLocation: StorageLocation fields [tenantId, toLocationId] references [tenantId, id]
 

@@ -292,7 +292,6 @@ entity LogisticsRoute mixin TenantScoped {
   relationship belongsTo driver: Driver with driverId
 
   // Back-relations (U11): inverse hasMany for children that belongTo LogisticsRoute
-  relationship hasMany stops: RouteStop
   relationship hasMany dispatches: LogisticsDispatch
 
   default policy LogisticsRouteDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"

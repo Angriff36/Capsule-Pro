@@ -71,14 +71,224 @@ projections:
       # Base path prefix prepended to every route entry.
       basePath: /api
   prisma:
+    # Native multi-schema schema generation (manifest >= 2.20.0). Manifest OWNS
+    # packages/database/prisma/schema.prisma; placement lives in entitySchema below.
+    output: packages/database/prisma
     options:
+      output: schema.prisma
       provider: postgresql
+      relationMode: prisma
       naming: snake_case
-      # Multi-schema placement is driven by manifest/schema-placement.rules.json
-      # (the policy engine) + entity-to-schema overrides in scripts.
-      # The CLI's config schema (v2.2.0) does not yet validate multiSchema under
-      # prisma.options — see prisma-projection.schema.json for the full spec.
-      # When the CLI catches up, add multiSchema here to centralize placement.
+      # Manifest auto-emits inverse hasMany for one-sided belongsTo/ref (manifest >= 2.21.0),
+      # so hub entities (User, Event, Facility...) don't hand-author dozens of back-relations.
+      autoBackRelations: true
+      generator:
+        provider: prisma-client
+        output: "../generated"
+        moduleFormat: esm
+        generatedFileExtension: ts
+        importFileExtension: ts
+      multiSchema:
+        enabled: true
+        defaultSchema: public
+        schemas: [core, platform, public, tenant, tenant_accounting, tenant_admin, tenant_crm, tenant_events, tenant_facilities, tenant_inventory, tenant_kitchen, tenant_logistics, tenant_staff]
+        entitySchema:
+          ActionMilestone: tenant_staff
+          AdminChatMessage: tenant_admin
+          AdminChatParticipant: tenant_admin
+          AdminChatThread: tenant_admin
+          AdminTask: tenant_admin
+          AdminTaskAttachment: tenant_admin
+          AdminTaskComment: tenant_admin
+          AdminTaskDevMeta: tenant_admin
+          AdminTaskFileRef: tenant_admin
+          AiEventSetupSession: public
+          AlertsConfig: tenant_inventory
+          AllergenWarning: tenant_kitchen
+          ApiKey: platform
+          AuditSchedule: tenant_inventory
+          AutomatedFollowup: public
+          BankAccount: tenant_staff
+          BattleBoard: tenant_events
+          BoardAnnotation: tenant_events
+          BoardConfig: tenant_admin
+          BoardProjection: tenant_events
+          Budget: public
+          BudgetAlert: tenant_staff
+          BudgetLineItem: tenant_events
+          BulkCombineRule: tenant_kitchen
+          BulkOrderRule: tenant_inventory
+          CallPlanningSession: tenant_crm
+          CateringOrder: tenant_events
+          ChartOfAccount: tenant_accounting
+          Client: tenant_crm
+          ClientContact: tenant_crm
+          ClientInteraction: tenant_crm
+          ClientPreference: tenant_crm
+          CollectionAction: tenant_accounting
+          CollectionCase: tenant_accounting
+          CollectionPaymentPlan: tenant_accounting
+          CommandBoard: tenant_events
+          CommandBoardCard: tenant_events
+          CommandBoardConnection: tenant_events
+          CommandBoardGroup: tenant_events
+          CommandBoardLayout: tenant_events
+          Container: tenant_kitchen
+          ContractSignature: tenant_events
+          CorrectiveAction: tenant_kitchen
+          CrmScoringRule: tenant_crm
+          CycleCountRecord: tenant_inventory
+          CycleCountSession: tenant_inventory
+          Deal: public
+          DeliveryRoute: tenant_logistics
+          DisciplinaryAction: tenant_staff
+          Dish: tenant_kitchen
+          Document: tenant
+          DocumentVersion: tenant_events
+          Driver: tenant_logistics
+          EmailTemplate: tenant_admin
+          EmailWorkflow: tenant_admin
+          EmployeeAvailability: tenant_staff
+          EmployeeCertification: tenant_staff
+          EmployeeDeduction: tenant_staff
+          EntityVersion: public
+          Equipment: tenant_kitchen
+          Event: tenant_events
+          EventBudget: tenant_events
+          EventContract: tenant_events
+          EventDish: tenant_events
+          EventFollowup: tenant_events
+          EventGuest: tenant_events
+          EventImport: tenant_events
+          EventImportWorkflow: tenant_events
+          EventPlanningDraft: tenant_crm
+          EventProfitability: tenant_events
+          EventReport: tenant_events
+          EventStaff: tenant_events
+          EventSummary: tenant_events
+          EventTimeline: tenant_events
+          EventTimelineItem: tenant_events
+          EventWaitlistEntry: public
+          Facility: tenant_facilities
+          FacilityArea: tenant_facilities
+          FacilityAsset: tenant_facilities
+          FacilitySchedule: public
+          FacilityWorkOrder: public
+          ForecastInput: tenant_inventory
+          Ingredient: tenant_kitchen
+          InteractionAttachment: tenant_crm
+          InventoryAlert: tenant_inventory
+          InventoryForecast: tenant_inventory
+          InventoryItem: tenant_inventory
+          InventoryStock: tenant_inventory
+          InventorySupplier: tenant_inventory
+          InventoryTransaction: tenant_inventory
+          InventoryTransfer: tenant_inventory
+          InventoryTransferItem: tenant_inventory
+          Invoice: tenant_accounting
+          IoTAlert: tenant_kitchen
+          IotAlertRule: tenant_kitchen
+          KitchenTask: tenant_kitchen
+          KitchenTaskClaim: tenant_kitchen
+          KitchenTaskProgress: tenant_kitchen
+          KnowledgeBaseEntry: tenant
+          LaborBudget: tenant_staff
+          Lead: tenant_crm
+          LogisticsDispatch: public
+          LogisticsRoute: tenant_logistics
+          MaintenanceWorkOrder: tenant_facilities
+          Menu: tenant_kitchen
+          MenuDish: tenant_kitchen
+          MethodVideo: tenant_kitchen
+          Note: tenant_events
+          Notification: tenant_admin
+          OnboardingCompletion: tenant_staff
+          OnboardingTask: tenant_staff
+          OpenShift: tenant_staff
+          OverrideAudit: tenant_kitchen
+          Payment: tenant_accounting
+          PaymentMethod: tenant_accounting
+          PaymentRefundAttempt: tenant_accounting
+          PayrollApprovalHistory: tenant_staff
+          PayrollLineItem: tenant_staff
+          PayrollPeriod: tenant_staff
+          PayrollRun: tenant_staff
+          PerformancePrediction: public
+          PerformanceReview: tenant_staff
+          PrepComment: tenant_kitchen
+          PrepList: tenant_kitchen
+          PrepListImport: tenant_kitchen
+          PrepListItem: tenant_kitchen
+          PrepMethod: tenant_kitchen
+          PrepTask: tenant_kitchen
+          PrepTaskPlanWorkflow: tenant_kitchen
+          PreventiveMaintenanceSchedule: tenant_facilities
+          PricingTier: tenant_inventory
+          ProcurementBudget: tenant_inventory
+          ProcurementBudgetAlert: tenant_inventory
+          Proposal: tenant_crm
+          ProposalDraft: tenant_crm
+          ProposalLineItem: tenant_crm
+          ProposalTemplate: tenant_crm
+          PurchaseOrder: tenant_inventory
+          PurchaseOrderItem: tenant_inventory
+          PurchaseRequisition: tenant_inventory
+          PurchaseRequisitionItem: tenant_inventory
+          QACheck: tenant_kitchen
+          QACorrectiveAction: tenant_kitchen
+          QATemperatureLog: tenant_kitchen
+          QualityCheck: tenant_kitchen
+          QualityCheckItem: tenant_kitchen
+          RateLimitConfig: tenant_admin
+          Recipe: tenant_kitchen
+          RecipeIngredient: tenant_kitchen
+          RecipeStep: tenant_kitchen
+          RecipeVersion: tenant_kitchen
+          ReorderSuggestion: tenant_inventory
+          Report: tenant_admin
+          RevenueRecognitionLine: tenant_accounting
+          RevenueRecognitionSchedule: tenant_accounting
+          RolePolicy: tenant_staff
+          RouteStop: tenant_logistics
+          SampleData: public
+          Schedule: tenant_staff
+          ScheduleShift: tenant_staff
+          Shipment: tenant_inventory
+          ShipmentItem: tenant_inventory
+          SmsAutomationRule: tenant_admin
+          StaffMember: tenant_staff
+          StaffPerformance: public
+          Station: tenant_kitchen
+          StorageLocation: tenant_inventory
+          TaskBundle: tenant_kitchen
+          TaskBundleItem: tenant_kitchen
+          TemperatureLog: tenant_kitchen
+          TemperatureProbe: tenant_kitchen
+          TemperatureReading: tenant_kitchen
+          TimeEntry: tenant_staff
+          TimeOffRequest: tenant_staff
+          TimecardApproval: tenant_staff
+          TimecardEditRequest: tenant_staff
+          TimelineTask: tenant_events
+          TipPool: tenant_staff
+          TrainingAssignment: tenant_staff
+          TrainingCompletion: tenant_staff
+          TrainingModule: tenant_staff
+          User: tenant_staff
+          VarianceReport: tenant_inventory
+          Vehicle: tenant_logistics
+          Vendor: public
+          VendorCatalog: tenant_inventory
+          VendorContact: tenant_inventory
+          VendorContract: tenant_inventory
+          VendorRating: tenant_inventory
+          Venue: tenant
+          VersionApproval: public
+          VersionedEntity: public
+          WasteEntry: tenant_kitchen
+          WorkOrder: tenant_kitchen
+          Workflow: tenant_admin
+          WorkforceOptimization: public
   # Manifest IR → Prisma store metadata (keys by IR entity name, not Prisma model name).
   # Runtime authority: manifest-prisma-store-metadata.generated.ts via prisma-store-registry.generated.ts.
   # Options bag: manifest/scripts/prisma-store-options.generated.json (built from THIS config).
