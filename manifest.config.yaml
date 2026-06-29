@@ -9,7 +9,9 @@
 #
 # CI: pnpm manifest:check-accessor-config:strict
 
-$schema: https://manifest.dev/config.schema.json
+# Local bundled schema (the public manifest.dev URL is dead; the CLI validates against this
+# bundled file regardless — the path here is for editor IntelliSense only).
+$schema: ./node_modules/@angriff36/manifest/docs/spec/config/manifest.config.schema.json
 
 # Capsule-owned .manifest sources (manifest/source/*.manifest). compile.mjs reads this dir.
 src: manifest/source/**/*.manifest

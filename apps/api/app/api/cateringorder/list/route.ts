@@ -1,86 +1,51 @@
-import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
-import { type NextRequest, NextResponse } from "next/server";
+// Auto-generated Next.js API route for CateringOrder
+// Generated from Manifest IR - DO NOT EDIT
+
+import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { manifestSuccessResponse } from "@/lib/manifest-response";
+import { database } from "@repo/database";
+import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import { auth } from "@repo/auth/server";
 
 export async function GET(request: NextRequest) {
-  const { userId, orgId } = await auth();
+  try {
+  const { orgId, userId } = await auth();
   if (!(userId && orgId)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return manifestErrorResponse({ error: "Unauthorized", diagnostics: [] }, 401);
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
+
   if (!tenantId) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return manifestErrorResponse({ error: "Tenant not found", diagnostics: [] }, 400);
   }
 
-  const { searchParams } = request.nextUrl;
-  const page = Number(searchParams.get("page") ?? "1");
-  const limit = Math.min(Number(searchParams.get("limit") ?? "25"), 100);
-  const status = searchParams.get("status");
-  const search = searchParams.get("search");
-
-  const where = {
-    tenantId,
-    deletedAt: null,
-    ...(status && status !== "all" ? { order_status: status } : {}),
-    ...(search
-      ? {
-          OR: [
-            { orderNumber: { contains: search, mode: "insensitive" as const } },
-            { venue_name: { contains: search, mode: "insensitive" as const } },
-            {
-              special_instructions: {
-                contains: search,
-                mode: "insensitive" as const,
-              },
-            },
-          ],
-        }
-      : {}),
-  };
-
-  const [orders, total] = await Promise.all([
-    database.cateringOrder.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * limit,
-      take: limit,
-    }),
-    database.cateringOrder.count({ where }),
-  ]);
-
-  const totalPages = Math.ceil(total / limit);
-
-  return manifestSuccessResponse({
-    data: orders.map((o) => ({
-      id: o.id,
-      orderNumber: o.orderNumber,
-      customerId: o.customer_id,
-      eventId: o.eventId,
-      status: o.order_status,
-      orderDate: o.order_date.toISOString(),
-      deliveryDate: o.delivery_date.toISOString(),
-      deliveryTime: o.delivery_time,
-      subtotal: o.subtotal_amount.toString(),
-      tax: o.tax_amount.toString(),
-      discount: o.discount_amount.toString(),
-      serviceCharge: o.service_charge_amount.toString(),
-      total: o.totalAmount.toString(),
-      depositRequired: o.deposit_required,
-      depositAmount: o.deposit_amount?.toString() ?? null,
-      depositPaid: o.deposit_paid,
-      venueName: o.venue_name,
-      venueCity: o.venue_city,
-      venueState: o.venue_state,
-      guestCount: o.guest_count,
-      dietaryRestrictions: o.dietary_restrictions,
-      staffRequired: o.staff_required,
-      staffAssigned: o.staff_assigned,
-      createdAt: o.createdAt.toISOString(),
-      updatedAt: o.updatedAt.toISOString(),
-    })),
-    pagination: { page, limit, total, totalPages },
+const cateringOrders = await database.cateringOrder.findMany({
+    where: {
+        tenantId,
+        deletedAt: null
+      },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
+
+    return manifestSuccessResponse({ cateringOrders });
+  } catch (error) {
+    // Auth helpers (clerk, next-auth, custom) may throw on invalid/expired
+    // tokens. Goal step 4: auth failures MUST NEVER surface as 500.
+    const isAuthError = error instanceof Error && (
+      /unauth/i.test(error.message) ||
+      /token/i.test(error.message) ||
+      /session/i.test(error.message)
+    );
+    if (isAuthError) {
+      return manifestErrorResponse({ error: "Unauthorized", diagnostics: [] }, 401);
+    }
+    console.error("Error fetching cateringOrders:", error);
+    return manifestErrorResponse(
+      { error: "Internal server error", diagnostics: [{ kind: "runtime_error", message: error instanceof Error ? error.message : String(error) }] },
+      500,
+    );
+  }
 }

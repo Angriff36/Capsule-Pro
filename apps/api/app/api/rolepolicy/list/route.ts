@@ -1,84 +1,51 @@
-/**
- * Role Policy List API Endpoint
- *
- * GET /api/rolepolicy/list - List all role policies for the tenant
- */
+// Auto-generated Next.js API route for RolePolicy
+// Generated from Manifest IR - DO NOT EDIT
 
-import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
-import { log } from "@repo/observability/log";
-import { captureException } from "@sentry/nextjs";
-import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { database } from "@repo/database";
+import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import { auth } from "@repo/auth/server";
 
-export const runtime = "nodejs";
-
-/**
- * GET /api/rolepolicy/list
- * List all role policies with pagination and filters
- */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+  const { orgId, userId } = await auth();
+  if (!(userId && orgId)) {
+    return manifestErrorResponse({ error: "Unauthorized", diagnostics: [] }, 401);
+  }
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 400 }
-      );
-    }
+  const tenantId = await getTenantIdForOrg(orgId);
 
-    const { searchParams } = new URL(request.url);
-    const page = Number.parseInt(searchParams.get("page") || "1", 10);
-    const limit = Math.min(
-      Number.parseInt(searchParams.get("limit") || "50", 10),
-      100
-    );
-    const isActive = searchParams.get("isActive");
-    const offset = (page - 1) * limit;
+  if (!tenantId) {
+    return manifestErrorResponse({ error: "Tenant not found", diagnostics: [] }, 400);
+  }
 
-    // Build whereClause
-    const whereClause: Record<string, unknown> = {
-      tenantId,
-      deletedAt: null,
-    };
+const rolePolicys = await database.rolePolicy.findMany({
+    where: {
+        tenantId,
+        deletedAt: null
+      },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 
-    if (isActive !== null && isActive !== undefined) {
-      whereClause.isActive = isActive === "true";
-    }
-
-    // Fetch role policies
-    const policies = await database.rolePolicy.findMany({
-      where: whereClause,
-      orderBy: [{ createdAt: "desc" }],
-      take: limit,
-      skip: offset,
-    });
-
-    // Get total count for pagination
-    const total = await database.rolePolicy.count({
-      where: whereClause,
-    });
-
-    const totalPages = Math.ceil(total / limit);
-
-    return NextResponse.json({
-      policies,
-      total,
-      page,
-      limit,
-      totalPages,
-    });
+    return manifestSuccessResponse({ rolePolicys });
   } catch (error) {
-    captureException(error);
-    log.error("[RolePolicy/list] Error:", error);
-    return NextResponse.json(
-      { message: "Failed to fetch role policies" },
-      { status: 500 }
+    // Auth helpers (clerk, next-auth, custom) may throw on invalid/expired
+    // tokens. Goal step 4: auth failures MUST NEVER surface as 500.
+    const isAuthError = error instanceof Error && (
+      /unauth/i.test(error.message) ||
+      /token/i.test(error.message) ||
+      /session/i.test(error.message)
+    );
+    if (isAuthError) {
+      return manifestErrorResponse({ error: "Unauthorized", diagnostics: [] }, 401);
+    }
+    console.error("Error fetching rolePolicys:", error);
+    return manifestErrorResponse(
+      { error: "Internal server error", diagnostics: [{ kind: "runtime_error", message: error instanceof Error ? error.message : String(error) }] },
+      500,
     );
   }
 }

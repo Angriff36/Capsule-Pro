@@ -1,62 +1,51 @@
-import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
-import { type NextRequest, NextResponse } from "next/server";
+// Auto-generated Next.js API route for AlertsConfig
+// Generated from Manifest IR - DO NOT EDIT
+
+import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { manifestSuccessResponse } from "@/lib/manifest-response";
+import { database } from "@repo/database";
+import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import { auth } from "@repo/auth/server";
 
 export async function GET(request: NextRequest) {
-  const { userId, orgId } = await auth();
+  try {
+  const { orgId, userId } = await auth();
   if (!(userId && orgId)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return manifestErrorResponse({ error: "Unauthorized", diagnostics: [] }, 401);
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
+
   if (!tenantId) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return manifestErrorResponse({ error: "Tenant not found", diagnostics: [] }, 400);
   }
 
-  const { searchParams } = request.nextUrl;
-  const page = Number(searchParams.get("page") ?? "1");
-  const limit = Math.min(Number(searchParams.get("limit") ?? "25"), 100);
-  const channel = searchParams.get("channel");
-  const search = searchParams.get("search");
-
-  const where = {
-    tenantId,
-    ...(channel && channel !== "all" ? { channel } : {}),
-    ...(search
-      ? {
-          OR: [
-            { channel: { contains: search, mode: "insensitive" as const } },
-            {
-              destination: {
-                contains: search,
-                mode: "insensitive" as const,
-              },
-            },
-          ],
-        }
-      : {}),
-  };
-
-  const [configs, total] = await Promise.all([
-    database.alertsConfig.findMany({
-      where,
-      orderBy: { channel: "asc" },
-      skip: (page - 1) * limit,
-      take: limit,
-    }),
-    database.alertsConfig.count({ where }),
-  ]);
-
-  const totalPages = Math.ceil(total / limit);
-
-  return manifestSuccessResponse({
-    data: configs.map((c) => ({
-      id: c.id,
-      channel: c.channel,
-      destination: c.destination,
-    })),
-    pagination: { page, limit, total, totalPages },
+const alertsConfigs = await database.alertsConfig.findMany({
+    where: {
+        tenantId,
+        deletedAt: null
+      },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
+
+    return manifestSuccessResponse({ alertsConfigs });
+  } catch (error) {
+    // Auth helpers (clerk, next-auth, custom) may throw on invalid/expired
+    // tokens. Goal step 4: auth failures MUST NEVER surface as 500.
+    const isAuthError = error instanceof Error && (
+      /unauth/i.test(error.message) ||
+      /token/i.test(error.message) ||
+      /session/i.test(error.message)
+    );
+    if (isAuthError) {
+      return manifestErrorResponse({ error: "Unauthorized", diagnostics: [] }, 401);
+    }
+    console.error("Error fetching alertsConfigs:", error);
+    return manifestErrorResponse(
+      { error: "Internal server error", diagnostics: [{ kind: "runtime_error", message: error instanceof Error ? error.message : String(error) }] },
+      500,
+    );
+  }
 }
