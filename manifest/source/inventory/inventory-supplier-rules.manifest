@@ -6,21 +6,21 @@ entity InventorySupplier mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property required name: string
   unique property supplierNumber: string = ""
-  property contactPerson: string = ""
-  encrypted property email: string = ""
-  encrypted property phone: string = ""
+  property contactPerson: string? = ""
+  encrypted property email: string? = ""
+  encrypted property phone: string? = ""
   property paymentTerms: string = "NET_30"
-  searchable property notes: string = ""
-  property tags: array<string> = []
-  property isActive: boolean = true
-  property openPOCount: int = 0
-  property approvedAt: datetime
-  property approvedBy: string = ""
-  property suspendedAt: datetime
-  property suspendedReason: string = ""
-  property blacklistedAt: datetime
-  property blacklistedReason: string = ""
-  property qualificationStatus: string = "pending"
+  searchable property notes: string? = ""
+  property tags: array<string>? = []
+  property isActive: boolean? = true
+  property openPOCount: int? = 0
+  property approvedAt: datetime?
+  property approvedBy: string? = ""
+  property suspendedAt: datetime?
+  property suspendedReason: string? = ""
+  property blacklistedAt: datetime?
+  property blacklistedReason: string? = ""
+  property qualificationStatus: string? = "pending"
   timestamps
 
   computed hasContact: boolean = self.contactPerson != "" or self.email != ""

@@ -15,21 +15,21 @@ enum MenuStatus {
 entity Menu mixin TenantScoped {
   key [tenantId, id]
   searchable property required name: string
-  searchable property description: string = ""
-  property category: string = ""
+  searchable property description: string? = ""
+  property category: string? = ""
   property isActive: boolean = true
-  property basePrice: money = 0
-  property pricePerPerson: money = 0
-  property minGuests: int = 0
-  property maxGuests: int = 0
+  property basePrice: money? = 0
+  property pricePerPerson: money? = 0
+  property minGuests: int? = 0
+  property maxGuests: int? = 0
   // Season publishing: a menu can be flagged as seasonal and given a named season.
-  property isSeasonal: boolean = false
-  property seasonLabel: string = ""
-  property seasonYear: int = 0
+  property isSeasonal: boolean? = false
+  property seasonLabel: string? = ""
+  property seasonYear: int? = 0
   // Publication workflow: menus are drafted then published for client selection.
-  indexed property status: MenuStatus = draft
-  property publishedAt: datetime
-  property archivedAt: datetime
+  indexed property status: MenuStatus? = draft
+  property publishedAt: datetime?
+  property archivedAt: datetime?
   timestamps
 
   computed hasPricePerPerson: boolean = self.pricePerPerson > 0
@@ -217,10 +217,10 @@ entity MenuDish mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required menuId: string
   property required dishId: string
-  property course: string = ""
+  property course: string? = ""
   property sortOrder: int = 0
   property isOptional: boolean = false
-  property priceOverride: money = 0
+  property priceOverride: money? = 0
   timestamps
 
   computed hasPriceOverride: boolean = self.priceOverride > 0

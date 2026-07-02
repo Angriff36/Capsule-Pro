@@ -134,24 +134,24 @@ event StaffTrainingWaiverLogged: "staff.training.waiver-logged" {
 entity TrainingModule mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
 
-  property code: string = ""
+  property code: string? = ""
   searchable property title: string = ""
-  searchable property description: string = ""
-  property contentUrl: string = ""
+  searchable property description: string? = ""
+  property contentUrl: string? = ""
   property contentType: string = "document"
-  property durationMinutes: int = 0
-  property category: string = ""
+  property durationMinutes: int? = 0
+  property category: string? = ""
   property isRequired: boolean = false
-  property passThresholdPercent: int = 80
-  property maxAttempts: int = 3
-  property requiredRole: string = "staff"
+  property passThresholdPercent: int? = 80
+  property maxAttempts: int? = 3
+  property requiredRole: string? = "staff"
   property isActive: boolean = true
-  indexed property status: string = "draft"
-  property version: int = 1
-  property publishedAt: datetime
-  property archivedAt: datetime
-  searchable property notes: string = ""
-  property createdBy: string = ""
+  indexed property status: string? = "draft"
+  property version: int? = 1
+  property publishedAt: datetime?
+  property archivedAt: datetime?
+  searchable property notes: string? = ""
+  property createdBy: string? = ""
 
   timestamps
 
@@ -345,26 +345,26 @@ entity TrainingAssignment mixin TenantScoped {
   key [tenantId, id]
 
   property required moduleId: string
-  property moduleCode: string = ""
-  property moduleTitle: string = ""
-  property employeeId: string = ""
-  property staffRole: string = "staff"
+  property moduleCode: string? = ""
+  property moduleTitle: string? = ""
+  property employeeId: string? = ""
+  property staffRole: string? = "staff"
   indexed property status: string = "assigned"
-  property dueDate: datetime
-  property dueDateReviewNeeded: boolean = false
-  property firstShiftAt: datetime
-  property startedAt: datetime
-  property completedAt: datetime
-  property waivedAt: datetime
-  property waiverReason: string = ""
-  property waiverApprovedBy: string = ""
-  property attemptCount: int = 0
-  property lastAttemptId: string = ""
-  property lastScorePercent: int = 0
-  property passThresholdPercent: int = 80
-  property maxAttempts: int = 3
-  property managerReviewRequired: boolean = false
-  property reminderSentAt: datetime
+  property dueDate: datetime?
+  property dueDateReviewNeeded: boolean? = false
+  property firstShiftAt: datetime?
+  property startedAt: datetime?
+  property completedAt: datetime?
+  property waivedAt: datetime?
+  property waiverReason: string? = ""
+  property waiverApprovedBy: string? = ""
+  property attemptCount: int? = 0
+  property lastAttemptId: string? = ""
+  property lastScorePercent: int? = 0
+  property passThresholdPercent: int? = 80
+  property maxAttempts: int? = 3
+  property managerReviewRequired: boolean? = false
+  property reminderSentAt: datetime?
 
   relationship belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
   relationship hasMany attempts: TrainingAttempt
@@ -546,6 +546,8 @@ entity TrainingAttempt mixin TenantScoped {
   property passThresholdPercent: int = 80
   property passed: boolean = false
   property managerReviewRequired: boolean = false
+  // stays string: the live column is TEXT, not jsonb (json flip deferred until
+  // a text->jsonb column migration, same as PrepTaskPlanWorkflow / D27).
   property answersJson: string = ""
 
   relationship belongsTo assignment: TrainingAssignment fields [tenantId, assignmentId] references [tenantId, id]

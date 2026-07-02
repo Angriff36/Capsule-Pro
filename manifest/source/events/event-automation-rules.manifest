@@ -4,16 +4,16 @@ use "../_base.manifest"
 entity AutomatedFollowup mixin TenantScoped {
   key [tenantId, id]
   property required eventId: string
-  property type: string = "email"
-  indexed property status: string = "pending"
+  property type: string? = "email"
+  indexed property status: string? = "pending"
   // Bug fix: lifecycle datetimes — no default
-  property scheduledDate: datetime
-  property sentDate: datetime
-  property recipientId: string = ""
-  property subject: string = ""
-  property body: string = ""
-  property templateId: string = ""
-  property errorMessage: string = ""
+  property scheduledDate: datetime?
+  property sentDate: datetime?
+  property recipientId: string? = ""
+  property subject: string? = ""
+  property body: string? = ""
+  property templateId: string? = ""
+  property errorMessage: string? = ""
   timestamps
 
   computed isPending: boolean = self.status == "pending"
@@ -209,15 +209,15 @@ entity EventWaitlistEntry mixin TenantScoped {
   key [tenantId, id]
   property required eventId: string
   property required guestName: string
-  encrypted property email: string = ""
-  encrypted property phone: string = ""
-  property partySize: int = 1
-  indexed property status: string = "waiting"
-  searchable property notes: string = ""
+  encrypted property email: string? = ""
+  encrypted property phone: string? = ""
+  property partySize: int? = 1
+  indexed property status: string? = "waiting"
+  searchable property notes: string? = ""
   // Bug fix: lifecycle datetimes — no default
-  property joinedAt: datetime
-  property notifiedAt: datetime
-  property seatedAt: datetime
+  property joinedAt: datetime?
+  property notifiedAt: datetime?
+  property seatedAt: datetime?
   timestamps
 
   computed isWaiting: boolean = self.status == "waiting"

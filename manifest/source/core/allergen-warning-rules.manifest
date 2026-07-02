@@ -9,22 +9,22 @@ use "../_base.manifest"
 entity AllergenWarning mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property eventId: string = ""
-  property dishId: string = ""
+  property dishId: string? = ""
   property warningType: string = ""
-  property allergens: array<string> = []
-  property affectedGuests: array<string> = []
+  property allergens: array<string>? = []
+  property affectedGuests: array<string>? = []
   property severity: string = "warning"
   property isAcknowledged: boolean = false
-  property acknowledgedBy: string = ""
+  property acknowledgedBy: string? = ""
   // BUG FIX: lifecycle timestamp — must NOT default to now()
-  property acknowledgedAt: datetime
-  property overrideReason: string = ""
+  property acknowledgedAt: datetime?
+  property overrideReason: string? = ""
   property resolved: boolean = false
   // BUG FIX: lifecycle timestamp — must NOT default to now()
-  property resolvedAt: datetime
-  property escalatedAt: datetime
-  property escalatedTo: string = ""
-  searchable property notes: string = ""
+  property resolvedAt: datetime?
+  property escalatedAt: datetime?
+  property escalatedTo: string? = ""
+  searchable property notes: string? = ""
   timestamps
 
   computed isHighSeverity: boolean = self.severity == "critical"

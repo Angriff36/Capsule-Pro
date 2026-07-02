@@ -11,7 +11,7 @@ entity EventBudget mixin TenantScoped, SoftDeletable {
   property totalActualAmount: money = 0
   property varianceAmount: money = 0
   computed variancePercentage: decimal = percent(self.varianceAmount, self.totalBudgetAmount) cache request
-  searchable property notes: string = ""
+  searchable property notes: string? = ""
   timestamps
 
   computed isDraft: boolean = self.status == "draft"
@@ -139,12 +139,12 @@ entity BudgetLineItem mixin TenantScoped, SoftDeletable {
   property required budgetId: string
   property required category: string
   searchable property required name: string
-  searchable property description: string = ""
+  searchable property description: string? = ""
   property budgetedAmount: money = 0
   property actualAmount: money = 0
   property varianceAmount: money = 0
   property sortOrder: int = 0
-  searchable property notes: string = ""
+  searchable property notes: string? = ""
   timestamps
 
   computed isOverBudget: boolean = self.actualAmount > self.budgetedAmount

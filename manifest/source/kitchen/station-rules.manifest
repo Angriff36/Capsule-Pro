@@ -19,15 +19,15 @@ entity Station mixin TenantScoped {
   searchable property required name: string
   property required stationType: string = "prep-station"
   property capacitySimultaneousTasks: int = 1
-  property equipmentList: array<string> = []
+  property equipmentList: array<string>? = []
   property isActive: boolean = true
   // Maintenance mode: station is temporarily taken offline for cleaning/repair
   // without full deactivation — tasks cannot be assigned but existing ones aren't dropped.
-  property inMaintenance: boolean = false
-  property maintenanceReason: string = ""
-  property maintenanceStartAt: datetime
-  property currentTaskCount: int = 0
-  searchable property notes: string = ""
+  property inMaintenance: boolean? = false
+  property maintenanceReason: string? = ""
+  property maintenanceStartAt: datetime?
+  property currentTaskCount: int? = 0
+  searchable property notes: string? = ""
   timestamps
 
   computed isAtCapacity: boolean = self.currentTaskCount >= self.capacitySimultaneousTasks

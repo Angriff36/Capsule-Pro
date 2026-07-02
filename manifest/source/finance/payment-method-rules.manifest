@@ -7,42 +7,42 @@ entity PaymentMethod mixin TenantScoped {
 
   // Client and reference
   property required clientId: string = ""
-  property externalMethodId: string = ""
+  property externalMethodId: string? = ""
 
   // Method type
   property required type: string = "CREDIT_CARD"
 
   // Card details (tokenized)
-  property cardLastFour: string = ""
-  property cardNetwork: string = ""
-  property cardExpiryMonth: int = 0
-  property cardExpiryYear: int = 0
-  property cardHolderName: string = ""
+  property cardLastFour: string? = ""
+  property cardNetwork: string? = ""
+  property cardExpiryMonth: int? = 0
+  property cardExpiryYear: int? = 0
+  property cardHolderName: string? = ""
 
   // Bank account details (ACH/Wire)
-  private property bankAccountLastFour: string = ""
-  property bankAccountType: string = ""
-  private encrypted property bankRoutingNumber: string = ""
+  private property bankAccountLastFour: string? = ""
+  property bankAccountType: string? = ""
+  private encrypted property bankRoutingNumber: string? = ""
 
   // Digital wallet
-  property walletProvider: string = ""
-  property walletEmail: string = ""
+  property walletProvider: string? = ""
+  property walletEmail: string? = ""
 
   // Status
   indexed property required status: string = "ACTIVE"
   property required isDefault: boolean = false
-  property fraudFlagged: boolean = false
+  property fraudFlagged: boolean? = false
 
   // Verification
-  property verifiedAt: datetime
-  property verificationMethod: string = ""
+  property verifiedAt: datetime?
+  property verificationMethod: string? = ""
 
   // Metadata
-  searchable property nickname: string = ""
+  searchable property nickname: string? = ""
 
   // Timestamps
   timestamps
-  property expiresAt: datetime
+  property expiresAt: datetime?
 
   // Computed properties
   computed isExpired: boolean = self.expiresAt != null and self.expiresAt < now() cache request

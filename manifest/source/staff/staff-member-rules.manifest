@@ -8,11 +8,11 @@ entity StaffMember mixin TenantScoped, SoftDeletable {
   // No relationships: role is a value string, no entity FKs beyond tenantId
   key [tenantId, id]
   property required displayName: string = "Unnamed"
-  encrypted property email: string = ""
-  encrypted property phone: string = ""
-  property role: string = "server"
+  encrypted property email: string? = ""
+  encrypted property phone: string? = ""
+  property role: string? = "server"
   indexed property required status: string = "active"
-  searchable property notes: string = ""
+  searchable property notes: string? = ""
   timestamps
 
   computed isActive: boolean = self.status == "active"

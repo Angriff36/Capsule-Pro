@@ -20,12 +20,12 @@ entity WorkOrder mixin TenantScoped {
   property type: string = "repair"
   property priority: string = "medium"
   indexed property status: WorkOrderStatus = open
-  searchable property description: string = ""
+  searchable property description: string? = ""
   // scheduledDate: nullable — no default; set when known
-  property scheduledDate: datetime
-  property assignedTo: string = ""
+  property scheduledDate: datetime?
+  property assignedTo: string? = ""
   // completedDate: nullable — only set when work finishes
-  property completedDate: datetime
+  property completedDate: datetime?
   timestamps
 
   computed isCompleted: boolean = self.status == "completed"

@@ -15,10 +15,10 @@ entity QACheck mixin TenantScoped {
   property result: string = "pass"
   indexed property status: QACheckStatus = pending
   property inspector: string = ""
-  searchable property notes: string = ""
+  searchable property notes: string? = ""
   // Bug fix: lifecycle timestamps must be nullable (no = now() default)
-  property completedAt: datetime
-  property reinspectedAt: datetime
+  property completedAt: datetime?
+  property reinspectedAt: datetime?
   timestamps
 
   computed isPending: boolean = self.status == "pending"

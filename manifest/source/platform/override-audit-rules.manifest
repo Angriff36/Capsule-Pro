@@ -8,11 +8,11 @@ entity OverrideAudit mixin TenantScoped {
   property entityType: string = ""
   property entityId: string = ""
   property constraintId: string = ""
-  property guardExpression: string = ""
+  property guardExpression: string? = ""
   property overriddenBy: string = ""
   property overrideReason: string = ""
-  property authorizedBy: string = ""
-  property authorizedAt: datetime
+  property authorizedBy: string? = ""
+  property authorizedAt: datetime?
   // No `timestamps` keyword: tenant_kitchen.override_audit is append-only (createdAt + authorizedAt only, no updated_at column)
   property createdAt: datetime = now()
 

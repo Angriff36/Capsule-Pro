@@ -24,36 +24,36 @@ entity CollectionCase mixin TenantScoped {
 
   // Aging
   property required daysOverdue: int = 0
-  property agingBucket: string = ""
+  property agingBucket: string? = ""
 
   // Assignment
-  property assignedTo: string = ""
-  property assignedAt: datetime
+  property assignedTo: string? = ""
+  property assignedAt: datetime?
 
   // Payment plan
   property hasPaymentPlan: boolean = false
-  property paymentPlanId: string = ""
-  property nextPaymentDue: datetime
+  property paymentPlanId: string? = ""
+  property nextPaymentDue: datetime?
 
   // Dispute handling
   property isDisputed: boolean = false
-  property disputeReason: string = ""
-  property disputeResolvedAt: datetime
+  property disputeReason: string? = ""
+  property disputeResolvedAt: datetime?
 
   // Legal escalation
   property isEscalatedToLegal: boolean = false
-  property legalCaseNumber: string = ""
-  property legalFirm: string = ""
+  property legalCaseNumber: string? = ""
+  property legalFirm: string? = ""
 
   // Metadata
-  searchable property notes: string = ""
-  property lastActivityAt: datetime = now()
-  property metadata: string = "{}"
+  searchable property notes: string? = ""
+  property lastActivityAt: datetime? = now()
+  property metadata: json = {}
 
   // Timestamps
   timestamps
-  property resolvedAt: datetime
-  property closedAt: datetime
+  property resolvedAt: datetime?
+  property closedAt: datetime?
 
   // Computed properties
   computed collectionPercentage: number = percent(self.collectedAmount, self.originalAmount) cache request
@@ -251,21 +251,21 @@ entity CollectionAction mixin TenantScoped {
 
   // Action details
   property required actionType: string = ""
-  property required direction: string = ""
-  indexed property required status: string = "PENDING"
+  property required direction: string? = ""
+  indexed property required status: string? = "ACTIVE"
 
   // Action content
   searchable property description: string = ""
-  property outcome: string = ""
-  property nextActionDate: datetime = now()
+  property outcome: string? = ""
+  property nextActionDate: datetime? = now()
 
   // Promise to pay
-  property promiseAmount: money = 0
-  property promiseDate: datetime = now()
+  property promiseAmount: money? = 0
+  property promiseDate: datetime? = now()
 
   // Timestamps
-  property required scheduledFor: datetime = now()
-  property completedAt: datetime
+  property required scheduledFor: datetime? = now()
+  property completedAt: datetime?
   timestamps
 
   // Computed properties
@@ -326,9 +326,9 @@ entity CollectionPaymentPlan mixin TenantScoped {
 
   // Plan details
   property required totalAmount: money = 0
-  property required installmentAmount: money = 0
+  property required installmentAmount: money? = 0
   property required installments: int = 1
-  property required completedInstallments: int = 0
+  property required completedInstallments: int? = 0
 
   // Status
   indexed property required status: string = "ACTIVE"
@@ -337,12 +337,12 @@ entity CollectionPaymentPlan mixin TenantScoped {
   property required startDate: datetime = now()
 
   // Metadata
-  property metadata: string = "{}"
+  property metadata: json = {}
 
   // Timestamps
   timestamps
-  property completedAt: datetime
-  property defaultedAt: datetime
+  property completedAt: datetime?
+  property defaultedAt: datetime?
 
   // Computed properties
   computed isCompleted: boolean = self.status == "COMPLETED"

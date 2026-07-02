@@ -23,28 +23,28 @@ entity Invoice mixin TenantScoped {
   // Payment terms
   property required paymentTerms: int = 30
   property required dueDate: datetime
-  property paidAt: datetime
+  property paidAt: datetime?
 
   // Deposit specific
-  property depositPercentage: decimal = 0
-  property depositRequired: decimal = 0
-  property depositPaid: money = 0
+  property depositPercentage: decimal? = 0
+  property depositRequired: decimal? = 0
+  property depositPaid: money? = 0
 
   // Timestamps
   property required issuedAt: datetime = now()
-  property sentAt: datetime
-  property viewedAt: datetime
-  property overdueSince: datetime
+  property sentAt: datetime?
+  property viewedAt: datetime?
+  property overdueSince: datetime?
 
   // Reminders
-  property reminderCount: int = 0
-  property lastReminderAt: datetime
+  property reminderCount: int? = 0
+  property lastReminderAt: datetime?
 
   // Metadata
-  searchable property notes: string = ""
-  property internalNotes: string = ""
-  property lineItems: string = "[]"
-  property required metadata: string = "{}"
+  searchable property notes: string? = ""
+  property internalNotes: string? = ""
+  property lineItems: json? = []
+  property required metadata: json = {}
 
   versionProperty version: number
   versionAtProperty versionAt: number
@@ -63,7 +63,7 @@ entity Invoice mixin TenantScoped {
 
   // Commands
   default policy InvoiceDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Invoice management"
-  command update(subtotal: money, taxAmount: money, total: money, amountDue: money, notes: string, internalNotes: string, dueDate: datetime, paymentTerms: int, lineItems: string) {
+  command update(subtotal: money, taxAmount: money, total: money, amountDue: money, notes: string, internalNotes: string, dueDate: datetime, paymentTerms: int, lineItems: json) {
     guard self.status == "DRAFT" "Can only update draft invoices"
     mutate subtotal = subtotal
     mutate taxAmount = taxAmount
@@ -149,7 +149,7 @@ entity Invoice mixin TenantScoped {
     emit InvoiceWrittenOff
   }
 
-  command updateLineItems(lineItems: string) {
+  command updateLineItems(lineItems: json) {
     guard self.status == "DRAFT" "Can only modify line items in draft invoices"
     mutate lineItems = lineItems
     emit InvoiceLineItemsUpdated

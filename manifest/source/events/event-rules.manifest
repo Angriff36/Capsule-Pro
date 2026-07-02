@@ -4,28 +4,28 @@ use "../_base.manifest"
 
 entity Event mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property clientId: string = ""
-  unique property eventNumber: string = ""
+  property clientId: string? = ""
+  unique property eventNumber: string? = ""
   searchable property required title: string = "Untitled Event"
   property required eventType: string = "general"
   property required eventDate: datetime
   property required guestCount: int = 1
   indexed property required status: string = "draft"
-  property budget: money = 0
-  property ticketPrice: money = 0
-  property ticketTier: string = ""
-  property eventFormat: string = ""
+  property budget: money? = 0
+  property ticketPrice: money? = 0
+  property ticketTier: string? = ""
+  property eventFormat: string? = ""
   property required accessibilityOptions: array<string>
-  property featuredMediaUrl: string = ""
-  property locationId: string = ""
-  property venueId: string = ""
-  property venueEntityId: string = ""
-  property assignedTo: string = ""
-  property venueName: string = ""
-  property venueAddress: string = ""
-  searchable property notes: string = ""
+  property featuredMediaUrl: string? = ""
+  property locationId: string? = ""
+  property venueId: string? = ""
+  property venueEntityId: string? = ""
+  property assignedTo: string? = ""
+  property venueName: string? = ""
+  property venueAddress: string? = ""
+  searchable property notes: string? = ""
   property required tags: array<string>
-  property templateId: string = ""
+  property templateId: string? = ""
   versionProperty version: number
   versionAtProperty versionAt: number
   timestamps
@@ -298,7 +298,7 @@ entity EventProfitability mixin TenantScoped, SoftDeletable {
   property marginVariancePct: decimal = 0
   property calculatedAt: datetime
   property calculationMethod: string = "auto"
-  searchable property notes: string = ""
+  searchable property notes: string? = ""
   timestamps
 
   computed isProfitable: boolean = self.actualGrossMargin > 0
@@ -389,14 +389,14 @@ entity EventProfitability mixin TenantScoped, SoftDeletable {
 entity EventSummary mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required eventId: string
-  property highlights: string = "[]"
-  property issues: string = "[]"
-  property financialPerformance: string = "[]"
-  property clientFeedback: string = "[]"
-  property insights: string = "[]"
-  property overallSummary: string = ""
+  property highlights: json? = []
+  property issues: json? = []
+  property financialPerformance: json? = []
+  property clientFeedback: json? = []
+  property insights: json? = []
+  property overallSummary: string? = ""
   property generatedAt: datetime
-  property generationDurationMs: int = 0
+  property generationDurationMs: int? = 0
   timestamps
 
   computed hasHighlights: boolean = self.highlights != "[]" and self.highlights != ""
@@ -408,7 +408,7 @@ entity EventSummary mixin TenantScoped, SoftDeletable {
   constraint validEventId: self.eventId != null and self.eventId != "" "Event ID is required"
 
   default policy EventSummaryDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(eventId: string, highlights: string, issues: string, financialPerformance: string, clientFeedback: string, insights: string, overallSummary: string) {
+  command create(eventId: string, highlights: json, issues: json, financialPerformance: json, clientFeedback: json, insights: json, overallSummary: string) {
     guard eventId != null and eventId != "" "Event ID is required"
 
     mutate eventId = eventId
@@ -423,7 +423,7 @@ entity EventSummary mixin TenantScoped, SoftDeletable {
     emit EventSummaryCreated
   }
 
-  command update(highlights: string, issues: string, financialPerformance: string, clientFeedback: string, insights: string, overallSummary: string) {
+  command update(highlights: json, issues: json, financialPerformance: json, clientFeedback: json, insights: json, overallSummary: string) {
     mutate highlights = highlights
     mutate issues = issues
     mutate financialPerformance = financialPerformance

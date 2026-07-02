@@ -4,11 +4,11 @@ use "../_base.manifest"
 
 entity WorkforceOptimization mixin TenantScoped {
   key [tenantId, id]
-  property locationId: string = ""
-  property optimizationType: string = "" // "schedule", "assignment", "performance"
-  indexed property status: string = "pending" // "pending", "in_progress", "completed", "failed"
+  property locationId: string? = ""
+  property optimizationType: string? = "" // "schedule", "assignment", "performance"
+  indexed property status: string? = "pending" // "pending", "in_progress", "completed", "failed"
   timestamps
-  property completedAt: datetime
+  property completedAt: datetime?
 
   computed isPending: boolean = self.status == "pending"
   computed isInProgress: boolean = self.status == "in_progress"
@@ -63,15 +63,15 @@ entity WorkforceOptimization mixin TenantScoped {
 
 entity PerformancePrediction mixin TenantScoped {
   key [tenantId, id]
-  property employeeId: string = ""
-  property predictionType: string = "" // "productivity", "attendance", "overtime_risk", "skill_match"
-  property predictionHorizon: int = 0 // days
-  property predictionScore: decimal = 0 // 0-100
-  property confidence: string = "medium" // "low", "medium", "high"
-  property factors: string = "" // JSON string of factors
+  property employeeId: string? = ""
+  property predictionType: string? = "" // "productivity", "attendance", "overtime_risk", "skill_match"
+  property predictionHorizon: int? = 0 // days
+  property predictionScore: decimal? = 0 // 0-100
+  property confidence: string? = "medium" // "low", "medium", "high"
+  property factors: string? = "" // JSON string of factors
   // No `timestamps` keyword: public.PerformancePrediction is write-once (createdAt + expiresAt only, no updatedAt column)
-  property createdAt: datetime = now()
-  property expiresAt: datetime = now()
+  property createdAt: datetime? = now()
+  property expiresAt: datetime? = now()
 
   computed isExpired: boolean = self.expiresAt < now() cache request
 

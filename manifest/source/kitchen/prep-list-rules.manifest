@@ -16,14 +16,14 @@ entity PrepList mixin TenantScoped {
   property required eventId: string
   searchable property required name: string
   property batchMultiplier: decimal = 1
-  property dietaryRestrictions: array<string> = []
+  property dietaryRestrictions: array<string>? = []
   indexed property status: PrepListStatus = draft
   property totalItems: int = 0
   property totalEstimatedTime: int = 0
-  searchable property notes: string = ""
+  searchable property notes: string? = ""
   property generatedAt: datetime
-  property finalizedAt: datetime
-  property isActive: boolean = true
+  property finalizedAt: datetime?
+  property isActive: boolean? = true
 
   timestamps
   computed isDraft: boolean = self.status == "draft"
@@ -217,26 +217,26 @@ entity PrepList mixin TenantScoped {
 entity PrepListItem mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required prepListId: string
-  property required stationId: string
+  property required stationId: string?
   property required stationName: string
   property required ingredientId: string
   property required ingredientName: string
-  property category: string = ""
+  property category: string? = ""
   property baseQuantity: decimal = 0
   property baseUnit: string = ""
   property scaledQuantity: decimal = 0
   property scaledUnit: string = ""
   property isOptional: boolean = false
-  property preparationNotes: string = ""
-  property allergens: array<string> = []
-  property dietarySubstitutions: array<string> = []
-  property dishId: string = ""
-  property dishName: string = ""
-  property recipeVersionId: string = ""
+  property preparationNotes: string? = ""
+  property allergens: array<string>? = []
+  property dietarySubstitutions: array<string>? = []
+  property dishId: string? = ""
+  property dishName: string? = ""
+  property recipeVersionId: string? = ""
   property sortOrder: int = 0
   property isCompleted: boolean = false
-  property completedAt: datetime
-  property completedBy: string = ""
+  property completedAt: datetime?
+  property completedBy: string? = ""
 
   timestamps
   computed hasAllergens: boolean = self.allergens != null and length(self.allergens) > 0

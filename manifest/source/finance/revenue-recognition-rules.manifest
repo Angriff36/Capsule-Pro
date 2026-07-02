@@ -8,7 +8,7 @@ entity RevenueRecognitionSchedule mixin TenantScoped {
   // Reference information
   property required invoiceId: string
   property required eventId: string
-  property required contractId: string
+  property required contractId: string?
   property required clientId: string
 
   // Revenue details
@@ -26,21 +26,21 @@ entity RevenueRecognitionSchedule mixin TenantScoped {
   property recognitionPeriod: int = 0
 
   // Service period (for SERVICE_PERIOD method)
-  property serviceStartDate: datetime = now()
-  property serviceEndDate: datetime = now()
+  property serviceStartDate: datetime? = now()
+  property serviceEndDate: datetime? = now()
 
   // Milestone tracking (for MILESTONE_BASED method)
   property totalMilestones: int = 0
   property completedMilestones: int = 0
 
   // Metadata
-  searchable property description: string = ""
-  searchable property notes: string = ""
-  property metadata: string = ""
+  searchable property description: string? = ""
+  searchable property notes: string? = ""
+  property metadata: json = {}
 
   // Timestamps
   timestamps
-  property completedAt: datetime
+  property completedAt: datetime?
 
   // Computed properties
   computed recognitionPercentage: number = percent(self.recognizedAmount, self.totalAmount) cache request
@@ -71,7 +71,7 @@ entity RevenueRecognitionSchedule mixin TenantScoped {
   // ONLY to fence the generic resolver: Invoice also owns a `metadata` string, and
   // the schedule's metadata is its own — listing it as a param excludes it from
   // inheritance so the invoice's metadata never bleeds onto the schedule.
-  command create(invoiceId: string, contractId: string, totalAmount: money, method: string, startDate: datetime, endDate: datetime, recognitionPeriod: number, description: string, notes: string, metadata: string) {
+  command create(invoiceId: string, contractId: string, totalAmount: money, method: string, startDate: datetime, endDate: datetime, recognitionPeriod: number, description: string, notes: string, metadata: json) {
     guard invoiceId != null and invoiceId != "" "Invoice ID is required"
     guard contractId != null and contractId != "" "Contract ID is required"
     guard totalAmount > 0 "Total amount must be positive"
@@ -88,7 +88,7 @@ entity RevenueRecognitionSchedule mixin TenantScoped {
     mutate recognitionPeriod = recognitionPeriod
     mutate description = description
     mutate notes = notes
-    mutate metadata = metadata != null ? metadata : ""
+    mutate metadata = metadata != null ? metadata : {}
 
     emit RecognitionStarted
   }
@@ -218,18 +218,18 @@ entity RevenueRecognitionLine mixin TenantScoped {
   indexed property required status: string = "PENDING"
 
   // Timing
-  property required dueDate: datetime = now()
-  property recognizedAt: datetime
+  property required dueDate: datetime? = now()
+  property recognizedAt: datetime?
 
   // Milestone info (for milestone-based recognition)
-  property milestoneId: string = ""
-  property milestoneName: string = ""
-  property milestoneDescription: string = ""
+  property milestoneId: string? = ""
+  property milestoneName: string? = ""
+  property milestoneDescription: string? = ""
 
   // Metadata
-  searchable property description: string = ""
-  searchable property notes: string = ""
-  property metadata: string = ""
+  searchable property description: string? = ""
+  searchable property notes: string? = ""
+  property metadata: json = {}
 
   // Timestamps
   timestamps

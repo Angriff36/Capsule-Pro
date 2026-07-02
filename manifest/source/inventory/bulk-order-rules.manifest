@@ -13,15 +13,15 @@ entity BulkOrderRule mixin TenantScoped, SoftDeletable {
   property ruleName: string = ""
   property required minimumQuantity: decimal = 1
   property required ruleType: string = "discount"
-  property thresholdQuantity: decimal = 0
+  property thresholdQuantity: decimal? = 0
   property action: string = "discount"
-  property discountPercent: decimal = 0
-  property freeItemQuantity: int = 0
+  property discountPercent: decimal? = 0
+  property freeItemQuantity: int? = 0
   property shippingIncluded: boolean = false
   property priority: int = 0
   // effectiveFrom/effectiveTo: null = unbounded on that side (no date restriction).
-  property effectiveFrom: datetime
-  property effectiveTo: datetime
+  property effectiveFrom: datetime?
+  property effectiveTo: datetime?
   property isActive: boolean = true
   timestamps
 

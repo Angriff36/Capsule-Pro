@@ -11,7 +11,7 @@ entity AdminTaskAttachment mixin TenantScoped, SoftDeletable {
   property fileUrl: string = ""
   property fileSize: int = 0
   property mimeType: string = ""
-  property uploadedBy: string = ""
+  property uploadedBy: string? = ""
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null

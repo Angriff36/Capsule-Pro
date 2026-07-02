@@ -8,18 +8,18 @@ entity Equipment mixin TenantScoped {
   searchable property required name: string
   property required type: string = "general"
   indexed property required status: string = "active"
-  unique property serialNumber: string = ""
-  property manufacturer: string = ""
-  property model: string = ""
-  property purchaseDate: datetime = now()
-  property warrantyExpiry: datetime
-  property lastMaintenanceDate: datetime
-  property nextMaintenanceDate: datetime
+  unique property serialNumber: string? = ""
+  property manufacturer: string? = ""
+  property model: string? = ""
+  property purchaseDate: datetime? = now()
+  property warrantyExpiry: datetime?
+  property lastMaintenanceDate: datetime?
+  property nextMaintenanceDate: datetime?
   property maintenanceIntervalDays: int = 90
   property usageHours: float = 0
   property maxUsageHours: float = 1000
   property condition: string = "good"
-  searchable property notes: string = ""
+  searchable property notes: string? = ""
   property isActive: boolean = true
   timestamps
 
@@ -215,21 +215,21 @@ entity Equipment mixin TenantScoped {
 entity MaintenanceWorkOrder mixin TenantScoped {
   key [tenantId, id]
   property workOrderNumber: string = ""
-  property areaId: string = ""
-  property equipmentId: string = ""
+  property areaId: string? = ""
+  property equipmentId: string? = ""
   searchable property required title: string
   property required workOrderType: string = "corrective"
   property required priority: string = "medium"
   indexed property required status: string = "open"
-  searchable property description: string = ""
-  property reportedBy: string = ""
-  property assignedTo: string = ""
-  property scheduledDate: datetime
-  property completedAt: datetime
-  property estimatedCost: money = 0
-  property totalCost: money = 0
-  property partsUsed: string = ""
-  searchable property notes: string = ""
+  searchable property description: string? = ""
+  property reportedBy: string? = ""
+  property assignedTo: string? = ""
+  property scheduledDate: datetime?
+  property completedAt: datetime?
+  property estimatedCost: money? = 0
+  property totalCost: money? = 0
+  property partsUsed: string? = ""
+  searchable property notes: string? = ""
   timestamps
 
   computed isOverdue: boolean = self.scheduledDate != null and self.status in ["open", "in_progress"] and now() > self.scheduledDate cache request

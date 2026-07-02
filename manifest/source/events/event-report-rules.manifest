@@ -9,18 +9,18 @@ entity EventReport mixin TenantScoped, SoftDeletable {
   property version: string = "2025-01-01"
   indexed property status: string = "draft"
   property completion: int = 0
-  property checklistData: string = "{}"
-  property parsedEventData: string = ""
-  property reportConfig: string = ""
-  property autoFillScore: int = 0
-  property reviewNotes: string = ""
-  property reviewedBy: string = ""
+  property checklistData: json = {}
+  property parsedEventData: json? = {}
+  property reportConfig: json? = {}
+  property autoFillScore: int? = 0
+  property reviewNotes: string? = ""
+  property reviewedBy: string? = ""
   // Bug fix: lifecycle datetimes — no default
-  property reviewedAt: datetime
-  property completedAt: datetime
-  property rejectedAt: datetime
-  property rejectedBy: string = ""
-  property rejectionReason: string = ""
+  property reviewedAt: datetime?
+  property completedAt: datetime?
+  property rejectedAt: datetime?
+  property rejectedBy: string? = ""
+  property rejectionReason: string? = ""
   timestamps
 
   computed isDraft: boolean = self.status == "draft"
@@ -53,7 +53,7 @@ entity EventReport mixin TenantScoped, SoftDeletable {
   }
 
   default policy EventReportDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(eventId: string, name: string, version: string, checklistData: string, reportConfig: string, notes: string) {
+  command create(eventId: string, name: string, version: string, checklistData: json, reportConfig: json, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard name != null and name != "" "Report name is required"
 
@@ -70,7 +70,7 @@ entity EventReport mixin TenantScoped, SoftDeletable {
 
   command submit(userId: string) {
     guard self.status == "draft" or self.status == "in_progress" "Can only submit draft or in-progress reports"
-    guard self.checklistData != "{}" and self.checklistData != "" "Cannot submit report with empty checklist data"
+    guard self.checklistData != "{}" and self.checklistData != null "Cannot submit report with empty checklist data"
 
     constraint warnIncomplete:warn self.completion < 100 {
       messageTemplate: "Submitting report '{reportName}' at {completion}% completion"
@@ -115,7 +115,7 @@ entity EventReport mixin TenantScoped, SoftDeletable {
 
   command complete(userId: string) {
     guard self.status == "draft" or self.status == "in_progress" "Can only complete draft or in-progress reports"
-    guard self.checklistData != "{}" and self.checklistData != "" "Cannot complete report with empty checklist data"
+    guard self.checklistData != "{}" and self.checklistData != null "Cannot complete report with empty checklist data"
 
     mutate status = "completed"
     mutate completion = 100
@@ -124,7 +124,7 @@ entity EventReport mixin TenantScoped, SoftDeletable {
     emit EventReportCompleted
   }
 
-  command updateProgress(completion: int, checklistData: string) {
+  command updateProgress(completion: int, checklistData: json) {
     guard self.status == "draft" or self.status == "in_progress" "Can only update progress on draft or in-progress reports"
     guard completion >= 0 and completion <= 100 "Completion must be between 0 and 100"
 

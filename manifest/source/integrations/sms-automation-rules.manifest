@@ -5,13 +5,13 @@ use "../_base.manifest"
 entity SmsAutomationRule mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property required name: string = ""
-  searchable property description: string = ""
+  searchable property description: string? = ""
   property required triggerType: string = "custom_event"
-  property triggerConfig: string = "{}"
-  property templateId: string = ""
-  property customMessage: string = ""
+  property triggerConfig: json = {}
+  property templateId: string? = ""
+  property customMessage: string? = ""
   property recipientType: string = "employee"
-  property recipientConfig: string = "{}"
+  property recipientConfig: json = {}
   property isActive: boolean = true
   property priority: int = 100
   timestamps
@@ -27,7 +27,7 @@ entity SmsAutomationRule mixin TenantScoped, SoftDeletable {
   constraint hasMessageOrTemplate: (self.templateId != null and self.templateId != "") or (self.customMessage != null and self.customMessage != "") "Either template or custom message is required"
 
   default policy SmsAutomationRuleDefaultAccess execute: user.role in ["manager", "admin"] "SMS automation"
-  command create(name: string, description: string, triggerType: string, triggerConfig: string, templateId: string, customMessage: string, recipientType: string, recipientConfig: string, isActive: boolean, priority: number) {
+  command create(name: string, description: string, triggerType: string, triggerConfig: json, templateId: string, customMessage: string, recipientType: string, recipientConfig: json, isActive: boolean, priority: number) {
     guard name != null and name != "" "Rule name is required"
     guard triggerType != null and triggerType != "" "Trigger type is required"
     guard (templateId != null and templateId != "") or (customMessage != null and customMessage != "") "Either template or custom message is required"
@@ -46,7 +46,7 @@ entity SmsAutomationRule mixin TenantScoped, SoftDeletable {
     emit SmsAutomationRuleCreated
   }
 
-  command update(name: string, description: string, triggerConfig: string, templateId: string, customMessage: string, recipientType: string, recipientConfig: string, isActive: boolean, priority: number) {
+  command update(name: string, description: string, triggerConfig: json, templateId: string, customMessage: string, recipientType: string, recipientConfig: json, isActive: boolean, priority: number) {
     guard self.deletedAt == null "Cannot update a deleted rule"
     guard name != null and name != "" "Rule name is required"
     guard (templateId != null and templateId != "") or (customMessage != null and customMessage != "") "Either template or custom message is required"

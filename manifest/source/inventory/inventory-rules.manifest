@@ -6,20 +6,20 @@ entity InventoryItem mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required item_number: string
   searchable property required name: string
-  searchable property description: string = ""
+  searchable property description: string? = ""
   property required category: string
   property unitOfMeasure: string = "each"
   property unitCost: money = 0
   property quantityOnHand: decimal = 0
-  property quantityReserved: int = 0
+  property quantityReserved: int? = 0
   property parLevel: decimal = 0
   property reorder_level: decimal = 0
-  property supplierId: string = ""
-  property tags: array<string> = []
-  property fsa_status: string = "unknown"
-  property fsa_temp_logged: boolean = false
-  property fsa_allergen_info: boolean = false
-  property fsa_traceable: boolean = false
+  property supplierId: string? = ""
+  property tags: array<string>? = []
+  property fsa_status: string? = "unknown"
+  property fsa_temp_logged: boolean? = false
+  property fsa_allergen_info: boolean? = false
+  property fsa_traceable: boolean? = false
   versionProperty version: number
   versionAtProperty versionAt: number
   timestamps

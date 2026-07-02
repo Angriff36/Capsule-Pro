@@ -8,11 +8,11 @@ entity Container mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property required name: string
   property required containerType: string
-  property locationId: string = ""
-  property sizeDescription: string = ""
-  property capacityVolumeMl: decimal = 0
-  property capacityWeightG: decimal = 0
-  property capacityPortions: int = 0
+  property locationId: string? = ""
+  property sizeDescription: string? = ""
+  property capacityVolumeMl: decimal? = 0
+  property capacityWeightG: decimal? = 0
+  property capacityPortions: int? = 0
   property isReusable: boolean = true
   property isActive: boolean = true
   timestamps

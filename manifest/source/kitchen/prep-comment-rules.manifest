@@ -13,8 +13,8 @@ entity PrepComment mixin TenantScoped, SoftDeletable {
   property required commentText: string
   property isResolved: boolean = false
   // BUG FIX: lifecycle timestamp — no default (nullable until resolved)
-  property resolvedAt: datetime
-  property resolvedBy: string = ""
+  property resolvedAt: datetime?
+  property resolvedBy: string? = ""
   timestamps
 
   computed isActive: boolean = self.deletedAt == null

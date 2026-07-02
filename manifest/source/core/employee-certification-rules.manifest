@@ -8,9 +8,9 @@ entity EmployeeCertification mixin TenantScoped, SoftDeletable {
   property certificationType: string = ""
   property certificationName: string = ""
   property required issuedDate: datetime
-  property expiryDate: datetime
-  property documentUrl: string = ""
-  indexed property status: string = "active"
+  property expiryDate: datetime?
+  property documentUrl: string? = ""
+  indexed property status: string? = "active"
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null

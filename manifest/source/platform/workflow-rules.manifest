@@ -6,9 +6,9 @@ entity Workflow mixin TenantScoped, SoftDeletable {
   // No relationships: triggerType/triggerConfig are configuration values, no entity FKs
   key [tenantId, id]
   searchable property name: string = ""
-  searchable property description: string = ""
+  searchable property description: string? = ""
   property triggerType: string = ""
-  property triggerConfig: string = "{}"
+  property triggerConfig: json = {}
   property isActive: boolean = true
   timestamps
 
@@ -20,7 +20,7 @@ entity Workflow mixin TenantScoped, SoftDeletable {
   constraint validTriggerType: self.triggerType != null and self.triggerType != "" "Trigger type is required"
 
   default policy WorkflowDefaultAccess execute: user.role in ["manager", "admin"] "Workflow management"
-  command create(name: string, description: string, triggerType: string, triggerConfig: string) {
+  command create(name: string, description: string, triggerType: string, triggerConfig: json) {
     guard name != null and name != "" "Workflow name is required"
     guard triggerType != null and triggerType != "" "Trigger type is required"
 
@@ -33,7 +33,7 @@ entity Workflow mixin TenantScoped, SoftDeletable {
     emit WorkflowCreated
   }
 
-  command update(newName: string, newDescription: string, newTriggerType: string, newTriggerConfig: string) {
+  command update(newName: string, newDescription: string, newTriggerType: string, newTriggerConfig: json) {
     guard newName != null and newName != "" "Workflow name is required"
     guard self.isActive == false "Cannot update an active workflow - deactivate first"
 
@@ -56,7 +56,7 @@ entity Workflow mixin TenantScoped, SoftDeletable {
   command activate(userId: string) {
     guard self.isActive == false "Workflow is already active"
 
-    constraint blockNoTriggerConfig:block self.triggerConfig != null and self.triggerConfig != "" and self.triggerConfig != "{}" {
+    constraint blockNoTriggerConfig:block self.triggerConfig != null and self.triggerConfig != "{}" {
       messageTemplate: "Cannot activate workflow '{workflowName}' without trigger configuration"
       details: {
         workflowName: self.name

@@ -7,16 +7,16 @@ entity BoardConfig mixin TenantScoped, SoftDeletable {
   searchable property name: string = "Default Board"
   // columns/settings: JSON-as-string payloads (Manifest IR grammar has no
   // object/array<object> kind; same pattern as CommandBoard.metadata).
-  property columns: string = "[]"
-  property settings: string = "{}"
-  property createdBy: string = ""
+  property columns: json = []
+  property settings: json = {}
+  property createdBy: string? = ""
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null
 
   default policy BoardConfigDefaultAccess execute: user.role in ["manager", "admin"] "Kanban board config management"
 
-  command create(name: string, columns: string, settings: string, createdBy: string) {
+  command create(name: string, columns: json, settings: json, createdBy: string) {
     guard name != null and name != "" "Board name is required"
 
     mutate name = name
@@ -27,7 +27,7 @@ entity BoardConfig mixin TenantScoped, SoftDeletable {
     emit BoardConfigCreated
   }
 
-  command updateColumns(columns: string) {
+  command updateColumns(columns: json) {
     guard self.deletedAt == null "Cannot update a deleted config"
     guard columns != null "Columns are required"
 
@@ -36,7 +36,7 @@ entity BoardConfig mixin TenantScoped, SoftDeletable {
     emit BoardConfigUpdated
   }
 
-  command updateSettings(settings: string) {
+  command updateSettings(settings: json) {
     guard self.deletedAt == null "Cannot update a deleted config"
     guard settings != null "Settings are required"
 

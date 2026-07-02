@@ -19,10 +19,10 @@ entity KitchenTask mixin TenantScoped {
   indexed property required status: KitchenTaskStatus = pending
   property priority: int = 5
   property complexity: int = 5
-  property tags: string = ""
+  property tags: string? = ""
   property assignedTo: string = ""
-  property dueDate: datetime
-  property completedAt: datetime
+  property dueDate: datetime?
+  property completedAt: datetime?
   timestamps
 
   computed isOverdue: boolean = self.dueDate != null and now() > self.dueDate and self.status != "done" cache request

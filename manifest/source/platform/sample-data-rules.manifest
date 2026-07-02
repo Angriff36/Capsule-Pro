@@ -19,17 +19,17 @@ entity SampleData mixin TenantScoped {
   // The tenant this sample data belongs to
   
   // Timestamps for tracking
-  property seededAt: datetime = now()
-  property clearedAt: datetime
+  property seededAt: datetime? = now()
+  property clearedAt: datetime?
   
   // Status tracking
-  property isSeeded: boolean = false
+  property isSeeded: boolean? = false
   
   // Statistics (populated after seed/clear)
-  property eventsCreated: int = 0
-  property clientsCreated: int = 0
-  property usersCreated: int = 0
-  property recipesCreated: int = 0
+  property eventsCreated: int? = 0
+  property clientsCreated: int? = 0
+  property usersCreated: int? = 0
+  property recipesCreated: int? = 0
   
   computed hasSampleData: boolean = self.isSeeded == true
 

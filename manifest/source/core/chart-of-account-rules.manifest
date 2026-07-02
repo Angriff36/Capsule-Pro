@@ -7,8 +7,8 @@ entity ChartOfAccount mixin TenantScoped {
   property accountNumber: string = ""
   property accountName: string = ""
   property accountType: string = ""
-  property parentId: string = ""
-  searchable property description: string = ""
+  property parentId: string? = ""
+  searchable property description: string? = ""
   property isActive: boolean = true
   timestamps
 

@@ -8,18 +8,18 @@ entity CycleCountSession mixin TenantScoped, SoftDeletable {
   property required sessionId: string
   property required sessionName: string
   property countType: string = "ad_hoc"
-  property scheduledDate: datetime
-  property startedAt: datetime
-  property completedAt: datetime
-  property finalizedAt: datetime
+  property scheduledDate: datetime?
+  property startedAt: datetime?
+  property completedAt: datetime?
+  property finalizedAt: datetime?
   indexed property status: string = "draft"
   property totalItems: int = 0
   property countedItems: int = 0
   property totalVariance: decimal = 0
   property variancePercentage: decimal = 0
-  searchable property notes: string = ""
+  searchable property notes: string? = ""
   property createdById: string = ""
-  property approvedById: string = ""
+  property approvedById: string? = ""
   timestamps
 
   computed isDraft: boolean = self.status == "draft"
@@ -170,13 +170,13 @@ entity CycleCountRecord mixin TenantScoped, SoftDeletable {
   property variancePct: decimal = 0
   property countDate: datetime
   property countedById: string = ""
-  property barcode: string = ""
-  searchable property notes: string = ""
+  property barcode: string? = ""
+  searchable property notes: string? = ""
   property isVerified: boolean = false
-  property verifiedById: string = ""
-  property verifiedAt: datetime
+  property verifiedById: string? = ""
+  property verifiedAt: datetime?
   property syncStatus: string = "synced"
-  property offlineId: string = ""
+  property offlineId: string? = ""
   timestamps
 
   computed hasVariance: boolean = self.variance != 0
@@ -275,17 +275,17 @@ entity VarianceReport mixin TenantScoped, SoftDeletable {
   property variancePct: decimal = 0
   property accuracyScore: decimal = 0
   indexed property status: string = "pending"
-  property adjustmentType: string = ""
-  property adjustmentAmount: money = 0
-  property adjustmentDate: datetime
-  property rejectedAt: datetime
-  property rejectedBy: string = ""
-  property rejectionReason: string = ""
-  searchable property notes: string = ""
-  property rootCause: string = ""
-  property resolutionNotes: string = ""
-  property resolvedById: string = ""
-  property resolvedAt: datetime
+  property adjustmentType: string? = ""
+  property adjustmentAmount: money? = 0
+  property adjustmentDate: datetime?
+  property rejectedAt: datetime?
+  property rejectedBy: string? = ""
+  property rejectionReason: string? = ""
+  searchable property notes: string? = ""
+  property rootCause: string? = ""
+  property resolutionNotes: string? = ""
+  property resolvedById: string? = ""
+  property resolvedAt: datetime?
   property generatedAt: datetime
   timestamps
 

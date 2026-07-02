@@ -8,23 +8,23 @@ entity VendorCatalog mixin TenantScoped, SoftDeletable {
   property required supplierId: string
   unique property required itemNumber: string = ""
   searchable searchable property required itemName: string = ""
-  searchable property description: string = ""
-  property category: string = ""
+  searchable property description: string? = ""
+  property category: string? = ""
   property required baseUnitCost: money = 0
   property required currency: string = "USD"
   property required unitOfMeasure: string = "each"
-  property leadTimeDays: int = 0
-  property leadTimeMinDays: int = 0
-  property leadTimeMaxDays: int = 0
-  property minimumOrderQuantity: decimal = 0
-  property orderMultiple: decimal = 0
+  property leadTimeDays: int? = 0
+  property leadTimeMinDays: int? = 0
+  property leadTimeMaxDays: int? = 0
+  property minimumOrderQuantity: decimal? = 0
+  property orderMultiple: decimal? = 0
   property required isActive: boolean = true
-  property effectiveFrom: datetime
-  property effectiveTo: datetime
-  property supplierSku: string = ""
-  searchable property notes: string = ""
+  property effectiveFrom: datetime?
+  property effectiveTo: datetime?
+  property supplierSku: string? = ""
+  searchable property notes: string? = ""
   property required tags: array<string>
-  property lastCostUpdate: datetime
+  property lastCostUpdate: datetime?
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null

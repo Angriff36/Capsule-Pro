@@ -6,10 +6,10 @@ use "../_base.manifest"
 entity PrepMethod mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property required name: string
-  property category: string = ""
-  searchable property description: string = ""
-  property estimatedDurationMinutes: int = 0
-  property requiresCertification: string[] = []
+  property category: string? = ""
+  searchable property description: string? = ""
+  property estimatedDurationMinutes: int? = 0
+  property requiresCertification: array<string>? = []
   property isActive: boolean = true
   timestamps
 

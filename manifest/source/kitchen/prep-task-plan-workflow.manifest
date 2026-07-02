@@ -28,25 +28,25 @@ entity PrepTaskPlanWorkflow mixin TenantScoped {
   indexed property status: PrepTaskPlanWorkflowStatus = created
   property currentStep: int = 0
   property totalSteps: int = 5
-  property generationOptions: string = "{}"
-  property generatedTasks: string = "[]"
-  property reviewedTasks: string = "[]"
-  property approvedTaskIds: string = "[]"
-  property rejectedTaskIds: string = "[]"
-  property instantiatedTaskIds: string = "[]"
-  property scheduledWindows: string = "{}"
-  property constraintOutcomes: string = "[]"
-  property errors: string = "[]"
-  property warnings: string = "[]"
+  property generationOptions: string? = "{}"
+  property generatedTasks: string? = "[]"
+  property reviewedTasks: string? = "[]"
+  property approvedTaskIds: string? = "[]"
+  property rejectedTaskIds: string? = "[]"
+  property instantiatedTaskIds: string? = "[]"
+  property scheduledWindows: string? = "{}"
+  property constraintOutcomes: string? = "[]"
+  property errors: string? = "[]"
+  property warnings: string? = "[]"
   property generatedCount: int = 0
   property approvedCount: int = 0
   property instantiatedCount: int = 0
-  property reviewedBy: string = ""
-  property reviewedAt: datetime
-  property approvedBy: string = ""
-  property approvedAt: datetime
-  property startedAt: datetime
-  property completedAt: datetime
+  property reviewedBy: string? = ""
+  property reviewedAt: datetime?
+  property approvedBy: string? = ""
+  property approvedAt: datetime?
+  property startedAt: datetime?
+  property completedAt: datetime?
   timestamps
 
   // Computed properties for state checks

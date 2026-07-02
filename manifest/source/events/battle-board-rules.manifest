@@ -6,32 +6,32 @@ use "../_base.manifest"
 
 entity BattleBoard mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property eventId: string = ""
+  property eventId: string? = ""
   property boardName: string = ""
   property boardType: string = "event-specific"
   property schemaVersion: string = "mangia-battle-board@1"
-  property boardData: string = "{}"
-  property documentUrl: string = ""
-  property sourceDocumentType: string = ""
-  property documentImportedAt: datetime = now()
+  property boardData: json = {}
+  property documentUrl: string? = ""
+  property sourceDocumentType: string? = ""
+  property documentImportedAt: datetime? = now()
   indexed property status: string = "draft"
   property isTemplate: boolean = false
-  searchable property description: string = ""
-  searchable property notes: string = ""
-  property tags: array<string> = []
+  searchable property description: string? = ""
+  searchable property notes: string? = ""
+  property tags: array<string>? = []
   timestamps
 
   // Parent-context snapshot (inherited from the linked Event at create time).
   // These are NOT create-command parameters: they can only be populated by
   // parent-context propagation, so the board never asks the user to re-enter
   // event-owned data. See specs/parent-context-propagation.md.
-  property eventDate: datetime
-  property clientId: string = ""
-  property guestCount: int = 0
-  property venueName: string = ""
-  property venueAddress: string = ""
-  property locationId: string = ""
-  property inheritedContext: string = "{}"
+  property eventDate: datetime?
+  property clientId: string? = ""
+  property guestCount: int? = 0
+  property venueName: string? = ""
+  property venueAddress: string? = ""
+  property locationId: string? = ""
+  property inheritedContext: string? = "{}"
 
   computed isOpen: boolean = self.status == "open"
   computed isVoting: boolean = self.status == "voting"
@@ -69,14 +69,14 @@ entity BattleBoard mixin TenantScoped, SoftDeletable {
     mutate isTemplate = isTemplate
     mutate notes = notes
     mutate tags = tags
-    mutate boardData = "{}"
+    mutate boardData = {}
 
     emit BattleBoardCreated
   }
 
   command open(userId: string) {
     guard self.status == "draft" "Can only open draft battle boards"
-    guard (self.boardData != "{}" and self.boardData != "") "Cannot open battle board with no dishes"
+    guard (self.boardData != "{}" and self.boardData != null) "Cannot open battle board with no dishes"
 
     mutate status = "open"
 
@@ -91,9 +91,9 @@ entity BattleBoard mixin TenantScoped, SoftDeletable {
     emit BattleBoardVotingStarted
   }
 
-  command addDish(dishData: string, optional userId: string) {
+  command addDish(dishData: json, optional userId: string) {
     guard self.status != "finalized" "Cannot add dishes to finalized board"
-    guard dishData != null and dishData != "" "Dish data is required"
+    guard dishData != null "Dish data is required"
 
     mutate boardData = dishData
 
@@ -109,11 +109,11 @@ entity BattleBoard mixin TenantScoped, SoftDeletable {
     emit BattleBoardDishRemoved
   }
 
-  command vote(voteData: string, userId: string) {
+  command vote(voteData: json, userId: string) {
     guard self.status == "voting" "Can only vote when board is in voting status"
     guard self.status != "finalized" "Cannot vote on finalized battle board"
     guard userId != null and userId != "" "User ID is required"
-    guard voteData != null and voteData != "" "Vote data is required"
+    guard voteData != null "Vote data is required"
 
     mutate boardData = voteData
 
@@ -123,14 +123,14 @@ entity BattleBoard mixin TenantScoped, SoftDeletable {
   command finalize(userId: string) {
     guard self.status == "voting" "Can only finalize boards in voting status"
     guard self.status != "finalized" "Cannot finalize an already finalized battle board"
-    guard self.boardData != "{}" and self.boardData != "" "Cannot finalize board with no data"
+    guard self.boardData != "{}" and self.boardData != null "Cannot finalize board with no data"
 
     mutate status = "finalized"
 
     emit BattleBoardFinalized
   }
 
-  command update(boardName: string, status: string, notes: string, boardData: string) {
+  command update(boardName: string, status: string, notes: string, boardData: json) {
     mutate boardName = boardName
     mutate status = status
     mutate notes = notes
@@ -155,7 +155,7 @@ entity BattleBoard mixin TenantScoped, SoftDeletable {
     emit BattleBoardSyncedFromEvent
   }
 
-  command recordImport(boardData: string) {
+  command recordImport(boardData: json) {
     mutate boardData = boardData
 
     emit BattleBoardImportRecorded

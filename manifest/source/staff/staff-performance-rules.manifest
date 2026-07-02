@@ -6,20 +6,20 @@ use "../_base.manifest"
 entity StaffPerformance mixin TenantScoped {
   key [tenantId, id]
   property required employeeId: string
-  property reviewType: string = "quarterly"
-  indexed property status: string = "draft"
-  property rating: decimal = 0
-  property reviewerId: string = ""
-  property periodStart: datetime
-  property periodEnd: datetime
-  property strengths: string = ""
-  property improvements: string = ""
-  property goals: string = ""
-  searchable property notes: string = ""
-  property acknowledgementNotes: string = ""
+  property reviewType: string? = "quarterly"
+  indexed property status: string? = "draft"
+  property rating: decimal? = 0
+  property reviewerId: string? = ""
+  property periodStart: datetime?
+  property periodEnd: datetime?
+  property strengths: string? = ""
+  property improvements: string? = ""
+  property goals: string? = ""
+  searchable property notes: string? = ""
+  property acknowledgementNotes: string? = ""
   // Bug fix: completedAt is a lifecycle timestamp — must be nullable
-  property completedAt: datetime
-  property acknowledgedAt: datetime
+  property completedAt: datetime?
+  property acknowledgedAt: datetime?
   timestamps
 
   computed isDraft: boolean = self.status == "draft"

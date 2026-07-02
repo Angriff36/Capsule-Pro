@@ -14,9 +14,9 @@ enum RecipeVersionStatus {
 entity Recipe mixin TenantScoped {
   key [tenantId, id]
   searchable property required name: string
-  property category: string = ""
-  property cuisineType: string = ""
-  searchable property description: string = ""
+  property category: string? = ""
+  property cuisineType: string? = ""
+  searchable property description: string? = ""
   property required tags: string[]
   property required isActive: boolean = true
   timestamps
@@ -89,26 +89,26 @@ entity RecipeVersion mixin TenantScoped {
   property required recipeId: string
   searchable property required name: string
   property required versionNumber: int
-  property category: string = ""
-  property cuisineType: string = ""
-  searchable property description: string = ""
+  property category: string? = ""
+  property cuisineType: string? = ""
+  searchable property description: string? = ""
   property required tags: string[] = []
   property yieldQuantity: decimal = 1
   property yieldUnitId: int = 1
-  property yieldDescription: string = ""
-  property prepTimeMinutes: int = 0
-  property cookTimeMinutes: int = 0
-  property restTimeMinutes: int = 0
-  property difficultyLevel: int = 1
-  property instructions: string = ""
-  searchable property notes: string = ""
+  property yieldDescription: string? = ""
+  property prepTimeMinutes: int? = 0
+  property cookTimeMinutes: int? = 0
+  property restTimeMinutes: int? = 0
+  property difficultyLevel: int? = 1
+  property instructions: string? = ""
+  searchable property notes: string? = ""
   property totalCost: money = 0
   property costPerYield: money = 0
   // Status lifecycle: draft -> published. Approved is a separate flag on top of published.
-  indexed property status: RecipeVersionStatus = draft
-  property publishedAt: datetime
-  property approvedAt: datetime
-  property approvedBy: string = ""
+  indexed property status: RecipeVersionStatus? = draft
+  property publishedAt: datetime?
+  property approvedAt: datetime?
+  property approvedBy: string? = ""
   timestamps
 
   computed totalTimeMinutes: int = self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes
@@ -256,7 +256,7 @@ entity RecipeIngredient mixin TenantScoped, SoftDeletable {
   property required quantity: decimal
   property required unitId: int
   property required sortOrder: int
-  property preparationNotes: string = ""
+  property preparationNotes: string? = ""
   property isOptional: boolean = false
   property wasteFactor: decimal = 1.0
   timestamps
@@ -334,13 +334,13 @@ entity RecipeStep mixin TenantScoped, SoftDeletable {
   property required recipeVersionId: string
   property required stepNumber: int
   property required instruction: string
-  property durationMinutes: int = 0
-  property temperatureValue: decimal = 0
-  property temperatureUnit: string = ""
-  property equipmentNeeded: string[] = []
-  property tips: string = ""
-  property videoUrl: string = ""
-  property imageUrl: string = ""
+  property durationMinutes: int? = 0
+  property temperatureValue: decimal? = 0
+  property temperatureUnit: string? = ""
+  property equipmentNeeded: array<string>? = []
+  property tips: string? = ""
+  property videoUrl: string? = ""
+  property imageUrl: string? = ""
   timestamps
 
   relationship belongsTo recipeVersion: RecipeVersion fields [tenantId, recipeVersionId] references [tenantId, id]

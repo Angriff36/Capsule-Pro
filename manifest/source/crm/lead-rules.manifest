@@ -4,20 +4,20 @@ use "../_base.manifest"
 
 entity Lead mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property source: string = ""
-  searchable property companyName: string = ""
+  property source: string? = ""
+  searchable property companyName: string? = ""
   searchable property contactName: string = ""
-  property contactEmail: string = ""
-  property contactPhone: string = ""
-  property eventType: string = ""
-  property eventDate: datetime
-  property estimatedGuests: int = 0
-  property estimatedValue: decimal = 0
+  property contactEmail: string? = ""
+  property contactPhone: string? = ""
+  property eventType: string? = ""
+  property eventDate: datetime?
+  property estimatedGuests: int? = 0
+  property estimatedValue: decimal? = 0
   indexed property status: string = "new"
-  property assignedTo: string = ""
-  searchable property notes: string = ""
-  property convertedToClientId: string = ""
-  property convertedAt: datetime
+  property assignedTo: string? = ""
+  searchable property notes: string? = ""
+  property convertedToClientId: string? = ""
+  property convertedAt: datetime?
   timestamps
 
   computed isConverted: boolean = self.convertedToClientId != "" and self.convertedAt != null

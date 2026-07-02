@@ -15,15 +15,15 @@ entity Deal mixin TenantScoped {
   key [tenantId, id]
   property required leadId: string
   searchable property required title: string
-  property value: decimal = 0
-  property currency: string = "USD"
-  property stage: string = "new"
-  indexed property status: DealStatus = open
-  property probability: decimal = 0
-  property expectedCloseDate: datetime
-  property actualCloseDate: datetime
-  property assignedTo: string = ""
-  searchable property notes: string = ""
+  property value: decimal? = 0
+  property currency: string? = "USD"
+  property stage: string? = "new"
+  indexed property status: DealStatus? = open
+  property probability: decimal? = 0
+  property expectedCloseDate: datetime?
+  property actualCloseDate: datetime?
+  property assignedTo: string? = ""
+  searchable property notes: string? = ""
   timestamps
 
   computed isWon: boolean = self.status == "won"

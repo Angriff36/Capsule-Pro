@@ -8,10 +8,10 @@ entity AdminTaskDevMeta mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   indexed property taskId: string = ""
   property severity: string = "medium"
-  property environment: string = ""
-  searchable property stepsToRepro: string = ""
-  property expectedResult: string = ""
-  property actualResult: string = ""
+  property environment: string? = ""
+  searchable property stepsToRepro: string? = ""
+  property expectedResult: string? = ""
+  property actualResult: string? = ""
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null

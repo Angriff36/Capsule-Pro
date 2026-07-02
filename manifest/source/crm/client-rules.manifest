@@ -5,25 +5,25 @@ use "../_base.manifest"
 entity Client mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required clientType: string = "company"
-  searchable property companyName: string = ""
-  property firstName: string = ""
-  property lastName: string = ""
-  encrypted property email: string = ""
-  encrypted property phone: string = ""
-  property website: string = ""
-  encrypted property addressLine1: string = ""
-  encrypted property addressLine2: string = ""
-  property city: string = ""
-  property stateProvince: string = ""
-  property postalCode: string = ""
-  property countryCode: string = ""
-  property defaultPaymentTerms: int = 30
+  searchable property companyName: string? = ""
+  property firstName: string? = ""
+  property lastName: string? = ""
+  encrypted property email: string? = ""
+  encrypted property phone: string? = ""
+  property website: string? = ""
+  encrypted property addressLine1: string? = ""
+  encrypted property addressLine2: string? = ""
+  property city: string? = ""
+  property stateProvince: string? = ""
+  property postalCode: string? = ""
+  property countryCode: string? = ""
+  property defaultPaymentTerms: int? = 30
   property required taxExempt: boolean = false
-  private encrypted property taxId: string = ""
-  searchable searchable property notes: string = ""
+  private encrypted property taxId: string? = ""
+  searchable searchable property notes: string? = ""
   property required tags: array<string>
-  property source: string = ""
-  property assignedTo: string = ""
+  property source: string? = ""
+  property assignedTo: string? = ""
   timestamps
 
   computed displayName: string = self.clientType == "company" ? self.companyName : self.firstName + " " + self.lastName
@@ -147,13 +147,13 @@ entity ClientContact mixin TenantScoped, SoftDeletable {
   property required clientId: string
   property firstName: string = ""
   property lastName: string = ""
-  searchable property title: string = ""
-  encrypted property email: string = ""
-  encrypted property phone: string = ""
-  property phoneMobile: string = ""
+  searchable property title: string? = ""
+  encrypted property email: string? = ""
+  encrypted property phone: string? = ""
+  property phoneMobile: string? = ""
   property isPrimary: boolean = false
   property isBillingContact: boolean = false
-  searchable property notes: string = ""
+  searchable property notes: string? = ""
   timestamps
 
   computed fullName: string = self.firstName + " " + self.lastName
@@ -241,8 +241,8 @@ entity ClientPreference mixin TenantScoped, SoftDeletable {
   property required clientId: string
   property preferenceType: string = ""
   property preferenceKey: string = ""
-  property preferenceValue: string = ""
-  searchable property notes: string = ""
+  property preferenceValue: json = {}
+  searchable property notes: string? = ""
   timestamps
 
   constraint validClientId: self.clientId != null and self.clientId != "" "Client ID is required"
@@ -252,7 +252,7 @@ entity ClientPreference mixin TenantScoped, SoftDeletable {
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
 
   default policy ClientPreferenceDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Client management"
-  command create(clientId: string, preferenceType: string, preferenceKey: string, preferenceValue: string, notes: string) {
+  command create(clientId: string, preferenceType: string, preferenceKey: string, preferenceValue: json, notes: string) {
     guard clientId != null and clientId != "" "Client ID is required"
     guard preferenceType != null and preferenceType != "" "Preference type is required"
     guard preferenceKey != null and preferenceKey != "" "Preference key is required"
@@ -266,7 +266,7 @@ entity ClientPreference mixin TenantScoped, SoftDeletable {
     emit ClientPreferenceCreated
   }
 
-  command update(preferenceValue: string, notes: string) {
+  command update(preferenceValue: json, notes: string) {
     guard self.deletedAt == null "Cannot update a removed preference"
 
     mutate preferenceValue = preferenceValue

@@ -4,20 +4,20 @@ use "../_base.manifest"
 
 entity ClientInteraction mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property clientId: string = ""
-  property leadId: string = ""
+  property clientId: string? = ""
+  property leadId: string? = ""
   property employeeId: string = ""
   property interactionType: string = "note"
   property interactionDate: datetime = now()
-  property subject: string = ""
-  searchable property description: string = ""
-  property followUpDate: datetime
+  property subject: string? = ""
+  searchable property description: string? = ""
+  property followUpDate: datetime?
   property followUpCompleted: boolean = false
-  indexed property status: string = "open"
-  property priority: string = "normal"
-  property escalatedAt: datetime
-  property escalatedTo: string = ""
-  property correlationId: string = ""
+  indexed property status: string? = "open"
+  property priority: string? = "normal"
+  property escalatedAt: datetime?
+  property escalatedTo: string? = ""
+  property correlationId: string? = ""
   timestamps
 
   computed hasFollowUp: boolean = self.followUpDate != null

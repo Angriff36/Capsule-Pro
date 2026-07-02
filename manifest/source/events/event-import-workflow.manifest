@@ -10,11 +10,11 @@ entity EventImportWorkflow mixin TenantScoped {
   indexed property status: string = "created"
   property currentStep: int = 0
   property totalSteps: int = 6
-  property inputData: string = "{}"
-  property outputData: string = "{}"
-  property stepResults: string = "{}"
-  property errors: string = "[]"
-  property warnings: string = "[]"
+  property inputData: json = {}
+  property outputData: json = {}
+  property stepResults: json = {}
+  property errors: json = []
+  property warnings: json = []
   property confidence: int = 0
   property startedAt: datetime
   property completedAt: datetime
@@ -47,7 +47,7 @@ entity EventImportWorkflow mixin TenantScoped {
 
   // Step 1: Initialize workflow with input data
   default policy EventImportWorkflowDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(idempotencyKey: string, inputData: string) {
+  command create(idempotencyKey: string, inputData: json) {
     guard self.status == "" or self.status == null "Workflow already initialized"
     guard idempotencyKey != "" "Idempotency key is required"
     mutate idempotencyKey = idempotencyKey
@@ -67,7 +67,7 @@ entity EventImportWorkflow mixin TenantScoped {
     emit EventImportWorkflowParsingStarted
   }
 
-  command completeParsing(extractedData: string, confidence: int) {
+  command completeParsing(extractedData: json, confidence: int) {
     guard self.status == "parsing"
     guard confidence >= 0 and confidence <= 100
 
@@ -91,7 +91,7 @@ entity EventImportWorkflow mixin TenantScoped {
     emit EventImportWorkflowExtractingStarted
   }
 
-  command completeExtraction(eventData: string) {
+  command completeExtraction(eventData: json) {
     guard self.status == "extracting"
 
     mutate outputData = eventData
@@ -108,7 +108,7 @@ entity EventImportWorkflow mixin TenantScoped {
     emit EventImportWorkflowValidatingStarted
   }
 
-  command completeValidation(validationErrors: string, validationWarnings: string) {
+  command completeValidation(validationErrors: json, validationWarnings: json) {
     guard self.status == "validating"
 
     mutate errors = validationErrors
@@ -126,7 +126,7 @@ entity EventImportWorkflow mixin TenantScoped {
     emit EventImportWorkflowProposingStarted
   }
 
-  command completeProposing(proposedTasks: string) {
+  command completeProposing(proposedTasks: json) {
     guard self.status == "proposing"
 
     mutate stepResults = proposedTasks
@@ -143,7 +143,7 @@ entity EventImportWorkflow mixin TenantScoped {
     emit EventImportWorkflowReservingStarted
   }
 
-  command completeReserving(reservationResults: string) {
+  command completeReserving(reservationResults: json) {
     guard self.status == "reserving"
 
     mutate stepResults = reservationResults
@@ -171,7 +171,7 @@ entity EventImportWorkflow mixin TenantScoped {
   }
 
   // Failure handling
-  command fail(errorList: string, step: number) {
+  command fail(errorList: json, step: number) {
     guard self.status in ["parsing", "extracting", "validating", "proposing", "reserving", "activating"]
 
     mutate status = "failed"
@@ -182,7 +182,7 @@ entity EventImportWorkflow mixin TenantScoped {
   }
 
   // Pause for manual intervention
-  command pause(reasonList: string) {
+  command pause(reasonList: json) {
     guard (self.status in ["parsing", "extracting", "validating", "proposing", "reserving", "activating"])
 
     mutate status = "paused"
@@ -202,7 +202,7 @@ entity EventImportWorkflow mixin TenantScoped {
   }
 
   // Cancel workflow
-  command cancel(reasonList: string) {
+  command cancel(reasonList: json) {
     guard self.status in ["created", "paused", "failed"]
 
     mutate status = "cancelled"
@@ -218,7 +218,7 @@ entity EventImportWorkflow mixin TenantScoped {
 
     mutate currentStep = self.currentStep > 1 ? self.currentStep - 1 : 1
     mutate status = self.currentStep == 1 ? "parsing" : self.currentStep == 2 ? "extracting" : self.currentStep == 3 ? "validating" : self.currentStep == 4 ? "proposing" : self.currentStep == 5 ? "reserving" : "activating"
-    mutate errors = "[]"
+    mutate errors = []
 
     emit EventImportWorkflowRetried
   }

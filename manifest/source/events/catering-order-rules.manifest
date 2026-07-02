@@ -6,7 +6,7 @@ entity CateringOrder mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   unique property required orderNumber: string
   property customerId: string = ""
-  property eventId: string = ""
+  property eventId: string? = ""
   property orderStatus: string = "draft"
   property orderDate: datetime = now()
   property deliveryDate: datetime
@@ -17,24 +17,24 @@ entity CateringOrder mixin TenantScoped, SoftDeletable {
   property serviceChargeAmount: money = 0
   property totalAmount: money = 0
   property depositRequired: boolean = false
-  property depositAmount: money = 0
+  property depositAmount: money? = 0
   property depositPaid: boolean = false
   // Bug fix: depositPaidAt is a lifecycle datetime — no default
-  property depositPaidAt: datetime
-  property deliveredAt: datetime
-  property prepStartedAt: datetime
-  property venueName: string = ""
-  property venueAddress: string = ""
-  property venueCity: string = ""
-  property venueState: string = ""
-  property venueZip: string = ""
-  property venueContactName: string = ""
-  property venueContactPhone: string = ""
+  property depositPaidAt: datetime?
+  property deliveredAt: datetime?
+  property prepStartedAt: datetime?
+  property venueName: string? = ""
+  property venueAddress: string? = ""
+  property venueCity: string? = ""
+  property venueState: string? = ""
+  property venueZip: string? = ""
+  property venueContactName: string? = ""
+  property venueContactPhone: string? = ""
   property guestCount: int = 0
-  property specialInstructions: string = ""
-  property dietaryRestrictions: string = ""
-  property staffRequired: int = 0
-  property staffAssigned: int = 0
+  property specialInstructions: string? = ""
+  property dietaryRestrictions: string? = ""
+  property staffRequired: int? = 0
+  property staffAssigned: int? = 0
   versionProperty version: number
   versionAtProperty versionAt: number
   timestamps

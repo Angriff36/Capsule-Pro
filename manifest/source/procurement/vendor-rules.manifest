@@ -6,27 +6,27 @@ entity Vendor mixin TenantScoped {
   // No relationships: approvedBy/suspendedBy/blacklistedBy are user identifier strings, no entity FKs
   key [tenantId, id]
   searchable property required name: string
-  property type: string = "supplier"
-  indexed property status: string = "active"
-  encrypted property email: string = ""
-  encrypted property phone: string = ""
-  property website: string = ""
-  property address: string = ""
-  property city: string = ""
-  property state: string = ""
-  property zip: string = ""
-  private encrypted property taxId: string = ""
-  property paymentTerms: string = "net30"
-  property rating: decimal = 0
-  property ratingCount: int = 0
-  searchable property notes: string = ""
-  property approvedAt: datetime
-  property approvedBy: string = ""
-  property suspendedAt: datetime
-  property suspendedReason: string = ""
-  property blacklistedAt: datetime
-  property blacklistedReason: string = ""
-  property lastContactAddedAt: datetime
+  property type: string? = "supplier"
+  indexed property status: string? = "active"
+  encrypted property email: string? = ""
+  encrypted property phone: string? = ""
+  property website: string? = ""
+  property address: string? = ""
+  property city: string? = ""
+  property state: string? = ""
+  property zip: string? = ""
+  private encrypted property taxId: string? = ""
+  property paymentTerms: string? = "net30"
+  property rating: decimal? = 0
+  property ratingCount: int? = 0
+  searchable property notes: string? = ""
+  property approvedAt: datetime?
+  property approvedBy: string? = ""
+  property suspendedAt: datetime?
+  property suspendedReason: string? = ""
+  property blacklistedAt: datetime?
+  property blacklistedReason: string? = ""
+  property lastContactAddedAt: datetime?
   timestamps
 
   computed averageRating: number = self.ratingCount > 0 ? self.rating / self.ratingCount : 0

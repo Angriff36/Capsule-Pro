@@ -17,24 +17,24 @@ entity Payment mixin TenantScoped {
   property required clientId: string = ""
 
   // Gateway/processor information
-  readonly property gatewayTransactionId: string = ""
-  property gatewayPaymentMethodId: string = ""
-  property processor: string = ""
+  readonly property gatewayTransactionId: string? = ""
+  property gatewayPaymentMethodId: string? = ""
+  property processor: string? = ""
 
   // Timestamps
-  property processedAt: datetime
-  property completedAt: datetime
-  property refundedAt: datetime
-  property chargebackAt: datetime
+  property processedAt: datetime?
+  property completedAt: datetime?
+  property refundedAt: datetime?
+  property chargebackAt: datetime?
 
   // Fraud detection
-  property fraudStatus: string = "NOT_CHECKED"
-  property fraudScore: float = 0
-  property reviewedAt: datetime
-  property reviewedBy: string = ""
+  property fraudStatus: string? = "NOT_CHECKED"
+  property fraudScore: float? = 0
+  property reviewedAt: datetime?
+  property reviewedBy: string? = ""
 
   // Metadata
-  searchable property description: string = ""
+  searchable property description: string? = ""
 
   // Computed properties
   versionProperty version: number

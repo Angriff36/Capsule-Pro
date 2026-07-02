@@ -6,12 +6,12 @@ entity EmailWorkflow mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property name: string = ""
   property triggerType: string = "custom"
-  property triggerConfig: string = "{}"
-  property emailTemplateId: string = ""
-  property emailTemplateTenantId: string = ""
-  property recipientConfig: string = "{}"
+  property triggerConfig: json = {}
+  property emailTemplateId: string? = ""
+  property emailTemplateTenantId: string? = ""
+  property recipientConfig: json = {}
   property isActive: boolean = true
-  property lastTriggeredAt: datetime
+  property lastTriggeredAt: datetime?
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -19,7 +19,7 @@ entity EmailWorkflow mixin TenantScoped, SoftDeletable {
   constraint requireName: self.name != "" "Workflow name is required"
 
   default policy EmailWorkflowDefaultAccess execute: user.role in ["manager", "admin", "system"] "Email workflow management"
-  command create(name: string, triggerType: string, triggerConfig: string, emailTemplateId: string, emailTemplateTenantId: string, recipientConfig: string, isActive: boolean) {
+  command create(name: string, triggerType: string, triggerConfig: json, emailTemplateId: string, emailTemplateTenantId: string, recipientConfig: json, isActive: boolean) {
     guard name != null and name != "" "Workflow name is required"
 
     mutate name = name
@@ -37,7 +37,7 @@ entity EmailWorkflow mixin TenantScoped, SoftDeletable {
   // where the settings UI could not change a workflow's trigger) and
   // emailTemplateTenantId (the composite tenant key the template-name read join
   // resolves against; dropping it would silently break the emailTemplate include).
-  command update(name: string, triggerType: string, triggerConfig: string, emailTemplateId: string, emailTemplateTenantId: string, recipientConfig: string, isActive: boolean) {
+  command update(name: string, triggerType: string, triggerConfig: json, emailTemplateId: string, emailTemplateTenantId: string, recipientConfig: json, isActive: boolean) {
     guard self.deletedAt == null "Cannot update a deleted workflow"
 
     mutate name = name

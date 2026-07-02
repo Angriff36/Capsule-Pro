@@ -7,7 +7,7 @@ entity AdminTaskComment mixin TenantScoped, SoftDeletable {
   // child relationships (see core/admin-task-rules.manifest).
   key [tenantId, id]
   indexed property taskId: string = ""
-  property authorId: string = ""
+  property authorId: string? = ""
   property authorName: string = ""
   searchable property text: string = ""
   timestamps

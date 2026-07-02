@@ -15,25 +15,25 @@ enum PrepTaskStatus {
 entity PrepTask mixin TenantScoped {
   key [tenantId, id]
   property required eventId: string
-  property prepListId: string = ""
+  property prepListId: string? = ""
   searchable property required name: string
   property required taskType: string = "prep"
   indexed property required status: PrepTaskStatus = open
-  property stationId: string = ""
+  property stationId: string? = ""
   property claimedBy: string = ""
   property claimedAt: datetime
   property quantityTotal: decimal = 0
   property quantityCompleted: decimal = 0
-  property quantityUnitId: int = 0
-  property servingsTotal: int = 0
+  property quantityUnitId: int? = 0
+  property servingsTotal: int? = 0
   property startByDate: datetime = now()
   property dueByDate: datetime
   property priority: int = 5
-  property dishId: string = ""
+  property dishId: string? = ""
   property locationId: string = ""
-  property estimatedMinutes: int = 0
-  property dueByTime: datetime
-  searchable property notes: string = ""
+  property estimatedMinutes: int? = 0
+  property dueByTime: datetime?
+  searchable property notes: string? = ""
   timestamps
 
   computed isClaimed: boolean = self.claimedBy != ""

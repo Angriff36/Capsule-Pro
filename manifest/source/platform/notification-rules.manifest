@@ -7,11 +7,11 @@ entity Notification mixin TenantScoped, SoftDeletable {
   property required recipientEmployeeId: string
   property notificationType: string = ""
   searchable property title: string = ""
-  property body: string = ""
-  property actionUrl: string = ""
+  property body: string? = ""
+  property actionUrl: string? = ""
   property isRead: boolean = false
-  property readAt: datetime
-  property correlationId: string = ""
+  property readAt: datetime?
+  property correlationId: string? = ""
   // No `timestamps` keyword: tenant_admin.notifications has created_at but no updated_at column (read-state tracked via isRead/readAt)
   property createdAt: datetime = now()
 

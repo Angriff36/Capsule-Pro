@@ -6,14 +6,14 @@ use "../_base.manifest"
 
 entity CommandBoard mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property eventId: string = ""
+  property eventId: string? = ""
   searchable property name: string = ""
-  searchable property description: string = ""
+  searchable property description: string? = ""
   indexed property status: string = "draft"
   property isTemplate: boolean = false
-  property tags: array<string> = []
+  property tags: array<string>? = []
   property autoPopulate: boolean = false
-  property scope: string = "{}"
+  property scope: json? = {}
   timestamps
 
   computed isDraft: boolean = self.status == "draft"
@@ -28,7 +28,7 @@ entity CommandBoard mixin TenantScoped, SoftDeletable {
   transition status from "active" to ["archived"]
 
   default policy CommandBoardDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
-  command create(name: string, description: string, eventId: string, isTemplate: boolean, tags: array<string>, autoPopulate: boolean, scope: string) {
+  command create(name: string, description: string, eventId: string, isTemplate: boolean, tags: array<string>, autoPopulate: boolean, scope: json) {
     guard name != null and name != "" "Board name is required"
 
     // Auto-create seed persists the full command body in one INSERT; per-field
@@ -89,7 +89,7 @@ entity CommandBoardCard mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required boardId: string
   searchable property title: string = ""
-  property content: string = ""
+  property content: string? = ""
   property cardType: string = "task"
   indexed property status: string = "pending"
   property positionX: int = 0
@@ -97,11 +97,11 @@ entity CommandBoardCard mixin TenantScoped, SoftDeletable {
   property width: int = 200
   property height: int = 150
   property zIndex: int = 0
-  property color: string = ""
-  property metadata: string = "{}"
-  property groupId: string = ""
-  property entityId: string = ""
-  property entityType: string = ""
+  property color: string? = ""
+  property metadata: json = {}
+  property groupId: string? = ""
+  property entityId: string? = ""
+  property entityType: string? = ""
   property version: int = 0
   timestamps
 
@@ -121,7 +121,7 @@ entity CommandBoardCard mixin TenantScoped, SoftDeletable {
   relationship belongsTo group: CommandBoardGroup fields [tenantId, groupId] references [tenantId, id]
 
   default policy CommandBoardCardDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
-  command create(boardId: string, title: string, content: string, cardType: string, status: string, positionX: number, positionY: number, width: number, height: number, color: string, metadata: string, groupId: string, entityId: string, entityType: string) {
+  command create(boardId: string, title: string, content: string, cardType: string, status: string, positionX: number, positionY: number, width: number, height: number, color: string, metadata: json, groupId: string, entityId: string, entityType: string) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard title != null and title != "" "Card title is required"
 
@@ -133,7 +133,7 @@ entity CommandBoardCard mixin TenantScoped, SoftDeletable {
     emit CommandBoardCardCreated
   }
 
-  command update(newTitle: string, newContent: string, newCardType: string, newStatus: string, newColor: string, newMetadata: string, newGroupId: string) {
+  command update(newTitle: string, newContent: string, newCardType: string, newStatus: string, newColor: string, newMetadata: json, newGroupId: string) {
     guard newTitle != null and newTitle != "" "Card title is required"
 
     constraint warnStatusChange:warn self.status != newStatus {
@@ -195,7 +195,7 @@ entity CommandBoardGroup mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required boardId: string
   searchable property name: string = ""
-  property color: string = ""
+  property color: string? = ""
   property collapsed: boolean = false
   property positionX: int = 0
   property positionY: int = 0
@@ -254,7 +254,7 @@ entity CommandBoardConnection mixin TenantScoped, SoftDeletable {
   property required fromCardId: string
   property required toCardId: string
   property relationshipType: string = "generic"
-  property label: string = ""
+  property label: string? = ""
   property visible: boolean = true
   timestamps
 
@@ -298,8 +298,8 @@ entity CommandBoardLayout mixin TenantScoped, SoftDeletable {
   property required boardId: string
   property required userId: string
   searchable property name: string = ""
-  property viewport: string = "{}"
-  property visibleCards: array<string> = []
+  property viewport: json = {}
+  property visibleCards: array<string>? = []
   property gridSize: int = 40
   property showGrid: boolean = true
   property snapToGrid: boolean = true
@@ -314,7 +314,7 @@ entity CommandBoardLayout mixin TenantScoped, SoftDeletable {
   relationship belongsTo user: User fields [tenantId, userId] references [tenantId, id]
 
   default policy CommandBoardLayoutDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
-  command create(boardId: string, name: string, viewport: string, visibleCards: array<string>, gridSize: number, showGrid: boolean, snapToGrid: boolean) {
+  command create(boardId: string, name: string, viewport: json, visibleCards: array<string>, gridSize: number, showGrid: boolean, snapToGrid: boolean) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard name != null and name != "" "Layout name is required"
 
@@ -324,7 +324,7 @@ entity CommandBoardLayout mixin TenantScoped, SoftDeletable {
     emit CommandBoardLayoutCreated
   }
 
-  command update(newName: string, newViewport: string, newVisibleCards: array<string>, newGridSize: number, newShowGrid: boolean, newSnapToGrid: boolean) {
+  command update(newName: string, newViewport: json, newVisibleCards: array<string>, newGridSize: number, newShowGrid: boolean, newSnapToGrid: boolean) {
     guard newName != null and newName != "" "Layout name is required"
 
     mutate name = newName

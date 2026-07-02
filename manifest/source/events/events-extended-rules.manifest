@@ -11,19 +11,19 @@ entity Venue mixin TenantScoped, SoftDeletable {
   // server actions route through Manifest (constitution §9). Property names match
   // the Prisma model field names so GenericPrismaStore maps them 1:1.
   property venueType: string = "other"
-  encrypted property addressLine1: string = ""
-  encrypted property addressLine2: string = ""
-  property city: string = ""
-  property stateProvince: string = ""
-  property postalCode: string = ""
-  property countryCode: string = ""
-  property capacity: int = 0
-  property contactName: string = ""
-  property contactPhone: string = ""
-  property contactEmail: string = ""
-  property accessNotes: string = ""
-  property cateringNotes: string = ""
-  property layoutImageUrl: string = ""
+  encrypted property addressLine1: string? = ""
+  encrypted property addressLine2: string? = ""
+  property city: string? = ""
+  property stateProvince: string? = ""
+  property postalCode: string? = ""
+  property countryCode: string? = ""
+  property capacity: int? = 0
+  property contactName: string? = ""
+  property contactPhone: string? = ""
+  property contactEmail: string? = ""
+  property accessNotes: string? = ""
+  property cateringNotes: string? = ""
+  property layoutImageUrl: string? = ""
   property required tags: array<string>
   property isActive: boolean = true
   // equipmentList / preferredVendors (Json? columns) are intentionally NOT
@@ -161,8 +161,8 @@ entity EventTimeline mixin TenantScoped, SoftDeletable {
   searchable property required description: string = ""
   // Bug fix: lifecycle datetime — no default
   property timelineTime: datetime
-  property durationMinutes: int = 0
-  searchable property notes: string = ""
+  property durationMinutes: int? = 0
+  searchable property notes: string? = ""
   property sortOrder: int = 0
   timestamps
 
@@ -249,10 +249,10 @@ entity TimelineTask mixin TenantScoped, SoftDeletable {
   property startTime: datetime
   property endTime: datetime
   indexed property status: string = "pending"
-  property assigneeId: string = ""
-  searchable property notes: string = ""
-  property sortOrder: int = 0
-  property completedAt: datetime
+  property assigneeId: string? = ""
+  searchable property notes: string? = ""
+  property sortOrder: int? = 0
+  property completedAt: datetime?
   timestamps
 
   computed isPending: boolean = self.status == "pending"
@@ -395,12 +395,12 @@ entity EventImport mixin TenantScoped, SoftDeletable {
   property required fileName: string = ""
   property required mimeType: string = ""
   indexed property parseStatus: string = "pending"
-  property totalRows: int = 0
-  property importedRows: int = 0
-  property skippedRows: int = 0
-  property parseErrors: array<string> = []
+  property totalRows: int? = 0
+  property importedRows: int? = 0
+  property skippedRows: int? = 0
+  property parseErrors: array<string>? = []
   timestamps
-  property parsedAt: datetime
+  property parsedAt: datetime?
 
   computed isPending: boolean = self.parseStatus == "pending"
   computed isProcessing: boolean = self.parseStatus == "parsing"
@@ -508,11 +508,11 @@ entity EventFollowup mixin TenantScoped, SoftDeletable {
   property required taskType: string = ""
   property required description: string = ""
   // Bug fix: lifecycle datetime — no default
-  property dueDate: datetime
+  property dueDate: datetime?
   indexed property status: string = "pending"
-  property assignedTo: string = ""
-  searchable property notes: string = ""
-  property completedAt: datetime
+  property assignedTo: string? = ""
+  searchable property notes: string? = ""
+  property completedAt: datetime?
   timestamps
 
   computed isPending: boolean = self.status == "pending"
@@ -691,10 +691,10 @@ event BoardProjectionRemoved: "board.projection.removed" {
 entity BoardAnnotation mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required boardId: string
-  property label: string = ""
-  property positionX: int = 0
-  property positionY: int = 0
-  property color: string = ""
+  property label: string? = ""
+  property positionX: int? = 0
+  property positionY: int? = 0
+  property color: string? = ""
   timestamps
 
   constraint requireBoard: self.boardId != "" "Board ID is required"
@@ -751,12 +751,12 @@ event BoardAnnotationRemoved: "board.annotation.removed" {
 entity Note mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property required title: string = ""
-  property content: string = ""
-  property color: string = ""
+  property content: string? = ""
+  property color: string? = ""
   // Bug fix: array<string> is not valid DSL — use string[]
-  property tags: string[] = []
-  property entityType: string = ""
-  property entityId: string = ""
+  property tags: array<string>? = []
+  property entityType: string? = ""
+  property entityId: string? = ""
   timestamps
 
   constraint requireTitle: self.title != "" "Note title is required"

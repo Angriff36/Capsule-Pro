@@ -7,15 +7,15 @@ entity InventoryTransfer mixin TenantScoped {
   property fromLocationId: string = ""
   property toLocationId: string = ""
   indexed property status: string = "draft"
-  property requestedBy: string = ""
-  property approvedBy: string = ""
-  property shippedBy: string = ""
-  property receivedBy: string = ""
-  property shippedAt: datetime
-  property receivedAt: datetime
-  property discrepancyNotes: string = ""
-  property hasDiscrepancy: boolean = false
-  searchable property notes: string = ""
+  property requestedBy: string? = ""
+  property approvedBy: string? = ""
+  property shippedBy: string? = ""
+  property receivedBy: string? = ""
+  property shippedAt: datetime?
+  property receivedAt: datetime?
+  property discrepancyNotes: string? = ""
+  property hasDiscrepancy: boolean? = false
+  searchable property notes: string? = ""
   timestamps
   // items: JSON-array-as-string payload. The InventoryTransferPrismaStore
   // accepts both a real array (from the UI dispatcher) and a JSON string

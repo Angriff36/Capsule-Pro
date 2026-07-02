@@ -10,7 +10,7 @@ entity AdminTaskFileRef mixin TenantScoped, SoftDeletable {
   property refType: string = ""
   property refId: string = ""
   searchable property refLabel: string = ""
-  property linkedBy: string = ""
+  property linkedBy: string? = ""
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null

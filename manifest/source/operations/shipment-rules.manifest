@@ -19,25 +19,25 @@ entity Shipment mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   unique property required shipmentNumber: string
   indexed property status: ShipmentStatus = draft
-  property eventId: string = ""
-  property supplierId: string = ""
-  property locationId: string = ""
-  property scheduledDate: datetime
-  property shippedDate: datetime
-  property estimatedDeliveryDate: datetime
-  property actualDeliveryDate: datetime
+  property eventId: string? = ""
+  property supplierId: string? = ""
+  property locationId: string? = ""
+  property scheduledDate: datetime?
+  property shippedDate: datetime?
+  property estimatedDeliveryDate: datetime?
+  property actualDeliveryDate: datetime?
   property totalItems: int = 0
-  property shippingCost: money = 0
-  property totalValue: decimal = 0
-  property trackingNumber: string = ""
-  property carrier: string = ""
-  property shippingMethod: string = ""
-  property deliveredBy: string = ""
-  property receivedBy: string = ""
+  property shippingCost: money? = 0
+  property totalValue: decimal? = 0
+  property trackingNumber: string? = ""
+  property carrier: string? = ""
+  property shippingMethod: string? = ""
+  property deliveredBy: string? = ""
+  property receivedBy: string? = ""
   property signatureData: string = ""
-  searchable property notes: string = ""
-  property internalNotes: string = ""
-  property reference: string = ""
+  searchable property notes: string? = ""
+  property internalNotes: string? = ""
+  property reference: string? = ""
   timestamps
 
   computed isDraft: boolean = self.status == "draft"
@@ -183,13 +183,13 @@ entity ShipmentItem mixin TenantScoped, SoftDeletable {
   property quantityShipped: decimal = 0
   property quantityReceived: decimal = 0
   property quantityDamaged: decimal = 0
-  property unitId: int = 0
-  property unitCost: money = 0
+  property unitId: int? = 0
+  property unitCost: money? = 0
   property totalCost: money = 0
-  property condition: string = "good"
-  property conditionNotes: string = ""
-  property lotNumber: string = ""
-  property expirationDate: datetime
+  property condition: string? = "good"
+  property conditionNotes: string? = ""
+  property lotNumber: string? = ""
+  property expirationDate: datetime?
   timestamps
 
   computed isFullyReceived: boolean = self.quantityReceived >= self.quantityShipped

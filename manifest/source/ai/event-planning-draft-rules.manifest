@@ -7,34 +7,34 @@ entity EventPlanningDraft mixin TenantScoped, SoftDeletable {
   indexed property required sessionId: string
   property required userId: string
   indexed property status: string = "active"
-  searchable property clientName: string = ""
-  property clientContactId: string = ""
-  property eventType: string = ""
-  property eventDate: datetime
-  property eventTime: string = ""
-  property guestCount: int = 0
-  property guestCountMin: int = 0
-  property guestCountMax: int = 0
-  property venuePreference: string = ""
-  property venueId: string = ""
-  property serviceStyle: string = ""
-  property dietaryRestrictions: string = ""
+  searchable property clientName: string? = ""
+  property clientContactId: string? = ""
+  property eventType: string? = ""
+  property eventDate: datetime?
+  property eventTime: string? = ""
+  property guestCount: int? = 0
+  property guestCountMin: int? = 0
+  property guestCountMax: int? = 0
+  property venuePreference: string? = ""
+  property venueId: string? = ""
+  property serviceStyle: string? = ""
+  property dietaryRestrictions: string? = ""
   // menuPreferences/customItems: JSON-as-string payloads (Manifest IR grammar
   // has no object kind; same pattern as CommandBoard.metadata).
-  property menuPreferences: string = "{}"
-  property budgetMin: money = 0
-  property budgetMax: money = 0
-  property packageIds: array<string> = []
-  property addOnIds: array<string> = []
-  property customItems: string = "{}"
-  property timelineNotes: string = ""
-  property openQuestions: array<string> = []
-  property specialNotes: string = ""
-  property aiSummary: string = ""
-  property overallConfidence: decimal = 0
-  property convertedEventId: string = ""
-  property proposalId: string = ""
-  property expiresAt: datetime
+  property menuPreferences: json? = {}
+  property budgetMin: money? = 0
+  property budgetMax: money? = 0
+  property packageIds: array<string>? = []
+  property addOnIds: array<string>? = []
+  property customItems: json? = {}
+  property timelineNotes: string? = ""
+  property openQuestions: array<string>? = []
+  property specialNotes: string? = ""
+  property aiSummary: string? = ""
+  property overallConfidence: decimal? = 0
+  property convertedEventId: string? = ""
+  property proposalId: string? = ""
+  property expiresAt: datetime?
   timestamps
 
   computed isActive: boolean = self.status == "active"
@@ -181,7 +181,7 @@ entity EventPlanningDraft mixin TenantScoped, SoftDeletable {
     emit EventPlanningGuestCountUpdated
   }
 
-  command updateMenuPreferences(menuPreferences: string) {
+  command updateMenuPreferences(menuPreferences: json) {
     guard (self.status == "active") or (self.status == "review") "Can only update menu preferences for active or review drafts"
     guard menuPreferences != null "Menu preferences are required"
 

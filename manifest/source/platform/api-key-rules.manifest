@@ -9,9 +9,9 @@ entity ApiKey mixin TenantScoped, SoftDeletable {
   readonly property required keyPrefix: string = ""
   readonly property required hashedKey: string = ""
   property required scopes: array<string>
-  property lastUsedAt: datetime
-  property expiresAt: datetime = now()
-  property revokedAt: datetime
+  property lastUsedAt: datetime?
+  property expiresAt: datetime? = now()
+  property revokedAt: datetime?
   property required createdByUserId: string = ""
   timestamps
 

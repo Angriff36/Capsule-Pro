@@ -8,8 +8,8 @@ entity VersionedEntity mixin TenantScoped {
   property required entityType: string
   property required entityId: string
   property required entityName: string
-  property isLocked: boolean = false
-  property currentVersionId: string = ""
+  property isLocked: boolean? = false
+  property currentVersionId: string? = ""
   timestamps
 
   // Derived from EntityVersion count
@@ -84,16 +84,16 @@ entity EntityVersion mixin TenantScoped {
   key [tenantId, id]
   property required versionedEntityId: string
   property required versionNumber: int
-  property changeReason: string = ""
-  property changeSummary: string = ""
+  property changeReason: string? = ""
+  property changeSummary: string? = ""
   property required changeType: string
-  property snapshotData: string = {}
-  property metadata: string = {}
-  property isApproved: boolean = false
-  property approvedAt: datetime
-  property approvedBy: string = ""
+  property snapshotData: string? = {}
+  property metadata: string? = {}
+  property isApproved: boolean? = false
+  property approvedAt: datetime?
+  property approvedBy: string? = ""
   timestamps
-  property createdBy: string = ""
+  property createdBy: string? = ""
 
   computed isInitialVersion: boolean = self.versionNumber == 1
   computed isPendingApproval: boolean = self.isApproved == false
@@ -162,8 +162,8 @@ entity VersionApproval mixin TenantScoped {
   property required entityVersionId: string
   property required approverId: string
   indexed property required status: string
-  property comments: string = ""
-  property reviewedAt: datetime
+  property comments: string? = ""
+  property reviewedAt: datetime?
   timestamps
 
   computed isPending: boolean = self.status == "pending"

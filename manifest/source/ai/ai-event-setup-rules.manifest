@@ -5,22 +5,22 @@ use "../_base.manifest"
 entity AiEventSetupSession mixin TenantScoped {
   key [tenantId, id]
   property required userId: string
-  property originalInput: string = ""
-  property parsedTitle: string = ""
-  property parsedEventType: string = ""
-  property optional parsedEventDate: datetime
-  property parsedGuestCount: int = 0
-  property parsedVenueName: string = ""
-  property parsedVenueAddress: string = ""
-  property parsedNotes: string = ""
-  property parsedTags: string = ""
-  indexed property status: string = "pending"
-  property confidence: decimal = 0
-  property missingFields: string = "[]"
-  property suggestions: string = "[]"
-  property createdEventId: string = ""
+  property originalInput: string? = ""
+  property parsedTitle: string? = ""
+  property parsedEventType: string? = ""
+  property optional parsedEventDate: datetime?
+  property parsedGuestCount: int? = 0
+  property parsedVenueName: string? = ""
+  property parsedVenueAddress: string? = ""
+  property parsedNotes: string? = ""
+  property parsedTags: string? = ""
+  indexed property status: string? = "pending"
+  property confidence: decimal? = 0
+  property missingFields: string? = "[]"
+  property suggestions: string? = "[]"
+  property createdEventId: string? = ""
   timestamps
-  property completedAt: datetime
+  property completedAt: datetime?
 
   computed isPending: boolean = self.status == "pending"
   computed isParsed: boolean = self.status == "parsed"

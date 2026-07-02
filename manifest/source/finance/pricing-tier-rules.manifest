@@ -12,12 +12,12 @@ entity PricingTier mixin TenantScoped, SoftDeletable {
   property required catalogEntryId: string
   property tierName: string = ""
   property required minQuantity: decimal = 1
-  property maxQuantity: decimal = 0
+  property maxQuantity: decimal? = 0
   property required unitCost: money = 0
-  property discountPercent: decimal = 0
+  property discountPercent: decimal? = 0
   // effectiveFrom/effectiveTo are optional bounds; null = unbounded on that side.
-  property effectiveFrom: datetime
-  property effectiveTo: datetime
+  property effectiveFrom: datetime?
+  property effectiveTo: datetime?
   property isActive: boolean = true
   timestamps
 

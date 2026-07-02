@@ -9,16 +9,16 @@ entity TimeOffRequest mixin TenantScoped, SoftDeletable {
   property employeeId: string = ""
   property required startDate: datetime
   property required endDate: datetime
-  property reason: string = ""
+  property reason: string? = ""
   property requestType: string = ""
   indexed property status: string = "PENDING"
-  property reviewedBy: string = ""
+  property reviewedBy: string? = ""
   // Bug fix: reviewedAt is a lifecycle timestamp — must be nullable
-  property reviewedAt: datetime
-  property rejectionReason: string = ""
+  property reviewedAt: datetime?
+  property rejectionReason: string? = ""
   // Accrual balance at time of request for manager visibility
-  property balanceSnapshot: decimal = 0
-  property balanceUnit: string = ""
+  property balanceSnapshot: decimal? = 0
+  property balanceUnit: string? = ""
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null

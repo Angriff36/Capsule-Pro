@@ -9,7 +9,7 @@ entity RateLimitConfig mixin TenantScoped, SoftDeletable {
   property required endpointPattern: string = ""
   property required windowMs: int = 60000
   property required maxRequests: int = 100
-  property burstAllowance: int = 0
+  property burstAllowance: int? = 0
   property required priority: int = 0
   property required isActive: boolean = true
   timestamps

@@ -8,17 +8,17 @@ entity User mixin TenantScoped, SoftDeletable {
   property required firstName: string = ""
   property required lastName: string = ""
   property required role: string = "staff"
-  property authUserId: string = ""
-  unique property employeeNumber: string = ""
-  encrypted property phone: string = ""
+  property authUserId: string? = ""
+  unique property employeeNumber: string? = ""
+  encrypted property phone: string? = ""
   property employmentType: string = "full_time"
-  property hourlyRate: money = 0
-  property salaryAnnual: decimal = 0
+  property hourlyRate: money? = 0
+  property salaryAnnual: decimal? = 0
   property required hireDate: datetime = now()
-  property terminationDate: datetime
+  property terminationDate: datetime?
   property required isActive: boolean = true
-  property avatarUrl: string = ""
-  property roleId: string = ""
+  property avatarUrl: string? = ""
+  property roleId: string? = ""
   timestamps
 
   belongsTo rolePolicy: RolePolicy with roleId

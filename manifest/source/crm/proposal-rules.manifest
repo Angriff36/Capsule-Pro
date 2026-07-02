@@ -16,30 +16,30 @@ enum ProposalStatus {
 entity Proposal mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   unique property proposalNumber: string = ""
-  property clientId: string = ""
-  property leadId: string = ""
-  property eventId: string = ""
+  property clientId: string? = ""
+  property leadId: string? = ""
+  property eventId: string? = ""
   searchable property title: string = ""
-  property eventDate: datetime
-  property eventType: string = ""
-  property guestCount: int = 0
-  property venueName: string = ""
-  property venueAddress: string = ""
+  property eventDate: datetime?
+  property eventType: string? = ""
+  property guestCount: int? = 0
+  property venueName: string? = ""
+  property venueAddress: string? = ""
   property subtotal: money = 0
   property taxRate: decimal = 0
   property taxAmount: money = 0
   property discountAmount: money = 0
   property total: money = 0
   indexed property status: ProposalStatus = draft
-  property validUntil: datetime
-  property sentAt: datetime
-  property viewedAt: datetime
-  property acceptedAt: datetime
-  property rejectedAt: datetime
-  searchable property notes: string = ""
-  property termsAndConditions: string = ""
-  property lineItemCount: int = 0
-  property publicToken: string = ""
+  property validUntil: datetime?
+  property sentAt: datetime?
+  property viewedAt: datetime?
+  property acceptedAt: datetime?
+  property rejectedAt: datetime?
+  searchable property notes: string? = ""
+  property termsAndConditions: string? = ""
+  property lineItemCount: int? = 0
+  property publicToken: string? = ""
   timestamps
 
   computed isDraft: boolean = self.status == "draft"
@@ -316,12 +316,12 @@ entity ProposalLineItem mixin TenantScoped, SoftDeletable {
   property category: string = ""
   searchable property description: string = ""
   property quantity: decimal = 0
-  property unitOfMeasure: string = ""
+  property unitOfMeasure: string? = ""
   property unitPrice: money = 0
   property total: money = 0
   property totalPrice: money = 0
-  property sortOrder: int = 0
-  searchable property notes: string = ""
+  property sortOrder: int? = 0
+  searchable property notes: string? = ""
   timestamps
 
   computed calculatedTotal: number = self.quantity * self.unitPrice

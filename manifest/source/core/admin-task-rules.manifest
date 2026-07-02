@@ -15,18 +15,18 @@ entity AdminTask mixin TenantScoped, SoftDeletable {
   // No relationships: assignedTo/createdBy are user identifier strings, not entity FKs
   key [tenantId, id]
   searchable property title: string = ""
-  searchable property description: string = ""
+  searchable property description: string? = ""
   indexed property status: AdminTaskStatus = backlog
   property priority: string = "medium"
-  property category: string = ""
+  property category: string? = ""
   property position: int = 0
-  property labels: array<string> = []
-  property estimatedHours: decimal = 0
-  property assignedTo: string = ""
-  property dueDate: datetime
-  property createdBy: string = ""
-  property sourceType: string = ""
-  property sourceId: string = ""
+  property labels: array<string>? = []
+  property estimatedHours: decimal? = 0
+  property assignedTo: string? = ""
+  property dueDate: datetime?
+  property createdBy: string? = ""
+  property sourceType: string? = ""
+  property sourceId: string? = ""
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null

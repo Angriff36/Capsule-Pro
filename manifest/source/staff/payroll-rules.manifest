@@ -81,12 +81,12 @@ entity EmployeeDeduction mixin TenantScoped, SoftDeletable {
   property employeeId: string = ""
   property type: string = ""
   searchable property name: string = ""
-  property amount: money = 0
-  property percentage: decimal = 0
+  property amount: money? = 0
+  property percentage: decimal? = 0
   property isPreTax: boolean = false
   property required effectiveDate: datetime
-  property endDate: datetime
-  property maxAnnualAmount: money = 0
+  property endDate: datetime?
+  property maxAnnualAmount: money? = 0
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -153,7 +153,7 @@ entity PayrollApprovalHistory mixin TenantScoped {
   property newStatus: string = ""
   property performedBy: string = ""
   property performedAt: datetime = now()
-  property reason: string = ""
+  property reason: string? = ""
   property createdAt: datetime = now()
 
   relationship belongsTo payrollRun: PayrollRun with payrollRunId
@@ -185,11 +185,11 @@ entity PayrollRun mixin TenantScoped, SoftDeletable {
   property totalGross: money = 0
   property totalDeductions: money = 0
   property totalNet: money = 0
-  readonly property approvedBy: string = ""
-  readonly property approvedAt: datetime
-  property rejectedBy: string = ""
-  readonly property paidAt: datetime
-  property rejectReason: string = ""
+  readonly property approvedBy: string? = ""
+  readonly property approvedAt: datetime?
+  property rejectedBy: string? = ""
+  readonly property paidAt: datetime?
+  property rejectReason: string? = ""
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null

@@ -11,12 +11,12 @@ entity EmployeeAvailability mixin TenantScoped, SoftDeletable {
   property required endTime: datetime
   property isAvailable: boolean = true
   property required effectiveFrom: datetime
-  property effectiveUntil: datetime
+  property effectiveUntil: datetime?
   // Suspension support (e.g. injury, extended leave)
-  property isSuspended: boolean = false
-  property suspendReason: string = ""
-  property suspendedAt: datetime
-  property reinstatedAt: datetime
+  property isSuspended: boolean? = false
+  property suspendReason: string? = ""
+  property suspendedAt: datetime?
+  property reinstatedAt: datetime?
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null

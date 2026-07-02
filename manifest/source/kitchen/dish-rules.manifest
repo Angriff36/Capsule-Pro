@@ -8,28 +8,28 @@ entity Dish mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required recipeId: string
   searchable property required name: string
-  searchable property description: string = ""
-  property category: string = ""
-  property serviceStyle: string = ""
-  property defaultContainerId: string = ""
-  property presentationImageUrl: string = ""
+  searchable property description: string? = ""
+  property category: string? = ""
+  property serviceStyle: string? = ""
+  property defaultContainerId: string? = ""
+  property presentationImageUrl: string? = ""
   property minPrepLeadDays: int = 0
-  property maxPrepLeadDays: int = 0
-  property portionSizeDescription: string = ""
-  property dietaryTags: array<string> = []
-  property allergens: array<string> = []
-  property pricePerPerson: money = 0
-  property costPerPerson: money = 0
+  property maxPrepLeadDays: int? = 0
+  property portionSizeDescription: string? = ""
+  property dietaryTags: array<string>? = []
+  property allergens: array<string>? = []
+  property pricePerPerson: money? = 0
+  property costPerPerson: money? = 0
   property isActive: boolean = true
   // Seasonal flag: dish is only offered during certain seasons/periods
-  property isSeasonal: boolean = false
-  property seasonLabel: string = ""
-  property seasonStartMonth: int = 0
-  property seasonEndMonth: int = 0
+  property isSeasonal: boolean? = false
+  property seasonLabel: string? = ""
+  property seasonStartMonth: int? = 0
+  property seasonEndMonth: int? = 0
   // 86'd: temporarily pulled from service (out of stock or unavailable)
-  property isEightySix: boolean = false
-  property eightySixReason: string = ""
-  property eightySixAt: datetime
+  property isEightySix: boolean? = false
+  property eightySixReason: string? = ""
+  property eightySixAt: datetime?
   timestamps
 
   computed hasPrice: boolean = self.pricePerPerson > 0

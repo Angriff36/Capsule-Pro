@@ -7,20 +7,20 @@ entity EventGuest mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property eventId: string = ""
   property guestName: string = ""
-  property guestEmail: string = ""
-  property guestPhone: string = ""
+  property guestEmail: string? = ""
+  property guestPhone: string? = ""
   property isPrimaryContact: boolean = false
-  property dietaryRestrictions: array<string> = []
-  property allergenRestrictions: array<string> = []
-  searchable property notes: string = ""
-  property declineReason: string = ""
+  property dietaryRestrictions: array<string>? = []
+  property allergenRestrictions: array<string>? = []
+  searchable property notes: string? = ""
+  property declineReason: string? = ""
   property specialMealRequired: boolean = false
-  property specialMealNotes: string = ""
-  property tableAssignment: string = ""
-  property mealPreference: string = ""
+  property specialMealNotes: string? = ""
+  property tableAssignment: string? = ""
+  property mealPreference: string? = ""
   property rsvpStatus: string = "pending"
-  property rsvpRespondedAt: datetime
-  property checkedInAt: datetime
+  property rsvpRespondedAt: datetime?
+  property checkedInAt: datetime?
   versionProperty version: number
   versionAtProperty versionAt: number
   timestamps

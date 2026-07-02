@@ -10,20 +10,20 @@ use "../_base.manifest"
 entity ProposalTemplate mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property name: string = ""
-  searchable property description: string = ""
-  property eventType: string = ""
-  property defaultTerms: string = ""
+  searchable property description: string? = ""
+  property eventType: string? = ""
+  property defaultTerms: string? = ""
   property defaultTaxRate: decimal = 0
-  property defaultNotes: string = ""
-  property defaultLineItems: string = "[]"
+  property defaultNotes: string? = ""
+  property defaultLineItems: json = []
   property isActive: boolean = true
   property isDefault: boolean = false
   // Branding fields
-  property logoUrl: string = ""
-  property primaryColor: string = ""
-  property secondaryColor: string = ""
-  property accentColor: string = ""
-  property fontFamily: string = ""
+  property logoUrl: string? = ""
+  property primaryColor: string? = ""
+  property secondaryColor: string? = ""
+  property accentColor: string? = ""
+  property fontFamily: string? = ""
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -38,7 +38,7 @@ entity ProposalTemplate mixin TenantScoped, SoftDeletable {
   }
 
   default policy ProposalTemplateDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
-  command create(name: string, description: string, eventType: string, defaultTerms: string, defaultTaxRate: number, defaultNotes: string, defaultLineItems: string, isActive: boolean, isDefault: boolean, logoUrl: string, primaryColor: string, secondaryColor: string, accentColor: string, fontFamily: string) {
+  command create(name: string, description: string, eventType: string, defaultTerms: string, defaultTaxRate: number, defaultNotes: string, defaultLineItems: json, isActive: boolean, isDefault: boolean, logoUrl: string, primaryColor: string, secondaryColor: string, accentColor: string, fontFamily: string) {
     guard name != null and name != "" "Template name is required"
 
     mutate name = name
@@ -59,7 +59,7 @@ entity ProposalTemplate mixin TenantScoped, SoftDeletable {
     emit ProposalTemplateCreated
   }
 
-  command update(name: string, description: string, eventType: string, defaultTerms: string, defaultTaxRate: number, defaultNotes: string, defaultLineItems: string, isActive: boolean, isDefault: boolean, logoUrl: string, primaryColor: string, secondaryColor: string, accentColor: string, fontFamily: string) {
+  command update(name: string, description: string, eventType: string, defaultTerms: string, defaultTaxRate: number, defaultNotes: string, defaultLineItems: json, isActive: boolean, isDefault: boolean, logoUrl: string, primaryColor: string, secondaryColor: string, accentColor: string, fontFamily: string) {
     guard self.deletedAt == null "Cannot update a deleted template"
     guard name != null and name != "" "Template name is required"
 
@@ -121,7 +121,7 @@ entity InteractionAttachment mixin TenantScoped, SoftDeletable {
   property fileUrl: string = ""
   property fileType: string = ""
   property fileSize: int = 0
-  property uploadedBy: string = ""
+  property uploadedBy: string? = ""
   timestamps
 
   computed isRemoved: boolean = self.deletedAt != null
@@ -271,10 +271,10 @@ entity Report mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property name: string = ""
   property reportType: string = ""
-  property queryConfig: string = "{}"
-  property displayConfig: string = "{}"
-  property isShared: boolean = false
-  property createdBy: string = ""
+  property queryConfig: json = {}
+  property displayConfig: json = {}
+  property isShared: boolean? = false
+  property createdBy: string? = ""
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -284,7 +284,7 @@ entity Report mixin TenantScoped, SoftDeletable {
   constraint requireReportType: self.reportType != null and self.reportType != "" "Report type is required"
 
   default policy ReportDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
-  command create(name: string, reportType: string, queryConfig: string, displayConfig: string, isShared: boolean, createdBy: string) {
+  command create(name: string, reportType: string, queryConfig: json, displayConfig: json, isShared: boolean, createdBy: string) {
     guard name != null and name != "" "Report name is required"
     guard reportType != null and reportType != "" "Report type is required"
 
@@ -298,7 +298,7 @@ entity Report mixin TenantScoped, SoftDeletable {
     emit ReportCreated
   }
 
-  command update(name: string, reportType: string, queryConfig: string, displayConfig: string) {
+  command update(name: string, reportType: string, queryConfig: json, displayConfig: json) {
     guard self.deletedAt == null "Cannot update a deleted report"
     guard name != null and name != "" "Report name is required"
     guard reportType != null and reportType != "" "Report type is required"
@@ -423,10 +423,10 @@ entity Document mixin TenantScoped, SoftDeletable {
 entity AdminChatThread mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property threadType: string = "direct"
-  unique property slug: string = ""
-  property directKey: string = ""
-  property createdBy: string = ""
-  property lastMessageAt: datetime
+  unique property slug: string? = ""
+  property directKey: string? = ""
+  property createdBy: string? = ""
+  property lastMessageAt: datetime?
   timestamps
 
   default policy AdminChatThreadDefaultAccess execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Admin chat"

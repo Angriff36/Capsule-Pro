@@ -6,19 +6,19 @@ entity EventContract mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required eventId: string
   property required clientId: string
-  unique property contractNumber: string = ""
+  unique property contractNumber: string? = ""
   searchable property title: string = "Untitled Contract"
   indexed property status: string = "draft"
-  property documentUrl: string = ""
-  property documentType: string = ""
-  searchable property notes: string = ""
+  property documentUrl: string? = ""
+  property documentType: string? = ""
+  searchable property notes: string? = ""
   // Bug fix: expiresAt is a lifecycle datetime — no default
-  property expiresAt: datetime
-  property sentAt: datetime
-  property viewedAt: datetime
-  property signedAt: datetime
+  property expiresAt: datetime?
+  property sentAt: datetime?
+  property viewedAt: datetime?
+  property signedAt: datetime?
   timestamps
-  property canceledBy: string = ""
+  property canceledBy: string? = ""
 
   computed isDraft: boolean = self.status == "draft"
   computed isSent: boolean = self.status == "sent"
@@ -133,13 +133,13 @@ entity ContractSignature mixin TenantScoped, SoftDeletable {
   property signedAt: datetime
   property signatureData: string = ""
   property signerName: string = ""
-  property signerEmail: string = ""
-  property signerRole: string = ""
-  property ipAddress: string = ""
-  property verifiedAt: datetime
-  property invalidatedAt: datetime
-  property invalidationReason: string = ""
-  property isValid: boolean = true
+  property signerEmail: string? = ""
+  property signerRole: string? = ""
+  property ipAddress: string? = ""
+  property verifiedAt: datetime?
+  property invalidatedAt: datetime?
+  property invalidationReason: string? = ""
+  property isValid: boolean? = true
   timestamps
 
   computed hasEmail: boolean = self.signerEmail != ""

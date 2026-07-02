@@ -10,11 +10,11 @@ entity TemperatureProbe mixin TenantScoped {
   key [tenantId, id]
   searchable property required name: string
   property required probeId: string
-  property locationId: string = ""
+  property locationId: string? = ""
   property required minTemp: decimal
   property required maxTemp: decimal
   property isActive: boolean = true
-  property lastCalibration: datetime
+  property lastCalibration: datetime?
   timestamps
 
   // A probe that has never been calibrated needs attention before it can be trusted.
@@ -79,14 +79,14 @@ entity TemperatureProbe mixin TenantScoped {
 // ---------------------------------------------------------------------------
 entity TemperatureLog mixin TenantScoped {
   key [tenantId, id]
-  property required equipmentId: string
+  property required equipmentId: string?
   property required logNumber: string
   property required logType: string
-  property required loggedBy: string
+  property required loggedBy: string?
   property required temperature: decimal
   property required loggedAt: datetime
-  property required withinRange: boolean
-  searchable property notes: string = ""
+  property required withinRange: boolean?
+  searchable property notes: string? = ""
   timestamps
 
   constraint requireEquipment: self.equipmentId != "" "Equipment ID is required"
@@ -133,7 +133,7 @@ entity TemperatureReading mixin TenantScoped {
   property required probeId: string
   property required temperature: decimal
   property required loggedAt: datetime = now()
-  property required withinRange: boolean
+  property required withinRange: boolean?
   property createdAt: datetime = now()
 
   constraint requireProbe: self.probeId != "" "Probe ID is required"
@@ -173,16 +173,16 @@ entity IotAlertRule mixin TenantScoped {
   property required equipmentId: string
   property required sensorType: string
   property required condition: string
-  property threshold: float
-  property thresholdMin: float
-  property thresholdMax: float
+  property threshold: float?
+  property thresholdMin: float?
+  property thresholdMax: float?
   property required severity: string
   property durationMs: int = 0
   property alertAction: string = "notification"
   property isActive: boolean = true
-  property notifyRoles: array<string> = []
-  property notifyChannels: array<string> = []
-  searchable property description: string = ""
+  property notifyRoles: array<string>? = []
+  property notifyChannels: array<string>? = []
+  searchable property description: string? = ""
   timestamps
 
   constraint requireEquipment: self.equipmentId != "" "Equipment ID is required"
@@ -244,19 +244,19 @@ entity IotAlertRule mixin TenantScoped {
 // ---------------------------------------------------------------------------
 entity IoTAlert mixin TenantScoped {
   key [tenantId, id]
-  property required probeId: string
-  property ruleId: string = ""
+  property required probeId: string?
+  property ruleId: string? = ""
   property required severity: string
-  property required message: string
-  property required value: decimal
+  property required message: string?
+  property required value: decimal?
   indexed property required status: string = "active"
   property required triggeredAt: datetime
   property alertNumber: string = ""
   property alertType: string = ""
   searchable property title: string = ""
-  property temperature: decimal = 0
-  property acknowledgedBy: string = ""
-  property resolvedBy: string = ""
+  property temperature: decimal? = 0
+  property acknowledgedBy: string? = ""
+  property resolvedBy: string? = ""
   timestamps
 
   computed isActive: boolean = self.status == "active"
@@ -326,11 +326,11 @@ entity CorrectiveAction mixin TenantScoped {
   property required title: string
   property required sourceType: string
   property required sourceId: string
-  searchable property required description: string
-  property assignedTo: string = ""
+  searchable property required description: string? = ""
+  property assignedTo: string? = ""
   indexed property required status: string = "open"
-  property dueDate: datetime
-  property resolvedAt: datetime
+  property dueDate: datetime?
+  property resolvedAt: datetime?
   timestamps
 
   computed isOpen: boolean = self.status == "open"
@@ -401,10 +401,10 @@ entity QualityCheck mixin TenantScoped {
   property required checkNumber: string
   property required title: string
   property required checkType: string
-  property required completedBy: string
+  property required completedBy: string?
   indexed property required status: string = "pending"
-  property completedAt: datetime
-  searchable property notes: string = ""
+  property completedAt: datetime?
+  searchable property notes: string? = ""
   timestamps
 
   computed isPending: boolean = self.status == "pending"
@@ -479,8 +479,8 @@ entity QualityCheckItem mixin TenantScoped {
   property required checkId: string
   property required itemName: string
   property required criterion: string
-  property passed: boolean = false
-  searchable property notes: string = ""
+  property passed: boolean? = false
+  searchable property notes: string? = ""
   property sortOrder: int = 0
   timestamps
 
@@ -527,9 +527,9 @@ entity KitchenTaskClaim mixin TenantScoped {
   property required taskId: string
   property required employeeId: string
   property required claimedAt: datetime
-  indexed property required status: string = "active"
-  property releasedAt: datetime
-  property releaseReason: string = ""
+  indexed property required status: string? = "active"
+  property releasedAt: datetime?
+  property releaseReason: string? = ""
   timestamps
 
   computed isActive: boolean = self.status == "active"
@@ -579,10 +579,10 @@ entity KitchenTaskProgress mixin TenantScoped {
   property required taskId: string
   property required employeeId: string
   property required progressType: string
-  indexed property required newStatus: string
-  property required progressPct: decimal
-  property notes: string = ""
-  property required recordedAt: datetime
+  indexed property required newStatus: string?
+  property required progressPct: decimal?
+  property notes: string? = ""
+  property required recordedAt: datetime?
   property createdAt: datetime = now()
 
   constraint requireKitchenTaskId: self.taskId != "" "Kitchen task ID is required"
@@ -621,8 +621,8 @@ entity KitchenTaskProgress mixin TenantScoped {
 entity TaskBundle mixin TenantScoped {
   key [tenantId, id]
   searchable property required name: string
-  property eventId: string = ""
-  searchable property description: string = ""
+  property eventId: string? = ""
+  searchable property description: string? = ""
   indexed property required status: string = "active"
   timestamps
 
@@ -715,17 +715,17 @@ entity TaskBundleItem mixin TenantScoped {
 entity BulkCombineRule mixin TenantScoped {
   key [tenantId, id]
   searchable property required name: string
-  property required matchCriteria: string
+  property required matchCriteria: json
   property isActive: boolean = true
   timestamps
 
   constraint requireName: self.name != "" "Bulk combine rule name is required"
-  constraint requireMatchCriteria: self.matchCriteria != "" "Match criteria is required"
+  constraint requireMatchCriteria: self.matchCriteria != null "Match criteria is required"
 
   default policy BulkCombineRuleDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
-  command create(name: string, matchCriteria: string) {
+  command create(name: string, matchCriteria: json) {
     guard name != null and name != "" "Bulk combine rule name is required"
-    guard matchCriteria != null and matchCriteria != "" "Match criteria is required"
+    guard matchCriteria != null "Match criteria is required"
 
     mutate name = name
     mutate matchCriteria = matchCriteria
@@ -734,10 +734,10 @@ entity BulkCombineRule mixin TenantScoped {
     emit BulkCombineRuleCreated
   }
 
-  command update(name: string, matchCriteria: string) {
+  command update(name: string, matchCriteria: json) {
     guard self.isActive "Cannot update an inactive bulk combine rule"
     guard name != null and name != "" "Bulk combine rule name is required"
-    guard matchCriteria != null and matchCriteria != "" "Match criteria is required"
+    guard matchCriteria != null "Match criteria is required"
 
     mutate name = name
     mutate matchCriteria = matchCriteria
@@ -764,7 +764,7 @@ entity MethodVideo mixin TenantScoped {
   property required prepMethodId: string
   searchable property required title: string
   property required url: string
-  property durationSeconds: int = 0
+  property durationSeconds: int? = 0
   timestamps
 
   constraint requirePrepMethodId: self.prepMethodId != "" "Prep method ID is required"

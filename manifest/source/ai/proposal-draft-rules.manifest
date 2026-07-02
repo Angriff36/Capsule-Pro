@@ -10,34 +10,34 @@ entity ProposalDraft mixin TenantScoped, SoftDeletable {
   property version: int = 1
   searchable property title: string = ""
   searchable property clientName: string = ""
-  property clientEmail: string = ""
-  property clientPhone: string = ""
+  property clientEmail: string? = ""
+  property clientPhone: string? = ""
   // eventSummary..upgradeOptions: JSON-as-string payloads (Manifest IR
   // grammar has no object kind; same pattern as CommandBoard.metadata).
-  property eventSummary: string = "{}"
-  property menuSections: string = "{}"
-  property servicePlan: string = "{}"
-  property pricingBreakdown: string = "{}"
-  property timeline: string = "{}"
-  property upgradeOptions: string = "{}"
-  property visionSummary: string = ""
-  property notes: string = ""
-  property nextSteps: string = ""
-  property templateId: string = ""
+  property eventSummary: json = {}
+  property menuSections: json = {}
+  property servicePlan: json = {}
+  property pricingBreakdown: json = {}
+  property timeline: json? = {}
+  property upgradeOptions: json? = {}
+  property visionSummary: string? = ""
+  property notes: string? = ""
+  property nextSteps: string? = ""
+  property templateId: string? = ""
   // magicToken defaults to "" and is set by create()/refreshToken(); a
   // `required`/non-empty invariant here would fail the create bootstrap
   // (entity defaults must satisfy every block invariant at createInstance).
   property magicToken: string = ""
-  property magicTokenExpiresAt: datetime
-  property sentAt: datetime
+  property magicTokenExpiresAt: datetime?
+  property sentAt: datetime?
   // sentVia: comma-separated delivery methods (the DSL has no array-append
   // expression; `array + array` is not supported by the engine).
   property sentVia: string = ""
-  property viewedAt: datetime
-  property respondedAt: datetime
+  property viewedAt: datetime?
+  property respondedAt: datetime?
   property depositAmount: money = 0
   property depositPaid: boolean = false
-  property htmlContent: string = ""
+  property htmlContent: string? = ""
   timestamps
 
   computed isDraft: boolean = self.status == "draft"
@@ -90,7 +90,7 @@ entity ProposalDraft mixin TenantScoped, SoftDeletable {
 
   default policy ProposalDraftDefaultAccess execute: user.role in ["staff", "event_coordinator", "manager", "admin"] "AI call planner proposal drafts"
 
-  command create(draftId: string, title: string, clientName: string, optional clientEmail: string, optional clientPhone: string, eventSummary: string, menuSections: string, servicePlan: string, pricingBreakdown: string, optional timeline: string, optional upgradeOptions: string, optional visionSummary: string, optional notes: string, optional nextSteps: string, optional templateId: string) {
+  command create(draftId: string, title: string, clientName: string, optional clientEmail: string, optional clientPhone: string, eventSummary: json, menuSections: json, servicePlan: json, pricingBreakdown: json, optional timeline: json, optional upgradeOptions: json, optional visionSummary: string, optional notes: string, optional nextSteps: string, optional templateId: string) {
     guard draftId != null and draftId != "" "Draft ID is required"
     guard title != null and title != "" "Proposal title is required"
     guard clientName != null and clientName != "" "Client name is required"
@@ -105,8 +105,8 @@ entity ProposalDraft mixin TenantScoped, SoftDeletable {
     mutate menuSections = menuSections
     mutate servicePlan = servicePlan
     mutate pricingBreakdown = pricingBreakdown
-    mutate timeline = timeline != null ? timeline : "{}"
-    mutate upgradeOptions = upgradeOptions != null ? upgradeOptions : "{}"
+    mutate timeline = timeline != null ? timeline : {}
+    mutate upgradeOptions = upgradeOptions != null ? upgradeOptions : {}
     mutate visionSummary = visionSummary != null ? visionSummary : ""
     mutate notes = notes != null ? notes : ""
     mutate nextSteps = nextSteps != null ? nextSteps : ""
@@ -122,7 +122,7 @@ entity ProposalDraft mixin TenantScoped, SoftDeletable {
     emit ProposalDraftCreated
   }
 
-  command update(title: string, clientName: string, optional clientEmail: string, optional clientPhone: string, eventSummary: string, menuSections: string, servicePlan: string, pricingBreakdown: string, optional timeline: string, optional upgradeOptions: string, optional visionSummary: string, optional notes: string, optional nextSteps: string) {
+  command update(title: string, clientName: string, optional clientEmail: string, optional clientPhone: string, eventSummary: json, menuSections: json, servicePlan: json, pricingBreakdown: json, optional timeline: json, optional upgradeOptions: json, optional visionSummary: string, optional notes: string, optional nextSteps: string) {
     guard (self.status == "draft") "Can only update draft proposals"
     guard title != null and title != "" "Proposal title is required"
     guard clientName != null and clientName != "" "Client name is required"

@@ -12,17 +12,17 @@ entity Facility mixin TenantScoped {
   // entity property names MUST equal the Prisma field names (facilityType, etc.).
   key [tenantId, id]
   searchable property required name: string
-  unique property code: string = ""
+  unique property code: string? = ""
   property facilityType: string = "kitchen"
-  encrypted property addressLine1: string = ""
-  encrypted property addressLine2: string = ""
-  property city: string = ""
-  property state: string = ""
-  property postalCode: string = ""
-  property country: string = ""
-  encrypted property phone: string = ""
+  encrypted property addressLine1: string? = ""
+  encrypted property addressLine2: string? = ""
+  property city: string? = ""
+  property state: string? = ""
+  property postalCode: string? = ""
+  property country: string? = ""
+  encrypted property phone: string? = ""
   indexed property status: string = "active"
-  searchable property notes: string = ""
+  searchable property notes: string? = ""
   timestamps
 
   computed isActive: boolean = self.status == "active"
@@ -119,13 +119,13 @@ entity Facility mixin TenantScoped {
 
 entity FacilityArea mixin TenantScoped {
   key [tenantId, id]
-  property venueId: string = ""
+  property venueId: string? = ""
   searchable property required name: string
-  unique property code: string = ""
+  unique property code: string? = ""
   property areaType: string = "other"
-  property floor: string = ""
-  searchable property description: string = ""
-  property squareFeet: int = 0
+  property floor: string? = ""
+  searchable property description: string? = ""
+  property squareFeet: int? = 0
   indexed property status: string = "active"
   timestamps
 
@@ -195,22 +195,22 @@ entity FacilityArea mixin TenantScoped {
 
 entity FacilityAsset mixin TenantScoped {
   key [tenantId, id]
-  property facilityId: string = ""
-  property areaId: string = ""
+  property facilityId: string? = ""
+  property areaId: string? = ""
   searchable property required name: string
   property assetType: string = "other"
   indexed property status: string = "operational"
   // purchaseDate: nullable lifecycle timestamp — no = now() default
-  property purchaseDate: datetime
-  property purchaseCost: money = 0
-  property currentValue: decimal = 0
-  property serialNumber: string = ""
-  property manufacturer: string = ""
-  property model: string = ""
-  property warrantyExpiry: datetime
-  property lastMaintenanceAt: datetime
-  property nextMaintenanceAt: datetime
-  searchable property notes: string = ""
+  property purchaseDate: datetime?
+  property purchaseCost: money? = 0
+  property currentValue: decimal? = 0
+  property serialNumber: string? = ""
+  property manufacturer: string? = ""
+  property model: string? = ""
+  property warrantyExpiry: datetime?
+  property lastMaintenanceAt: datetime?
+  property nextMaintenanceAt: datetime?
+  searchable property notes: string? = ""
   timestamps
 
   computed isOperational: boolean = self.status == "operational"
@@ -315,18 +315,18 @@ entity FacilityAsset mixin TenantScoped {
 
 entity FacilitySchedule mixin TenantScoped {
   key [tenantId, id]
-  property facilityId: string = ""
-  property areaId: string = ""
+  property facilityId: string? = ""
+  property areaId: string? = ""
   searchable property required title: string
-  searchable property description: string = ""
-  property scheduleType: string = "maintenance"
-  indexed property status: string = "scheduled"
+  searchable property description: string? = ""
+  property scheduleType: string? = "maintenance"
+  indexed property status: string? = "scheduled"
   // startDate/endDate are lifecycle times — no = now() default
-  property startDate: datetime
-  property endDate: datetime
-  property assignedTo: string = ""
-  property completedAt: datetime
-  searchable property notes: string = ""
+  property startDate: datetime?
+  property endDate: datetime?
+  property assignedTo: string? = ""
+  property completedAt: datetime?
+  searchable property notes: string? = ""
   timestamps
 
   computed isActive: boolean = self.status == "in_progress"
@@ -415,22 +415,22 @@ entity FacilitySchedule mixin TenantScoped {
 
 entity FacilityWorkOrder mixin TenantScoped {
   key [tenantId, id]
-  property facilityId: string = ""
-  property areaId: string = ""
-  property assetId: string = ""
+  property facilityId: string? = ""
+  property areaId: string? = ""
+  property assetId: string? = ""
   searchable property required title: string
-  searchable property description: string = ""
-  property priority: string = "medium"
-  indexed property status: string = "open"
-  property category: string = "repair"
-  property requestedBy: string = ""
-  property assignedTo: string = ""
-  property estimatedCost: money = 0
-  property actualCost: money = 0
+  searchable property description: string? = ""
+  property priority: string? = "medium"
+  indexed property status: string? = "open"
+  property category: string? = "repair"
+  property requestedBy: string? = ""
+  property assignedTo: string? = ""
+  property estimatedCost: money? = 0
+  property actualCost: money? = 0
   // scheduledDate/completedDate: lifecycle times — no = now() default
-  property scheduledDate: datetime
-  property completedDate: datetime
-  searchable property notes: string = ""
+  property scheduledDate: datetime?
+  property completedDate: datetime?
+  searchable property notes: string? = ""
   timestamps
 
   computed isOpen: boolean = self.status == "open"

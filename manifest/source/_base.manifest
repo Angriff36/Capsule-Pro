@@ -124,5 +124,5 @@ entity TenantScoped {
 
 // Provides deletedAt — soft-delete timestamp (nullable; null = not deleted).
 entity SoftDeletable {
-  property deletedAt: datetime
+  property deletedAt: datetime?
 }
