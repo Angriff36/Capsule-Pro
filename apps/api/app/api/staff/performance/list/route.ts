@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
     const reviews = await database.performanceReview.findMany({
       where,
-      orderBy: { scheduled_date: "desc" },
+      orderBy: { scheduledDate: "desc" },
     });
 
     if (reviews.length === 0) {
@@ -48,8 +48,8 @@ export async function GET(request: NextRequest) {
     // Batch fetch employee and reviewer names
     const userIds = [
       ...new Set([
-        ...reviews.map((r) => r.employee_id),
-        ...reviews.map((r) => r.reviewer_id),
+        ...reviews.map((r) => r.employeeId),
+        ...reviews.map((r) => r.reviewerId),
       ]),
     ];
     const users = await database.user.findMany({
@@ -62,11 +62,11 @@ export async function GET(request: NextRequest) {
 
     const shaped = reviews.map((r) => ({
       id: r.id,
-      employee_id: r.employee_id,
-      reviewer_id: r.reviewer_id,
-      review_type: r.review_type,
-      scheduled_date: r.scheduled_date,
-      completed_date: r.completed_date,
+      employeeId: r.employeeId,
+      reviewerId: r.reviewerId,
+      reviewType: r.reviewType,
+      scheduledDate: r.scheduledDate,
+      completedDate: r.completedDate,
       status: r.status,
       rating: r.rating,
       strengths: r.strengths,
@@ -74,9 +74,9 @@ export async function GET(request: NextRequest) {
       goals_next_period: r.goals_next_period,
       manager_comments: r.manager_comments,
       employee_comments: r.employee_comments,
-      created_at: r.created_at,
-      employee_name: userMap.get(r.employee_id) || null,
-      reviewer_name: userMap.get(r.reviewer_id) || null,
+      createdAt: r.createdAt,
+      employee_name: userMap.get(r.employeeId) || null,
+      reviewer_name: userMap.get(r.reviewerId) || null,
     }));
 
     return manifestSuccessResponse({ reviews: shaped });

@@ -268,17 +268,17 @@ async function getHistoricalUsage(
       transactionType: {
         in: ["use", "waste", "adjust"],
       },
-      transaction_date: {
+      transactionDate: {
         gte: startDate,
         lte: today,
       },
     },
     select: {
       quantity: true,
-      transaction_date: true,
+      transactionDate: true,
     },
     orderBy: {
-      transaction_date: "asc",
+      transactionDate: "asc",
     },
   });
 
@@ -289,7 +289,7 @@ async function getHistoricalUsage(
   // Group by day and calculate daily usage
   const dailyUsage = new Map<string, number>();
   for (const t of transactions) {
-    const dateKey = t.transaction_date.toISOString().split("T")[0];
+    const dateKey = t.transactionDate.toISOString().split("T")[0];
     const currentUsage = dailyUsage.get(dateKey) ?? 0;
     dailyUsage.set(dateKey, currentUsage + Math.abs(Number(t.quantity)));
   }

@@ -66,9 +66,9 @@ async function mapShiftRows(
     scheduleId: string;
     employeeId: string;
     locationId: string;
-    shift_start: Date;
-    shift_end: Date;
-    role_during_shift: string | null;
+    shiftStart: Date;
+    shiftEnd: Date;
+    roleDuringShift: string | null;
     notes: string | null;
     createdAt: Date;
     updatedAt: Date;
@@ -118,9 +118,9 @@ async function mapShiftRows(
       employeeRole: employee?.role ?? "staff",
       location_id: shift.locationId,
       location_name: location?.name ?? "",
-      shift_start: shift.shift_start,
-      shift_end: shift.shift_end,
-      role_during_shift: shift.role_during_shift,
+      shift_start: shift.shiftStart,
+      shift_end: shift.shiftEnd,
+      role_during_shift: shift.roleDuringShift,
       notes: shift.notes,
       created_at: shift.createdAt,
       updated_at: shift.updatedAt,
@@ -157,19 +157,19 @@ export async function getShifts(params: {
     tenantId,
     deletedAt: null,
     ...(params.startDate
-      ? { shift_start: { gte: new Date(params.startDate) } }
+      ? { shiftStart: { gte: new Date(params.startDate) } }
       : {}),
-    ...(params.endDate ? { shift_end: { lte: new Date(params.endDate) } } : {}),
+    ...(params.endDate ? { shiftEnd: { lte: new Date(params.endDate) } } : {}),
     ...(params.employeeId ? { employeeId: params.employeeId } : {}),
     ...(params.locationId ? { locationId: params.locationId } : {}),
-    ...(params.role ? { role_during_shift: params.role } : {}),
+    ...(params.role ? { roleDuringShift: params.role } : {}),
   };
 
   // Fetch shifts and count
   const [shiftRecords, totalCount] = await Promise.all([
     database.scheduleShift.findMany({
       where,
-      orderBy: { shift_start: "asc" },
+      orderBy: { shiftStart: "asc" },
       take: limit,
       skip: offset,
     }),
@@ -261,13 +261,13 @@ export async function getAvailableEmployees(params: {
           tenantId,
           employeeId: emp.id,
           deletedAt: null,
-          shift_start: { lt: endDate },
-          shift_end: { gt: startDate },
+          shiftStart: { lt: endDate },
+          shiftEnd: { gt: startDate },
           ...(params.excludeShiftId
             ? { id: { not: params.excludeShiftId } }
             : {}),
         },
-        orderBy: { shift_start: "asc" },
+        orderBy: { shiftStart: "asc" },
       });
       const locations = await database.location.findMany({
         where: {
@@ -291,8 +291,8 @@ export async function getAvailableEmployees(params: {
         hasConflictingShift: conflictingShiftRecords.length > 0,
         conflictingShifts: conflictingShiftRecords.map((shift) => ({
           id: shift.id,
-          shiftStart: shift.shift_start,
-          shiftEnd: shift.shift_end,
+          shiftStart: shift.shiftStart,
+          shiftEnd: shift.shiftEnd,
           locationName: locationsById.get(shift.locationId)?.name ?? "",
         })),
       };
@@ -352,8 +352,8 @@ export async function createShift(formData: FormData) {
         tenantId,
         employeeId,
         deletedAt: null,
-        shift_start: { lt: endDate },
-        shift_end: { gt: startDate },
+        shiftStart: { lt: endDate },
+        shiftEnd: { gt: startDate },
       },
     });
 
@@ -422,8 +422,8 @@ export async function updateShift(shiftId: string, formData: FormData) {
         employeeId,
         id: { not: shiftId },
         deletedAt: null,
-        shift_start: { lt: endDate },
-        shift_end: { gt: startDate },
+        shiftStart: { lt: endDate },
+        shiftEnd: { gt: startDate },
       },
     });
 
@@ -630,7 +630,7 @@ export async function getSchedules(params?: {
             ...(params?.status ? { status: params.status } : {}),
             ...(locationIds ? { locationId: { in: locationIds } } : {}),
           },
-          orderBy: { schedule_date: "desc" },
+          orderBy: { scheduleDate: "desc" },
           take: 50,
         });
   const [scheduleLocations, shiftCounts] = await Promise.all([
@@ -658,7 +658,7 @@ export async function getSchedules(params?: {
   );
   const schedules = scheduleRecords.map((schedule, index) => ({
     id: schedule.id,
-    schedule_date: schedule.schedule_date,
+    scheduleDate: schedule.scheduleDate,
     status: schedule.status,
     location_id: schedule.locationId ?? "",
     location_name: schedule.locationId

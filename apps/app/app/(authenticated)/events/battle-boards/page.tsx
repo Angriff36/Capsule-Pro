@@ -247,7 +247,7 @@ const BattleBoardsPage = async ({ searchParams }: BattleBoardsPageProps) => {
                           </Badge>
                         </CardDescription>
                         <CardTitle className="text-lg">
-                          {board.board_name}
+                          {board.boardName}
                         </CardTitle>
                         <CardDescription>
                           {data?.meta?.eventName || "Untitled Event"}
@@ -262,7 +262,7 @@ const BattleBoardsPage = async ({ searchParams }: BattleBoardsPageProps) => {
                           <Shield className="size-4" />
                           <span>{timelineCount} timeline items</span>
                         </div>
-                        {board.is_template && (
+                        {board.isTemplate && (
                           <Badge className="w-fit" variant="outline">
                             Template
                           </Badge>

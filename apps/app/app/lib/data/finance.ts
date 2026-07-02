@@ -139,9 +139,9 @@ export const getRecentInvoices = cache(async (tenantId: string) =>
       dueDate: true,
       client: {
         select: {
-          company_name: true,
-          first_name: true,
-          last_name: true,
+          companyName: true,
+          firstName: true,
+          lastName: true,
         },
       },
       event: {
@@ -169,9 +169,9 @@ export const getRecentPayments = cache(async (tenantId: string) =>
       createdAt: true,
       client: {
         select: {
-          company_name: true,
-          first_name: true,
-          last_name: true,
+          companyName: true,
+          firstName: true,
+          lastName: true,
         },
       },
       invoice: {

@@ -437,8 +437,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? DEFAULT_APP_URL;
         const paymentUrl = `${appUrl}/invoices/${invoice.id}`;
         const clientName =
-          invoice.client?.first_name ||
-          invoice.client?.company_name ||
+          invoice.client?.firstName ||
+          invoice.client?.companyName ||
           "Valued Client";
         const dueDate = invoice.dueDate
           ? new Date(invoice.dueDate).toLocaleDateString("en-US", {

@@ -90,9 +90,9 @@ export async function getClients(
     const searchLower = filters.search.toLowerCase();
     (whereClause.AND as Record<string, unknown>[]).push({
       OR: [
-        { company_name: { contains: searchLower, mode: "insensitive" } },
-        { first_name: { contains: searchLower, mode: "insensitive" } },
-        { last_name: { contains: searchLower, mode: "insensitive" } },
+        { companyName: { contains: searchLower, mode: "insensitive" } },
+        { firstName: { contains: searchLower, mode: "insensitive" } },
+        { lastName: { contains: searchLower, mode: "insensitive" } },
         { email: { contains: searchLower, mode: "insensitive" } },
       ],
     });
@@ -225,9 +225,9 @@ export async function deleteTagGlobally(tag: string) {
     select: {
       id: true,
       tags: true,
-      company_name: true,
-      first_name: true,
-      last_name: true,
+      companyName: true,
+      firstName: true,
+      lastName: true,
       email: true,
       phone: true,
       website: true,
@@ -254,9 +254,9 @@ export async function deleteTagGlobally(tag: string) {
       command: "update",
       instanceId: client.id,
       body: {
-        companyName: client.company_name || "",
-        firstName: client.first_name || "",
-        lastName: client.last_name || "",
+        companyName: client.companyName || "",
+        firstName: client.firstName || "",
+        lastName: client.lastName || "",
         email: client.email || "",
         phone: client.phone || "",
         website: client.website || "",
@@ -415,15 +415,15 @@ export async function updateClient(
   const body = {
     companyName:
       input.company_name === undefined
-        ? existingClient.company_name || ""
+        ? existingClient.companyName || ""
         : input.company_name?.trim() || "",
     firstName:
       input.first_name === undefined
-        ? existingClient.first_name || ""
+        ? existingClient.firstName || ""
         : input.first_name?.trim() || "",
     lastName:
       input.last_name === undefined
-        ? existingClient.last_name || ""
+        ? existingClient.lastName || ""
         : input.last_name?.trim() || "",
     email:
       input.email === undefined
@@ -676,11 +676,11 @@ export async function updateClientContact(
     const body = {
       firstName:
         input.first_name === undefined
-          ? existing.first_name || ""
+          ? existing.firstName || ""
           : input.first_name.trim(),
       lastName:
         input.last_name === undefined
-          ? existing.last_name || ""
+          ? existing.lastName || ""
           : input.last_name.trim(),
       title:
         input.title === undefined

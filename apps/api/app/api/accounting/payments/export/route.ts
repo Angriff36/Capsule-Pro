@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
         completedAt: true,
         invoice: { select: { invoiceNumber: true } },
         client: {
-          select: { company_name: true, first_name: true, last_name: true },
+          select: { companyName: true, firstName: true, lastName: true },
         },
       },
     });
@@ -54,8 +54,8 @@ export async function GET(request: NextRequest) {
     const csvRows = payments
       .map((p) => {
         const client =
-          p.client?.company_name ||
-          [p.client?.first_name, p.client?.last_name]
+          p.client?.companyName ||
+          [p.client?.firstName, p.client?.lastName]
             .filter(Boolean)
             .join(" ") ||
           "";

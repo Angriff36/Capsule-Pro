@@ -165,7 +165,7 @@ export default async function AccountingPage() {
         dueDate: true,
         client: {
           select: {
-            company_name: true,
+            companyName: true,
             first_name: true,
             last_name: true,
           },
@@ -195,7 +195,7 @@ export default async function AccountingPage() {
         },
         client: {
           select: {
-            company_name: true,
+            companyName: true,
             first_name: true,
             last_name: true,
           },

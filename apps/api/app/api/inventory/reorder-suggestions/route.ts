@@ -32,12 +32,12 @@ export async function GET(request: NextRequest) {
           tenantId,
           sku,
         },
-        orderBy: { created_at: "desc" },
+        orderBy: { createdAt: "desc" },
       });
 
       if (
         existingSuggestion &&
-        existingSuggestion.created_at >
+        existingSuggestion.createdAt >
           new Date(Date.now() - 24 * 60 * 60 * 1000)
       ) {
         // Return existing suggestion if it's less than 24 hours old

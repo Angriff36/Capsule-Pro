@@ -111,14 +111,14 @@ async function calculateActualTotals(
   let actualOverhead = 0;
 
   for (const order of cateringOrders) {
-    actualRevenue += Number(order.subtotal_amount);
+    actualRevenue += Number(order.subtotalAmount);
     if (
-      order.order_status === "confirmed" ||
-      order.order_status === "completed"
+      order.orderStatus === "confirmed" ||
+      order.orderStatus === "completed"
     ) {
-      actualFoodCost += Number(order.subtotal_amount) * 0.35;
-      actualLaborCost += Number(order.subtotal_amount) * 0.15;
-      actualOverhead += Number(order.subtotal_amount) * 0.05;
+      actualFoodCost += Number(order.subtotalAmount) * 0.35;
+      actualLaborCost += Number(order.subtotalAmount) * 0.15;
+      actualOverhead += Number(order.subtotalAmount) * 0.05;
     }
   }
 

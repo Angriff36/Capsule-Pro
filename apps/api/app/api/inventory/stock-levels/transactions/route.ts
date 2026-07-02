@@ -116,17 +116,17 @@ export async function GET(request: Request) {
 
     // Location filter
     if (filters.locationId) {
-      where.storage_location_id = filters.locationId;
+      where.storageLocationId = filters.locationId;
     }
 
     // Date range filter
     if (filters.startDate || filters.endDate) {
-      where.transaction_date = {};
+      where.transactionDate = {};
       if (filters.startDate) {
-        where.transaction_date.gte = new Date(filters.startDate);
+        where.transactionDate.gte = new Date(filters.startDate);
       }
       if (filters.endDate) {
-        where.transaction_date.lte = new Date(filters.endDate);
+        where.transactionDate.lte = new Date(filters.endDate);
       }
     }
 
@@ -138,7 +138,7 @@ export async function GET(request: Request) {
       where,
       skip: (page - 1) * limit,
       take: limit,
-      orderBy: [{ transaction_date: "desc" }, { createdAt: "desc" }],
+      orderBy: [{ transactionDate: "desc" }, { createdAt: "desc" }],
     });
 
     // Get related item details
@@ -162,7 +162,7 @@ export async function GET(request: Request) {
     const locationIds = [
       ...new Set(
         transactions
-          .map((t) => t.storage_location_id)
+          .map((t) => t.storageLocationId)
           .filter((id): id is string => id !== null && id.length > 0)
       ),
     ];
@@ -184,7 +184,7 @@ export async function GET(request: Request) {
     const userIds = [
       ...new Set(
         transactions
-          .map((t) => t.employee_id)
+          .map((t) => t.employeeId)
           .filter((id): id is string => id !== null)
       ),
     ];
@@ -209,11 +209,11 @@ export async function GET(request: Request) {
     // Build response with details
     const data = transactions.map((transaction) => {
       const item = itemsMap.get(transaction.itemId);
-      const location = transaction.storage_location_id
-        ? locationsMap.get(transaction.storage_location_id)
+      const location = transaction.storageLocationId
+        ? locationsMap.get(transaction.storageLocationId)
         : undefined;
-      const user = transaction.employee_id
-        ? usersMap.get(transaction.employee_id)
+      const user = transaction.employeeId
+        ? usersMap.get(transaction.employeeId)
         : null;
 
       return {
@@ -222,16 +222,16 @@ export async function GET(request: Request) {
         inventoryItemId: transaction.itemId,
         transactionType: transaction.transactionType as TransactionType,
         quantity: Number(transaction.quantity),
-        unitCost: Number(transaction.unit_cost),
-        totalCost: transaction.total_cost
-          ? Number(transaction.total_cost)
+        unitCost: Number(transaction.unitCost),
+        totalCost: transaction.totalCost
+          ? Number(transaction.totalCost)
           : null,
         referenceId: transaction.referenceId,
         referenceType: transaction.referenceType,
-        storageLocationId: transaction.storage_location_id,
+        storageLocationId: transaction.storageLocationId,
         reason: transaction.reason as AdjustmentReason | null,
         notes: transaction.notes,
-        performedBy: transaction.employee_id,
+        performedBy: transaction.employeeId,
         createdAt: transaction.createdAt,
         item: item
           ? {

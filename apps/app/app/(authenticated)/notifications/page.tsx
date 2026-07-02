@@ -35,15 +35,15 @@ export default async function NotificationsPage() {
   const notifications = rawNotifications.map((n) => ({
     tenantId: n.tenantId,
     id: n.id,
-    recipient_employee_id: n.recipient_employee_id,
-    notification_type: n.notification_type,
+    recipientEmployeeId: n.recipientEmployeeId,
+    notificationType: n.notificationType,
     title: n.title,
     body: n.body,
-    action_url: n.action_url,
+    actionUrl: n.actionUrl,
     isRead: n.isRead,
     readAt: n.readAt?.toISOString() ?? null,
     createdAt: n.createdAt.toISOString(),
-    correlation_id: n.correlation_id,
+    correlationId: n.correlationId,
   }));
 
   const total = notifications.length;

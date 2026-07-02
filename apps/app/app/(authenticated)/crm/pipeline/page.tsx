@@ -144,7 +144,7 @@ export default async function PipelinePage() {
       guestCount: true,
       client: {
         select: {
-          company_name: true,
+          companyName: true,
           first_name: true,
           last_name: true,
         },

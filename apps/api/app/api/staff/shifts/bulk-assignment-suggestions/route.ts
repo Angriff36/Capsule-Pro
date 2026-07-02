@@ -73,9 +73,9 @@ export const POST = withRateLimit(
           id: true,
           scheduleId: true,
           locationId: true,
-          shift_start: true,
-          shift_end: true,
-          role_during_shift: true,
+          shiftStart: true,
+          shiftEnd: true,
+          roleDuringShift: true,
         },
       });
 
@@ -86,9 +86,9 @@ export const POST = withRateLimit(
           shiftId: shift.id,
           scheduleId: shift.scheduleId,
           locationId: requestShift?.locationId || shift.locationId || "",
-          shiftStart: shift.shift_start,
-          shiftEnd: shift.shift_end,
-          roleDuringShift: shift.role_during_shift || undefined,
+          shiftStart: shift.shiftStart,
+          shiftEnd: shift.shiftEnd,
+          roleDuringShift: shift.roleDuringShift || undefined,
           requiredSkills: requestShift?.requiredSkills || [],
         };
       });
@@ -163,18 +163,18 @@ export const GET = withRateLimit(
           deletedAt: null,
           ...(scheduleId ? { scheduleId } : {}),
           ...(locationId ? { locationId } : {}),
-          ...(startDate ? { shift_start: { gte: new Date(startDate) } } : {}),
-          ...(endDate ? { shift_end: { lte: new Date(endDate) } } : {}),
+          ...(startDate ? { shiftStart: { gte: new Date(startDate) } } : {}),
+          ...(endDate ? { shiftEnd: { lte: new Date(endDate) } } : {}),
         },
-        orderBy: { shift_start: "asc" },
+        orderBy: { shiftStart: "asc" },
         take: 50,
         select: {
           id: true,
           scheduleId: true,
           locationId: true,
-          shift_start: true,
-          shift_end: true,
-          role_during_shift: true,
+          shiftStart: true,
+          shiftEnd: true,
+          roleDuringShift: true,
         },
       });
 
@@ -195,9 +195,9 @@ export const GET = withRateLimit(
         shiftId: shift.id,
         scheduleId: shift.scheduleId,
         locationId: locationId || shift.locationId || "",
-        shiftStart: shift.shift_start,
-        shiftEnd: shift.shift_end,
-        roleDuringShift: shift.role_during_shift || undefined,
+        shiftStart: shift.shiftStart,
+        shiftEnd: shift.shiftEnd,
+        roleDuringShift: shift.roleDuringShift || undefined,
       }));
 
       const results = await getAssignmentSuggestionsForMultipleShifts(

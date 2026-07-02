@@ -40,17 +40,17 @@ export async function GET(request: Request) {
   const where = {
     tenantId,
     deletedAt: null,
-    ...(startDate ? { shift_start: { gte: new Date(startDate) } } : {}),
-    ...(endDate ? { shift_end: { lte: new Date(endDate) } } : {}),
+    ...(startDate ? { shiftStart: { gte: new Date(startDate) } } : {}),
+    ...(endDate ? { shiftEnd: { lte: new Date(endDate) } } : {}),
     ...(employeeId ? { employeeId } : {}),
     ...(locationId ? { locationId } : {}),
-    ...(role ? { role_during_shift: role } : {}),
+    ...(role ? { roleDuringShift: role } : {}),
   };
 
   const [shiftRows, totalCount] = await Promise.all([
     database.scheduleShift.findMany({
       where,
-      orderBy: { shift_start: "asc" },
+      orderBy: { shiftStart: "asc" },
       skip: offset,
       take: limit,
       select: {
@@ -58,9 +58,9 @@ export async function GET(request: Request) {
         scheduleId: true,
         employeeId: true,
         locationId: true,
-        shift_start: true,
-        shift_end: true,
-        role_during_shift: true,
+        shiftStart: true,
+        shiftEnd: true,
+        roleDuringShift: true,
         notes: true,
         createdAt: true,
         updatedAt: true,
@@ -116,9 +116,9 @@ export async function GET(request: Request) {
       employee_role: employee?.role ?? "",
       location_id: shift.locationId,
       location_name: location?.name ?? "",
-      shift_start: shift.shift_start,
-      shift_end: shift.shift_end,
-      role_during_shift: shift.role_during_shift,
+      shiftStart: shift.shiftStart,
+      shiftEnd: shift.shiftEnd,
+      roleDuringShift: shift.roleDuringShift,
       notes: shift.notes,
       created_at: shift.createdAt,
       updated_at: shift.updatedAt,

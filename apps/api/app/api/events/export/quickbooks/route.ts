@@ -260,9 +260,9 @@ export async function POST(request: NextRequest) {
         client: {
           select: {
             id: true,
-            company_name: true,
-            first_name: true,
-            last_name: true,
+            companyName: true,
+            firstName: true,
+            lastName: true,
             email: true,
             defaultPaymentTerms: true,
           },
@@ -290,9 +290,9 @@ export async function POST(request: NextRequest) {
       client: e.client
         ? {
             id: e.client.id,
-            companyName: e.client.company_name,
-            firstName: e.client.first_name,
-            lastName: e.client.last_name,
+            companyName: e.client.companyName,
+            firstName: e.client.firstName,
+            lastName: e.client.lastName,
             email: e.client.email,
             defaultPaymentTerms: e.client.defaultPaymentTerms,
           }

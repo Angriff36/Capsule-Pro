@@ -105,13 +105,13 @@ export async function PATCH(request: NextRequest) {
 
       // Calculate duration difference to preserve shift length
       const originalDuration =
-        existingShift.shift_end.getTime() - existingShift.shift_start.getTime();
+        existingShift.shiftEnd.getTime() - existingShift.shiftStart.getTime();
 
       // Set new shift start time to newDate with same time components as original
       const newShiftStart = new Date(newDateTime);
-      newShiftStart.setHours(existingShift.shift_start.getHours());
-      newShiftStart.setMinutes(existingShift.shift_start.getMinutes());
-      newShiftStart.setSeconds(existingShift.shift_start.getSeconds());
+      newShiftStart.setHours(existingShift.shiftStart.getHours());
+      newShiftStart.setMinutes(existingShift.shiftStart.getMinutes());
+      newShiftStart.setSeconds(existingShift.shiftStart.getSeconds());
 
       const newShiftEnd = new Date(newShiftStart.getTime() + originalDuration);
 
@@ -124,7 +124,7 @@ export async function PATCH(request: NextRequest) {
           locationId: existingShift.locationId,
           shiftStart: newShiftStart.getTime(),
           shiftEnd: newShiftEnd.getTime(),
-          roleDuringShift: existingShift.role_during_shift ?? "",
+          roleDuringShift: existingShift.roleDuringShift ?? "",
           notes: existingShift.notes ?? "",
         },
         user: { id: user.id, tenantId: user.tenantId, role: user.role },

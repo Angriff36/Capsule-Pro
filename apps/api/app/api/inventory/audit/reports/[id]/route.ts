@@ -241,7 +241,7 @@ export async function GET(_request: Request, context: RouteContext) {
     }
 
     // Parse the query config to get the original filters
-    const queryConfig = report.query_config as {
+    const queryConfig = report.queryConfig as {
       filters?: {
         startDate?: string;
         endDate?: string;

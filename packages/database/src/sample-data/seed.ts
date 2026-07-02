@@ -374,9 +374,9 @@ export const seedSampleData = async (
       scheduleId: schedule.id,
       employeeId: users[0].id,
       locationId: location.id,
-      shift_start: new Date(),
-      shift_end: new Date(Date.now() + 8 * 60 * 60 * 1000),
-      role_during_shift: "Sous Chef",
+      shiftStart: new Date(),
+      shiftEnd: new Date(Date.now() + 8 * 60 * 60 * 1000),
+      roleDuringShift: "Sous Chef",
       notes: "Sample shift",
     },
   });

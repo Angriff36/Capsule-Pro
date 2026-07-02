@@ -142,22 +142,22 @@ export async function GET(request: NextRequest) {
               where: {
                 tenantId,
                 OR: [
-                  { shift_start: { gte: rawStart, lte: rawEnd } },
+                  { shiftStart: { gte: rawStart, lte: rawEnd } },
                   {
-                    shift_start: { lt: rawStart },
-                    shift_end: { gt: rawStart },
+                    shiftStart: { lt: rawStart },
+                    shiftEnd: { gt: rawStart },
                   },
                 ],
                 deletedAt: null,
               },
               select: {
                 id: true,
-                shift_start: true,
-                shift_end: true,
-                role_during_shift: true,
+                shiftStart: true,
+                shiftEnd: true,
+                roleDuringShift: true,
                 employeeId: true,
               },
-              orderBy: { shift_start: "asc" },
+              orderBy: { shiftStart: "asc" },
               take: 100,
             })
             .catch((error) => {
@@ -214,12 +214,12 @@ export async function GET(request: NextRequest) {
       events.push(
         ...shiftsResult.map((s) => ({
           id: s.id,
-          title: `Shift: ${s.role_during_shift || "Staff"}`,
-          start: s.shift_start.toISOString(),
-          end: s.shift_end?.toISOString(),
+          title: `Shift: ${s.roleDuringShift || "Staff"}`,
+          start: s.shiftStart.toISOString(),
+          end: s.shiftEnd?.toISOString(),
           type: "shift" as const,
-          details: s.role_during_shift
-            ? `Role: ${s.role_during_shift}`
+          details: s.roleDuringShift
+            ? `Role: ${s.roleDuringShift}`
             : undefined,
         }))
       );

@@ -352,7 +352,7 @@ async function processShiftReminders() {
       const shifts = await database.scheduleShift.findMany({
         where: {
           tenantId,
-          shift_start: {
+          shiftStart: {
             gte: twoHoursFromNow,
             lte: twelveHoursFromNow,
           },
@@ -417,22 +417,22 @@ async function processShiftReminders() {
               type: "shift",
             },
             templateData: {
-              shiftDate: shift.shift_start.toLocaleDateString("en-US", {
+              shiftDate: shift.shiftStart.toLocaleDateString("en-US", {
                 weekday: "long",
                 year: "numeric",
                 month: "long",
                 day: "numeric",
               }),
-              shiftTime: shift.shift_start.toLocaleTimeString("en-US", {
+              shiftTime: shift.shiftStart.toLocaleTimeString("en-US", {
                 hour: "numeric",
                 minute: "2-digit",
               }),
-              shiftEndTime: shift.shift_end?.toLocaleTimeString("en-US", {
+              shiftEndTime: shift.shiftEnd?.toLocaleTimeString("en-US", {
                 hour: "numeric",
                 minute: "2-digit",
               }),
               location: location?.name ?? "TBD",
-              role: shift.role_during_shift ?? undefined,
+              role: shift.roleDuringShift ?? undefined,
               recipientName: [employee.firstName, employee.lastName]
                 .filter(Boolean)
                 .join(" "),

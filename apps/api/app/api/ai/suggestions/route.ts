@@ -149,10 +149,10 @@ async function getContextData(
   const inventoryAlertsRaw = await database.inventoryAlert.findMany({
     where: {
       tenantId,
-      resolved_at: null,
+      resolvedAt: null,
       deleted_at: null,
     },
-    orderBy: { triggered_at: "desc" },
+    orderBy: { triggeredAt: "desc" },
     take: 15,
   });
 
@@ -264,8 +264,8 @@ async function getContextData(
       id: a.id,
       alertType: a.alertType,
       itemName: itemMap.get(a.itemId) || "Unknown Item",
-      thresholdValue: a.threshold_value.toString(),
-      triggeredAt: a.triggered_at,
+      thresholdValue: a.thresholdValue.toString(),
+      triggeredAt: a.triggeredAt,
       notes: a.notes,
     })),
     staffAssignments: filteredStaffAssignments.map((s) => ({

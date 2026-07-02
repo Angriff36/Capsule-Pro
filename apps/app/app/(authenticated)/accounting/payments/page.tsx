@@ -124,7 +124,7 @@ export default async function PaymentsPage() {
         },
         client: {
           select: {
-            company_name: true,
+            companyName: true,
             first_name: true,
             last_name: true,
           },

@@ -342,18 +342,18 @@ async function detectInventoryConflicts(
   const activeAlerts = await database.inventoryAlert.findMany({
     where: {
       tenantId,
-      deleted_at: null,
-      resolved_at: null,
-      triggered_at: { gte: startDate },
+      deletedAt: null,
+      resolvedAt: null,
+      triggeredAt: { gte: startDate },
     },
-    orderBy: { triggered_at: "desc" },
+    orderBy: { triggeredAt: "desc" },
     take: 20,
     select: {
       id: true,
       itemId: true,
       alertType: true,
-      threshold_value: true,
-      triggered_at: true,
+      thresholdValue: true,
+      triggeredAt: true,
     },
   });
 
@@ -379,7 +379,7 @@ async function detectInventoryConflicts(
   for (const alert of activeAlerts) {
     const itemName = itemMap.get(alert.itemId) ?? "Unknown Item";
     const severity = getInventorySeverity(alert.alertType);
-    const thresholdValue = alert.threshold_value.toString();
+    const thresholdValue = alert.thresholdValue.toString();
 
     conflicts.push({
       id: `inventory-alert-${alert.id}`,
@@ -398,7 +398,7 @@ async function detectInventoryConflicts(
         severity === "critical"
           ? "Reorder stock immediately or find alternative"
           : "Monitor stock levels and consider reordering",
-      createdAt: alert.triggered_at,
+      createdAt: alert.triggeredAt,
     });
   }
 
