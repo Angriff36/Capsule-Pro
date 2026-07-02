@@ -3850,37 +3850,22 @@ projections:
       naming: snake_case
       metadataOutput: manifest-prisma-store-metadata.generated.ts
       registryOutput: prisma-store-registry.generated.ts
-      # IR entity → Prisma model (when model name differs from IR entity name).
+      # IR entity → Prisma model (only when the model name genuinely differs from
+      # the IR entity name). Under the native prisma projection (naming:
+      # snake_case) the model name IS the IR entity name and the @map handles the
+      # snake_case table, so entities whose model == their IR name need NO bridge
+      # (they resolve via naive camelCase). Only these 5 collapse an IR entity
+      # onto a differently-named shared model.
       entityToPrismaModel:
         EventImportWorkflow: EventImport
-        BankAccount: EmployeeBankAccount
         LogisticsRoute: DeliveryRoute
-        Document: documents
-        SmsAutomationRule: sms_automation_rules
         EventTimelineItem: EventTimeline
-        StorageLocation: storage_locations
-        BulkCombineRule: bulk_combine_rules
-        MethodVideo: method_videos
-        PrepListImport: prep_list_imports
         QACorrectiveAction: CorrectiveAction
         QATemperatureLog: TemperatureLog
-        TaskBundleItem: task_bundle_items
-        TaskBundle: task_bundles
-        OpenShift: open_shifts
       # IR entity → Prisma client delegate (must match live schema; validated in CI).
       accessorNames:
         EventImportWorkflow: eventImport
-        BankAccount: employeeBankAccount
         LogisticsRoute: deliveryRoute
-        Document: documents
-        SmsAutomationRule: sms_automation_rules
         EventTimelineItem: eventTimeline
-        StorageLocation: storage_locations
-        BulkCombineRule: bulk_combine_rules
-        MethodVideo: method_videos
-        PrepListImport: prep_list_imports
         QACorrectiveAction: correctiveAction
         QATemperatureLog: temperatureLog
-        TaskBundleItem: task_bundle_items
-        TaskBundle: task_bundles
-        OpenShift: open_shifts
