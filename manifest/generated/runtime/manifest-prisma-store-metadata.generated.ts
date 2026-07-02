@@ -17359,10 +17359,10 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "threshold",
         "irName": "threshold",
-        "type": "Decimal",
+        "type": "Float",
         "isEnum": false,
         "isList": false,
-        "optional": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -17370,22 +17370,22 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "threshold_min",
         "irName": "thresholdMin",
-        "type": "Decimal",
+        "type": "Float",
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
       {
         "name": "threshold_max",
         "irName": "thresholdMax",
-        "type": "Decimal",
+        "type": "Float",
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },

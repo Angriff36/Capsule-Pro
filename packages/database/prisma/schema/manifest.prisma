@@ -3078,9 +3078,9 @@ model IotAlertRule {
   equipmentId String @map("equipment_id") @db.Uuid
   sensorType String @map("sensor_type")
   condition String
-  threshold Decimal @db.Decimal(12, 2)
-  thresholdMin Decimal? @map("threshold_min") @db.Decimal(12, 2) @default(0)
-  thresholdMax Decimal? @map("threshold_max") @db.Decimal(12, 2) @default(0)
+  threshold Float?
+  thresholdMin Float? @map("threshold_min")
+  thresholdMax Float? @map("threshold_max")
   severity String
   durationMs Int? @map("duration_ms") @default(0)
   alertAction String? @map("alert_action") @default("notification")

@@ -1814,8 +1814,8 @@ export interface IotAlertRule {
   sensorType: string;
   condition: string;
   threshold: number;
-  thresholdMin?: number;
-  thresholdMax?: number;
+  thresholdMin: number;
+  thresholdMax: number;
   severity: string;
   durationMs?: number;
   alertAction?: string;

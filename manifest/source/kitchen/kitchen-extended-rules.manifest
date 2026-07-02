@@ -173,9 +173,9 @@ entity IotAlertRule mixin TenantScoped {
   property required equipmentId: string
   property required sensorType: string
   property required condition: string
-  property required threshold: decimal
-  property thresholdMin: decimal = 0
-  property thresholdMax: decimal = 0
+  property threshold: float
+  property thresholdMin: float
+  property thresholdMax: float
   property required severity: string
   property durationMs: int = 0
   property alertAction: string = "notification"
