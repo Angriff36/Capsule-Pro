@@ -21,8 +21,8 @@ enum PayrollRunStatus {
 
 entity PayrollPeriod mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property periodStart: string = ""
-  property periodEnd: string = ""
+  property required periodStart: datetime
+  property required periodEnd: datetime
   indexed property status: PayrollPeriodStatus = open
   timestamps
 
@@ -84,8 +84,8 @@ entity EmployeeDeduction mixin TenantScoped, SoftDeletable {
   property amount: money = 0
   property percentage: decimal = 0
   property isPreTax: boolean = false
-  property effectiveDate: string = ""
-  property endDate: string = ""
+  property required effectiveDate: datetime
+  property endDate: datetime
   property maxAnnualAmount: money = 0
   timestamps
 
@@ -180,7 +180,7 @@ entity PayrollApprovalHistory mixin TenantScoped {
 entity PayrollRun mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property payrollPeriodId: string = ""
-  property runDate: string = ""
+  property required runDate: datetime = now()
   indexed property status: PayrollRunStatus = pending
   property totalGross: money = 0
   property totalDeductions: money = 0

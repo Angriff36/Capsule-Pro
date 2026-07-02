@@ -947,7 +947,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "AdminTaskDevMeta": {
     "accessor": "adminTaskDevMeta",
-    "dbName": "admin_task_dev_metas",
+    "dbName": "admin_task_dev_meta",
     "pgSchema": "tenant_admin",
     "pkFields": [
       "tenantId",
@@ -1204,7 +1204,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "AiEventSetupSession": {
     "accessor": "aiEventSetupSession",
-    "dbName": "ai_event_setup_sessions",
+    "dbName": "AiEventSetupSession",
     "pgSchema": "public",
     "pkFields": [
       "tenantId",
@@ -1437,7 +1437,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "AlertsConfig": {
     "accessor": "alertsConfig",
-    "dbName": "alerts_configs",
+    "dbName": "alerts_config",
     "pgSchema": "tenant_inventory",
     "pkFields": [
       "tenantId",
@@ -2050,7 +2050,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "AutomatedFollowup": {
     "accessor": "automatedFollowup",
-    "dbName": "automated_followups",
+    "dbName": "AutomatedFollowup",
     "pgSchema": "public",
     "pkFields": [
       "tenantId",
@@ -3063,7 +3063,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "Budget": {
     "accessor": "budget",
-    "dbName": "budgets",
+    "dbName": "Budget",
     "pgSchema": "public",
     "pkFields": [
       "tenantId",
@@ -8098,7 +8098,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "Deal": {
     "accessor": "deal",
-    "dbName": "deals",
+    "dbName": "Deal",
     "pgSchema": "public",
     "pkFields": [
       "tenantId",
@@ -9667,7 +9667,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "EmployeeAvailability": {
     "accessor": "employeeAvailability",
-    "dbName": "employee_availabilities",
+    "dbName": "employee_availability",
     "pgSchema": "tenant_staff",
     "pkFields": [
       "tenantId",
@@ -9734,22 +9734,22 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "startTime",
         "irName": "startTime",
-        "type": "String",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
-        "optional": true,
-        "hasDefault": true,
+        "optional": false,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
       {
         "name": "endTime",
         "irName": "endTime",
-        "type": "String",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
-        "optional": true,
-        "hasDefault": true,
+        "optional": false,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -9767,10 +9767,10 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "effectiveFrom",
         "irName": "effectiveFrom",
-        "type": "String",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
-        "optional": true,
+        "optional": false,
         "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
@@ -9778,11 +9778,11 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "effectiveUntil",
         "irName": "effectiveUntil",
-        "type": "String",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -9934,22 +9934,22 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "issuedDate",
         "irName": "issuedDate",
-        "type": "String",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
-        "optional": true,
-        "hasDefault": true,
+        "optional": false,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
       {
         "name": "expiryDate",
         "irName": "expiryDate",
-        "type": "String",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -10001,7 +10001,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "EmployeeDeduction": {
     "accessor": "employeeDeduction",
-    "dbName": "employee_deductions",
+    "dbName": "EmployeeDeduction",
     "pgSchema": "tenant_staff",
     "pkFields": [
       "tenantId",
@@ -10112,22 +10112,22 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "effectiveDate",
         "irName": "effectiveDate",
-        "type": "String",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
-        "optional": true,
-        "hasDefault": true,
+        "optional": false,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
       {
         "name": "endDate",
         "irName": "endDate",
-        "type": "String",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -10168,7 +10168,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "EntityVersion": {
     "accessor": "entityVersion",
-    "dbName": "entity_versions",
+    "dbName": "EntityVersion",
     "pgSchema": "public",
     "pkFields": [
       "tenantId",
@@ -10346,7 +10346,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "Equipment": {
     "accessor": "equipment",
-    "dbName": "equipments",
+    "dbName": "equipment",
     "pgSchema": "tenant_kitchen",
     "pkFields": [
       "tenantId",
@@ -12533,7 +12533,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "EventProfitability": {
     "accessor": "eventProfitability",
-    "dbName": "event_profitabilities",
+    "dbName": "event_profitability",
     "pgSchema": "tenant_events",
     "pkFields": [
       "tenantId",
@@ -13076,7 +13076,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "EventStaff": {
     "accessor": "eventStaff",
-    "dbName": "event_staffs",
+    "dbName": "event_staff",
     "pgSchema": "tenant_events",
     "pkFields": [
       "tenantId",
@@ -13432,7 +13432,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "EventTimeline": {
     "accessor": "eventTimeline",
-    "dbName": "event_timelines",
+    "dbName": "event_timeline",
     "pgSchema": "tenant_events",
     "pkFields": [
       "tenantId",
@@ -13722,7 +13722,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "EventWaitlistEntry": {
     "accessor": "eventWaitlistEntry",
-    "dbName": "event_waitlist_entries",
+    "dbName": "EventWaitlistEntry",
     "pgSchema": "public",
     "pkFields": [
       "tenantId",
@@ -14445,7 +14445,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "FacilitySchedule": {
     "accessor": "facilitySchedule",
-    "dbName": "facility_schedules",
+    "dbName": "FacilitySchedule",
     "pgSchema": "public",
     "pkFields": [
       "tenantId",
@@ -14623,7 +14623,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "FacilityWorkOrder": {
     "accessor": "facilityWorkOrder",
-    "dbName": "facility_work_orders",
+    "dbName": "FacilityWorkOrder",
     "pgSchema": "public",
     "pkFields": [
       "tenantId",
@@ -15880,7 +15880,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "InventoryStock": {
     "accessor": "inventoryStock",
-    "dbName": "inventory_stocks",
+    "dbName": "inventory_stock",
     "pgSchema": "tenant_inventory",
     "pkFields": [
       "tenantId",
@@ -17135,7 +17135,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "IoTAlert": {
     "accessor": "ioTAlert",
-    "dbName": "io_t_alerts",
+    "dbName": "iot_alerts",
     "pgSchema": "tenant_kitchen",
     "pkFields": [
       "tenantId",
@@ -17702,7 +17702,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "KitchenTaskClaim": {
     "accessor": "kitchenTaskClaim",
-    "dbName": "kitchen_task_claims",
+    "dbName": "task_claims",
     "pgSchema": "tenant_kitchen",
     "pkFields": [
       "tenantId",
@@ -17825,7 +17825,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "KitchenTaskProgress": {
     "accessor": "kitchenTaskProgress",
-    "dbName": "kitchen_task_progresses",
+    "dbName": "task_progress",
     "pgSchema": "tenant_kitchen",
     "pkFields": [
       "tenantId",
@@ -18149,22 +18149,22 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "periodStart",
         "irName": "periodStart",
-        "type": "String",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
       {
         "name": "periodEnd",
         "irName": "periodEnd",
-        "type": "String",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -18493,7 +18493,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "LogisticsDispatch": {
     "accessor": "logisticsDispatch",
-    "dbName": "logistics_dispatches",
+    "dbName": "LogisticsDispatch",
     "pgSchema": "public",
     "pkFields": [
       "tenantId",
@@ -20154,7 +20154,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "OverrideAudit": {
     "accessor": "overrideAudit",
-    "dbName": "override_audits",
+    "dbName": "override_audit",
     "pgSchema": "tenant_kitchen",
     "pkFields": [
       "tenantId",
@@ -20932,7 +20932,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "PayrollApprovalHistory": {
     "accessor": "payrollApprovalHistory",
-    "dbName": "payroll_approval_histories",
+    "dbName": "payroll_approval_history",
     "pgSchema": "tenant_staff",
     "pkFields": [
       "tenantId",
@@ -21278,22 +21278,22 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "periodStart",
         "irName": "periodStart",
-        "type": "String",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
-        "optional": true,
-        "hasDefault": true,
+        "optional": false,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
       {
         "name": "periodEnd",
         "irName": "periodEnd",
-        "type": "String",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
-        "optional": true,
-        "hasDefault": true,
+        "optional": false,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -21390,10 +21390,10 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "runDate",
         "irName": "runDate",
-        "type": "String",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
-        "optional": true,
+        "optional": false,
         "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
@@ -21523,7 +21523,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "PerformancePrediction": {
     "accessor": "performancePrediction",
-    "dbName": "performance_predictions",
+    "dbName": "PerformancePrediction",
     "pgSchema": "public",
     "pkFields": [
       "tenantId",
@@ -28571,7 +28571,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "SampleData": {
     "accessor": "sampleData",
-    "dbName": "sample_datas",
+    "dbName": "SampleData",
     "pgSchema": "public",
     "pkFields": [
       "tenantId",
@@ -28931,7 +28931,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
-        "optional": true,
+        "optional": false,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -28942,7 +28942,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
-        "optional": true,
+        "optional": false,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -29861,7 +29861,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "StaffPerformance": {
     "accessor": "staffPerformance",
-    "dbName": "staff_performances",
+    "dbName": "StaffPerformance",
     "pgSchema": "public",
     "pkFields": [
       "tenantId",
@@ -31658,7 +31658,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "TimeOffRequest": {
     "accessor": "timeOffRequest",
-    "dbName": "time_off_requests",
+    "dbName": "employee_time_off_requests",
     "pgSchema": "tenant_staff",
     "pkFields": [
       "tenantId",
@@ -31714,22 +31714,22 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "startDate",
         "irName": "startDate",
-        "type": "String",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
-        "optional": true,
-        "hasDefault": true,
+        "optional": false,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
       {
         "name": "endDate",
         "irName": "endDate",
-        "type": "String",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
-        "optional": true,
-        "hasDefault": true,
+        "optional": false,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -33025,7 +33025,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "User": {
     "accessor": "user",
-    "dbName": "users",
+    "dbName": "employees",
     "pgSchema": "tenant_staff",
     "pkFields": [
       "tenantId",
@@ -33768,7 +33768,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "Vendor": {
     "accessor": "vendor",
-    "dbName": "vendors",
+    "dbName": "Vendor",
     "pgSchema": "public",
     "pkFields": [
       "tenantId",
@@ -35243,7 +35243,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "VersionApproval": {
     "accessor": "versionApproval",
-    "dbName": "version_approvals",
+    "dbName": "VersionApproval",
     "pgSchema": "public",
     "pkFields": [
       "tenantId",
@@ -35355,7 +35355,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "VersionedEntity": {
     "accessor": "versionedEntity",
-    "dbName": "versioned_entities",
+    "dbName": "VersionedEntity",
     "pgSchema": "public",
     "pkFields": [
       "tenantId",
@@ -35812,7 +35812,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
   },
   "WorkforceOptimization": {
     "accessor": "workforceOptimization",
-    "dbName": "workforce_optimizations",
+    "dbName": "WorkforceOptimization",
     "pgSchema": "public",
     "pkFields": [
       "tenantId",

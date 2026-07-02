@@ -7,11 +7,11 @@ entity EmployeeAvailability mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property employeeId: string = ""
   property dayOfWeek: int = 0
-  property startTime: string = ""
-  property endTime: string = ""
+  property required startTime: datetime
+  property required endTime: datetime
   property isAvailable: boolean = true
-  property effectiveFrom: string = ""
-  property effectiveUntil: string = ""
+  property required effectiveFrom: datetime
+  property effectiveUntil: datetime
   // Suspension support (e.g. injury, extended leave)
   property isSuspended: boolean = false
   property suspendReason: string = ""
@@ -23,8 +23,8 @@ entity EmployeeAvailability mixin TenantScoped, SoftDeletable {
   computed isActive: boolean = self.deletedAt == null and self.isSuspended == false
 
   constraint requireEmployee: self.employeeId != "" "Employee ID is required"
-  constraint requireStartTime: self.startTime != "" "Start time is required"
-  constraint requireEndTime: self.endTime != "" "End time is required"
+  constraint requireStartTime: self.startTime != null "Start time is required"
+  constraint requireEndTime: self.endTime != null "End time is required"
   constraint validDayOfWeek: self.dayOfWeek >= 0 and self.dayOfWeek <= 6 "Day of week must be between 0 and 6"
 
   relationship belongsTo employee: User with employeeId

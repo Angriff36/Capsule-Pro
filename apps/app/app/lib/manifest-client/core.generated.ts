@@ -35,7 +35,6 @@ export interface AdminChatParticipantClearHistoryInput {
 }
 export interface AdminChatParticipantCreateInput {
   threadId?: string;
-  userId?: string;
 }
 export interface AdminChatParticipantUnarchiveInput {
   id?: string;
@@ -208,7 +207,6 @@ export interface CallPlanningSessionCompleteInput {
   id?: string;
 }
 export interface CallPlanningSessionCreateInput {
-  userId?: string;
   sourceType?: string;
   transcriptText?: string;
 }
@@ -253,7 +251,6 @@ export interface DocumentVersionCreateInput {
   documentId?: string;
   content?: string;
   changeSummary?: string;
-  createdById?: string;
 }
 export interface DocumentVersionMarkPublishedInput {
   id?: string;
@@ -334,7 +331,6 @@ export interface EntityVersionCreateInput {
   snapshot?: string;
   reason?: string;
   summary?: string;
-  userId?: string;
 }
 export interface EntityVersionRejectInput {
   id?: string;
@@ -358,7 +354,6 @@ export interface EventPlanningDraftConvertToEventInput {
 }
 export interface EventPlanningDraftCreateInput {
   sessionId?: string;
-  userId?: string;
 }
 export interface EventPlanningDraftExpireInput {
   id?: string;
@@ -466,7 +461,6 @@ export interface NotificationCreateInput {
   title?: string;
   body?: string;
   actionUrl?: string;
-  correlationId?: string;
 }
 export interface NotificationMarkDismissedInput {
   id?: string;
@@ -486,7 +480,6 @@ export interface ProposalDraftApproveInput {
 }
 export interface ProposalDraftCreateInput {
   draftId?: string;
-  userId?: string;
   title?: string;
   clientName?: string;
   clientEmail?: string;

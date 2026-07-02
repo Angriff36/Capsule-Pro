@@ -19,6 +19,38 @@ export type WorkOrderStatus = "open" | "assigned" | "in_progress" | "completed" 
 // Auto-generated TypeScript types from Manifest IR
 // DO NOT EDIT - This file is generated from .manifest source
 
+export type AdminTaskStatus = "backlog" | "in_progress" | "review" | "done" | "cancelled";
+
+export type BudgetStatus = "draft" | "active" | "closed" | "archived";
+
+export type DealStatus = "open" | "won" | "lost" | "abandoned";
+
+export type KitchenTaskStatus = "pending" | "in_progress" | "done" | "cancelled";
+
+export type MenuStatus = "draft" | "published" | "archived";
+
+export type PayrollPeriodStatus = "open" | "closed" | "locked";
+
+export type PayrollRunStatus = "pending" | "processing" | "approved" | "paid" | "rejected";
+
+export type PrepListStatus = "draft" | "finalized" | "completed" | "cancelled";
+
+export type PrepTaskPlanWorkflowStatus = "created" | "generating" | "awaiting_review" | "reviewing" | "awaiting_approval" | "approving" | "instantiating" | "scheduling" | "completed" | "failed" | "cancelled";
+
+export type PrepTaskStatus = "open" | "pending" | "in_progress" | "done" | "canceled";
+
+export type ProposalStatus = "draft" | "sent" | "viewed" | "accepted" | "rejected" | "withdrawn" | "expired";
+
+export type QACheckStatus = "pending" | "completed" | "reinspection_required";
+
+export type RecipeVersionStatus = "draft" | "published";
+
+export type ScheduleStatus = "draft" | "approved" | "published" | "closed";
+
+export type ShipmentStatus = "draft" | "scheduled" | "preparing" | "in_transit" | "delivered" | "returned" | "cancelled";
+
+export type WorkOrderStatus = "open" | "assigned" | "in_progress" | "completed" | "cancelled";
+
 export interface ActionMilestone {
   id: string;
   tenantId: string;
@@ -78,7 +110,7 @@ export interface AdminTask {
   priority?: string;
   category?: string;
   position?: number;
-  labels?: unknown[];
+  labels?: string[];
   estimatedHours?: number;
   assignedTo?: string;
   dueDate: string;
@@ -182,8 +214,8 @@ export interface AllergenWarning {
   eventId?: string;
   dishId?: string;
   warningType?: string;
-  allergens?: unknown[];
-  affectedGuests?: unknown[];
+  allergens?: string[];
+  affectedGuests?: string[];
   severity?: string;
   isAcknowledged?: boolean;
   acknowledgedBy?: string;
@@ -205,7 +237,7 @@ export interface ApiKey {
   name?: string;
   keyPrefix?: string;
   hashedKey?: string;
-  scopes: unknown[];
+  scopes: string[];
   lastUsedAt: string;
   expiresAt: string;
   revokedAt: string;
@@ -279,7 +311,7 @@ export interface BattleBoard {
   isTemplate?: boolean;
   description?: string;
   notes?: string;
-  tags?: unknown[];
+  tags?: string[];
   eventDate: string;
   clientId?: string;
   guestCount?: number;
@@ -501,7 +533,7 @@ export interface Client {
   taxExempt?: boolean;
   taxId?: string;
   notes?: string;
-  tags: unknown[];
+  tags: string[];
   source?: string;
   assignedTo?: string;
   createdAt: string;
@@ -641,7 +673,7 @@ export interface CommandBoard {
   description?: string;
   status?: string;
   isTemplate?: boolean;
-  tags?: unknown[];
+  tags?: string[];
   autoPopulate?: boolean;
   scope?: string;
   createdAt: string;
@@ -711,7 +743,7 @@ export interface CommandBoardLayout {
   userId: string;
   name?: string;
   viewport?: string;
-  visibleCards?: unknown[];
+  visibleCards?: string[];
   gridSize?: number;
   showGrid?: boolean;
   snapToGrid?: boolean;
@@ -898,8 +930,8 @@ export interface Dish {
   minPrepLeadDays?: number;
   maxPrepLeadDays?: number;
   portionSizeDescription?: string;
-  dietaryTags?: unknown[];
-  allergens?: unknown[];
+  dietaryTags?: string[];
+  allergens?: string[];
   pricePerPerson?: number;
   costPerPerson?: number;
   isActive?: boolean;
@@ -1001,11 +1033,11 @@ export interface EmployeeAvailability {
   deletedAt: string;
   employeeId?: string;
   dayOfWeek?: number;
-  startTime?: string;
-  endTime?: string;
+  startTime: string;
+  endTime: string;
   isAvailable?: boolean;
-  effectiveFrom?: string;
-  effectiveUntil?: string;
+  effectiveFrom: string;
+  effectiveUntil: string;
   isSuspended?: boolean;
   suspendReason?: string;
   suspendedAt: string;
@@ -1021,8 +1053,8 @@ export interface EmployeeCertification {
   employeeId?: string;
   certificationType?: string;
   certificationName?: string;
-  issuedDate?: string;
-  expiryDate?: string;
+  issuedDate: string;
+  expiryDate: string;
   documentUrl?: string;
   status?: string;
   createdAt: string;
@@ -1039,8 +1071,8 @@ export interface EmployeeDeduction {
   amount?: number;
   percentage?: number;
   isPreTax?: boolean;
-  effectiveDate?: string;
-  endDate?: string;
+  effectiveDate: string;
+  endDate: string;
   maxAnnualAmount?: number;
   createdAt: string;
   updatedAt: string;
@@ -1103,7 +1135,7 @@ export interface Event {
   ticketPrice?: number;
   ticketTier?: string;
   eventFormat?: string;
-  accessibilityOptions: unknown[];
+  accessibilityOptions: string[];
   featuredMediaUrl?: string;
   locationId?: string;
   venueId?: string;
@@ -1112,7 +1144,7 @@ export interface Event {
   venueName?: string;
   venueAddress?: string;
   notes?: string;
-  tags: unknown[];
+  tags: string[];
   templateId?: string;
   createdAt: string;
   updatedAt: string;
@@ -1192,8 +1224,8 @@ export interface EventGuest {
   guestEmail?: string;
   guestPhone?: string;
   isPrimaryContact?: boolean;
-  dietaryRestrictions?: unknown[];
-  allergenRestrictions?: unknown[];
+  dietaryRestrictions?: string[];
+  allergenRestrictions?: string[];
   notes?: string;
   declineReason?: string;
   specialMealRequired?: boolean;
@@ -1218,7 +1250,7 @@ export interface EventImport {
   totalRows?: number;
   importedRows?: number;
   skippedRows?: number;
-  parseErrors?: unknown[];
+  parseErrors?: string[];
   parsedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -1266,11 +1298,11 @@ export interface EventPlanningDraft {
   menuPreferences?: string;
   budgetMin?: number;
   budgetMax?: number;
-  packageIds?: unknown[];
-  addOnIds?: unknown[];
+  packageIds?: string[];
+  addOnIds?: string[];
   customItems?: string;
   timelineNotes?: string;
-  openQuestions?: unknown[];
+  openQuestions?: string[];
   specialNotes?: string;
   aiSummary?: string;
   overallConfidence?: number;
@@ -1545,7 +1577,7 @@ export interface Ingredient {
   densityGPerMl?: number;
   shelfLifeDays?: number;
   storageInstructions?: string;
-  allergens?: unknown[];
+  allergens?: string[];
   isActive?: boolean;
   inventoryItemId?: string;
   currentLotNumber?: string;
@@ -1620,7 +1652,7 @@ export interface InventoryItem {
   parLevel?: number;
   reorder_level?: number;
   supplierId?: string;
-  tags?: unknown[];
+  tags?: string[];
   fsa_status?: string;
   fsa_temp_logged?: boolean;
   fsa_allergen_info?: boolean;
@@ -1652,7 +1684,7 @@ export interface InventorySupplier {
   phone?: string;
   paymentTerms?: string;
   notes?: string;
-  tags?: unknown[];
+  tags?: string[];
   isActive?: boolean;
   openPOCount?: number;
   approvedAt: string;
@@ -1788,8 +1820,8 @@ export interface IotAlertRule {
   durationMs?: number;
   alertAction?: string;
   isActive?: boolean;
-  notifyRoles?: unknown[];
-  notifyChannels?: unknown[];
+  notifyRoles?: string[];
+  notifyChannels?: string[];
   description?: string;
   createdAt: string;
   updatedAt: string;
@@ -1843,7 +1875,7 @@ export interface KnowledgeBaseEntry {
   title: string;
   category?: string;
   content?: string;
-  tags?: unknown[];
+  tags?: string[];
   status?: string;
   authorId?: string;
   publishedAt: string;
@@ -1857,8 +1889,8 @@ export interface LaborBudget {
   tenantId: string;
   deletedAt: string;
   locationId?: string;
-  periodStart?: string;
-  periodEnd?: string;
+  periodStart: string;
+  periodEnd: string;
   budgetTarget?: number;
   actualSpend?: number;
   budgetType?: string;
@@ -2005,7 +2037,7 @@ export interface Note {
   title?: string;
   content?: string;
   color?: string;
-  tags?: unknown[];
+  tags?: string[];
   entityType?: string;
   entityId?: string;
   createdAt: string;
@@ -2176,8 +2208,8 @@ export interface PayrollPeriod {
   id: string;
   tenantId: string;
   deletedAt: string;
-  periodStart?: string;
-  periodEnd?: string;
+  periodStart: string;
+  periodEnd: string;
   status?: PayrollPeriodStatus;
   createdAt: string;
   updatedAt: string;
@@ -2188,7 +2220,7 @@ export interface PayrollRun {
   tenantId: string;
   deletedAt: string;
   payrollPeriodId?: string;
-  runDate?: string;
+  runDate: string;
   status?: PayrollRunStatus;
   totalGross?: number;
   totalDeductions?: number;
@@ -2250,7 +2282,7 @@ export interface PrepList {
   eventId: string;
   name: string;
   batchMultiplier?: number;
-  dietaryRestrictions?: unknown[];
+  dietaryRestrictions?: string[];
   status?: PrepListStatus;
   totalItems?: number;
   totalEstimatedTime?: number;
@@ -2290,8 +2322,8 @@ export interface PrepListItem {
   scaledUnit?: string;
   isOptional?: boolean;
   preparationNotes?: string;
-  allergens?: unknown[];
-  dietarySubstitutions?: unknown[];
+  allergens?: string[];
+  dietarySubstitutions?: string[];
   dishId?: string;
   dishName?: string;
   recipeVersionId?: string;
@@ -2311,7 +2343,7 @@ export interface PrepMethod {
   category?: string;
   description?: string;
   estimatedDurationMinutes?: number;
-  requiresCertification?: unknown[];
+  requiresCertification?: string[];
   isActive?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -2743,7 +2775,7 @@ export interface Recipe {
   category?: string;
   cuisineType?: string;
   description?: string;
-  tags: unknown[];
+  tags: string[];
   isActive?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -2775,7 +2807,7 @@ export interface RecipeStep {
   durationMinutes?: number;
   temperatureValue?: number;
   temperatureUnit?: string;
-  equipmentNeeded?: unknown[];
+  equipmentNeeded?: string[];
   tips?: string;
   videoUrl?: string;
   imageUrl?: string;
@@ -2792,7 +2824,7 @@ export interface RecipeVersion {
   category?: string;
   cuisineType?: string;
   description?: string;
-  tags?: unknown[];
+  tags?: string[];
   yieldQuantity?: number;
   yieldUnitId?: number;
   yieldDescription?: string;
@@ -2890,7 +2922,7 @@ export interface RolePolicy {
   deletedAt: string;
   roleId: string;
   roleName?: string;
-  permissions?: unknown[];
+  permissions?: string[];
   description?: string;
   isActive?: boolean;
   createdAt: string;
@@ -2946,8 +2978,8 @@ export interface ScheduleShift {
   scheduleId: string;
   employeeId: string;
   locationId: string;
-  shiftStart?: string;
-  shiftEnd?: string;
+  shiftStart: string;
+  shiftEnd: string;
   roleDuringShift?: string;
   notes?: string;
   swapOfferedTo?: string;
@@ -3303,7 +3335,7 @@ export interface Station {
   name: string;
   stationType?: string;
   capacitySimultaneousTasks?: number;
-  equipmentList?: unknown[];
+  equipmentList?: string[];
   isActive?: boolean;
   inMaintenance?: boolean;
   maintenanceReason?: string;
@@ -3460,8 +3492,8 @@ export interface TimeOffRequest {
   tenantId: string;
   deletedAt: string;
   employeeId?: string;
-  startDate?: string;
-  endDate?: string;
+  startDate: string;
+  endDate: string;
   reason?: string;
   requestType?: string;
   status?: string;
@@ -3716,7 +3748,7 @@ export interface VendorCatalog {
   effectiveTo: string;
   supplierSku?: string;
   notes?: string;
-  tags: unknown[];
+  tags: string[];
   lastCostUpdate: string;
   createdAt: string;
   updatedAt: string;
@@ -3804,7 +3836,7 @@ export interface Venue {
   accessNotes?: string;
   cateringNotes?: string;
   layoutImageUrl?: string;
-  tags: unknown[];
+  tags: string[];
   isActive?: boolean;
   createdAt: string;
   updatedAt: string;

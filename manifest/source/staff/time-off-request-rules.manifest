@@ -7,8 +7,8 @@ use "../_base.manifest"
 entity TimeOffRequest mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property employeeId: string = ""
-  property startDate: string = ""
-  property endDate: string = ""
+  property required startDate: datetime
+  property required endDate: datetime
   property reason: string = ""
   property requestType: string = ""
   indexed property status: string = "PENDING"
@@ -32,8 +32,8 @@ entity TimeOffRequest mixin TenantScoped, SoftDeletable {
   transition status from "APPROVED" to ["CANCELLED"]
 
   constraint requireEmployee: self.employeeId != "" "Employee ID is required"
-  constraint requireStartDate: self.startDate != "" "Start date is required"
-  constraint requireEndDate: self.endDate != "" "End date is required"
+  constraint requireStartDate: self.startDate != null "Start date is required"
+  constraint requireEndDate: self.endDate != null "End date is required"
   constraint requireRequestType: self.requestType != "" "Request type is required"
   constraint validStatus: self.status in ["PENDING", "APPROVED", "REJECTED", "CANCELLED"] "Invalid request status"
 

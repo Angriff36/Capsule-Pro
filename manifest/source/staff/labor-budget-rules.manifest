@@ -5,8 +5,8 @@ use "../_base.manifest"
 entity LaborBudget mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property locationId: string = ""
-  property periodStart: string = ""
-  property periodEnd: string = ""
+  property periodStart: datetime
+  property periodEnd: datetime
   property budgetTarget: money = 0
   property actualSpend: money = 0
   property budgetType: string = "weekly"

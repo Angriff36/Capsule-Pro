@@ -138,8 +138,8 @@ entity ScheduleShift mixin TenantScoped, SoftDeletable {
   property required scheduleId: string
   property required employeeId: string
   property required locationId: string
-  property optional shiftStart: datetime
-  property optional shiftEnd: datetime
+  property required shiftStart: datetime
+  property required shiftEnd: datetime
   property roleDuringShift: string = ""
   searchable property notes: string = ""
   // Swap offer fields

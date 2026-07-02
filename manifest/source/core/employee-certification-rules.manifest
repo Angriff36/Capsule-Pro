@@ -7,8 +7,8 @@ entity EmployeeCertification mixin TenantScoped, SoftDeletable {
   property employeeId: string = ""
   property certificationType: string = ""
   property certificationName: string = ""
-  property issuedDate: string = ""
-  property expiryDate: string = ""
+  property required issuedDate: datetime
+  property expiryDate: datetime
   property documentUrl: string = ""
   indexed property status: string = "active"
   timestamps
@@ -24,7 +24,7 @@ entity EmployeeCertification mixin TenantScoped, SoftDeletable {
   constraint requireEmployee: self.employeeId != "" "Employee ID is required"
   constraint requireType: self.certificationType != "" "Certification type is required"
   constraint requireName: self.certificationName != "" "Certification name is required"
-  constraint requireIssuedDate: self.issuedDate != "" "Issued date is required"
+  constraint requireIssuedDate: self.issuedDate != null "Issued date is required"
   constraint validStatus: self.status in ["active", "expired", "revoked"] "Invalid certification status"
 
   relationship belongsTo employee: User with employeeId

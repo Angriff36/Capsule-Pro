@@ -1713,11 +1713,11 @@ model EmployeeAvailability {
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   employeeId String? @map("employee_id") @db.Uuid @default("")
   dayOfWeek Int? @map("day_of_week") @db.SmallInt @default(0)
-  startTime String? @map("start_time") @default("")
-  endTime String? @map("end_time") @default("")
+  startTime DateTime @map("start_time") @db.Time(6)
+  endTime DateTime @map("end_time") @db.Time(6)
   isAvailable Boolean? @map("is_available") @default(true)
-  effectiveFrom String? @map("effective_from") @default(dbgenerated("CURRENT_DATE"))
-  effectiveUntil String? @map("effective_until") @default("")
+  effectiveFrom DateTime @map("effective_from") @db.Date @default(dbgenerated("CURRENT_DATE"))
+  effectiveUntil DateTime? @map("effective_until") @db.Date
   isSuspended Boolean? @map("is_suspended") @default(false)
   suspendReason String? @map("suspend_reason") @default("")
   suspendedAt DateTime? @map("suspended_at") @db.Timestamptz(6)
@@ -1744,8 +1744,8 @@ model EmployeeCertification {
   employeeId String? @map("employee_id") @db.Uuid @default("")
   certificationType String? @map("certification_type") @default("")
   certificationName String? @map("certification_name") @default("")
-  issuedDate String? @map("issued_date") @default("")
-  expiryDate String? @map("expiry_date") @default("")
+  issuedDate DateTime @map("issued_date") @db.Date
+  expiryDate DateTime? @map("expiry_date") @db.Date
   documentUrl String? @map("document_url") @default("")
   status String? @default("active")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
@@ -1773,8 +1773,8 @@ model EmployeeDeduction {
   amount Decimal? @db.Decimal(10, 2) @default(0)
   percentage Decimal? @db.Decimal(5, 2) @default(0)
   isPreTax Boolean? @map("is_pre_tax") @default(false)
-  effectiveDate String? @map("effective_date") @default("")
-  endDate String? @map("end_date") @default("")
+  effectiveDate DateTime @map("effective_date") @db.Date
+  endDate DateTime? @map("end_date") @db.Date
   maxAnnualAmount Decimal? @map("max_annual_amount") @db.Decimal(10, 2) @default(0)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -3223,8 +3223,8 @@ model LaborBudget {
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   locationId String? @map("location_id") @db.Uuid @default("")
-  periodStart String? @map("period_start") @default("")
-  periodEnd String? @map("period_end") @default("")
+  periodStart DateTime? @map("period_start") @db.Date
+  periodEnd DateTime? @map("period_end") @db.Date
   budgetTarget Decimal? @map("budget_target") @db.Decimal(10, 2) @default(0)
   actualSpend Decimal? @map("actual_spend") @db.Decimal(10, 2) @default(0)
   budgetType String? @map("budget_type") @default("weekly")
@@ -3796,8 +3796,8 @@ model PayrollPeriod {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
-  periodStart String? @map("period_start") @default("")
-  periodEnd String? @map("period_end") @default("")
+  periodStart DateTime @map("period_start") @db.Date
+  periodEnd DateTime @map("period_end") @db.Date
   status PayrollPeriodStatus? @default(open)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -3821,7 +3821,7 @@ model PayrollRun {
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   payrollPeriodId String? @map("payroll_period_id") @db.Uuid @default("")
-  runDate String? @map("run_date") @default("")
+  runDate DateTime @map("run_date") @db.Timestamptz(6) @default(now())
   status PayrollRunStatus? @default(pending)
   totalGross Decimal? @map("total_gross") @db.Decimal(12, 2) @default(0)
   totalDeductions Decimal? @map("total_deductions") @db.Decimal(12, 2) @default(0)
@@ -5111,8 +5111,8 @@ model ScheduleShift {
   scheduleId String @map("schedule_id") @db.Uuid
   employeeId String @map("employee_id") @db.Uuid
   locationId String @map("location_id") @db.Uuid
-  shiftStart DateTime? @map("shift_start")
-  shiftEnd DateTime? @map("shift_end")
+  shiftStart DateTime @map("shift_start") @db.Timestamptz(6)
+  shiftEnd DateTime @map("shift_end") @db.Timestamptz(6)
   roleDuringShift String? @map("role_during_shift") @default("")
   notes String? @default("")
   swapOfferedTo String? @map("swap_offered_to") @db.Uuid @default("")
@@ -5651,8 +5651,8 @@ model TimeOffRequest {
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   employeeId String? @map("employee_id") @db.Uuid @default("")
-  startDate String? @map("start_date") @default("")
-  endDate String? @map("end_date") @default("")
+  startDate DateTime @map("start_date") @db.Date
+  endDate DateTime @map("end_date") @db.Date
   reason String? @default("")
   requestType String? @map("request_type") @default("")
   status String? @default("PENDING")

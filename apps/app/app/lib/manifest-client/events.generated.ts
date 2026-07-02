@@ -358,7 +358,6 @@ export interface CommandBoardGroupUpdateInput {
 }
 export interface CommandBoardLayoutCreateInput {
   boardId?: string;
-  userId?: string;
   name?: string;
   viewport?: string;
   visibleCards?: string[];
