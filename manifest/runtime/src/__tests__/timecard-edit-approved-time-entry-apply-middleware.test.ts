@@ -44,9 +44,12 @@ const irPath = join(here, "..", "..", "..", "ir", "kitchen.ir.json");
 const ir: any = JSON.parse(readFileSync(irPath, "utf8"));
 
 const TENANT = "t-timecard-edit";
-// admin satisfies TimecardEditRequest.approve's policy AND TimeEntry.applyEdit's policy
-// so neither the source command nor the downstream dispatch is denied.
-const USER = { id: "u-timecard-mgr", tenantId: TENANT, role: "admin" } as const;
+// Role must match a governed role NAME in the IR exactly — roleAllows() resolves
+// via a case-sensitive roleIndex.get(role.name), and the IR defines "Admin"
+// (capitalized), not "admin". "Admin" carries `manageAccess`, which satisfies both
+// TimecardEditRequest.approve's policy AND TimeEntry.applyEdit's policy, so neither
+// the source command nor the downstream dispatch is denied.
+const USER = { id: "u-timecard-mgr", tenantId: TENANT, role: "Admin" } as const;
 
 const REQUEST_ID = "tcedit-001";
 const TIME_ENTRY_ID = "tentry-001";

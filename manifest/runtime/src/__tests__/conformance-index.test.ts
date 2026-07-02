@@ -26,8 +26,25 @@ let commands: any[];
 beforeAll(() => {
   const bundle = loadMergedPrecompiledIR();
   ir = bundle.ir;
-  entities = ir.entities ?? [];
   commands = ir.commands ?? [];
+
+  // Mixin base entities (TenantScoped, SoftDeletable) are declared with the
+  // `entity` keyword only so the DSL parser can resolve `mixin X` targets from
+  // the entity index (see manifest/source/_base.manifest). They are structural
+  // fragments — never real domain entities — so the projection emits no Prisma
+  // model, store, or default policies for them. Exclude them from structural
+  // conformance so the gate measures governed domain entities only. The set is
+  // derived from the IR (any name referenced in an entity's `mixins` array), not
+  // hardcoded: a NEW real entity that forgets its policies is not a mixin target,
+  // so it still fails these checks.
+  const allEntities: typeof entities = ir.entities ?? [];
+  const mixinBaseNames = new Set<string>();
+  for (const entity of allEntities) {
+    for (const mixin of entity.mixins ?? []) {
+      mixinBaseNames.add(mixin);
+    }
+  }
+  entities = allEntities.filter((e) => !mixinBaseNames.has(e.name));
 });
 
 // ── 1. Entity Coverage (§4) ──────────────────────────────────────────────
