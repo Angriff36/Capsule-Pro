@@ -22,11 +22,11 @@ export async function GET(request: NextRequest) {
 
 const smsAutomationRules = await database.sms_automation_rules.findMany({
     where: {
-        tenant_id: tenantId,
-        deleted_at: null
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
-      created_at: "desc",
+      createdAt: "desc",
     },
   });
 

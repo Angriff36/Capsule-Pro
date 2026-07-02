@@ -24,6 +24,9 @@ const inventoryForecasts = await database.inventoryForecast.findMany({
     where: {
         tenantId
       },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 
     return manifestSuccessResponse({ inventoryForecasts });

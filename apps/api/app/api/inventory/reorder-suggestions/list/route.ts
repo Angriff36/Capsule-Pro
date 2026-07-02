@@ -25,7 +25,7 @@ const reorderSuggestions = await database.reorderSuggestion.findMany({
         tenantId
       },
     orderBy: {
-      created_at: "desc",
+      createdAt: "desc",
     },
   });
 

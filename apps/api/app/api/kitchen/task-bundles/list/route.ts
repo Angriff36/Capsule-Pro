@@ -22,10 +22,10 @@ export async function GET(request: NextRequest) {
 
 const taskBundles = await database.task_bundles.findMany({
     where: {
-        tenant_id: tenantId
+        tenantId
       },
     orderBy: {
-      created_at: "desc",
+      createdAt: "desc",
     },
   });
 

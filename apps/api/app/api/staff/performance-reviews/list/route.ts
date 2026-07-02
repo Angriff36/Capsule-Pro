@@ -22,10 +22,10 @@ export async function GET(request: NextRequest) {
 
 const performanceReviews = await database.performanceReview.findMany({
     where: {
-        tenant_id: tenantId
+        tenantId
       },
     orderBy: {
-      created_at: "desc",
+      createdAt: "desc",
     },
   });
 

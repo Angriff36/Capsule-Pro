@@ -22,10 +22,10 @@ export async function GET(request: NextRequest) {
 
 const bulkCombineRules = await database.bulk_combine_rules.findMany({
     where: {
-        tenant_id: tenantId
+        tenantId
       },
     orderBy: {
-      created_at: "desc",
+      createdAt: "desc",
     },
   });
 
