@@ -81,11 +81,15 @@ const typesContent = readFileSync(typesFile, "utf8");
 // (dates are ISO strings on the wire — manifest/capsule-conventions.json dateSerialization).
 // Implementation now lives in scalar-type-map.mjs (D23 — single source of truth).
 const tsTypes = toTsTypes(typesContent);
-// The stock `types` surface references enum-typed columns (e.g. `status?: AdminTaskStatus`)
-// but does not emit the enum type definitions themselves. Emit them here as
-// string-literal unions — the enum member name is the wire/DB value — so the
-// generated types are self-contained and compile.
+// The stock `types` surface references enum-typed columns (e.g. `status?: AdminTaskStatus`).
+// Older manifest versions did not emit the enum type definitions themselves; current
+// versions do. Emit ONLY the enums the stock surface leaves undefined (usually none
+// now) so the generated types stay self-contained without duplicate identifiers.
+const nativeEnumDefs = new Set(
+  [...tsTypes.matchAll(/^export type (\w+) = /gm)].map((m) => m[1])
+);
 const enumDefs = (ir.enums ?? [])
+  .filter((e) => !nativeEnumDefs.has(e.name))
   .map(
     (e) =>
       `export type ${e.name} = ${
