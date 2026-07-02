@@ -32,40 +32,245 @@ projections:
     options:
       # Auth: Clerk (auth().protect() on protected routes) — constitution / AGENTS.md.
       authProvider: clerk
-      # Import the Clerk `auth()` helper from the repo wrapper (@repo/auth/server),
-      # NOT the raw `@clerk/nextjs` package. The nextjs projection defaults
-      # authImportPath to "@/lib/auth", which (per generator.js generateAuthImport)
-      # collapses to "@clerk/nextjs" — a module that does NOT export `auth` in Clerk
-      # v5+ (it lives under @clerk/nextjs/server), so the generated list routes would
-      # fail typecheck. Setting it explicitly keeps generated reads on the repo wrapper
-      # and the regen drift gate at zero. See generator.js:144-148.
+      # Import the Clerk auth() helper from the repo wrapper (@repo/auth/server),
+      # NOT the raw @clerk/nextjs package (which has no v5 auth export). See generator.js.
       authImportPath: "@repo/auth/server"
-      # App-local DB + runtime + response import paths used by generated routes.
+      # App-local DB client used by generated read routes.
       databaseImportPath: "@repo/database"
-      # App Router base directory. generate.mjs derives its staged-route prefix from this
-      # instead of hardcoding "apps/api/app/api/".
+      # App Router base directory. Route pathHints are emitted relative to repo root
+      # as <appDir>/<routeSegment>/(list|[id])/route.ts, so this is the full prefix.
       appDir: apps/api/app/api
-      # Tenant scoping + soft-delete are enforced on read surfaces.
+      # Tenant scoping + soft-delete are enforced on read surfaces (field-aware in 3.0.0:
+      # only entities that actually carry tenantId/deletedAt columns get the filter).
       includeTenantFilter: true
       includeSoftDeleteFilter: true
-      # Direct DB read routes (GET list + detail). Defaults shown; flip enabled:false to
-      # suppress read-route generation entirely (honored by both the CLI and generate.mjs).
+      # Direct DB read routes (GET list + detail). Flip enabled:false to suppress reads.
       readRoutes:
         enabled: true
         directDbReads: true
-      # Governed command writes go through the SINGULAR dispatcher (constitution §6),
-      # never concrete per-command routes:
+      # Governed command writes go through the SINGULAR dispatcher (constitution §6).
+      # Capsule owns a CUSTOM dispatcher template (auth/tenant resolution + runManifestCommand),
+      # so native dispatcher emission is DISABLED; generate.mjs writes the template itself.
+      # executorImportPath/Name still name the real module (read by generate.mjs).
       dispatcher:
-        enabled: true
+        enabled: false
         path: apps/api/app/api/manifest/[entity]/commands/[command]/route.ts
-        # Capsule uses a CUSTOM dispatcher shape (its own auth/tenant resolution +
-        # runManifestCommand call), so the CLI can't generate it — generate.mjs writes
-        # the template. But the executor import path/name ARE consumed from here, so
-        # they must name the REAL module (not the CLI default @/lib/manifest-executor,
-        # which does not exist in this repo).
         executionMode: externalExecutor
         executorImportPath: "@/lib/manifest/execute-command"
         executorImportName: runManifestCommand
+      # Per-command concrete routes are never emitted (dispatcher is canonical).
+      concreteCommandRoutes:
+        enabled: false
+      # Capsule hand-writes its runtime factory / response / db companions.
+      emitCompanions: false
+      # Per-entity URL path segments (replaces the old generate.mjs domain remap).
+      # Single source of truth for route paths — entity-domain-map.mjs derives
+      # ENTITY_DOMAIN_MAP from this block for the client/hook generators.
+      routeSegments:
+        PrepTask: "kitchen/prep-tasks"
+        PrepTaskPlanWorkflow: "kitchen/prep-task-plan-workflows"
+        KitchenTask: "kitchen/kitchen-tasks"
+        Recipe: "kitchen/recipes"
+        RecipeVersion: "kitchen/recipe-versions"
+        RecipeIngredient: "kitchen/recipe-ingredients"
+        RecipeStep: "kitchen/recipe-steps"
+        Ingredient: "kitchen/ingredients"
+        Dish: "kitchen/dishes"
+        Menu: "kitchen/menus"
+        MenuDish: "kitchen/menu-dishes"
+        PrepList: "kitchen/prep-lists"
+        PrepListItem: "kitchen/prep-list-items"
+        Station: "kitchen/stations"
+        InventoryItem: "kitchen/inventory"
+        PrepComment: "kitchen/prep-comments"
+        Container: "kitchen/containers"
+        PrepMethod: "kitchen/prep-methods"
+        WasteEntry: "kitchen/waste-entries"
+        AllergenWarning: "kitchen/allergen-warnings"
+        AlertsConfig: "kitchen/alerts-config"
+        OverrideAudit: "kitchen/override-audits"
+        Event: "events/event"
+        EventProfitability: "events/profitability"
+        EventSummary: "events/summaries"
+        EventReport: "events/reports"
+        EventBudget: "events/budgets"
+        BudgetLineItem: "events/budget-line-items"
+        BudgetAlert: "events/budget-alerts"
+        CateringOrder: "events/catering-orders"
+        BattleBoard: "events/battle-boards"
+        EventGuest: "events/guests"
+        EventContract: "events/contracts"
+        ContractSignature: "events/contract-signatures"
+        EventDish: "events/event-dishes"
+        EventStaff: "events/staff"
+        EventImportWorkflow: "events/import-workflows"
+        Client: "crm/clients"
+        ClientContact: "crm/client-contacts"
+        ClientPreference: "crm/client-preferences"
+        Lead: "crm/leads"
+        Proposal: "crm/proposals"
+        ProposalLineItem: "crm/proposal-line-items"
+        ClientInteraction: "crm/client-interactions"
+        PurchaseOrder: "inventory/purchase-orders"
+        PurchaseOrderItem: "inventory/purchase-order-items"
+        PurchaseRequisition: "procurement/requisitions"
+        PurchaseRequisitionItem: "procurement/requisition-items"
+        VendorContract: "procurement/vendor-contracts"
+        Shipment: "shipments/shipment"
+        ShipmentItem: "shipments/shipment-items"
+        InventoryTransaction: "inventory/transactions"
+        InventorySupplier: "inventory/suppliers"
+        CycleCountSession: "inventory/cycle-count/sessions"
+        CycleCountRecord: "inventory/cycle-count/records"
+        VarianceReport: "inventory/cycle-count/variance-reports"
+        BulkOrderRule: "inventory/bulk-order-rules"
+        PricingTier: "inventory/pricing-tiers"
+        VendorCatalog: "inventory/vendor-catalogs"
+        User: "staff/employees"
+        StaffMember: "staff/members"
+        Schedule: "staff/schedules"
+        ScheduleShift: "staff/shifts"
+        TimeEntry: "timecards/entries"
+        TimecardEditRequest: "timecards/edit-requests"
+        TimeOffRequest: "timecards/time-off-requests"
+        EmployeeAvailability: "staff/availability"
+        EmployeeCertification: "staff/certifications"
+        PayrollPeriod: "payroll/periods"
+        PayrollRun: "payroll/runs"
+        PayrollApprovalHistory: "payroll/approval-history"
+        EmployeeDeduction: "payroll/deductions"
+        LaborBudget: "payroll/labor-budgets"
+        TrainingAssignment: "training/assignments"
+        TrainingModule: "training/modules"
+        CommandBoard: "command-board/boards"
+        CommandBoardCard: "command-board/cards"
+        CommandBoardGroup: "command-board/groups"
+        CommandBoardConnection: "command-board/connections"
+        CommandBoardLayout: "command-board/layouts"
+        Workflow: "collaboration/workflows"
+        Notification: "collaboration/notifications"
+        EmailTemplate: "communications/email-templates"
+        EmailWorkflow: "communications/email-workflows"
+        AdminTask: "administrative/tasks"
+        AdminChatParticipant: "administrative/chat/participants"
+        ApiKey: "settings/api-keys"
+        RateLimitConfig: "administrative/rate-limits"
+        ChartOfAccount: "accounting/chart-of-accounts"
+        RolePolicy: "rolepolicy/policies"
+        BankAccount: "accounting/bank-accounts"
+        Budget: "accounting/budgets"
+        CollectionCase: "accounting/collections/cases"
+        CollectionAction: "accounting/collections/actions"
+        CollectionPaymentPlan: "accounting/collections/payment-plans"
+        Invoice: "accounting/invoices"
+        PaymentMethod: "accounting/payment-methods"
+        Payment: "accounting/payments"
+        PaymentRefundAttempt: "accounting/payment-refund-attempts"
+        RevenueRecognitionSchedule: "accounting/revenue-recognition/schedules"
+        RevenueRecognitionLine: "accounting/revenue-recognition/lines"
+        ProposalTemplate: "crm/proposal-templates"
+        InteractionAttachment: "crm/interaction-attachments"
+        CrmScoringRule: "crm/scoring-rules"
+        Deal: "crm/deals"
+        Venue: "events/venues"
+        EventTimeline: "events/timelines"
+        TimelineTask: "events/timeline-tasks"
+        EventImport: "events/imports"
+        EventFollowup: "events/followups"
+        EventTimelineItem: "events/timeline-items"
+        EventWaitlistEntry: "events/waitlist-entries"
+        BoardProjection: "command-board/projections"
+        BoardAnnotation: "command-board/annotations"
+        AiEventSetupSession: "events/ai-setup-sessions"
+        AutomatedFollowup: "events/automated-followups"
+        TemperatureProbe: "kitchen/temperature-probes"
+        TemperatureLog: "kitchen/temperature-logs"
+        TemperatureReading: "kitchen/temperature-readings"
+        IotAlertRule: "kitchen/iot-alert-rules"
+        IoTAlert: "kitchen/iot-alerts"
+        CorrectiveAction: "kitchen/corrective-actions"
+        QualityCheck: "kitchen/quality-checks"
+        QualityCheckItem: "kitchen/quality-check-items"
+        KitchenTaskClaim: "kitchen/task-claims"
+        KitchenTaskProgress: "kitchen/task-progress"
+        TaskBundle: "kitchen/task-bundles"
+        TaskBundleItem: "kitchen/task-bundle-items"
+        BulkCombineRule: "kitchen/bulk-combine-rules"
+        MethodVideo: "kitchen/method-videos"
+        PrepListImport: "kitchen/prep-list-imports"
+        QACheck: "kitchen/qa-checks"
+        QACorrectiveAction: "kitchen/qa-corrective-actions"
+        QATemperatureLog: "kitchen/qa-temperature-logs"
+        StorageLocation: "inventory/storage-locations"
+        InventoryStock: "inventory/stock"
+        InventoryAlert: "inventory/alerts"
+        InventoryForecast: "inventory/forecasts"
+        ForecastInput: "inventory/forecast-inputs"
+        ReorderSuggestion: "inventory/reorder-suggestions"
+        VendorContact: "inventory/vendor-contacts"
+        VendorRating: "inventory/vendor-ratings"
+        InventoryTransferItem: "inventory/transfer-items"
+        InventoryTransfer: "inventory/transfers"
+        ProcurementBudget: "procurement/budgets"
+        ProcurementBudgetAlert: "procurement/budget-alerts"
+        AuditSchedule: "inventory/audit-schedules"
+        Vendor: "inventory/vendors"
+        Equipment: "facilities/equipment"
+        MaintenanceWorkOrder: "facilities/maintenance-work-orders"
+        Facility: "facilities/facilities"
+        FacilityArea: "facilities/areas"
+        FacilityAsset: "facilities/assets"
+        FacilitySchedule: "facilities/schedules"
+        FacilityWorkOrder: "facilities/work-orders"
+        PreventiveMaintenanceSchedule: "facilities/preventive-maintenance"
+        WorkOrder: "facilities/general-work-orders"
+        Driver: "logistics/drivers"
+        Vehicle: "logistics/vehicles"
+        LogisticsRoute: "logistics/routes"
+        LogisticsDispatch: "logistics/dispatches"
+        DeliveryRoute: "logistics/delivery-routes"
+        RouteStop: "logistics/route-stops"
+        TimecardApproval: "staff/timecard-approvals"
+        PayrollLineItem: "staff/payroll-line-items"
+        TipPool: "staff/tip-pools"
+        DisciplinaryAction: "staff/disciplinary-actions"
+        ActionMilestone: "staff/action-milestones"
+        PerformanceReview: "staff/performance-reviews"
+        TrainingCompletion: "staff/training-completions"
+        OnboardingTask: "staff/onboarding-tasks"
+        OnboardingCompletion: "staff/onboarding-completions"
+        OpenShift: "staff/open-shifts"
+        StaffPerformance: "staff/performance"
+        WorkforceOptimization: "staff/workforce-optimization"
+        PerformancePrediction: "staff/performance-predictions"
+        Report: "administrative/reports"
+        Document: "administrative/documents"
+        DocumentVersion: "administrative/document-versions"
+        AdminChatThread: "administrative/chat/threads"
+        AdminChatMessage: "administrative/chat/messages"
+        Note: "administrative/notes"
+        KnowledgeBaseEntry: "administrative/knowledge-base"
+        SampleData: "administrative/sample-data"
+        SmsAutomationRule: "administrative/sms-automation-rules"
+        VersionedEntity: "administrative/versioned-entities"
+        EntityVersion: "administrative/entity-versions"
+        VersionApproval: "administrative/version-approvals"
+      accessorNames:
+        EventImportWorkflow: "eventImport"
+        BankAccount: "employeeBankAccount"
+        EventTimelineItem: "eventTimeline"
+        TaskBundle: "task_bundles"
+        TaskBundleItem: "task_bundle_items"
+        BulkCombineRule: "bulk_combine_rules"
+        MethodVideo: "method_videos"
+        PrepListImport: "prep_list_imports"
+        QACorrectiveAction: "correctiveAction"
+        QATemperatureLog: "temperatureLog"
+        StorageLocation: "storage_locations"
+        LogisticsRoute: "deliveryRoute"
+        OpenShift: "open_shifts"
+        Document: "documents"
+        SmsAutomationRule: "sms_automation_rules"
   # Canonical Routes projection → manifest/runtime/routes.manifest.json + routes.ts
   # (generated by manifest/scripts/generate-route-manifest.ts).
   routes:
