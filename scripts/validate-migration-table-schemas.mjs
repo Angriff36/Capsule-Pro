@@ -53,7 +53,7 @@ const SCHEMA_PATH = join(
   "packages",
   "database",
   "prisma",
-  "schema.prisma"
+  "schema", "manifest.prisma"
 );
 
 const MIGRATION_SQL = "migration.sql";

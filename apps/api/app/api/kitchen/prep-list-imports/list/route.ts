@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse({ error: "Tenant not found", diagnostics: [] }, 400);
   }
 
-const prepListImports = await database.prep_list_imports.findMany({
+const prepListImports = await database.prepListImport.findMany({
     where: {
         tenantId
       },

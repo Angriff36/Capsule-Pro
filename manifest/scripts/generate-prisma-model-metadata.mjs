@@ -26,7 +26,10 @@ import { getAccessorConfig } from "./read-config.mjs";
 
 const { entityToPrismaModel: ENTITY_TO_PRISMA_MODEL } = getAccessorConfig();
 const root = resolve(process.cwd());
-const schemaPath = resolve(root, "packages/database/prisma/schema.prisma");
+const schemaPath = resolve(
+  root,
+  "packages/database/prisma/schema/manifest.prisma"
+);
 const outPath = resolve(
   root,
   "manifest/generated/runtime/prisma-model-metadata.generated.ts"

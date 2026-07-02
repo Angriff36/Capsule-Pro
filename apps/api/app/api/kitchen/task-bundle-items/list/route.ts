@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse({ error: "Tenant not found", diagnostics: [] }, 400);
   }
 
-const taskBundleItems = await database.task_bundle_items.findMany({
+const taskBundleItems = await database.taskBundleItem.findMany({
     where: {
         tenantId
       },

@@ -3,7 +3,7 @@ import path from "node:path";
 import pg from "pg";
 
 const MIGRATIONS_DIR = path.resolve("prisma/migrations");
-const SCHEMA_PATH = path.resolve("prisma/schema.prisma");
+const SCHEMA_PATH = path.resolve("prisma/schema/manifest.prisma");
 
 const client = new pg.Client({
   connectionString: process.env.DATABASE_URL,

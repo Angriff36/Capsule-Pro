@@ -21,7 +21,7 @@ on:
     branches: [main, develop]
     paths:
       - "manifest/source/**/*.manifest"
-      - "packages/database/prisma/schema.prisma"
+      - "packages/database/prisma/schema/**"
       - "packages/database/prisma/migrations/**"
       - ".github/workflows/migration-preview.yml"
       - "scripts/neon-migration-branch.mjs"

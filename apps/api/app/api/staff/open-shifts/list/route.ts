@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse({ error: "Tenant not found", diagnostics: [] }, 400);
   }
 
-const openShifts = await database.open_shifts.findMany({
+const openShifts = await database.openShift.findMany({
     where: {
         tenantId
       },

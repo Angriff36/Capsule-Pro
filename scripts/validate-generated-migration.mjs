@@ -73,7 +73,7 @@ const SCHEMA_PATH = join(
   "packages",
   "database",
   "prisma",
-  "schema.prisma",
+  "schema", "manifest.prisma",
 );
 
 // CREATE/ALTER/DROP TABLE [IF [NOT] EXISTS] ["schema".]"table"

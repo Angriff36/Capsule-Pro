@@ -24,7 +24,7 @@
  *
  * Inputs:
  *   manifest/ir/kitchen.ir.json          (entities, stores, commands)
- *   packages/database/prisma/schema.prisma (live model names + @@map + @@schema)
+ *   packages/database/prisma/schema/manifest.prisma (live model names + @@map + @@schema)
  *
  * Outputs:
  *   .tmp/model-classification.json   (machine-readable, full buckets)
@@ -45,7 +45,7 @@ const ir = JSON.parse(
   readFileSync(resolve(root, "manifest/ir/kitchen.ir.json"), "utf8")
 );
 const schema = readFileSync(
-  resolve(root, "packages/database/prisma/schema.prisma"),
+  resolve(root, "packages/database/prisma/schema/manifest.prisma"),
   "utf8"
 );
 

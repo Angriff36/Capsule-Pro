@@ -146,7 +146,7 @@ export function getConfigPaths() {
   const srcGlob = cfg.src || "manifest/source/**/*.manifest";
   const outputDir = cfg.output || "manifest/ir/";
   const prismaSchema =
-    cfg.prismaSchema || "packages/database/prisma/schema.prisma";
+    cfg.prismaSchema || "packages/database/prisma/schema/manifest.prisma";
 
   // Derive source directory from glob (strip the glob portion)
   const srcDir = srcGlob.replace(/\/?\*\*\/\*\.manifest$/, "");

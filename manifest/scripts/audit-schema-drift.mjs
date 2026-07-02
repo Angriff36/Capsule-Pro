@@ -42,7 +42,7 @@ const ROOT = process.cwd();
 const STRICT = process.argv.includes("--strict");
 
 const PATHS = {
-  prismaSchema: path.join(ROOT, "packages/database/prisma/schema.prisma"),
+  prismaSchema: path.join(ROOT, "packages/database/prisma/schema/manifest.prisma"),
   ir: path.join(ROOT, "manifest/ir/kitchen.ir.json"),
   entitiesRegistry: path.join(ROOT, "manifest/governance/entities.json"),
   // Allowlist is policy and lives under manifest/governance/ (tracked in git).

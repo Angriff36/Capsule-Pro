@@ -52,10 +52,10 @@
     "vitest": "^4.1.8"
   },
   "scripts": {
-    "build": "prisma generate --no-hints --schema=./prisma/schema.prisma",
+    "build": "prisma generate --no-hints --schema=./prisma/schema",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "generate": "prisma generate --no-hints --schema=./prisma/schema.prisma",
-    "postinstall": "node -e \"process.exit((process.env.VERCEL_ENV || process.env.CI) && !process.env.DATABASE_URL ? 0 : 1)\" || prisma generate --no-hints --schema=./prisma/schema.prisma",
+    "generate": "prisma generate --no-hints --schema=./prisma/schema",
+    "postinstall": "node -e \"process.exit((process.env.VERCEL_ENV || process.env.CI) && !process.env.DATABASE_URL ? 0 : 1)\" || prisma generate --no-hints --schema=./prisma/schema",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   }

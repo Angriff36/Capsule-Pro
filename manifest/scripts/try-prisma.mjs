@@ -22,7 +22,7 @@ import { pathToFileURL } from "node:url";
 
 const repoRoot = resolve(process.cwd());
 const IR_PATH = resolve(repoRoot, "manifest/ir/kitchen.ir.json");
-const SCHEMA_PATH = resolve(repoRoot, "packages/database/prisma/schema.prisma");
+const SCHEMA_PATH = resolve(repoRoot, "packages/database/prisma/schema/manifest.prisma");
 const PKG_PRISMA_INDEX = resolve(
   repoRoot,
   "manifest/runtime/node_modules/@angriff36/manifest/dist/manifest/projections/prisma/index.js"
@@ -166,7 +166,7 @@ console.log(
 if (existsSync(SCHEMA_PATH)) {
   const committed = extractModel(readFileSync(SCHEMA_PATH, "utf8"), entityArg);
   console.log(
-    `\n--- COMMITTED model ${entityArg} (packages/database/prisma/schema.prisma) ---`
+    `\n--- COMMITTED model ${entityArg} (packages/database/prisma/schema/manifest.prisma) ---`
   );
   console.log(
     committed ||

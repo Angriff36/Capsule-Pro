@@ -10,7 +10,7 @@ config({ path: path.join(__dirname, ".env") });
 config({ path: path.join(__dirname, ".env.local"), override: true });
 
 export default defineConfig({
-  schema: "prisma/schema.prisma",
+  schema: "prisma/schema",
   migrations: {
     path: "prisma/migrations",
   },

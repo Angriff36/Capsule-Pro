@@ -47,7 +47,7 @@ const STRICT = process.argv.includes("--strict");
 const SELF_TEST = process.argv.includes("--self-test");
 
 const PATHS = {
-  prismaSchema: path.join(ROOT, "packages/database/prisma/schema.prisma"),
+  prismaSchema: path.join(ROOT, "packages/database/prisma/schema/manifest.prisma"),
   allowlist: path.join(
     ROOT,
     "manifest/governance/schema-naming-allowlist.json"

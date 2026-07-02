@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse({ error: "Tenant not found", diagnostics: [] }, 400);
   }
 
-const smsAutomationRules = await database.sms_automation_rules.findMany({
+const smsAutomationRules = await database.smsAutomationRule.findMany({
     where: {
         tenantId,
         deletedAt: null

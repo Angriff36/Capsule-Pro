@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse({ error: "Tenant not found", diagnostics: [] }, 400);
   }
 
-const documents = await database.documents.findMany({
+const documents = await database.document.findMany({
     where: {
         tenantId,
         deletedAt: null

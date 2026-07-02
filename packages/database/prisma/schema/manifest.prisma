@@ -9,7 +9,7 @@ datasource db {
 
 generator client {
   provider = "prisma-client"
-  output = "../generated"
+  output = "../../generated"
   moduleFormat = "esm"
   generatedFileExtension = "ts"
   importFileExtension = "ts"
@@ -201,15 +201,15 @@ model AdminTaskDevMeta {
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
-  @@map("admin_task_dev_metas")
+  @@map("admin_task_dev_meta")
   @@id([tenantId, id])
   @@index([tenantId, taskId])
   @@schema("tenant_admin")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "admin_task_dev_metas" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "admin_task_dev_metas"
+// ALTER TABLE "admin_task_dev_meta" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "admin_task_dev_meta"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model AdminTaskFileRef {
@@ -259,14 +259,14 @@ model AiEventSetupSession {
   user User @relation(fields: [userId], references: [id])
   createdEvent Event? @relation(fields: [createdEventId], references: [id])
 
-  @@map("ai_event_setup_sessions")
+  @@map("AiEventSetupSession")
   @@id([tenantId, id])
   @@schema("public")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "ai_event_setup_sessions" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "ai_event_setup_sessions"
+// ALTER TABLE "AiEventSetupSession" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "AiEventSetupSession"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model AlertsConfig {
@@ -278,14 +278,14 @@ model AlertsConfig {
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
-  @@map("alerts_configs")
+  @@map("alerts_config")
   @@id([tenantId, id])
   @@schema("tenant_inventory")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "alerts_configs" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "alerts_configs"
+// ALTER TABLE "alerts_config" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "alerts_config"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model AllergenWarning {
@@ -401,14 +401,14 @@ model AutomatedFollowup {
 
   event Event @relation(fields: [tenantId, eventId], references: [tenantId, id])
 
-  @@map("automated_followups")
+  @@map("AutomatedFollowup")
   @@id([tenantId, id])
   @@schema("public")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "automated_followups" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "automated_followups"
+// ALTER TABLE "AutomatedFollowup" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "AutomatedFollowup"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model BankAccount {
@@ -574,14 +574,14 @@ model Budget {
   createdAt DateTime? @map("created_at") @default(now())
   updatedAt DateTime? @map("updated_at") @updatedAt
 
-  @@map("budgets")
+  @@map("Budget")
   @@id([tenantId, id])
   @@schema("public")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "budgets" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "budgets"
+// ALTER TABLE "Budget" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "Budget"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model BudgetAlert {
@@ -1440,14 +1440,14 @@ model Deal {
 
   lead Lead @relation(fields: [leadId], references: [id])
 
-  @@map("deals")
+  @@map("Deal")
   @@id([tenantId, id])
   @@schema("public")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "deals" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "deals"
+// ALTER TABLE "Deal" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "Deal"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model DeliveryRoute {
@@ -1727,14 +1727,14 @@ model EmployeeAvailability {
 
   employee User? @relation(fields: [employeeId], references: [id])
 
-  @@map("employee_availabilities")
+  @@map("employee_availability")
   @@id([tenantId, id])
   @@schema("tenant_staff")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "employee_availabilities" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "employee_availabilities"
+// ALTER TABLE "employee_availability" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "employee_availability"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model EmployeeCertification {
@@ -1781,14 +1781,14 @@ model EmployeeDeduction {
 
   employee User? @relation(fields: [employeeId], references: [id])
 
-  @@map("employee_deductions")
+  @@map("EmployeeDeduction")
   @@id([tenantId, id])
   @@schema("tenant_staff")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "employee_deductions" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "employee_deductions"
+// ALTER TABLE "EmployeeDeduction" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "EmployeeDeduction"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model EntityVersion {
@@ -1812,15 +1812,15 @@ model EntityVersion {
   versionApprovals VersionApproval[]
   versionedEntities VersionedEntity[] @relation("VersionedEntity_currentVersion")
 
-  @@map("entity_versions")
+  @@map("EntityVersion")
   @@id([tenantId, id])
   @@unique([id])
   @@schema("public")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "entity_versions" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "entity_versions"
+// ALTER TABLE "EntityVersion" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "EntityVersion"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model Equipment {
@@ -1853,7 +1853,7 @@ model Equipment {
   preventiveMaintenanceSchedules PreventiveMaintenanceSchedule[]
   workOrders2 WorkOrder[]
 
-  @@map("equipments")
+  @@map("equipment")
   @@id([tenantId, id])
   @@unique([id])
   @@index([tenantId, locationId])
@@ -1864,8 +1864,8 @@ model Equipment {
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "equipments" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "equipments"
+// ALTER TABLE "equipment" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "equipment"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model Event {
@@ -2239,7 +2239,7 @@ model EventProfitability {
 
   event Event @relation(fields: [tenantId, eventId], references: [tenantId, id])
 
-  @@map("event_profitabilities")
+  @@map("event_profitability")
   @@id([tenantId, id])
   @@index([eventId])
   @@index([tenantId, eventId])
@@ -2248,8 +2248,8 @@ model EventProfitability {
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "event_profitabilities" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "event_profitabilities"
+// ALTER TABLE "event_profitability" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "event_profitability"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model EventReport {
@@ -2308,14 +2308,14 @@ model EventStaff {
   event Event @relation(fields: [tenantId, eventId], references: [tenantId, id])
   staffMember StaffMember @relation(fields: [tenantId, staffMemberId], references: [tenantId, id])
 
-  @@map("event_staffs")
+  @@map("event_staff")
   @@id([tenantId, id])
   @@schema("tenant_events")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "event_staffs" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "event_staffs"
+// ALTER TABLE "event_staff" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "event_staff"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model EventSummary {
@@ -2364,15 +2364,15 @@ model EventTimeline {
 
   event Event @relation(fields: [tenantId, eventId], references: [tenantId, id])
 
-  @@map("event_timelines")
+  @@map("event_timeline")
   @@id([tenantId, id])
   @@index([eventId])
   @@schema("tenant_events")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "event_timelines" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "event_timelines"
+// ALTER TABLE "event_timeline" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "event_timeline"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model EventTimelineItem {
@@ -2421,14 +2421,14 @@ model EventWaitlistEntry {
 
   event Event @relation(fields: [tenantId, eventId], references: [tenantId, id])
 
-  @@map("event_waitlist_entries")
+  @@map("EventWaitlistEntry")
   @@id([tenantId, id])
   @@schema("public")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "event_waitlist_entries" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "event_waitlist_entries"
+// ALTER TABLE "EventWaitlistEntry" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "EventWaitlistEntry"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model Facility {
@@ -2578,14 +2578,14 @@ model FacilitySchedule {
   facility Facility? @relation(fields: [tenantId, facilityId], references: [tenantId, id])
   area FacilityArea? @relation(fields: [tenantId, areaId], references: [tenantId, id])
 
-  @@map("facility_schedules")
+  @@map("FacilitySchedule")
   @@id([tenantId, id])
   @@schema("public")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "facility_schedules" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "facility_schedules"
+// ALTER TABLE "FacilitySchedule" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "FacilitySchedule"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model FacilityWorkOrder {
@@ -2613,14 +2613,14 @@ model FacilityWorkOrder {
   area FacilityArea? @relation(fields: [tenantId, areaId], references: [tenantId, id])
   asset FacilityAsset? @relation(fields: [tenantId, assetId], references: [tenantId, id])
 
-  @@map("facility_work_orders")
+  @@map("FacilityWorkOrder")
   @@id([tenantId, id])
   @@schema("public")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "facility_work_orders" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "facility_work_orders"
+// ALTER TABLE "FacilityWorkOrder" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "FacilityWorkOrder"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model ForecastInput {
@@ -2827,15 +2827,15 @@ model InventoryStock {
   item InventoryItem @relation(fields: [tenantId, itemId], references: [tenantId, id])
   storageLocation StorageLocation @relation(fields: [tenantId, storageLocationId], references: [tenantId, id])
 
-  @@map("inventory_stocks")
+  @@map("inventory_stock")
   @@id([tenantId, id])
   @@index([tenantId, itemId, storageLocationId])
   @@schema("tenant_inventory")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "inventory_stocks" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "inventory_stocks"
+// ALTER TABLE "inventory_stock" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "inventory_stock"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model InventorySupplier {
@@ -3056,7 +3056,7 @@ model IoTAlert {
   probe TemperatureProbe @relation(fields: [tenantId, probeId], references: [tenantId, id])
   rule IotAlertRule? @relation(fields: [tenantId, ruleId], references: [tenantId, id])
 
-  @@map("io_t_alerts")
+  @@map("iot_alerts")
   @@id([tenantId, id])
   @@index([tenantId, status])
   @@index([tenantId, alertType])
@@ -3067,8 +3067,8 @@ model IoTAlert {
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "io_t_alerts" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "io_t_alerts"
+// ALTER TABLE "iot_alerts" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "iot_alerts"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model IotAlertRule {
@@ -3151,7 +3151,7 @@ model KitchenTaskClaim {
   kitchenTask KitchenTask @relation(fields: [tenantId, taskId], references: [tenantId, id])
   employee User @relation(fields: [tenantId, employeeId], references: [tenantId, id])
 
-  @@map("kitchen_task_claims")
+  @@map("task_claims")
   @@id([tenantId, id])
   @@index([taskId])
   @@index([employeeId])
@@ -3159,8 +3159,8 @@ model KitchenTaskClaim {
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "kitchen_task_claims" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "kitchen_task_claims"
+// ALTER TABLE "task_claims" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "task_claims"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model KitchenTaskProgress {
@@ -3178,7 +3178,7 @@ model KitchenTaskProgress {
   kitchenTask KitchenTask @relation(fields: [tenantId, taskId], references: [tenantId, id])
   employee User @relation(fields: [tenantId, employeeId], references: [tenantId, id])
 
-  @@map("kitchen_task_progresses")
+  @@map("task_progress")
   @@id([tenantId, id])
   @@index([employeeId])
   @@index([taskId])
@@ -3186,8 +3186,8 @@ model KitchenTaskProgress {
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "kitchen_task_progresses" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "kitchen_task_progresses"
+// ALTER TABLE "task_progress" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "task_progress"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model KnowledgeBaseEntry {
@@ -3307,14 +3307,14 @@ model LogisticsDispatch {
   driver Driver? @relation(fields: [tenantId, driverId], references: [tenantId, id])
   vehicle Vehicle? @relation(fields: [tenantId, vehicleId], references: [tenantId, id])
 
-  @@map("logistics_dispatches")
+  @@map("LogisticsDispatch")
   @@id([tenantId, id])
   @@schema("public")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "logistics_dispatches" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "logistics_dispatches"
+// ALTER TABLE "LogisticsDispatch" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "LogisticsDispatch"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model LogisticsRoute {
@@ -3608,7 +3608,7 @@ model OverrideAudit {
   authorizedAt DateTime? @map("authorized_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
 
-  @@map("override_audits")
+  @@map("override_audit")
   @@id([tenantId, id])
   @@index([tenantId, entityType, entityId])
   @@index([tenantId, overriddenBy])
@@ -3618,8 +3618,8 @@ model OverrideAudit {
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "override_audits" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "override_audits"
+// ALTER TABLE "override_audit" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "override_audit"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model Payment {
@@ -3750,7 +3750,7 @@ model PayrollApprovalHistory {
 
   payrollRun PayrollRun? @relation(fields: [payrollRunId], references: [id])
 
-  @@map("payroll_approval_histories")
+  @@map("payroll_approval_history")
   @@id([tenantId, id])
   @@index([tenantId, payrollRunId])
   @@index([tenantId, performedBy])
@@ -3758,8 +3758,8 @@ model PayrollApprovalHistory {
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "payroll_approval_histories" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "payroll_approval_histories"
+// ALTER TABLE "payroll_approval_history" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "payroll_approval_history"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model PayrollLineItem {
@@ -3864,14 +3864,14 @@ model PerformancePrediction {
 
   employee User? @relation(fields: [employeeId], references: [id])
 
-  @@map("performance_predictions")
+  @@map("PerformancePrediction")
   @@id([tenantId, id])
   @@schema("public")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "performance_predictions" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "performance_predictions"
+// ALTER TABLE "PerformancePrediction" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "PerformancePrediction"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model PerformanceReview {
@@ -5064,14 +5064,14 @@ model SampleData {
   usersCreated Int? @map("users_created") @default(0)
   recipesCreated Int? @map("recipes_created") @default(0)
 
-  @@map("sample_datas")
+  @@map("SampleData")
   @@id([tenantId, id])
   @@schema("public")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "sample_datas" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "sample_datas"
+// ALTER TABLE "SampleData" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "SampleData"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model Schedule {
@@ -5306,14 +5306,14 @@ model StaffPerformance {
   employee User @relation("StaffPerformance_employee", fields: [employeeId], references: [id])
   reviewer User? @relation("StaffPerformance_reviewer", fields: [reviewerId], references: [id])
 
-  @@map("staff_performances")
+  @@map("StaffPerformance")
   @@id([tenantId, id])
   @@schema("public")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "staff_performances" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "staff_performances"
+// ALTER TABLE "StaffPerformance" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "StaffPerformance"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model StaffTrainingSignal {
@@ -5666,14 +5666,14 @@ model TimeOffRequest {
 
   employee User? @relation(fields: [employeeId], references: [id])
 
-  @@map("time_off_requests")
+  @@map("employee_time_off_requests")
   @@id([tenantId, id])
   @@schema("tenant_staff")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "time_off_requests" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "time_off_requests"
+// ALTER TABLE "employee_time_off_requests" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "employee_time_off_requests"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model TipPool {
@@ -5938,7 +5938,7 @@ model User {
   varianceReports VarianceReport[]
   versionApprovals VersionApproval[]
 
-  @@map("users")
+  @@map("employees")
   @@id([tenantId, id])
   @@unique([id])
   @@index([roleId])
@@ -5948,8 +5948,8 @@ model User {
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "users" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "users"
+// ALTER TABLE "employees" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "employees"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model VarianceReport {
@@ -6062,15 +6062,15 @@ model Vendor {
   purchaseOrders PurchaseOrder[]
   requisitionSuggestions PurchaseRequisitionItem[]
 
-  @@map("vendors")
+  @@map("Vendor")
   @@id([tenantId, id])
   @@unique([id])
   @@schema("public")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "vendors" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "vendors"
+// ALTER TABLE "Vendor" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "Vendor"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model VendorCatalog {
@@ -6268,14 +6268,14 @@ model VersionApproval {
   entityVersion EntityVersion @relation(fields: [entityVersionId], references: [id])
   approver User @relation(fields: [approverId], references: [id])
 
-  @@map("version_approvals")
+  @@map("VersionApproval")
   @@id([tenantId, id])
   @@schema("public")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "version_approvals" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "version_approvals"
+// ALTER TABLE "VersionApproval" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "VersionApproval"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model VersionedEntity {
@@ -6292,15 +6292,15 @@ model VersionedEntity {
   currentVersion EntityVersion? @relation("VersionedEntity_currentVersion", fields: [currentVersionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   entityVersions EntityVersion[] @relation("EntityVersion_versionedEntity")
 
-  @@map("versioned_entities")
+  @@map("VersionedEntity")
   @@id([tenantId, id])
   @@unique([id])
   @@schema("public")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "versioned_entities" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "versioned_entities"
+// ALTER TABLE "VersionedEntity" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "VersionedEntity"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model WasteEntry {
@@ -6378,14 +6378,14 @@ model WorkforceOptimization {
 
   location Facility? @relation(fields: [locationId], references: [id])
 
-  @@map("workforce_optimizations")
+  @@map("WorkforceOptimization")
   @@id([tenantId, id])
   @@schema("public")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "workforce_optimizations" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "workforce_optimizations"
+// ALTER TABLE "WorkforceOptimization" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "WorkforceOptimization"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model WorkOrder {

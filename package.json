@@ -143,7 +143,7 @@
     "predev": "pnpm db:check",
     "prepare": "husky",
     "prisma:format": "pnpm --filter @repo/database exec prisma format",
-    "prisma:check": "pnpm exec prisma generate --schema=./packages/database/prisma/schema.prisma",
+    "prisma:check": "pnpm exec prisma generate --schema=./packages/database/prisma/schema",
     "secrets:scan": "secretlint \"**/*\"",
     "security:audit-baseline": "node scripts/security/audit-baseline.mjs",
     "security:audit-baseline:save": "node scripts/security/audit-baseline.mjs --save-baseline",

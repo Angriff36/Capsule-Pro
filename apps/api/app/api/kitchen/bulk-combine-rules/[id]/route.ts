@@ -26,7 +26,7 @@ export async function GET(
     const { id } = await params;
 
     // Using findFirst — multi-field filter (tenant/soft-delete) requires findFirst on Prisma 7+.
-    const bulkCombineRule = await database.bulk_combine_rules.findFirst({
+    const bulkCombineRule = await database.bulkCombineRule.findFirst({
       where: {
         id,
         tenantId

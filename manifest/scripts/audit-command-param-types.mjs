@@ -96,7 +96,7 @@ const PATHS = {
   ir: resolve(PROJECT_ROOT, "manifest/ir/kitchen.ir.json"),
   prismaSchema: resolve(
     PROJECT_ROOT,
-    "packages/database/prisma/schema.prisma"
+    "packages/database/prisma/schema/manifest.prisma"
   ),
   openapi: resolve(PROJECT_ROOT, "manifest/api-docs/openapi.json"),
   // IR-name ↔ Prisma-column bridge + accessor (produced by
