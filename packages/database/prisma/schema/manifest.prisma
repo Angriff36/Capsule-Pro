@@ -236,25 +236,25 @@ model AdminTaskFileRef {
 
 model AiEventSetupSession {
   id String
-  tenantId String @map("tenant_id")
-  userId String @map("user_id")
-  originalInput String? @map("original_input") @default("")
-  parsedTitle String? @map("parsed_title") @default("")
-  parsedEventType String? @map("parsed_event_type") @default("")
-  parsedEventDate DateTime? @map("parsed_event_date")
-  parsedGuestCount Int? @map("parsed_guest_count") @default(0)
-  parsedVenueName String? @map("parsed_venue_name") @default("")
-  parsedVenueAddress String? @map("parsed_venue_address") @default("")
-  parsedNotes String? @map("parsed_notes") @default("")
-  parsedTags String? @map("parsed_tags") @default("")
+  tenantId String @map("tenantId")
+  userId String @map("userId")
+  originalInput String? @map("originalInput") @default("")
+  parsedTitle String? @map("parsedTitle") @default("")
+  parsedEventType String? @map("parsedEventType") @default("")
+  parsedEventDate DateTime? @map("parsedEventDate")
+  parsedGuestCount Int? @map("parsedGuestCount") @default(0)
+  parsedVenueName String? @map("parsedVenueName") @default("")
+  parsedVenueAddress String? @map("parsedVenueAddress") @default("")
+  parsedNotes String? @map("parsedNotes") @default("")
+  parsedTags String? @map("parsedTags") @default("")
   status String? @default("pending")
   confidence Decimal? @db.Decimal(12, 2) @default(0)
-  missingFields String? @map("missing_fields") @default("[]")
+  missingFields String? @map("missingFields") @default("[]")
   suggestions String? @default("[]")
-  createdEventId String? @map("created_event_id") @default("")
-  completedAt DateTime? @map("completed_at")
-  createdAt DateTime? @map("created_at") @default(now())
-  updatedAt DateTime? @map("updated_at") @updatedAt
+  createdEventId String? @map("createdEventId") @default("")
+  completedAt DateTime? @map("completedAt")
+  createdAt DateTime? @map("createdAt") @default(now())
+  updatedAt DateTime? @map("updatedAt") @updatedAt
 
   user User @relation(fields: [userId], references: [id])
   createdEvent Event? @relation(fields: [createdEventId], references: [id])
@@ -385,19 +385,19 @@ model AuditSchedule {
 
 model AutomatedFollowup {
   id String
-  tenantId String @map("tenant_id")
-  eventId String @map("event_id")
+  tenantId String @map("tenantId")
+  eventId String @map("eventId")
   type String? @default("email")
   status String? @default("pending")
-  scheduledDate DateTime? @map("scheduled_date")
-  sentDate DateTime? @map("sent_date")
-  recipientId String? @map("recipient_id") @default("")
+  scheduledDate DateTime? @map("scheduledDate")
+  sentDate DateTime? @map("sentDate")
+  recipientId String? @map("recipientId") @default("")
   subject String? @default("")
   body String? @default("")
-  templateId String? @map("template_id") @default("")
-  errorMessage String? @map("error_message") @default("")
-  createdAt DateTime? @map("created_at") @default(now())
-  updatedAt DateTime? @map("updated_at") @updatedAt
+  templateId String? @map("templateId") @default("")
+  errorMessage String? @map("errorMessage") @default("")
+  createdAt DateTime? @map("createdAt") @default(now())
+  updatedAt DateTime? @map("updatedAt") @updatedAt
 
   event Event @relation(fields: [tenantId, eventId], references: [tenantId, id])
 
@@ -558,21 +558,21 @@ model BoardProjection {
 
 model Budget {
   id String
-  tenantId String @map("tenant_id")
+  tenantId String @map("tenantId")
   name String
   description String? @default("")
-  fiscalYear Int? @map("fiscal_year") @default(0)
-  totalAmount Decimal? @map("total_amount") @db.Decimal(12, 2) @default(0)
-  allocatedAmount Decimal? @map("allocated_amount") @db.Decimal(12, 2) @default(0)
-  spentAmount Decimal? @map("spent_amount") @db.Decimal(12, 2) @default(0)
+  fiscalYear Int? @map("fiscalYear") @default(0)
+  totalAmount Decimal? @map("totalAmount") @db.Decimal(12, 2) @default(0)
+  allocatedAmount Decimal? @map("allocatedAmount") @db.Decimal(12, 2) @default(0)
+  spentAmount Decimal? @map("spentAmount") @db.Decimal(12, 2) @default(0)
   status BudgetStatus? @default(draft)
   category String? @default("general")
-  departmentId String? @map("department_id") @default("")
-  approvedBy String? @map("approved_by") @default("")
-  approvedAt DateTime? @map("approved_at")
-  lockedAt DateTime? @map("locked_at")
-  createdAt DateTime? @map("created_at") @default(now())
-  updatedAt DateTime? @map("updated_at") @updatedAt
+  departmentId String? @map("departmentId") @default("")
+  approvedBy String? @map("approvedBy") @default("")
+  approvedAt DateTime? @map("approvedAt")
+  lockedAt DateTime? @map("lockedAt")
+  createdAt DateTime? @map("createdAt") @default(now())
+  updatedAt DateTime? @map("updatedAt") @updatedAt
 
   @@map("Budget")
   @@id([tenantId, id])
@@ -1205,7 +1205,7 @@ model CommandBoardLayout {
   userId String @map("user_id") @db.Uuid
   name String? @default("")
   viewport String? @default("{}")
-  visibleCards String[] @map("visible_cards") @default([])
+  visibleCards String[] @map("visibleCards") @default([])
   gridSize Int? @map("grid_size") @default(40)
   showGrid Boolean? @map("show_grid") @default(true)
   snapToGrid Boolean? @map("snap_to_grid") @default(true)
@@ -1423,20 +1423,20 @@ model CycleCountSession {
 
 model Deal {
   id String
-  tenantId String @map("tenant_id")
-  leadId String @map("lead_id")
+  tenantId String @map("tenantId")
+  leadId String @map("leadId")
   title String
   value Decimal? @db.Decimal(12, 2) @default(0)
   currency String? @default("USD")
   stage String? @default("new")
   status DealStatus? @default(open)
   probability Decimal? @db.Decimal(12, 2) @default(0)
-  expectedCloseDate DateTime? @map("expected_close_date")
-  actualCloseDate DateTime? @map("actual_close_date")
-  assignedTo String? @map("assigned_to") @default("")
+  expectedCloseDate DateTime? @map("expectedCloseDate")
+  actualCloseDate DateTime? @map("actualCloseDate")
+  assignedTo String? @map("assignedTo") @default("")
   notes String? @default("")
-  createdAt DateTime? @map("created_at") @default(now())
-  updatedAt DateTime? @map("updated_at") @updatedAt
+  createdAt DateTime? @map("createdAt") @default(now())
+  updatedAt DateTime? @map("updatedAt") @updatedAt
 
   lead Lead @relation(fields: [leadId], references: [id])
 
@@ -1793,20 +1793,20 @@ model EmployeeDeduction {
 
 model EntityVersion {
   id String
-  tenantId String @map("tenant_id")
-  versionedEntityId String @map("versioned_entity_id")
-  versionNumber Int @map("version_number")
-  changeReason String? @map("change_reason") @default("")
-  changeSummary String? @map("change_summary") @default("")
-  changeType String @map("change_type")
-  snapshotData String? @map("snapshot_data")
+  tenantId String @map("tenantId")
+  versionedEntityId String @map("versionedEntityId")
+  versionNumber Int @map("versionNumber")
+  changeReason String? @map("changeReason") @default("")
+  changeSummary String? @map("changeSummary") @default("")
+  changeType String @map("changeType")
+  snapshotData String? @map("snapshotData")
   metadata String?
-  isApproved Boolean? @map("is_approved") @default(false)
-  approvedAt DateTime? @map("approved_at")
-  approvedBy String? @map("approved_by") @default("")
-  createdBy String? @map("created_by") @default("")
-  createdAt DateTime? @map("created_at") @default(now())
-  updatedAt DateTime? @map("updated_at") @updatedAt
+  isApproved Boolean? @map("isApproved") @default(false)
+  approvedAt DateTime? @map("approvedAt")
+  approvedBy String? @map("approvedBy") @default("")
+  createdBy String? @map("createdBy") @default("")
+  createdAt DateTime? @map("createdAt") @default(now())
+  updatedAt DateTime? @map("updatedAt") @updatedAt
 
   versionedEntity VersionedEntity @relation("EntityVersion_versionedEntity", fields: [versionedEntityId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   versionApprovals VersionApproval[]
@@ -2289,21 +2289,21 @@ model EventReport {
 
 model EventStaff {
   id String
-  tenantId String @map("tenant_id")
-  deletedAt DateTime? @map("deleted_at")
-  eventId String @map("event_id")
-  staffMemberId String @map("staff_member_id")
+  tenantId String @map("tenantId")
+  deletedAt DateTime? @map("deletedAt")
+  eventId String @map("eventId")
+  staffMemberId String @map("staffMemberId")
   role String? @default("")
   notes String? @default("")
-  shiftStart DateTime? @map("shift_start") @db.Timestamptz(6)
-  shiftEnd DateTime? @map("shift_end") @db.Timestamptz(6)
+  shiftStart DateTime? @map("shiftStart") @db.Timestamptz(6)
+  shiftEnd DateTime? @map("shiftEnd") @db.Timestamptz(6)
   status String? @default("assigned")
-  confirmedAt DateTime? @map("confirmed_at")
-  checkedInAt DateTime? @map("checked_in_at")
-  checkedOutAt DateTime? @map("checked_out_at")
-  noShowReason String? @map("no_show_reason") @default("")
-  createdAt DateTime? @map("created_at") @default(now())
-  updatedAt DateTime? @map("updated_at") @updatedAt
+  confirmedAt DateTime? @map("confirmedAt")
+  checkedInAt DateTime? @map("checkedInAt")
+  checkedOutAt DateTime? @map("checkedOutAt")
+  noShowReason String? @map("noShowReason") @default("")
+  createdAt DateTime? @map("createdAt") @default(now())
+  updatedAt DateTime? @map("updatedAt") @updatedAt
 
   event Event @relation(fields: [tenantId, eventId], references: [tenantId, id])
   staffMember StaffMember @relation(fields: [tenantId, staffMemberId], references: [tenantId, id])
@@ -2325,8 +2325,8 @@ model EventSummary {
   eventId String @map("event_id") @db.Uuid
   highlights String? @default("[]")
   issues String? @default("[]")
-  financialPerformance String? @map("financial_performance") @default("[]")
-  clientFeedback String? @map("client_feedback") @default("[]")
+  financialPerformance String? @map("financialPerformance") @default("[]")
+  clientFeedback String? @map("clientFeedback") @default("[]")
   insights String? @default("[]")
   overallSummary String? @map("overall_summary") @default("")
   generatedAt DateTime? @map("generated_at") @db.Timestamptz(6)
@@ -2405,19 +2405,19 @@ model EventTimelineItem {
 
 model EventWaitlistEntry {
   id String
-  tenantId String @map("tenant_id")
-  eventId String @map("event_id")
-  guestName String @map("guest_name")
+  tenantId String @map("tenantId")
+  eventId String @map("eventId")
+  guestName String @map("guestName")
   email String? @default("")
   phone String? @default("")
-  partySize Int? @map("party_size") @default(1)
+  partySize Int? @map("partySize") @default(1)
   status String? @default("waiting")
   notes String? @default("")
-  joinedAt DateTime? @map("joined_at")
-  notifiedAt DateTime? @map("notified_at")
-  seatedAt DateTime? @map("seated_at")
-  createdAt DateTime? @map("created_at") @default(now())
-  updatedAt DateTime? @map("updated_at") @updatedAt
+  joinedAt DateTime? @map("joinedAt")
+  notifiedAt DateTime? @map("notifiedAt")
+  seatedAt DateTime? @map("seatedAt")
+  createdAt DateTime? @map("createdAt") @default(now())
+  updatedAt DateTime? @map("updatedAt") @updatedAt
 
   event Event @relation(fields: [tenantId, eventId], references: [tenantId, id])
 
@@ -2491,7 +2491,7 @@ model FacilityArea {
   venueId String? @map("venue_id") @db.Uuid @default("")
   name String
   code String? @default("")
-  areaType String? @map("area_type") @default("other")
+  areaType String? @map("areaType") @default("other")
   floor String? @default("")
   description String? @db.Text @default("")
   squareFeet Int? @map("square_feet") @default(0)
@@ -2560,20 +2560,20 @@ model FacilityAsset {
 
 model FacilitySchedule {
   id String
-  tenantId String @map("tenant_id")
-  facilityId String? @map("facility_id") @default("")
-  areaId String? @map("area_id") @default("")
+  tenantId String @map("tenantId")
+  facilityId String? @map("facilityId") @default("")
+  areaId String? @map("areaId") @default("")
   title String
   description String? @default("")
-  scheduleType String? @map("schedule_type") @default("maintenance")
+  scheduleType String? @map("scheduleType") @default("maintenance")
   status String? @default("scheduled")
-  startDate DateTime? @map("start_date")
-  endDate DateTime? @map("end_date")
-  assignedTo String? @map("assigned_to") @default("")
-  completedAt DateTime? @map("completed_at")
+  startDate DateTime? @map("startDate")
+  endDate DateTime? @map("endDate")
+  assignedTo String? @map("assignedTo") @default("")
+  completedAt DateTime? @map("completedAt")
   notes String? @default("")
-  createdAt DateTime? @map("created_at") @default(now())
-  updatedAt DateTime? @map("updated_at") @updatedAt
+  createdAt DateTime? @map("createdAt") @default(now())
+  updatedAt DateTime? @map("updatedAt") @updatedAt
 
   facility Facility? @relation(fields: [tenantId, facilityId], references: [tenantId, id])
   area FacilityArea? @relation(fields: [tenantId, areaId], references: [tenantId, id])
@@ -2590,24 +2590,24 @@ model FacilitySchedule {
 
 model FacilityWorkOrder {
   id String
-  tenantId String @map("tenant_id")
-  facilityId String? @map("facility_id") @default("")
-  areaId String? @map("area_id") @default("")
-  assetId String? @map("asset_id") @default("")
+  tenantId String @map("tenantId")
+  facilityId String? @map("facilityId") @default("")
+  areaId String? @map("areaId") @default("")
+  assetId String? @map("assetId") @default("")
   title String
   description String? @default("")
   priority String? @default("medium")
   status String? @default("open")
   category String? @default("repair")
-  requestedBy String? @map("requested_by") @default("")
-  assignedTo String? @map("assigned_to") @default("")
-  estimatedCost Decimal? @map("estimated_cost") @db.Decimal(12, 2) @default(0)
-  actualCost Decimal? @map("actual_cost") @db.Decimal(12, 2) @default(0)
-  scheduledDate DateTime? @map("scheduled_date")
-  completedDate DateTime? @map("completed_date")
+  requestedBy String? @map("requestedBy") @default("")
+  assignedTo String? @map("assignedTo") @default("")
+  estimatedCost Decimal? @map("estimatedCost") @db.Decimal(12, 2) @default(0)
+  actualCost Decimal? @map("actualCost") @db.Decimal(12, 2) @default(0)
+  scheduledDate DateTime? @map("scheduledDate")
+  completedDate DateTime? @map("completedDate")
   notes String? @default("")
-  createdAt DateTime? @map("created_at") @default(now())
-  updatedAt DateTime? @map("updated_at") @updatedAt
+  createdAt DateTime? @map("createdAt") @default(now())
+  updatedAt DateTime? @map("updatedAt") @updatedAt
 
   facility Facility? @relation(fields: [tenantId, facilityId], references: [tenantId, id])
   area FacilityArea? @relation(fields: [tenantId, areaId], references: [tenantId, id])
@@ -3289,19 +3289,19 @@ model Lead {
 
 model LogisticsDispatch {
   id String
-  tenantId String @map("tenant_id")
-  routeId String @map("route_id")
-  driverId String? @map("driver_id") @default("")
-  vehicleId String? @map("vehicle_id") @default("")
+  tenantId String @map("tenantId")
+  routeId String @map("routeId")
+  driverId String? @map("driverId") @default("")
+  vehicleId String? @map("vehicleId") @default("")
   status String? @default("pending")
   priority String? @default("normal")
-  estimatedDeliveryTime DateTime? @map("estimated_delivery_time")
-  actualDeliveryTime DateTime? @map("actual_delivery_time")
-  departedAt DateTime? @map("departed_at")
-  failureReason String? @map("failure_reason") @default("")
+  estimatedDeliveryTime DateTime? @map("estimatedDeliveryTime")
+  actualDeliveryTime DateTime? @map("actualDeliveryTime")
+  departedAt DateTime? @map("departedAt")
+  failureReason String? @map("failureReason") @default("")
   notes String? @default("")
-  createdAt DateTime? @map("created_at") @default(now())
-  updatedAt DateTime? @map("updated_at") @updatedAt
+  createdAt DateTime? @map("createdAt") @default(now())
+  updatedAt DateTime? @map("updatedAt") @updatedAt
 
   route LogisticsRoute @relation(fields: [tenantId, routeId], references: [tenantId, id])
   driver Driver? @relation(fields: [tenantId, driverId], references: [tenantId, id])
@@ -3359,7 +3359,7 @@ model MaintenanceWorkOrder {
   areaId String? @map("area_id") @db.Uuid @default("")
   equipmentId String? @map("equipment_id") @db.Uuid @default("")
   title String
-  workOrderType String @map("work_order_type") @default("corrective")
+  workOrderType String @map("workOrderType") @default("corrective")
   priority String @default("medium")
   status String @default("open")
   description String? @db.Text @default("")
@@ -3852,15 +3852,15 @@ model PayrollRun {
 
 model PerformancePrediction {
   id String
-  tenantId String @map("tenant_id")
-  employeeId String? @map("employee_id") @default("")
-  predictionType String? @map("prediction_type") @default("")
-  predictionHorizon Int? @map("prediction_horizon") @default(0)
-  predictionScore Decimal? @map("prediction_score") @db.Decimal(12, 2) @default(0)
+  tenantId String @map("tenantId")
+  employeeId String? @map("employeeId") @default("")
+  predictionType String? @map("predictionType") @default("")
+  predictionHorizon Int? @map("predictionHorizon") @default(0)
+  predictionScore Decimal? @map("predictionScore") @db.Decimal(12, 2) @default(0)
   confidence String? @default("medium")
   factors String? @default("")
-  createdAt DateTime? @map("created_at") @default(now())
-  expiresAt DateTime? @map("expires_at") @default(now())
+  createdAt DateTime? @map("createdAt") @default(now())
+  expiresAt DateTime? @map("expiresAt") @default(now())
 
   employee User? @relation(fields: [employeeId], references: [id])
 
@@ -5055,14 +5055,14 @@ model RouteStop {
 
 model SampleData {
   id String
-  tenantId String @map("tenant_id")
-  seededAt DateTime? @map("seeded_at") @default(now())
-  clearedAt DateTime? @map("cleared_at")
-  isSeeded Boolean? @map("is_seeded") @default(false)
-  eventsCreated Int? @map("events_created") @default(0)
-  clientsCreated Int? @map("clients_created") @default(0)
-  usersCreated Int? @map("users_created") @default(0)
-  recipesCreated Int? @map("recipes_created") @default(0)
+  tenantId String @map("tenantId")
+  seededAt DateTime? @map("seededAt") @default(now())
+  clearedAt DateTime? @map("clearedAt")
+  isSeeded Boolean? @map("isSeeded") @default(false)
+  eventsCreated Int? @map("eventsCreated") @default(0)
+  clientsCreated Int? @map("clientsCreated") @default(0)
+  usersCreated Int? @map("usersCreated") @default(0)
+  recipesCreated Int? @map("recipesCreated") @default(0)
 
   @@map("SampleData")
   @@id([tenantId, id])
@@ -5257,16 +5257,16 @@ model SmsAutomationRule {
 
 model StaffMember {
   id String
-  tenantId String @map("tenant_id")
-  deletedAt DateTime? @map("deleted_at")
-  displayName String @map("display_name") @default("Unnamed")
+  tenantId String @map("tenantId")
+  deletedAt DateTime? @map("deletedAt")
+  displayName String @map("displayName") @default("Unnamed")
   email String? @default("")
   phone String? @default("")
   role String? @default("server")
   status String @default("active")
   notes String? @default("")
-  createdAt DateTime? @map("created_at") @default(now())
-  updatedAt DateTime? @map("updated_at") @updatedAt
+  createdAt DateTime? @map("createdAt") @default(now())
+  updatedAt DateTime? @map("updatedAt") @updatedAt
 
   eventStaffs EventStaff[]
   staffTrainingSignals StaffTrainingSignal[]
@@ -5285,23 +5285,23 @@ model StaffMember {
 
 model StaffPerformance {
   id String
-  tenantId String @map("tenant_id")
-  employeeId String @map("employee_id")
-  reviewType String? @map("review_type") @default("quarterly")
+  tenantId String @map("tenantId")
+  employeeId String @map("employeeId")
+  reviewType String? @map("reviewType") @default("quarterly")
   status String? @default("draft")
   rating Decimal? @db.Decimal(12, 2) @default(0)
-  reviewerId String? @map("reviewer_id") @default("")
-  periodStart DateTime? @map("period_start")
-  periodEnd DateTime? @map("period_end")
+  reviewerId String? @map("reviewerId") @default("")
+  periodStart DateTime? @map("periodStart")
+  periodEnd DateTime? @map("periodEnd")
   strengths String? @default("")
   improvements String? @default("")
   goals String? @default("")
   notes String? @default("")
-  acknowledgementNotes String? @map("acknowledgement_notes") @default("")
-  completedAt DateTime? @map("completed_at")
-  acknowledgedAt DateTime? @map("acknowledged_at")
-  createdAt DateTime? @map("created_at") @default(now())
-  updatedAt DateTime? @map("updated_at") @updatedAt
+  acknowledgementNotes String? @map("acknowledgementNotes") @default("")
+  completedAt DateTime? @map("completedAt")
+  acknowledgedAt DateTime? @map("acknowledgedAt")
+  createdAt DateTime? @map("createdAt") @default(now())
+  updatedAt DateTime? @map("updatedAt") @updatedAt
 
   employee User @relation("StaffPerformance_employee", fields: [employeeId], references: [id])
   reviewer User? @relation("StaffPerformance_reviewer", fields: [reviewerId], references: [id])
@@ -5348,7 +5348,7 @@ model Station {
   name String
   stationType String @map("station_type") @default("prep-station")
   capacitySimultaneousTasks Int? @map("capacity_simultaneous_tasks") @default(1)
-  equipmentList String[] @map("equipment_list") @default([])
+  equipmentList String[] @map("equipmentList") @default([])
   isActive Boolean? @map("is_active") @default(true)
   inMaintenance Boolean? @map("in_maintenance") @default(false)
   maintenanceReason String? @map("maintenance_reason") @default("")
@@ -5458,7 +5458,7 @@ model TemperatureLog {
   loggedBy String @map("logged_by") @db.Uuid
   temperature Decimal @db.Decimal(6, 2)
   loggedAt DateTime @map("logged_at") @db.Timestamptz(6)
-  withinRange Boolean @map("within_range")
+  withinRange Boolean @map("withinRange")
   notes String? @db.Text @default("")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -6032,7 +6032,7 @@ model Vehicle {
 
 model Vendor {
   id String
-  tenantId String @map("tenant_id")
+  tenantId String @map("tenantId")
   name String
   type String? @default("supplier")
   status String? @default("active")
@@ -6043,20 +6043,20 @@ model Vendor {
   city String? @default("")
   state String? @default("")
   zip String? @default("")
-  taxId String? @map("tax_id") @default("")
-  paymentTerms String? @map("payment_terms") @default("net30")
+  taxId String? @map("taxId") @default("")
+  paymentTerms String? @map("paymentTerms") @default("net30")
   rating Decimal? @db.Decimal(12, 2) @default(0)
-  ratingCount Int? @map("rating_count") @default(0)
+  ratingCount Int? @map("ratingCount") @default(0)
   notes String? @default("")
-  approvedAt DateTime? @map("approved_at")
-  approvedBy String? @map("approved_by") @default("")
-  suspendedAt DateTime? @map("suspended_at")
-  suspendedReason String? @map("suspended_reason") @default("")
-  blacklistedAt DateTime? @map("blacklisted_at")
-  blacklistedReason String? @map("blacklisted_reason") @default("")
-  lastContactAddedAt DateTime? @map("last_contact_added_at")
-  createdAt DateTime? @map("created_at") @default(now())
-  updatedAt DateTime? @map("updated_at") @updatedAt
+  approvedAt DateTime? @map("approvedAt")
+  approvedBy String? @map("approvedBy") @default("")
+  suspendedAt DateTime? @map("suspendedAt")
+  suspendedReason String? @map("suspendedReason") @default("")
+  blacklistedAt DateTime? @map("blacklistedAt")
+  blacklistedReason String? @map("blacklistedReason") @default("")
+  lastContactAddedAt DateTime? @map("lastContactAddedAt")
+  createdAt DateTime? @map("createdAt") @default(now())
+  updatedAt DateTime? @map("updatedAt") @updatedAt
 
   contracts VendorContract[]
   purchaseOrders PurchaseOrder[]
@@ -6256,14 +6256,14 @@ model Venue {
 
 model VersionApproval {
   id String
-  tenantId String @map("tenant_id")
-  entityVersionId String @map("entity_version_id")
-  approverId String @map("approver_id")
+  tenantId String @map("tenantId")
+  entityVersionId String @map("entityVersionId")
+  approverId String @map("approverId")
   status String
   comments String? @default("")
-  reviewedAt DateTime? @map("reviewed_at")
-  createdAt DateTime? @map("created_at") @default(now())
-  updatedAt DateTime? @map("updated_at") @updatedAt
+  reviewedAt DateTime? @map("reviewedAt")
+  createdAt DateTime? @map("createdAt") @default(now())
+  updatedAt DateTime? @map("updatedAt") @updatedAt
 
   entityVersion EntityVersion @relation(fields: [entityVersionId], references: [id])
   approver User @relation(fields: [approverId], references: [id])
@@ -6280,14 +6280,14 @@ model VersionApproval {
 
 model VersionedEntity {
   id String
-  tenantId String @map("tenant_id")
-  entityType String @map("entity_type")
-  entityId String @map("entity_id")
-  entityName String @map("entity_name")
-  isLocked Boolean? @map("is_locked") @default(false)
-  currentVersionId String? @map("current_version_id") @default("")
-  createdAt DateTime? @map("created_at") @default(now())
-  updatedAt DateTime? @map("updated_at") @updatedAt
+  tenantId String @map("tenantId")
+  entityType String @map("entityType")
+  entityId String @map("entityId")
+  entityName String @map("entityName")
+  isLocked Boolean? @map("isLocked") @default(false)
+  currentVersionId String? @map("currentVersionId") @default("")
+  createdAt DateTime? @map("createdAt") @default(now())
+  updatedAt DateTime? @map("updatedAt") @updatedAt
 
   currentVersion EntityVersion? @relation("VersionedEntity_currentVersion", fields: [currentVersionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   entityVersions EntityVersion[] @relation("EntityVersion_versionedEntity")
@@ -6318,8 +6318,8 @@ model WasteEntry {
   approvedBy String? @map("approved_by") @db.Uuid @default("")
   approvedAt DateTime? @map("approved_at") @db.Timestamptz(6)
   status String? @default("logged")
-  unitCost Decimal? @map("unit_cost") @db.Decimal(10, 2) @default(0)
-  totalCost Decimal? @map("total_cost") @db.Decimal(10, 2) @default(0)
+  unitCost Decimal? @map("unitCost") @db.Decimal(10, 2) @default(0)
+  totalCost Decimal? @map("totalCost") @db.Decimal(10, 2) @default(0)
   notes String? @default("")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -6368,13 +6368,13 @@ model Workflow {
 
 model WorkforceOptimization {
   id String
-  tenantId String @map("tenant_id")
-  locationId String? @map("location_id") @default("")
-  optimizationType String? @map("optimization_type") @default("")
+  tenantId String @map("tenantId")
+  locationId String? @map("locationId") @default("")
+  optimizationType String? @map("optimizationType") @default("")
   status String? @default("pending")
-  completedAt DateTime? @map("completed_at")
-  createdAt DateTime? @map("created_at") @default(now())
-  updatedAt DateTime? @map("updated_at") @updatedAt
+  completedAt DateTime? @map("completedAt")
+  createdAt DateTime? @map("createdAt") @default(now())
+  updatedAt DateTime? @map("updatedAt") @updatedAt
 
   location Facility? @relation(fields: [locationId], references: [id])
 
