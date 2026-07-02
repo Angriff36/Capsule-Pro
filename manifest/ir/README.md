@@ -24,10 +24,15 @@ Files in this directory:
 - `kitchen.merge-report.json` — per-compile merge/dedup report.
 - `kitchen.provenance.json` — compiler version + content hashes.
 
-**Three Prisma schemas (do not conflate):**
+**Prisma schema:**
 
-| File | Role |
-|------|------|
-| `packages/database/prisma/schema.prisma` | **Live** DB schema (hand-authored until Phase 2b). |
-| `generated-schema.prisma` | IR projection for **CI drift gate** (`pnpm manifest:schema:check`). |
-| `candidate-schema.prisma` | **Dev-only** additive harness (`emit-full-schema.mjs`); not deployed. |
+`packages/database/prisma/schema.prisma` is the live DB schema and is
+**generated natively** by the Manifest prisma projection from the IR — it is not
+hand-authored (source of truth: `manifest.config.yaml` → `projections.prisma`).
+Regenerate with `pnpm manifest:generate` (via `generate --all`) or the
+prisma-only form `manifest generate -p prisma -o packages/database/prisma`.
+The CI drift gate is native: `pnpm manifest:schema:check` runs the projection in
+`--check` mode against the committed schema. (The retired glue —
+`generate-full-schema.mjs`, `generated-schema.prisma`, `prisma-options.config.json`,
+`candidate-schema.prisma`/`emit-full-schema.mjs` — is gone; the native projection
+supersedes it.)
