@@ -83,19 +83,19 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
         where: {
           tenantId,
           OR: [
-            { shift_start: { gte: start, lte: end } },
-            { shift_start: { lt: start }, shift_end: { gt: start } },
+            { shiftStart: { gte: start, lte: end } },
+            { shiftStart: { lt: start }, shiftEnd: { gt: start } },
           ],
           deletedAt: null,
         },
         select: {
           id: true,
-          shift_start: true,
-          shift_end: true,
-          role_during_shift: true,
+          shiftStart: true,
+          shiftEnd: true,
+          roleDuringShift: true,
           employeeId: true,
         },
-        orderBy: { shift_start: "asc" },
+        orderBy: { shiftStart: "asc" },
         take: 100,
       })
       .catch(() => []),
@@ -143,12 +143,12 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
     events.push(
       ...shiftsResult.map((s) => ({
         id: s.id,
-        title: `Shift: ${s.role_during_shift || "Staff"}`,
-        start: s.shift_start,
-        end: s.shift_end ?? undefined,
+        title: `Shift: ${s.roleDuringShift || "Staff"}`,
+        start: s.shiftStart,
+        end: s.shiftEnd ?? undefined,
         type: "shift" as const,
-        details: s.role_during_shift
-          ? `Role: ${s.role_during_shift}`
+        details: s.roleDuringShift
+          ? `Role: ${s.roleDuringShift}`
           : undefined,
       }))
     );
@@ -162,7 +162,7 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
         start: new Date(t.startDate),
         end: t.endDate ? new Date(t.endDate) : undefined,
         type: "timeoff" as const,
-        status: t.status,
+        status: t.status ?? undefined,
         details: t.reason || undefined,
       }))
     );
