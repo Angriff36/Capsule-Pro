@@ -527,36 +527,9 @@ jobs:
           fi
           echo "OpenAPI spec is in sync with IR."
 
-  manifest-route-drift:
-    name: Route Drift Gate
-    if: github.actor != 'dependabot[bot]'
-    # BLOCKING — proves the committed generated routes match what
-    # the current IR would produce. Catches stale route files after
-    # manifest source changes that weren't followed by regeneration.
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
-        env:
-          NPM_TOKEN: ${{ github.token }}
-
-      - name: Run route drift audit (strict)
-        run: pnpm manifest:audit-route-drift:strict
+  # (Route Drift Gate retired 2026-07-02: route generation is now native
+  # config-driven via manifest.config.yaml projections.nextjs.options.routeSegments
+  # — the hand-rolled post-processing this gate policed no longer exists.)
 
   manifest-schema-parity:
     name: IR <-> Prisma Schema Parity Gate
