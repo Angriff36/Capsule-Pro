@@ -338,6 +338,13 @@ export interface CreateManifestRuntimeDeps {
    * (e.g. in apps/test contexts without a DB / realtime bus).
    */
   reactionLogSink?: (row: ReactionLogRow) => void;
+  /**
+   * Cross-instance event bus (Manifest Phase 6). When provided, the engine
+   * publishes every committed command's event batch post-commit, fail-open
+   * (RuntimeOptions.eventBus). The app injects a per-tenant RedisEventBus;
+   * omit for dev/test — realtime falls back to the outbox-cron path.
+   */
+  eventBus?: RuntimeOptions["eventBus"];
   /** Require IR provenance hash verification on first engine creation. */
   requireValidProvenance?: boolean;
   /** Telemetry hooks for observability. */
@@ -1832,6 +1839,7 @@ export async function createManifestRuntime(
       ...(auditSink ? { auditSink } : {}),
       ...(outboxStore ? { outboxStore } : {}),
       ...(approvalStore ? { approvalStore } : {}),
+      ...(deps.eventBus ? { eventBus: deps.eventBus } : {}),
       ...(deps.deterministicMode !== undefined && {
         deterministicMode: deps.deterministicMode,
       }),

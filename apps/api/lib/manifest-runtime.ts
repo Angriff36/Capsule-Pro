@@ -20,6 +20,7 @@ import {
 import { registerManifestStoreIssueReporter } from "@repo/manifest-runtime/prisma-store";
 import { captureException } from "@sentry/nextjs";
 import { installConstraintLogDedup } from "./manifest/constraint-log-dedup";
+import { getTenantEventBus } from "./manifest/event-bus";
 import { FROZEN_IR } from "./manifest/frozen-ir";
 import { logManifestIssue } from "./manifest/issue-log";
 import {
@@ -183,6 +184,9 @@ export async function createManifestRuntime(
       telemetry: manifestTelemetry,
       flagProvider,
       reactionLogSink,
+      // Cross-instance realtime: engine publishes committed event batches to
+      // the tenant's Redis channel (no-op when REDIS_URL is unset).
+      eventBus: getTenantEventBus(ctx.user.tenantId),
       // Static, bundler-inlined IR snapshot: the cold-start path skips the
       // filesystem read + repo-root walk + JSON.parse of the ~7MB IR (V8's
       // module cache parses it once). See ./manifest/frozen-ir.

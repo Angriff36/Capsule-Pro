@@ -37,6 +37,7 @@
 import { auth } from "@repo/auth/server";
 import { NextResponse } from "next/server";
 import { corsHeaders } from "@/app/lib/cors";
+import { getTenantEventBus } from "@/lib/manifest/event-bus";
 import { type RealtimeMessage, subscribeMany } from "@/lib/realtime/pubsub";
 
 export const runtime = "nodejs";
@@ -124,6 +125,36 @@ export async function GET(request: Request) {
         safeEnqueue(formatSseEvent(channel, message));
       });
 
+      // Cross-instance leg (Phase 6): engine event batches published to the
+      // tenant's Redis channel by OTHER instances stream into this SSE
+      // connection too. No-op when REDIS_URL is unset — in-process pub/sub +
+      // the outbox cron remain the only delivery paths, as before.
+      let busUnsubscribe: (() => Promise<void>) | undefined;
+      const bus = getTenantEventBus(tenantId);
+      if (bus) {
+        bus
+          .subscribe((message) => {
+            for (const event of message.events) {
+              safeEnqueue(
+                formatSseEvent(tenantPrefix, {
+                  name: event.channel || event.name,
+                  data: event,
+                })
+              );
+            }
+          })
+          .then((unsub) => {
+            busUnsubscribe = unsub;
+            if (closed) {
+              // Stream ended while the subscriber connection was opening.
+              void unsub().catch(() => {});
+            }
+          })
+          .catch(() => {
+            // Redis unavailable — SSE continues on the in-process paths.
+          });
+      }
+
       const keepAlive = setInterval(() => {
         safeEnqueue(": ping\n\n");
       }, KEEP_ALIVE_INTERVAL_MS);
@@ -135,6 +166,9 @@ export async function GET(request: Request) {
         closed = true;
         clearInterval(keepAlive);
         unsubscribe();
+        if (busUnsubscribe) {
+          void busUnsubscribe().catch(() => {});
+        }
         try {
           controller.close();
         } catch {

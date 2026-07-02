@@ -29,6 +29,7 @@
     "date-fns": "^4.4.0",
     "geist": "^1.7.2",
     "import-in-the-middle": "^3.0.2",
+    "ioredis": "^5.11.1",
     "next": "16.2.6",
     "react": "19.2.7",
     "react-dom": "19.2.7",
