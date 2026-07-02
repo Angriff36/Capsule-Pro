@@ -25,7 +25,7 @@ import type {
 import { PostgresApprovalStore } from "@angriff36/manifest/approval/postgres";
 import { PostgresAuditSink } from "@angriff36/manifest/audit/postgres";
 import type { IR, IRCommand } from "@angriff36/manifest/ir";
-import { PostgresOutboxStore } from "@angriff36/manifest/outbox/postgres";
+import type { OutboxStore } from "@angriff36/manifest/outbox";
 import {
   ASYNC_REACTION_HANDLER_MAP,
   type AsyncDispatch,
@@ -40,6 +40,8 @@ import { resolvePrismaModelKey } from "./generated/entity-to-prisma-model.genera
 // (e.g. "event_staffs") don't exist on the live PrismaClient — GenericPrismaStore
 // threw at construction for 173/191 entities. See build-prisma-store-options.mjs.
 import { PRISMA_MODEL_METADATA } from "./generated/prisma-model-metadata.generated";
+import type { PrismaClientLike } from "./generated/prisma-store-registry.generated";
+import { createOutboxAdapter } from "./kitchen/outbox-adapter";
 import { createCustomBuiltins } from "./manifest-builtins";
 import {
   createChartOfAccountDeactivatedDeactivateChildrenMiddleware,
@@ -759,9 +761,12 @@ export async function createManifestRuntime(
   //     pipeline because the pilot async-reaction middleware needs the
   //     `asyncDispatch` bridge wired into their options at construction time).
   //     PostgresAuditSink provides durable audit records for every governed
-  //     command (constitution §12). PostgresOutboxStore provides production-
-  //     grade transactional event persistence with FOR UPDATE SKIP LOCKED
-  //     dispatch. Both share the singleton pg.Pool from pg-pool.ts.
+  //     command (constitution §12). Engine outbox writes go to the LEGACY
+  //     tenant."OutboxEvent" table via createOutboxAdapter so the existing
+  //     every-minute /outbox/publish cron drains them into SSE (the native
+  //     manifest_outbox_entries table had no drain — events piled up
+  //     undelivered). The audit sink shares the singleton pg.Pool from
+  //     pg-pool.ts.
   //     Schema bootstrap (CREATE TABLE IF NOT EXISTS) is idempotent.
   //     GRACEFUL: adapters are skipped when DATABASE_URL is absent (test envs,
   //     CI without DB). The engine still works — just without persistent audit
@@ -777,7 +782,7 @@ export async function createManifestRuntime(
   //     falls back to synchronous dispatch.
   const dbUrl = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
   let auditSink: PostgresAuditSink | undefined;
-  let outboxStore: PostgresOutboxStore | undefined;
+  let outboxStore: OutboxStore | undefined;
   let approvalStore: PostgresApprovalStore | undefined;
   let asyncReactionStore: PostgresAsyncReactionStore | undefined;
   let asyncDispatch: AsyncDispatch | undefined;
@@ -785,9 +790,9 @@ export async function createManifestRuntime(
     await ensureManifestSchema();
     const pool = getPool();
     auditSink = new PostgresAuditSink({ pool });
-    outboxStore = new PostgresOutboxStore({
-      pool,
-      projectSubject: true,
+    outboxStore = createOutboxAdapter({
+      db: asStoreClient<PrismaClientLike>(prismaForWrites),
+      tenantId: user.tenantId,
     });
     approvalStore = new PostgresApprovalStore({ pool });
     asyncReactionStore = new PostgresAsyncReactionStore({
@@ -1808,8 +1813,10 @@ export async function createManifestRuntime(
   //    (daysBetween/percent/containsAny/…) so guards and computed properties
   //    can call them. The middleware pipeline is passed directly to the engine
   //    via RuntimeOptions — no Proxy wrapping needed.
-  //    auditSink and outboxStore are the official upstream Postgres adapters,
-  //    replacing the previous custom outbox writer middleware.
+  //    auditSink is the official upstream Postgres adapter; outboxStore is the
+  //    legacy-table adapter (createOutboxAdapter) so engine emits reach the
+  //    /outbox/publish → SSE pipeline. Both replaced the previous custom
+  //    outbox writer middleware.
   //    When undefined (no DB), the engine skips audit/outbox silently.
   engine = new ManifestRuntimeEngine(
     ir,

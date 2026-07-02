@@ -39,38 +39,48 @@ function getDelegate(db: PrismaClientLike): OutboxEventDelegate {
 
 export interface OutboxAdapterOptions {
   db: PrismaClientLike;
+  /**
+   * Tenant the runtime is scoped to. Engine event payloads ({...input, result})
+   * almost never carry a tenantId (0 of the IR's commands declare one), so the
+   * factory MUST pass the runtime user's tenantId — otherwise rows land on a
+   * channel no real tenant subscribes to and the drain publishes into the void.
+   */
+  tenantId: string;
 }
 
 /**
  * Create an OutboxAdapter backed by the existing Prisma `outboxEvent` model.
  *
  * Maps OutboxEntry → Prisma OutboxEvent:
- *   eventType    ← entry.event.name
+ *   eventType    ← entry.event.channel (dotted house convention, e.g.
+ *                  "kitchen.dish.created"; falls back to event.name)
  *   aggregateType ← entry.event.subject?.entity
  *   aggregateId  ← entry.event.subject?.id
  *   payload      ← entry.event.payload
- *   status       ← entry.status
+ *   status       ← entry.status ("pending" on enqueue; the /outbox/publish
+ *                  drain owns the pending→published/failed transitions)
  */
-export function createOutboxAdapter({ db }: OutboxAdapterOptions): OutboxStore {
+export function createOutboxAdapter({ db, tenantId }: OutboxAdapterOptions): OutboxStore {
   return {
     async enqueue(entries: OutboxEntry[], tx?: unknown): Promise<void> {
       const client = (tx as PrismaClientLike | undefined) ?? db;
       const delegate = getDelegate(client);
 
       const rows = entries.map((entry) => ({
-        eventType: entry.event.name,
+        eventType: entry.event.channel || entry.event.name,
         aggregateType: entry.event.subject?.entity ?? "unknown",
         aggregateId: entry.event.subject?.id ?? entry.entryId,
         payload: entry.event.payload ?? {},
         status: entry.status,
         tenantId:
-          (entry.event.payload as Record<string, unknown>)?.tenantId as string ??
-          "00000000-0000-0000-0000-000000000000",
+          ((entry.event.payload as Record<string, unknown>)?.tenantId as string) ??
+          tenantId,
       }));
 
-      if (rows.length === 1) {
-        await delegate.create({ data: rows[0] });
-      } else {
+      const [single] = rows;
+      if (rows.length === 1 && single) {
+        await delegate.create({ data: single });
+      } else if (rows.length > 0) {
         await delegate.createMany({ data: rows });
       }
     },
@@ -97,7 +107,9 @@ export function createOutboxAdapter({ db }: OutboxAdapterOptions): OutboxStore {
             id: row.aggregateId,
           },
         },
-        status: row.status as "pending" | "delivered" | "failed",
+        // DB enum OutboxStatus is { pending, published, failed }; claim() only
+        // selects "pending" so the narrowing below is safe for the drain path.
+        status: row.status as "pending" | "failed",
         attempts: 0,
       }));
     },
@@ -107,7 +119,9 @@ export function createOutboxAdapter({ db }: OutboxAdapterOptions): OutboxStore {
       const delegate = getDelegate(db);
       await delegate.updateMany({
         where: { id: { in: entryIds } },
-        data: { status: "delivered", publishedAt: new Date() },
+        // "published" — the OutboxStatus enum member (NOT the native store's
+        // "delivered", which Prisma would reject against this column).
+        data: { status: "published", publishedAt: new Date() },
       });
     },
 

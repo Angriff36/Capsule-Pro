@@ -110,38 +110,10 @@ export async function POST(request: Request) {
     );
   }
 
-  // Fire-and-forget outbox event (infrastructure side-effect, not governed)
-  if (auditLogged) {
-    try {
-      await database.outboxEvent.create({
-        data: {
-          tenantId,
-          aggregateType: entityType,
-          aggregateId: entityId,
-          eventType: "kitchen.constraint.overridden",
-          payload: {
-            constraintCode,
-            reason: overrideReason,
-            authorizedBy: currentUser.id,
-            authorizedByName:
-              `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim(),
-            command,
-            timestamp,
-          },
-          status: "pending" as const,
-        },
-      });
-    } catch (error) {
-      captureException(error);
-      logger.error("Override outbox event failed", {
-        error: String(error),
-        constraintCode,
-        entityType,
-        entityId,
-        overriddenBy: currentUser.id,
-      });
-    }
-  }
+  // Outbox event now comes from the engine itself: the OverrideAudit.create
+  // command's emit lands in tenant."OutboxEvent" via the runtime's outbox
+  // adapter (channel "audit.override.created"), so the previous hand-written
+  // outboxEvent.create here would double-publish the same action.
 
   return NextResponse.json({
     success: true,
