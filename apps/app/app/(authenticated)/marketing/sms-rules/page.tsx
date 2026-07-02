@@ -34,12 +34,12 @@ export default async function SmsRulesPage() {
   const tenantId = await getTenantIdForOrg(orgId);
 
   const [rules, activeCount] = await Promise.all([
-    database.sms_automation_rules.findMany({
-      where: { tenant_id: tenantId, deleted_at: null },
-      orderBy: [{ priority: "asc" }, { created_at: "desc" }],
+    database.smsAutomationRule.findMany({
+      where: { tenantId: tenantId, deletedAt: null },
+      orderBy: [{ priority: "asc" }, { createdAt: "desc" }],
     }),
-    database.sms_automation_rules.count({
-      where: { tenant_id: tenantId, deleted_at: null, is_active: true },
+    database.smsAutomationRule.count({
+      where: { tenantId: tenantId, deletedAt: null, isActive: true },
     }),
   ]);
 
@@ -49,12 +49,12 @@ export default async function SmsRulesPage() {
     id: r.id,
     name: r.name,
     description: r.description,
-    triggerType: r.trigger_type,
-    recipientType: r.recipient_type,
-    customMessage: r.custom_message,
-    isActive: r.is_active,
-    priority: r.priority,
-    createdAt: r.created_at?.toISOString() ?? null,
+    triggerType: r.triggerType,
+    recipientType: r.recipientType ?? "employee",
+    customMessage: r.customMessage,
+    isActive: r.isActive ?? true,
+    priority: r.priority ?? 100,
+    createdAt: r.createdAt?.toISOString() ?? null,
   }));
 
   return (

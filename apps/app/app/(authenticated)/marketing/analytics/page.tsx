@@ -48,8 +48,8 @@ export default async function MarketingAnalyticsPage() {
       database.emailWorkflow.count({
         where: { tenantId, deletedAt: null, isActive: true },
       }),
-      database.sms_automation_rules.count({
-        where: { tenant_id: tenantId, deleted_at: null, is_active: true },
+      database.smsAutomationRule.count({
+        where: { tenantId: tenantId, deletedAt: null, isActive: true },
       }),
     ]);
 
@@ -63,7 +63,7 @@ export default async function MarketingAnalyticsPage() {
 
   const leadCounts: Record<string, number> = {};
   for (const row of leadStats) {
-    leadCounts[row.status] = row._count.status;
+    leadCounts[row.status ?? "unknown"] = row._count.status;
   }
   const totalLeads = Object.values(leadCounts).reduce((a, b) => a + b, 0);
   const convertedLeads = leadCounts.converted || 0;

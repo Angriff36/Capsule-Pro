@@ -54,7 +54,7 @@ export async function GET(request: Request) {
           tenantId,
           transactionType: { in: ["usage", "transfer"] },
         },
-        orderBy: { transaction_date: "desc" },
+        orderBy: { transactionDate: "desc" },
         skip: (page - 1) * limit,
         take: limit,
         select: {
@@ -62,11 +62,11 @@ export async function GET(request: Request) {
           itemId: true,
           transactionType: true,
           quantity: true,
-          unit_cost: true,
+          unitCost: true,
           reference: true,
           notes: true,
-          transaction_date: true,
-          storage_location_id: true,
+          transactionDate: true,
+          storageLocationId: true,
           reason: true,
         },
       }),
@@ -80,19 +80,19 @@ export async function GET(request: Request) {
           last_counted_at: true,
         },
       }),
-      database.storage_locations.findMany({
+      database.storageLocation.findMany({
         where: {
-          tenant_id: tenantId,
-          is_active: true,
-          deleted_at: null,
+          tenantId: tenantId,
+          isActive: true,
+          deletedAt: null,
         },
         orderBy: { name: "asc" },
         select: {
           id: true,
           name: true,
-          storage_type: true,
+          storageType: true,
         },
-      }) as Promise<Array<{ id: string; name: string; storage_type: string }>>,
+      }) as Promise<Array<{ id: string; name: string; storageType: string }>>,
     ]);
 
     // Enrich with item details
@@ -180,9 +180,10 @@ export async function GET(request: Request) {
     // Build pick queue from transactions
     const pickQueue: PickQueueItem[] = transactions.map((t) => {
       const item = itemMap.get(t.itemId);
-      const location = t.storage_location_id
-        ? locationMap.get(t.storage_location_id)
+      const location = t.storageLocationId
+        ? locationMap.get(t.storageLocationId)
         : undefined;
+      const txDate = t.transactionDate ?? new Date();
 
       return {
         id: t.id,
@@ -191,11 +192,11 @@ export async function GET(request: Request) {
         itemNumber: item?.item_number ?? "",
         quantity: Number(t.quantity),
         locationName: location?.name ?? "Unassigned",
-        storageType: location?.storage_type ?? "",
-        priority: derivePriority(t.transaction_date),
+        storageType: location?.storageType ?? "",
+        priority: derivePriority(txDate),
         status: derivePickStatus(t.reason, t.notes),
         strategy: deriveStrategy(item?.category ?? ""),
-        transactionDate: t.transaction_date,
+        transactionDate: txDate,
       };
     });
 
@@ -245,7 +246,7 @@ export async function GET(request: Request) {
       locations: locations.map((l) => ({
         id: l.id,
         name: l.name,
-        storageType: l.storage_type,
+        storageType: l.storageType,
       })),
       metrics: {
         openPicks,

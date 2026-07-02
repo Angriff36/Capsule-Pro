@@ -1392,10 +1392,10 @@ describe("Communications - SMS Automation Rules", () => {
         createMockSmsRule({ id: "rule-2", name: "Event Notification" }),
       ];
 
-      vi.mocked(database.sms_automation_rules.findMany).mockResolvedValue(
+      vi.mocked(database.smsAutomationRule.findMany).mockResolvedValue(
         mockRules as never
       );
-      vi.mocked(database.sms_automation_rules.count).mockResolvedValue(2);
+      vi.mocked(database.smsAutomationRule.count).mockResolvedValue(2);
 
       const request = new NextRequest(
         "http://localhost/api/communications/sms/automation-rules"
@@ -1417,10 +1417,10 @@ describe("Communications - SMS Automation Rules", () => {
     it("should map snake_case database fields to camelCase in response", async () => {
       const mockRule = createMockSmsRule({ id: "rule-001" });
 
-      vi.mocked(database.sms_automation_rules.findMany).mockResolvedValue([
+      vi.mocked(database.smsAutomationRule.findMany).mockResolvedValue([
         mockRule,
       ] as never);
-      vi.mocked(database.sms_automation_rules.count).mockResolvedValue(1);
+      vi.mocked(database.smsAutomationRule.count).mockResolvedValue(1);
 
       const request = new NextRequest(
         "http://localhost/api/communications/sms/automation-rules"
@@ -1437,10 +1437,10 @@ describe("Communications - SMS Automation Rules", () => {
     });
 
     it("should filter by tenant_id and exclude soft-deleted", async () => {
-      vi.mocked(database.sms_automation_rules.findMany).mockResolvedValue(
+      vi.mocked(database.smsAutomationRule.findMany).mockResolvedValue(
         [] as never
       );
-      vi.mocked(database.sms_automation_rules.count).mockResolvedValue(0);
+      vi.mocked(database.smsAutomationRule.count).mockResolvedValue(0);
 
       const request = new NextRequest(
         "http://localhost/api/communications/sms/automation-rules"
@@ -1452,26 +1452,26 @@ describe("Communications - SMS Automation Rules", () => {
         deleted_at: null,
       };
 
-      expect(database.sms_automation_rules.findMany).toHaveBeenCalledWith(
+      expect(database.smsAutomationRule.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ where: expectedWhere })
       );
-      expect(database.sms_automation_rules.count).toHaveBeenCalledWith(
+      expect(database.smsAutomationRule.count).toHaveBeenCalledWith(
         expect.objectContaining({ where: expectedWhere })
       );
     });
 
     it("should filter by isActive when query param provided", async () => {
-      vi.mocked(database.sms_automation_rules.findMany).mockResolvedValue(
+      vi.mocked(database.smsAutomationRule.findMany).mockResolvedValue(
         [] as never
       );
-      vi.mocked(database.sms_automation_rules.count).mockResolvedValue(0);
+      vi.mocked(database.smsAutomationRule.count).mockResolvedValue(0);
 
       const request = new NextRequest(
         "http://localhost/api/communications/sms/automation-rules?isActive=true"
       );
       await listSmsRules(request);
 
-      expect(database.sms_automation_rules.findMany).toHaveBeenCalledWith(
+      expect(database.smsAutomationRule.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ is_active: true }),
         })
@@ -1479,17 +1479,17 @@ describe("Communications - SMS Automation Rules", () => {
     });
 
     it("should filter by triggerType when query param provided", async () => {
-      vi.mocked(database.sms_automation_rules.findMany).mockResolvedValue(
+      vi.mocked(database.smsAutomationRule.findMany).mockResolvedValue(
         [] as never
       );
-      vi.mocked(database.sms_automation_rules.count).mockResolvedValue(0);
+      vi.mocked(database.smsAutomationRule.count).mockResolvedValue(0);
 
       const request = new NextRequest(
         "http://localhost/api/communications/sms/automation-rules?triggerType=shift_scheduled"
       );
       await listSmsRules(request);
 
-      expect(database.sms_automation_rules.findMany).toHaveBeenCalledWith(
+      expect(database.smsAutomationRule.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ trigger_type: "shift_scheduled" }),
         })
@@ -1497,10 +1497,10 @@ describe("Communications - SMS Automation Rules", () => {
     });
 
     it("should apply pagination with limit and offset", async () => {
-      vi.mocked(database.sms_automation_rules.findMany).mockResolvedValue(
+      vi.mocked(database.smsAutomationRule.findMany).mockResolvedValue(
         [] as never
       );
-      vi.mocked(database.sms_automation_rules.count).mockResolvedValue(100);
+      vi.mocked(database.smsAutomationRule.count).mockResolvedValue(100);
 
       const request = new NextRequest(
         "http://localhost/api/communications/sms/automation-rules?limit=10&offset=20"
@@ -1508,7 +1508,7 @@ describe("Communications - SMS Automation Rules", () => {
       const response = await listSmsRules(request);
       const body = await response.json();
 
-      expect(database.sms_automation_rules.findMany).toHaveBeenCalledWith(
+      expect(database.smsAutomationRule.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           take: 10,
           skip: 20,
@@ -1523,17 +1523,17 @@ describe("Communications - SMS Automation Rules", () => {
     });
 
     it("should order by priority ascending then created_at descending", async () => {
-      vi.mocked(database.sms_automation_rules.findMany).mockResolvedValue(
+      vi.mocked(database.smsAutomationRule.findMany).mockResolvedValue(
         [] as never
       );
-      vi.mocked(database.sms_automation_rules.count).mockResolvedValue(0);
+      vi.mocked(database.smsAutomationRule.count).mockResolvedValue(0);
 
       const request = new NextRequest(
         "http://localhost/api/communications/sms/automation-rules"
       );
       await listSmsRules(request);
 
-      expect(database.sms_automation_rules.findMany).toHaveBeenCalledWith(
+      expect(database.smsAutomationRule.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: [{ priority: "asc" }, { created_at: "desc" }],
         })
@@ -1541,7 +1541,7 @@ describe("Communications - SMS Automation Rules", () => {
     });
 
     it("should return 500 on database error", async () => {
-      vi.mocked(database.sms_automation_rules.findMany).mockRejectedValue(
+      vi.mocked(database.smsAutomationRule.findMany).mockRejectedValue(
         new Error("Database connection failed")
       );
 
@@ -1562,7 +1562,7 @@ describe("Communications - SMS Automation Rules", () => {
     it("should return a single SMS rule by ID", async () => {
       const mockRule = createMockSmsRule({ id: "rule-001" });
 
-      vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
+      vi.mocked(database.smsAutomationRule.findFirst).mockResolvedValue(
         mockRule as never
       );
 
@@ -1582,7 +1582,7 @@ describe("Communications - SMS Automation Rules", () => {
     });
 
     it("should return 404 when rule not found", async () => {
-      vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
+      vi.mocked(database.smsAutomationRule.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -1600,7 +1600,7 @@ describe("Communications - SMS Automation Rules", () => {
     });
 
     it("should enforce tenant isolation on detail queries", async () => {
-      vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
+      vi.mocked(database.smsAutomationRule.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -1611,7 +1611,7 @@ describe("Communications - SMS Automation Rules", () => {
         params: Promise.resolve({ id: "rule-001" }),
       });
 
-      expect(database.sms_automation_rules.findFirst).toHaveBeenCalledWith(
+      expect(database.smsAutomationRule.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             id: "rule-001",
@@ -1639,7 +1639,7 @@ describe("Communications - SMS Automation Rules", () => {
     });
 
     it("should return 500 on database error", async () => {
-      vi.mocked(database.sms_automation_rules.findFirst).mockRejectedValue(
+      vi.mocked(database.smsAutomationRule.findFirst).mockRejectedValue(
         new Error("Database connection failed")
       );
 
@@ -1895,7 +1895,7 @@ describe("Communications - SMS Automation Rules", () => {
     it("should update an SMS rule through manifest runtime and database", async () => {
       const existingRule = createMockSmsRule({ id: "rule-001" });
 
-      vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
+      vi.mocked(database.smsAutomationRule.findFirst).mockResolvedValue(
         existingRule as never
       );
 
@@ -1924,7 +1924,7 @@ describe("Communications - SMS Automation Rules", () => {
     });
 
     it("should return 404 when rule not found for update", async () => {
-      vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
+      vi.mocked(database.smsAutomationRule.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -1945,7 +1945,7 @@ describe("Communications - SMS Automation Rules", () => {
     });
 
     it("should return 403 on policy denial for update", async () => {
-      vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
+      vi.mocked(database.smsAutomationRule.findFirst).mockResolvedValue(
         createMockSmsRule() as never
       );
 
@@ -1969,7 +1969,7 @@ describe("Communications - SMS Automation Rules", () => {
     });
 
     it("should return 422 on guard failure for update", async () => {
-      vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
+      vi.mocked(database.smsAutomationRule.findFirst).mockResolvedValue(
         createMockSmsRule() as never
       );
 
@@ -2013,7 +2013,7 @@ describe("Communications - SMS Automation Rules", () => {
     });
 
     it("should return 500 on unexpected error", async () => {
-      vi.mocked(database.sms_automation_rules.findFirst).mockRejectedValue(
+      vi.mocked(database.smsAutomationRule.findFirst).mockRejectedValue(
         new Error("Database crash")
       );
 
@@ -2049,7 +2049,7 @@ describe("Communications - SMS Automation Rules", () => {
     });
 
     it("should soft delete an SMS rule through manifest runtime", async () => {
-      vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
+      vi.mocked(database.smsAutomationRule.findFirst).mockResolvedValue(
         createMockSmsRule() as never
       );
 
@@ -2073,7 +2073,7 @@ describe("Communications - SMS Automation Rules", () => {
     });
 
     it("should return 404 when rule not found for delete", async () => {
-      vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
+      vi.mocked(database.smsAutomationRule.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -2091,7 +2091,7 @@ describe("Communications - SMS Automation Rules", () => {
     });
 
     it("should return 403 on policy denial for delete", async () => {
-      vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
+      vi.mocked(database.smsAutomationRule.findFirst).mockResolvedValue(
         createMockSmsRule() as never
       );
 
@@ -2112,7 +2112,7 @@ describe("Communications - SMS Automation Rules", () => {
     });
 
     it("should return 422 on guard failure for delete", async () => {
-      vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
+      vi.mocked(database.smsAutomationRule.findFirst).mockResolvedValue(
         createMockSmsRule() as never
       );
 
@@ -2152,7 +2152,7 @@ describe("Communications - SMS Automation Rules", () => {
     });
 
     it("should return 500 on unexpected error", async () => {
-      vi.mocked(database.sms_automation_rules.findFirst).mockRejectedValue(
+      vi.mocked(database.smsAutomationRule.findFirst).mockRejectedValue(
         new Error("Database crash")
       );
 

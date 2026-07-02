@@ -35,13 +35,13 @@ export async function GET(request: Request) {
     const whereClause = {
       tenantId,
       transactionType: "purchase",
-      ...(locationId ? { storage_location_id: locationId } : {}),
+      ...(locationId ? { storageLocationId: locationId } : {}),
     };
 
     const [transactions, locations, completedToday] = await Promise.all([
       database.inventoryTransaction.findMany({
         where: whereClause,
-        orderBy: { transaction_date: "desc" },
+        orderBy: { transactionDate: "desc" },
         skip: (page - 1) * limit,
         take: limit,
         select: {
@@ -49,32 +49,32 @@ export async function GET(request: Request) {
           itemId: true,
           transactionType: true,
           quantity: true,
-          unit_cost: true,
+          unitCost: true,
           reference: true,
           notes: true,
-          transaction_date: true,
-          storage_location_id: true,
+          transactionDate: true,
+          storageLocationId: true,
           reason: true,
         },
       }),
-      database.storage_locations.findMany({
+      database.storageLocation.findMany({
         where: {
-          tenant_id: tenantId,
-          is_active: true,
-          deleted_at: null,
+          tenantId: tenantId,
+          isActive: true,
+          deletedAt: null,
         },
         orderBy: { name: "asc" },
         select: {
           id: true,
           name: true,
-          storage_type: true,
+          storageType: true,
         },
-      }) as Promise<Array<{ id: string; name: string; storage_type: string }>>,
+      }) as Promise<Array<{ id: string; name: string; storageType: string }>>,
       database.inventoryTransaction.count({
         where: {
           tenantId,
           transactionType: "purchase",
-          transaction_date: {
+          transactionDate: {
             gte: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
           },
         },
@@ -123,7 +123,7 @@ export async function GET(request: Request) {
 
     const enriched = transactions.map((t) => {
       const item = itemMap.get(t.itemId);
-      const location = locations.find((l) => l.id === t.storage_location_id);
+      const location = locations.find((l) => l.id === t.storageLocationId);
       const putawayStatus = derivePutawayStatus(t.reason, t.notes);
 
       return {
@@ -134,13 +134,13 @@ export async function GET(request: Request) {
         category: item?.category ?? "",
         unitOfMeasure: item?.unitOfMeasure ?? "each",
         quantity: Number(t.quantity),
-        unitCost: Number(t.unit_cost),
+        unitCost: Number(t.unitCost),
         source: t.reference ?? "Receiving Dock",
-        destinationLocationId: t.storage_location_id,
+        destinationLocationId: t.storageLocationId,
         destinationLocationName: location?.name ?? "Unassigned",
-        destinationStorageType: location?.storage_type ?? "",
+        destinationStorageType: location?.storageType ?? "",
         status: putawayStatus,
-        transactionDate: t.transaction_date,
+        transactionDate: t.transactionDate,
         notes: t.notes,
       };
     });
@@ -162,7 +162,7 @@ export async function GET(request: Request) {
       locations: locations.map((l) => ({
         id: l.id,
         name: l.name,
-        storageType: l.storage_type,
+        storageType: l.storageType,
       })),
       metrics: {
         pendingTasks: pendingCount,

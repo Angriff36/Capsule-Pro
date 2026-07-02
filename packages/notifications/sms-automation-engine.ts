@@ -11,20 +11,20 @@ import type { SmsTemplateData } from "./sms-templates";
 // Type for sms_automation_rules from Prisma
 type SmsAutomationRule = {
   id: string;
-  tenant_id: string;
+  tenantId: string;
   name: string;
   description: string | null;
-  trigger_type: string;
-  trigger_config: unknown;
-  template_id: string | null;
-  custom_message: string | null;
-  recipient_type: string;
-  recipient_config: unknown;
-  is_active: boolean;
-  priority: number;
-  created_at: Date;
-  updated_at: Date;
-  deleted_at: Date | null;
+  triggerType: string;
+  triggerConfig: unknown;
+  templateId: string | null;
+  customMessage: string | null;
+  recipientType: string | null;
+  recipientConfig: unknown;
+  isActive: boolean | null;
+  priority: number | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+  deletedAt: Date | null;
 };
 
 /**
@@ -76,12 +76,12 @@ export async function evaluateAndExecuteRules(
   const results: RuleEvaluationResult[] = [];
 
   // Find all active rules for this trigger type
-  const activeRules = await database.sms_automation_rules.findMany({
+  const activeRules = await database.smsAutomationRule.findMany({
     where: {
-      tenant_id: context.tenantId,
-      trigger_type: context.triggerType,
-      is_active: true,
-      deleted_at: null,
+      tenantId: context.tenantId,
+      triggerType: context.triggerType,
+      isActive: true,
+      deletedAt: null,
     },
     orderBy: {
       priority: "asc",
@@ -121,8 +121,8 @@ async function evaluateAndExecuteRule(
   };
 
   // Parse trigger config
-  const triggerConfig = rule.trigger_config as Record<string, unknown>;
-  const recipientConfig = rule.recipient_config as Record<string, unknown>;
+  const triggerConfig = rule.triggerConfig as Record<string, unknown>;
+  const recipientConfig = rule.recipientConfig as Record<string, unknown>;
 
   // Check if rule conditions match
   if (!evaluateTriggerConditions(triggerConfig, context.triggerData)) {
@@ -133,7 +133,7 @@ async function evaluateAndExecuteRule(
 
   // Resolve recipients
   const recipients = await resolveRecipients(
-    rule.recipient_type,
+    rule.recipientType ?? "employee",
     recipientConfig,
     context
   );
@@ -144,7 +144,7 @@ async function evaluateAndExecuteRule(
   }
 
   // Get message content
-  const message = rule.custom_message ?? getDefaultMessage(context.triggerType);
+  const message = rule.customMessage ?? getDefaultMessage(context.triggerType);
 
   // Merge fields for template
   const mergeFields: SmsTemplateData = {

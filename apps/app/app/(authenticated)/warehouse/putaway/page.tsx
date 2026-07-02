@@ -49,11 +49,11 @@ export default async function PutawayPage() {
           },
         },
       }),
-      database.storage_locations.count({
+      database.storageLocation.count({
         where: {
-          tenant_id: tenantId,
-          is_active: true,
-          deleted_at: null,
+          tenantId: tenantId,
+          isActive: true,
+          deletedAt: null,
         },
       }),
     ]);

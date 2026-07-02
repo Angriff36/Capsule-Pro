@@ -36,44 +36,44 @@ export async function GET(request: NextRequest) {
     const offset = clampOffset(searchParams.get("offset"));
 
     const where: Record<string, unknown> = {
-      tenant_id: tenantId,
-      deleted_at: null,
+      tenantId: tenantId,
+      deletedAt: null,
     };
 
     if (isActiveParam !== null) {
-      where.is_active = isActiveParam === "true";
+      where.isActive = isActiveParam === "true";
     }
 
     if (triggerType) {
-      where.trigger_type = triggerType;
+      where.triggerType = triggerType;
     }
 
     const [rules, total] = await Promise.all([
-      database.sms_automation_rules.findMany({
+      database.smsAutomationRule.findMany({
         where,
-        orderBy: [{ priority: "asc" }, { created_at: "desc" }],
+        orderBy: [{ priority: "asc" }, { createdAt: "desc" }],
         take: limit,
         skip: offset,
       }),
-      database.sms_automation_rules.count({ where }),
+      database.smsAutomationRule.count({ where }),
     ]);
 
     return manifestSuccessResponse({
       rules: rules.map((rule) => ({
         id: rule.id,
-        tenantId: rule.tenant_id,
+        tenantId: rule.tenantId,
         name: rule.name,
         description: rule.description,
-        triggerType: rule.trigger_type,
-        triggerConfig: rule.trigger_config,
-        templateId: rule.template_id,
-        customMessage: rule.custom_message,
-        recipientType: rule.recipient_type,
-        recipientConfig: rule.recipient_config,
-        isActive: rule.is_active,
+        triggerType: rule.triggerType,
+        triggerConfig: rule.triggerConfig,
+        templateId: rule.templateId,
+        customMessage: rule.customMessage,
+        recipientType: rule.recipientType,
+        recipientConfig: rule.recipientConfig,
+        isActive: rule.isActive,
         priority: rule.priority,
-        createdAt: rule.created_at?.toISOString() ?? null,
-        updatedAt: rule.updated_at?.toISOString() ?? null,
+        createdAt: rule.createdAt?.toISOString() ?? null,
+        updatedAt: rule.updatedAt?.toISOString() ?? null,
       })),
       pagination: {
         total,

@@ -244,7 +244,7 @@ describe("Generic Manifest read routes", () => {
     it("should use snake_case tenantId for raw models", async () => {
       // Document uses raw snake_case fields (no @map)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (database as any).documents = {
+      (database as any).document = {
         count: vi.fn().mockResolvedValue(1),
         findMany: vi.fn().mockResolvedValue([{ id: "doc-1" }]),
       };
@@ -256,7 +256,7 @@ describe("Generic Manifest read routes", () => {
 
       // Verify the where clause uses snake_case tenant_id
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const findManyCall = (database as any).documents.findMany.mock
+      const findManyCall = (database as any).document.findMany.mock
         .calls[0][0];
       expect(findManyCall.where.tenant_id).toBe(TEST_TENANT);
     });
@@ -337,7 +337,7 @@ describe("Generic Manifest read routes", () => {
       // TaskBundleItem is in ENTITY_DETAIL_DROP
       // Need to mock the accessor so it passes the exists check first
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (database as any).task_bundle_items = {
+      (database as any).taskBundleItem = {
         findFirst: vi.fn(),
       };
 
@@ -385,7 +385,7 @@ describe("Generic Manifest read routes", () => {
 
     it("should use snake_case tenantId for Document detail", async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (database as any).documents = {
+      (database as any).document = {
         findFirst: vi.fn().mockResolvedValue({ id: "doc-1" }),
       };
 
@@ -395,7 +395,7 @@ describe("Generic Manifest read routes", () => {
       expect(res.status).toBe(200);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const findFirstCall = (database as any).documents.findFirst.mock
+      const findFirstCall = (database as any).document.findFirst.mock
         .calls[0][0];
       expect(findFirstCall.where.tenant_id).toBe(TEST_TENANT);
       expect(findFirstCall.where.id).toBe("doc-1");

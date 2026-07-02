@@ -73,16 +73,16 @@ export async function GET(request: Request) {
         isActive: true,
       },
     }),
-    database.sms_automation_rules.findMany({
+    database.smsAutomationRule.findMany({
       where: {
-        tenant_id: tenantId,
-        deleted_at: null,
+        tenantId: tenantId,
+        deletedAt: null,
       },
       select: {
         id: true,
         name: true,
-        trigger_type: true,
-        is_active: true,
+        triggerType: true,
+        isActive: true,
       },
     }),
   ]);
@@ -147,8 +147,8 @@ export async function GET(request: Request) {
   const smsPerformanceSummary = smsRules.map((r) => ({
     id: r.id,
     name: r.name,
-    triggerType: r.trigger_type,
-    isActive: r.is_active,
+    triggerType: r.triggerType,
+    isActive: r.isActive,
   }));
 
   return NextResponse.json({
@@ -163,7 +163,7 @@ export async function GET(request: Request) {
       smsDeliveryRate,
       leadsBySource,
       activeWorkflows: workflows.filter((w) => w.isActive).length,
-      activeSmsRules: smsRules.filter((r) => r.is_active).length,
+      activeSmsRules: smsRules.filter((r) => r.isActive).length,
     },
     emailPerformanceByWorkflow,
     smsPerformanceSummary,

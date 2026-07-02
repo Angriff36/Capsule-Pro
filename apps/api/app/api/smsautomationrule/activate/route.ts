@@ -33,11 +33,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify rule exists and belongs to tenant
-    const existingRule = await database.sms_automation_rules.findFirst({
+    const existingRule = await database.smsAutomationRule.findFirst({
       where: {
         id,
-        tenant_id: tenantId,
-        deleted_at: null,
+        tenantId: tenantId,
+        deletedAt: null,
       },
     });
 
@@ -81,18 +81,18 @@ export async function POST(request: NextRequest) {
     return manifestSuccessResponse({
       rule: {
         id: existingRule.id,
-        tenantId: existingRule.tenant_id,
+        tenantId: existingRule.tenantId,
         name: existingRule.name,
         description: existingRule.description,
-        triggerType: existingRule.trigger_type,
-        triggerConfig: existingRule.trigger_config,
-        templateId: existingRule.template_id,
-        customMessage: existingRule.custom_message,
-        recipientType: existingRule.recipient_type,
-        recipientConfig: existingRule.recipient_config,
+        triggerType: existingRule.triggerType,
+        triggerConfig: existingRule.triggerConfig,
+        templateId: existingRule.templateId,
+        customMessage: existingRule.customMessage,
+        recipientType: existingRule.recipientType,
+        recipientConfig: existingRule.recipientConfig,
         isActive: true,
         priority: existingRule.priority,
-        createdAt: existingRule.created_at?.toISOString() ?? null,
+        createdAt: existingRule.createdAt?.toISOString() ?? null,
         updatedAt: new Date().toISOString(),
       },
       events: result.emittedEvents,

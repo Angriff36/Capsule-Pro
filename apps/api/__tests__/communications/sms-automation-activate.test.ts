@@ -88,7 +88,7 @@ describe("SMS automation rule activate/deactivate routes", () => {
       orgId: TEST_ORG_ID,
     } as never);
     vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-    vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
+    vi.mocked(database.smsAutomationRule.findFirst).mockResolvedValue(
       EXISTING_RULE as never
     );
     mockRunCommand.mockResolvedValue({
@@ -140,7 +140,7 @@ describe("SMS automation rule activate/deactivate routes", () => {
     });
 
     it("returns 404 when the rule does not exist for the tenant", async () => {
-      vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
+      vi.mocked(database.smsAutomationRule.findFirst).mockResolvedValue(
         null as never
       );
       const response = await activateRoute(makeRequest("/api/smsautomationrule/activate"));

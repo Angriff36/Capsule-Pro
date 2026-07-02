@@ -30,11 +30,11 @@ export async function GET(
 
     const { id } = await params;
 
-    const rule = await database.sms_automation_rules.findFirst({
+    const rule = await database.smsAutomationRule.findFirst({
       where: {
         id,
-        tenant_id: tenantId,
-        deleted_at: null,
+        tenantId: tenantId,
+        deletedAt: null,
       },
     });
 
@@ -45,19 +45,19 @@ export async function GET(
     return manifestSuccessResponse({
       rule: {
         id: rule.id,
-        tenantId: rule.tenant_id,
+        tenantId: rule.tenantId,
         name: rule.name,
         description: rule.description,
-        triggerType: rule.trigger_type,
-        triggerConfig: rule.trigger_config,
-        templateId: rule.template_id,
-        customMessage: rule.custom_message,
-        recipientType: rule.recipient_type,
-        recipientConfig: rule.recipient_config,
-        isActive: rule.is_active,
+        triggerType: rule.triggerType,
+        triggerConfig: rule.triggerConfig,
+        templateId: rule.templateId,
+        customMessage: rule.customMessage,
+        recipientType: rule.recipientType,
+        recipientConfig: rule.recipientConfig,
+        isActive: rule.isActive,
         priority: rule.priority,
-        createdAt: rule.created_at?.toISOString() ?? null,
-        updatedAt: rule.updated_at?.toISOString() ?? null,
+        createdAt: rule.createdAt?.toISOString() ?? null,
+        updatedAt: rule.updatedAt?.toISOString() ?? null,
       },
     });
   } catch (error) {
@@ -87,11 +87,11 @@ export async function PATCH(
     const body = await request.json();
 
     // Verify rule exists and belongs to tenant
-    const existingRule = await database.sms_automation_rules.findFirst({
+    const existingRule = await database.smsAutomationRule.findFirst({
       where: {
         id,
-        tenant_id: tenantId,
-        deleted_at: null,
+        tenantId: tenantId,
+        deletedAt: null,
       },
     });
 
@@ -146,18 +146,18 @@ export async function PATCH(
     return manifestSuccessResponse({
       rule: {
         id: existingRule.id,
-        tenantId: existingRule.tenant_id,
+        tenantId: existingRule.tenantId,
         name: name ?? existingRule.name,
         description: description ?? existingRule.description,
-        triggerType: existingRule.trigger_type,
-        triggerConfig: triggerConfig ?? existingRule.trigger_config,
-        templateId: templateId ?? existingRule.template_id,
-        customMessage: customMessage ?? existingRule.custom_message,
-        recipientType: recipientType ?? existingRule.recipient_type,
-        recipientConfig: recipientConfig ?? existingRule.recipient_config,
-        isActive: isActive ?? existingRule.is_active,
+        triggerType: existingRule.triggerType,
+        triggerConfig: triggerConfig ?? existingRule.triggerConfig,
+        templateId: templateId ?? existingRule.templateId,
+        customMessage: customMessage ?? existingRule.customMessage,
+        recipientType: recipientType ?? existingRule.recipientType,
+        recipientConfig: recipientConfig ?? existingRule.recipientConfig,
+        isActive: isActive ?? existingRule.isActive,
         priority: priority ?? existingRule.priority,
-        createdAt: existingRule.created_at?.toISOString() ?? null,
+        createdAt: existingRule.createdAt?.toISOString() ?? null,
         updatedAt: new Date().toISOString(),
       },
       events: result.emittedEvents,
@@ -188,11 +188,11 @@ export async function DELETE(
     const { id } = await params;
 
     // Verify rule exists and belongs to tenant
-    const existingRule = await database.sms_automation_rules.findFirst({
+    const existingRule = await database.smsAutomationRule.findFirst({
       where: {
         id,
-        tenant_id: tenantId,
-        deleted_at: null,
+        tenantId: tenantId,
+        deletedAt: null,
       },
     });
 
