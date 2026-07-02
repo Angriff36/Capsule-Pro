@@ -90,6 +90,29 @@ async function buildHandlerContext(job: AsyncReactionJob): Promise<
 }
 
 /**
+ * Run one drain batch. Shared by POST (manual/worker) and GET (Vercel Cron —
+ * cron requests are GET-only, matching the /outbox/publish pattern).
+ */
+async function runDrain(batchSize: number): Promise<Response> {
+  const store = getAsyncReactionStore();
+  if (!store) {
+    // No DB / queue not wired (dev, test). Not an error — cron pings should
+    // be cheap no-ops in this state.
+    return NextResponse.json({ skipped: true, reason: "queue-not-configured" });
+  }
+
+  const result = await drainAsyncReactions({
+    store,
+    batchSize,
+    buildHandlerContext,
+    log,
+    captureException,
+  });
+
+  return NextResponse.json({ data: result });
+}
+
+/**
  * POST /api/async-reactions/drain
  *
  * Headers: `Authorization: Bearer <CRON_SECRET>`
@@ -119,13 +142,6 @@ export async function POST(request: Request): Promise<Response> {
       }
     }
 
-    const store = getAsyncReactionStore();
-    if (!store) {
-      // No DB / queue not wired (dev, test). Not an error — cron pings should
-      // be cheap no-ops in this state.
-      return NextResponse.json({ skipped: true, reason: "queue-not-configured" });
-    }
-
     let batchSize = 25;
     try {
       const body = (await request.json()) as DrainRequestBody | null;
@@ -136,15 +152,7 @@ export async function POST(request: Request): Promise<Response> {
       // Body is optional; ignore parse failures (cron pings with no body).
     }
 
-    const result = await drainAsyncReactions({
-      store,
-      batchSize,
-      buildHandlerContext,
-      log,
-      captureException,
-    });
-
-    return NextResponse.json({ data: result });
+    return await runDrain(batchSize);
   } catch (error: unknown) {
     captureException(error);
     log.error("async-reactions/drain failed:", error);
@@ -156,16 +164,27 @@ export async function POST(request: Request): Promise<Response> {
 }
 
 /**
- * GET /api/async-reactions/drain — health + queue depth snapshot.
+ * GET /api/async-reactions/drain
  *
- * Returns counts by status so ops dashboards can plot backlog. Same auth as
- * POST. Read-only — safe to hit on every dashboard refresh.
+ * Dual purpose:
+ * - Vercel Cron (sends GET with `x-vercel-cron: 1`, plus
+ *   `Authorization: Bearer <CRON_SECRET>` when CRON_SECRET is set): runs one
+ *   drain batch — crons cannot POST, matching the /outbox/publish pattern.
+ * - Otherwise (dev without CRON_SECRET): queue depth snapshot by status.
  */
-export async function GET(): Promise<Response> {
+export async function GET(request: Request): Promise<Response> {
   try {
-    const authHeader = ""; // GET requests don't carry Authorization in browsers
-    void authHeader;
     const cronSecret = process.env.CRON_SECRET;
+    const provided = (request.headers.get("authorization") ?? "").replace(
+      /^Bearer\s+/i,
+      ""
+    );
+    const isCron =
+      request.headers.get("x-vercel-cron") === "1" ||
+      (Boolean(cronSecret) && provided === cronSecret);
+    if (isCron) {
+      return await runDrain(25);
+    }
     if (cronSecret) {
       // Cron-secret environments: require the header on GET too (server-to-server only).
       // Browser dashboards would proxy through an authenticated endpoint instead.
