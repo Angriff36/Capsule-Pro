@@ -7,7 +7,7 @@
 // canonical command dispatcher (run-manifest-command-core) as a pre-flight gate
 // that rejects malformed requests with a 400 before the runtime is created.
 //
-// Commands: 1054
+// Commands: 1059
 
 import { z } from "zod";
 
@@ -32,7 +32,6 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "AdminChatParticipant.clearHistory": z.object({}),
   "AdminChatParticipant.create": z.object({
   threadId: z.string(),
-  userId: z.string(),
 }),
   "AdminChatParticipant.unarchive": z.object({}),
   "AdminChatThread.create": z.object({
@@ -487,7 +486,6 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "CallPlanningSession.abandon": z.object({}),
   "CallPlanningSession.complete": z.object({}),
   "CallPlanningSession.create": z.object({
-  userId: z.string(),
   sourceType: z.string(),
   transcriptText: z.string().optional(),
 }),
@@ -662,7 +660,6 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   subject: z.string(),
   description: z.string(),
   followUpDate: z.coerce.date(),
-  correlationId: z.string(),
 }),
   "ClientInteraction.escalate": z.object({
   escalatedTo: z.string(),
@@ -879,7 +876,6 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "CommandBoardLayout.create": z.object({
   boardId: z.string(),
-  userId: z.string(),
   name: z.string(),
   viewport: z.string(),
   visibleCards: z.array(z.string()),
@@ -996,7 +992,6 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   storageLocationId: z.string(),
   expectedQuantity: z.number(),
   countedQuantity: z.number(),
-  userId: z.string(),
   barcode: z.string(),
   notes: z.string(),
 }),
@@ -1025,7 +1020,6 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   countType: z.string(),
   scheduledDate: z.coerce.date(),
   notes: z.string(),
-  userId: z.string(),
 }),
   "CycleCountSession.finalize": z.object({
   userId: z.string(),
@@ -1193,7 +1187,6 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   documentId: z.string(),
   content: z.string(),
   changeSummary: z.string(),
-  createdById: z.string(),
 }),
   "DocumentVersion.markPublished": z.object({
   publishedBy: z.string(),
@@ -1360,7 +1353,6 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   snapshot: z.string(),
   reason: z.string(),
   summary: z.string(),
-  userId: z.string(),
 }),
   "EntityVersion.reject": z.object({
   reviewerId: z.string(),
@@ -1679,7 +1671,6 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "EventPlanningDraft.create": z.object({
   sessionId: z.string(),
-  userId: z.string(),
 }),
   "EventPlanningDraft.expire": z.object({}),
   "EventPlanningDraft.markReview": z.object({}),
@@ -2021,6 +2012,19 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "FacilityWorkOrder.start": z.object({
   userId: z.string(),
+}),
+  "FeatureFlag.create": z.object({
+  flagKey: z.string(),
+  enabled: z.boolean().default(false),
+  rolloutPercent: z.number().default(0),
+}),
+  "FeatureFlag.disable": z.object({}),
+  "FeatureFlag.enable": z.object({}),
+  "FeatureFlag.setRollout": z.object({
+  rolloutPercent: z.number(),
+}),
+  "FeatureFlag.softDelete": z.object({
+  reason: z.string().default(""),
 }),
   "ForecastInput.create": z.object({
   inventoryItemId: z.string(),
@@ -2713,7 +2717,6 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   title: z.string(),
   body: z.string(),
   actionUrl: z.string(),
-  correlationId: z.string(),
 }),
   "Notification.markDismissed": z.object({
   userId: z.string(),
@@ -3298,7 +3301,6 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "ProposalDraft.create": z.object({
   draftId: z.string(),
-  userId: z.string(),
   title: z.string(),
   clientName: z.string(),
   clientEmail: z.string().optional(),
