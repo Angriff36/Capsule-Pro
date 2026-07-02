@@ -8,11 +8,11 @@
  * engine, IR resolution, or the database.
  *
  * SOURCE: the official `@angriff36/manifest` ZodProjection `zod.command` surface.
- * That surface emits one `z.object({...})` per command, TYPE-ONLY (required params
+ * That surface emits one artifact per command with an entity-prefixed export
+ * (e.g. `RecipeCreateParamsSchema = z.object({...})`), TYPE-ONLY (required params
  * bare, optional params `.optional()`, NO value constraints) — exactly the shape a
- * structural pre-flight gate wants. The projection keys artifacts by command name
- * only (every entity's `create` collides), so we recover the entity from each
- * artifact's `// Command: <cmd> on <Entity>` header and assemble ONE committed file
+ * structural pre-flight gate wants. We read each artifact's `// Command: <cmd> on
+ * <Entity>` header for the entity/command split and assemble ONE committed file
  * keyed by `"<Entity>.<command>"`.
  *
  * Mirrors the other Capsule producers (constitution §10: fix the producer, never
@@ -57,24 +57,25 @@ if (result.errors?.length) {
   process.exit(1);
 }
 
-// Recover (entity, command, schema-expression) from each artifact.
-const HEADER_RE = /\/\/ Command: (\w+) on (\w+)/;
-// The command-param schemas are flat (no nested object literals), so the first
-// `})` after `z.object({` closes the object expression. Non-greedy capture.
-const SCHEMA_RE = /=\s*(z\.object\(\{[\s\S]*?\}\))\s*;/;
+// Each artifact declares one entity-prefixed param schema, e.g.
+//   // Command: create on Recipe
+//   export const RecipeCreateParamsSchema = z.object({ ... });
+// Match the header (for the "Entity.command" key) together with its export in a
+// single pass. The schemas are flat (no nested object literals), so the first
+// `})` after `z.object({` closes the expression — non-greedy capture.
+const ENTRY_RE =
+  /\/\/ Command: (\w+) on (\w+)\s+export const \w+ParamsSchema = (z\.object\(\{[\s\S]*?\}\))\s*;/;
 
 /** @type {Map<string, string>} key "Entity.command" -> z.object(...) source */
 const entries = new Map();
 
 for (const artifact of result.artifacts ?? []) {
-  const code = artifact.code ?? "";
-  const header = code.match(HEADER_RE);
-  const schema = code.match(SCHEMA_RE);
-  if (!(header && schema)) {
+  const match = (artifact.code ?? "").match(ENTRY_RE);
+  if (!match) {
     continue;
   }
-  const [, command, entity] = header;
-  entries.set(`${entity}.${command}`, schema[1]);
+  const [, command, entity, schema] = match;
+  entries.set(`${entity}.${command}`, schema);
 }
 
 if (entries.size === 0) {
