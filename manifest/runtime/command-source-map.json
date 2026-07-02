@@ -3343,19 +3343,19 @@
     },
     "command:RolePolicy.create": {
       "file": "platform/role-policy-rules.manifest",
-      "line": 22
+      "line": 25
     },
     "command:RolePolicy.grant": {
       "file": "platform/role-policy-rules.manifest",
-      "line": 45
+      "line": 48
     },
     "command:RolePolicy.revoke": {
       "file": "platform/role-policy-rules.manifest",
-      "line": 53
+      "line": 56
     },
     "command:RolePolicy.update": {
       "file": "platform/role-policy-rules.manifest",
-      "line": 34
+      "line": 37
     },
     "command:RouteStop.complete": {
       "file": "staff/staff-logistics-extended-rules.manifest",
@@ -3599,11 +3599,11 @@
     },
     "command:StaffTrainingSignal.recordSchedulabilityGranted": {
       "file": "staff/training-module-rules.manifest",
-      "line": 600
+      "line": 602
     },
     "command:StaffTrainingSignal.recordWaiverLogged": {
       "file": "staff/training-module-rules.manifest",
-      "line": 614
+      "line": 616
     },
     "command:Station.activate": {
       "file": "kitchen/station-rules.manifest",
@@ -3863,7 +3863,7 @@
     },
     "command:TrainingAttempt.create": {
       "file": "staff/training-module-rules.manifest",
-      "line": 562
+      "line": 564
     },
     "command:TrainingCompletion.create": {
       "file": "staff/staff-logistics-extended-rules.manifest",
@@ -6627,7 +6627,7 @@
     },
     "constraint:RolePolicy.requireRole": {
       "file": "platform/role-policy-rules.manifest",
-      "line": 19
+      "line": 22
     },
     "constraint:RouteStop.requireName": {
       "file": "staff/staff-logistics-extended-rules.manifest",
@@ -6715,7 +6715,7 @@
     },
     "constraint:StaffTrainingSignal.validSignalType": {
       "file": "staff/training-module-rules.manifest",
-      "line": 596
+      "line": 598
     },
     "constraint:Station.blockFull": {
       "file": "kitchen/station-rules.manifest",
@@ -6895,11 +6895,11 @@
     },
     "constraint:TrainingAttempt.validAttemptNumber": {
       "file": "staff/training-module-rules.manifest",
-      "line": 557
+      "line": 559
     },
     "constraint:TrainingAttempt.validScore": {
       "file": "staff/training-module-rules.manifest",
-      "line": 558
+      "line": 560
     },
     "constraint:TrainingCompletion.scoreRange": {
       "file": "staff/staff-logistics-extended-rules.manifest",
@@ -7871,7 +7871,7 @@
     },
     "entity:StaffTrainingSignal": {
       "file": "staff/training-module-rules.manifest",
-      "line": 585
+      "line": 587
     },
     "entity:Station": {
       "file": "kitchen/station-rules.manifest",

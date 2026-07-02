@@ -185,8 +185,8 @@ export interface ApiKeyUpdateInput {
 }
 export interface BoardConfigCreateInput {
   name?: string;
-  columns?: string;
-  settings?: string;
+  columns?: unknown;
+  settings?: unknown;
   createdBy?: string;
 }
 export interface BoardConfigSoftDeleteInput {
@@ -194,11 +194,11 @@ export interface BoardConfigSoftDeleteInput {
 }
 export interface BoardConfigUpdateColumnsInput {
   id?: string;
-  columns?: string;
+  columns?: unknown;
 }
 export interface BoardConfigUpdateSettingsInput {
   id?: string;
-  settings?: string;
+  settings?: unknown;
 }
 export interface CallPlanningSessionAbandonInput {
   id?: string;
@@ -273,7 +273,7 @@ export interface EmailTemplateCreateInput {
   templateType?: string;
   subject?: string;
   body?: string;
-  mergeFields?: string;
+  mergeFields?: unknown;
   isActive?: boolean;
   isDefault?: boolean;
 }
@@ -286,17 +286,17 @@ export interface EmailTemplateUpdateInput {
   templateType?: string;
   subject?: string;
   body?: string;
-  mergeFields?: string;
+  mergeFields?: unknown;
   isActive?: boolean;
   isDefault?: boolean;
 }
 export interface EmailWorkflowCreateInput {
   name?: string;
   triggerType?: string;
-  triggerConfig?: string;
+  triggerConfig?: unknown;
   emailTemplateId?: string;
   emailTemplateTenantId?: string;
-  recipientConfig?: string;
+  recipientConfig?: unknown;
   isActive?: boolean;
 }
 export interface EmailWorkflowRecordTriggeredInput {
@@ -313,10 +313,10 @@ export interface EmailWorkflowUpdateInput {
   id?: string;
   name?: string;
   triggerType?: string;
-  triggerConfig?: string;
+  triggerConfig?: unknown;
   emailTemplateId?: string;
   emailTemplateTenantId?: string;
-  recipientConfig?: string;
+  recipientConfig?: unknown;
   isActive?: boolean;
 }
 export interface EntityVersionApproveInput {
@@ -383,7 +383,7 @@ export interface EventPlanningDraftUpdateGuestCountInput {
 }
 export interface EventPlanningDraftUpdateMenuPreferencesInput {
   id?: string;
-  menuPreferences?: string;
+  menuPreferences?: unknown;
 }
 export interface EventPlanningDraftUpdateVenueInput {
   id?: string;
@@ -484,12 +484,12 @@ export interface ProposalDraftCreateInput {
   clientName?: string;
   clientEmail?: string;
   clientPhone?: string;
-  eventSummary?: string;
-  menuSections?: string;
-  servicePlan?: string;
-  pricingBreakdown?: string;
-  timeline?: string;
-  upgradeOptions?: string;
+  eventSummary?: unknown;
+  menuSections?: unknown;
+  servicePlan?: unknown;
+  pricingBreakdown?: unknown;
+  timeline?: unknown;
+  upgradeOptions?: unknown;
   visionSummary?: string;
   notes?: string;
   nextSteps?: string;
@@ -526,12 +526,12 @@ export interface ProposalDraftUpdateInput {
   clientName?: string;
   clientEmail?: string;
   clientPhone?: string;
-  eventSummary?: string;
-  menuSections?: string;
-  servicePlan?: string;
-  pricingBreakdown?: string;
-  timeline?: string;
-  upgradeOptions?: string;
+  eventSummary?: unknown;
+  menuSections?: unknown;
+  servicePlan?: unknown;
+  pricingBreakdown?: unknown;
+  timeline?: unknown;
+  upgradeOptions?: unknown;
   visionSummary?: string;
   notes?: string;
   nextSteps?: string;
@@ -567,8 +567,8 @@ export interface RateLimitConfigUpdateInput {
 export interface ReportCreateInput {
   name?: string;
   reportType?: string;
-  queryConfig?: string;
-  displayConfig?: string;
+  queryConfig?: unknown;
+  displayConfig?: unknown;
   isShared?: boolean;
   createdBy?: string;
 }
@@ -584,8 +584,8 @@ export interface ReportUpdateInput {
   id?: string;
   name?: string;
   reportType?: string;
-  queryConfig?: string;
-  displayConfig?: string;
+  queryConfig?: unknown;
+  displayConfig?: unknown;
 }
 export interface RolePolicyCreateInput {
   roleId?: string;
@@ -630,11 +630,11 @@ export interface SmsAutomationRuleCreateInput {
   name?: string;
   description?: string;
   triggerType?: string;
-  triggerConfig?: string;
+  triggerConfig?: unknown;
   templateId?: string;
   customMessage?: string;
   recipientType?: string;
-  recipientConfig?: string;
+  recipientConfig?: unknown;
   isActive?: boolean;
   priority?: number;
 }
@@ -648,11 +648,11 @@ export interface SmsAutomationRuleUpdateInput {
   id?: string;
   name?: string;
   description?: string;
-  triggerConfig?: string;
+  triggerConfig?: unknown;
   templateId?: string;
   customMessage?: string;
   recipientType?: string;
-  recipientConfig?: string;
+  recipientConfig?: unknown;
   isActive?: boolean;
   priority?: number;
 }
@@ -741,7 +741,7 @@ export interface WorkflowCreateInput {
   name?: string;
   description?: string;
   triggerType?: string;
-  triggerConfig?: string;
+  triggerConfig?: unknown;
 }
 export interface WorkflowDeactivateInput {
   id?: string;
@@ -753,7 +753,7 @@ export interface WorkflowUpdateInput {
   newName?: string;
   newDescription?: string;
   newTriggerType?: string;
-  newTriggerConfig?: string;
+  newTriggerConfig?: unknown;
 }
 
 export async function listWorkflows(query?: Record<string, string | number>): Promise<PaginatedResponse<Workflow>> {

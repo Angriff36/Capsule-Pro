@@ -55,7 +55,7 @@ export interface AllergenWarningSoftDeleteInput {
 }
 export interface BulkCombineRuleCreateInput {
   name?: string;
-  matchCriteria?: string;
+  matchCriteria?: unknown;
 }
 export interface BulkCombineRuleDeactivateInput {
   id?: string;
@@ -65,7 +65,7 @@ export interface BulkCombineRuleDeactivateInput {
 export interface BulkCombineRuleUpdateInput {
   id?: string;
   name?: string;
-  matchCriteria?: string;
+  matchCriteria?: unknown;
 }
 export interface ContainerCreateInput {
   name?: string;

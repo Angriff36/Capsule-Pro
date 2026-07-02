@@ -65,7 +65,7 @@ export interface AutomatedFollowupSkipInput {
 }
 export interface BattleBoardAddDishInput {
   id?: string;
-  dishData?: string;
+  dishData?: unknown;
   userId?: string;
 }
 export interface BattleBoardCreateInput {
@@ -87,7 +87,7 @@ export interface BattleBoardOpenInput {
 }
 export interface BattleBoardRecordImportInput {
   id?: string;
-  boardData?: string;
+  boardData?: unknown;
 }
 export interface BattleBoardRemoveDishInput {
   id?: string;
@@ -112,11 +112,11 @@ export interface BattleBoardUpdateInput {
   boardName?: string;
   status?: string;
   notes?: string;
-  boardData?: string;
+  boardData?: unknown;
 }
 export interface BattleBoardVoteInput {
   id?: string;
-  voteData?: string;
+  voteData?: unknown;
   userId?: string;
 }
 export interface BoardAnnotationCreateInput {
@@ -268,7 +268,7 @@ export interface CommandBoardCreateInput {
   isTemplate?: boolean;
   tags?: string[];
   autoPopulate?: boolean;
-  scope?: string;
+  scope?: unknown;
 }
 export interface CommandBoardDeactivateInput {
   id?: string;
@@ -292,7 +292,7 @@ export interface CommandBoardCardCreateInput {
   width?: number;
   height?: number;
   color?: string;
-  metadata?: string;
+  metadata?: unknown;
   groupId?: string;
   entityId?: string;
   entityType?: string;
@@ -319,7 +319,7 @@ export interface CommandBoardCardUpdateInput {
   newCardType?: string;
   newStatus?: string;
   newColor?: string;
-  newMetadata?: string;
+  newMetadata?: unknown;
   newGroupId?: string;
 }
 export interface CommandBoardConnectionCreateInput {
@@ -359,7 +359,7 @@ export interface CommandBoardGroupUpdateInput {
 export interface CommandBoardLayoutCreateInput {
   boardId?: string;
   name?: string;
-  viewport?: string;
+  viewport?: unknown;
   visibleCards?: string[];
   gridSize?: number;
   showGrid?: boolean;
@@ -372,7 +372,7 @@ export interface CommandBoardLayoutRemoveInput {
 export interface CommandBoardLayoutUpdateInput {
   id?: string;
   newName?: string;
-  newViewport?: string;
+  newViewport?: unknown;
   newVisibleCards?: string[];
   newGridSize?: number;
   newShowGrid?: boolean;
@@ -660,7 +660,7 @@ export interface EventImportStartProcessingInput {
 }
 export interface EventImportWorkflowCancelInput {
   id?: string;
-  reasonList?: string;
+  reasonList?: unknown;
 }
 export interface EventImportWorkflowCompleteActivatingInput {
   id?: string;
@@ -668,38 +668,38 @@ export interface EventImportWorkflowCompleteActivatingInput {
 }
 export interface EventImportWorkflowCompleteExtractionInput {
   id?: string;
-  eventData?: string;
+  eventData?: unknown;
 }
 export interface EventImportWorkflowCompleteParsingInput {
   id?: string;
-  extractedData?: string;
+  extractedData?: unknown;
   confidence?: number;
 }
 export interface EventImportWorkflowCompleteProposingInput {
   id?: string;
-  proposedTasks?: string;
+  proposedTasks?: unknown;
 }
 export interface EventImportWorkflowCompleteReservingInput {
   id?: string;
-  reservationResults?: string;
+  reservationResults?: unknown;
 }
 export interface EventImportWorkflowCompleteValidationInput {
   id?: string;
-  validationErrors?: string;
-  validationWarnings?: string;
+  validationErrors?: unknown;
+  validationWarnings?: unknown;
 }
 export interface EventImportWorkflowCreateInput {
   idempotencyKey?: string;
-  inputData?: string;
+  inputData?: unknown;
 }
 export interface EventImportWorkflowFailInput {
   id?: string;
-  errorList?: string;
+  errorList?: unknown;
   step?: number;
 }
 export interface EventImportWorkflowPauseInput {
   id?: string;
-  reasonList?: string;
+  reasonList?: unknown;
 }
 export interface EventImportWorkflowResumeInput {
   id?: string;
@@ -766,8 +766,8 @@ export interface EventReportCreateInput {
   eventId?: string;
   name?: string;
   version?: string;
-  checklistData?: string;
-  reportConfig?: string;
+  checklistData?: unknown;
+  reportConfig?: unknown;
   notes?: string;
 }
 export interface EventReportRejectInput {
@@ -782,7 +782,7 @@ export interface EventReportSubmitInput {
 export interface EventReportUpdateProgressInput {
   id?: string;
   completion?: number;
-  checklistData?: string;
+  checklistData?: unknown;
 }
 export interface EventStaffAssignInput {
   id?: string;
@@ -829,11 +829,11 @@ export interface EventStaffUpdateShiftInput {
 }
 export interface EventSummaryCreateInput {
   eventId?: string;
-  highlights?: string;
-  issues?: string;
-  financialPerformance?: string;
-  clientFeedback?: string;
-  insights?: string;
+  highlights?: unknown;
+  issues?: unknown;
+  financialPerformance?: unknown;
+  clientFeedback?: unknown;
+  insights?: unknown;
   overallSummary?: string;
 }
 export interface EventSummaryRefreshInput {
@@ -841,11 +841,11 @@ export interface EventSummaryRefreshInput {
 }
 export interface EventSummaryUpdateInput {
   id?: string;
-  highlights?: string;
-  issues?: string;
-  financialPerformance?: string;
-  clientFeedback?: string;
-  insights?: string;
+  highlights?: unknown;
+  issues?: unknown;
+  financialPerformance?: unknown;
+  clientFeedback?: unknown;
+  insights?: unknown;
   overallSummary?: string;
 }
 export interface EventTimelineCreateInput {

@@ -135,7 +135,7 @@ export interface ClientPreferenceCreateInput {
   clientId?: string;
   preferenceType?: string;
   preferenceKey?: string;
-  preferenceValue?: string;
+  preferenceValue?: unknown;
   notes?: string;
 }
 export interface ClientPreferenceRemoveInput {
@@ -144,7 +144,7 @@ export interface ClientPreferenceRemoveInput {
 }
 export interface ClientPreferenceUpdateInput {
   id?: string;
-  preferenceValue?: string;
+  preferenceValue?: unknown;
   notes?: string;
 }
 export interface CrmScoringRuleActivateInput {
@@ -375,7 +375,7 @@ export interface ProposalTemplateCreateInput {
   defaultTerms?: string;
   defaultTaxRate?: number;
   defaultNotes?: string;
-  defaultLineItems?: string;
+  defaultLineItems?: unknown;
   isActive?: boolean;
   isDefault?: boolean;
   logoUrl?: string;
@@ -398,7 +398,7 @@ export interface ProposalTemplateUpdateInput {
   defaultTerms?: string;
   defaultTaxRate?: number;
   defaultNotes?: string;
-  defaultLineItems?: string;
+  defaultLineItems?: unknown;
   isActive?: boolean;
   isDefault?: boolean;
   logoUrl?: string;

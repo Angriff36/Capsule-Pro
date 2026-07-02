@@ -58,7 +58,7 @@ export interface ActionMilestone {
   title?: string;
   dueDate: string;
   status?: string;
-  completedDate: string;
+  completedDate?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -66,7 +66,7 @@ export interface ActionMilestone {
 export interface AdminChatMessage {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   threadId?: string;
   authorId?: string;
   authorName?: string;
@@ -78,11 +78,11 @@ export interface AdminChatMessage {
 export interface AdminChatParticipant {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   threadId?: string;
   userId?: string;
-  archivedAt: string;
-  clearedAt: string;
+  archivedAt?: string | null;
+  clearedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -90,12 +90,12 @@ export interface AdminChatParticipant {
 export interface AdminChatThread {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   threadType?: string;
-  slug?: string;
-  directKey?: string;
-  createdBy?: string;
-  lastMessageAt: string;
+  slug?: string | null;
+  directKey?: string | null;
+  createdBy?: string | null;
+  lastMessageAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -103,20 +103,20 @@ export interface AdminChatThread {
 export interface AdminTask {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   title?: string;
-  description?: string;
+  description?: string | null;
   status?: AdminTaskStatus;
   priority?: string;
-  category?: string;
+  category?: string | null;
   position?: number;
-  labels?: string[];
-  estimatedHours?: number;
-  assignedTo?: string;
-  dueDate: string;
-  createdBy?: string;
-  sourceType?: string;
-  sourceId?: string;
+  labels?: string[] | null;
+  estimatedHours?: number | null;
+  assignedTo?: string | null;
+  dueDate?: string | null;
+  createdBy?: string | null;
+  sourceType?: string | null;
+  sourceId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -124,13 +124,13 @@ export interface AdminTask {
 export interface AdminTaskAttachment {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   taskId?: string;
   fileName?: string;
   fileUrl?: string;
   fileSize?: number;
   mimeType?: string;
-  uploadedBy?: string;
+  uploadedBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -138,9 +138,9 @@ export interface AdminTaskAttachment {
 export interface AdminTaskComment {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   taskId?: string;
-  authorId?: string;
+  authorId?: string | null;
   authorName?: string;
   text?: string;
   createdAt: string;
@@ -150,13 +150,13 @@ export interface AdminTaskComment {
 export interface AdminTaskDevMeta {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   taskId?: string;
   severity?: string;
-  environment?: string;
-  stepsToRepro?: string;
-  expectedResult?: string;
-  actualResult?: string;
+  environment?: string | null;
+  stepsToRepro?: string | null;
+  expectedResult?: string | null;
+  actualResult?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -164,12 +164,12 @@ export interface AdminTaskDevMeta {
 export interface AdminTaskFileRef {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   taskId?: string;
   refType?: string;
   refId?: string;
   refLabel?: string;
-  linkedBy?: string;
+  linkedBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -178,21 +178,21 @@ export interface AiEventSetupSession {
   id: string;
   tenantId: string;
   userId: string;
-  originalInput?: string;
-  parsedTitle?: string;
-  parsedEventType?: string;
-  parsedEventDate?: string;
-  parsedGuestCount?: number;
-  parsedVenueName?: string;
-  parsedVenueAddress?: string;
-  parsedNotes?: string;
-  parsedTags?: string;
-  status?: string;
-  confidence?: number;
-  missingFields?: string;
-  suggestions?: string;
-  createdEventId?: string;
-  completedAt: string;
+  originalInput?: string | null;
+  parsedTitle?: string | null;
+  parsedEventType?: string | null;
+  parsedEventDate?: string | null;
+  parsedGuestCount?: number | null;
+  parsedVenueName?: string | null;
+  parsedVenueAddress?: string | null;
+  parsedNotes?: string | null;
+  parsedTags?: string | null;
+  status?: string | null;
+  confidence?: number | null;
+  missingFields?: string | null;
+  suggestions?: string | null;
+  createdEventId?: string | null;
+  completedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -200,7 +200,7 @@ export interface AiEventSetupSession {
 export interface AlertsConfig {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   channel?: string;
   destination?: string;
   createdAt: string;
@@ -210,22 +210,22 @@ export interface AlertsConfig {
 export interface AllergenWarning {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   eventId?: string;
-  dishId?: string;
+  dishId?: string | null;
   warningType?: string;
-  allergens?: string[];
-  affectedGuests?: string[];
+  allergens?: string[] | null;
+  affectedGuests?: string[] | null;
   severity?: string;
   isAcknowledged?: boolean;
-  acknowledgedBy?: string;
-  acknowledgedAt: string;
-  overrideReason?: string;
+  acknowledgedBy?: string | null;
+  acknowledgedAt?: string | null;
+  overrideReason?: string | null;
   resolved?: boolean;
-  resolvedAt: string;
-  escalatedAt: string;
-  escalatedTo?: string;
-  notes?: string;
+  resolvedAt?: string | null;
+  escalatedAt?: string | null;
+  escalatedTo?: string | null;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -233,14 +233,14 @@ export interface AllergenWarning {
 export interface ApiKey {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   name?: string;
   keyPrefix?: string;
   hashedKey?: string;
   scopes: string[];
-  lastUsedAt: string;
-  expiresAt: string;
-  revokedAt: string;
+  lastUsedAt?: string | null;
+  expiresAt?: string | null;
+  revokedAt?: string | null;
   createdByUserId?: string;
   createdAt: string;
   updatedAt: string;
@@ -253,8 +253,8 @@ export interface AuditSchedule {
   frequency: string;
   time: string;
   createdBy: string;
-  nextRunAt: string;
-  lastRunAt: string;
+  nextRunAt?: string | null;
+  lastRunAt?: string | null;
   isActive?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -264,15 +264,15 @@ export interface AutomatedFollowup {
   id: string;
   tenantId: string;
   eventId: string;
-  type?: string;
-  status?: string;
-  scheduledDate: string;
-  sentDate: string;
-  recipientId?: string;
-  subject?: string;
-  body?: string;
-  templateId?: string;
-  errorMessage?: string;
+  type?: string | null;
+  status?: string | null;
+  scheduledDate?: string | null;
+  sentDate?: string | null;
+  recipientId?: string | null;
+  subject?: string | null;
+  body?: string | null;
+  templateId?: string | null;
+  errorMessage?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -298,27 +298,27 @@ export interface BankAccount {
 export interface BattleBoard {
   id: string;
   tenantId: string;
-  deletedAt: string;
-  eventId?: string;
+  deletedAt?: string | null;
+  eventId?: string | null;
   boardName?: string;
   boardType?: string;
   schemaVersion?: string;
-  boardData?: string;
-  documentUrl?: string;
-  sourceDocumentType?: string;
-  documentImportedAt: string;
+  boardData?: unknown;
+  documentUrl?: string | null;
+  sourceDocumentType?: string | null;
+  documentImportedAt?: string | null;
   status?: string;
   isTemplate?: boolean;
-  description?: string;
-  notes?: string;
-  tags?: string[];
-  eventDate: string;
-  clientId?: string;
-  guestCount?: number;
-  venueName?: string;
-  venueAddress?: string;
-  locationId?: string;
-  inheritedContext?: string;
+  description?: string | null;
+  notes?: string | null;
+  tags?: string[] | null;
+  eventDate?: string | null;
+  clientId?: string | null;
+  guestCount?: number | null;
+  venueName?: string | null;
+  venueAddress?: string | null;
+  locationId?: string | null;
+  inheritedContext?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -326,12 +326,12 @@ export interface BattleBoard {
 export interface BoardAnnotation {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   boardId: string;
-  label?: string;
-  positionX?: number;
-  positionY?: number;
-  color?: string;
+  label?: string | null;
+  positionX?: number | null;
+  positionY?: number | null;
+  color?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -339,11 +339,11 @@ export interface BoardAnnotation {
 export interface BoardConfig {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   name?: string;
-  columns?: string;
-  settings?: string;
-  createdBy?: string;
+  columns?: unknown;
+  settings?: unknown;
+  createdBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -351,7 +351,7 @@ export interface BoardConfig {
 export interface BoardProjection {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   boardId: string;
   entityType?: string;
   entityId?: string;
@@ -367,17 +367,17 @@ export interface Budget {
   id: string;
   tenantId: string;
   name: string;
-  description?: string;
-  fiscalYear?: number;
-  totalAmount?: number;
-  allocatedAmount?: number;
-  spentAmount?: number;
-  status?: BudgetStatus;
-  category?: string;
-  departmentId?: string;
-  approvedBy?: string;
-  approvedAt: string;
-  lockedAt: string;
+  description?: string | null;
+  fiscalYear?: number | null;
+  totalAmount?: number | null;
+  allocatedAmount?: number | null;
+  spentAmount?: number | null;
+  status?: BudgetStatus | null;
+  category?: string | null;
+  departmentId?: string | null;
+  approvedBy?: string | null;
+  approvedAt?: string | null;
+  lockedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -390,10 +390,10 @@ export interface BudgetAlert {
   utilization?: number;
   message?: string;
   isAcknowledged?: boolean;
-  acknowledgedBy?: string;
-  acknowledgedAt: string;
+  acknowledgedBy?: string | null;
+  acknowledgedAt?: string | null;
   resolved?: boolean;
-  resolvedAt: string;
+  resolvedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -401,16 +401,16 @@ export interface BudgetAlert {
 export interface BudgetLineItem {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   budgetId: string;
   category: string;
   name: string;
-  description?: string;
+  description?: string | null;
   budgetedAmount?: number;
   actualAmount?: number;
   varianceAmount?: number;
   sortOrder?: number;
-  notes?: string;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -419,7 +419,7 @@ export interface BulkCombineRule {
   id: string;
   tenantId: string;
   name: string;
-  matchCriteria: string;
+  matchCriteria: unknown;
   isActive?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -428,19 +428,19 @@ export interface BulkCombineRule {
 export interface BulkOrderRule {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   catalogEntryId: string;
   ruleName?: string;
   minimumQuantity?: number;
   ruleType?: string;
-  thresholdQuantity?: number;
+  thresholdQuantity?: number | null;
   action?: string;
-  discountPercent?: number;
-  freeItemQuantity?: number;
+  discountPercent?: number | null;
+  freeItemQuantity?: number | null;
   shippingIncluded?: boolean;
   priority?: number;
-  effectiveFrom: string;
-  effectiveTo: string;
+  effectiveFrom?: string | null;
+  effectiveTo?: string | null;
   isActive?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -449,14 +449,14 @@ export interface BulkOrderRule {
 export interface CallPlanningSession {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   userId: string;
   status?: string;
   sourceType?: string;
-  transcriptText?: string;
-  metadata?: string;
+  transcriptText?: string | null;
+  metadata?: unknown | null;
   startedAt: string;
-  endedAt: string;
+  endedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -464,10 +464,10 @@ export interface CallPlanningSession {
 export interface CateringOrder {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   orderNumber: string;
   customerId?: string;
-  eventId?: string;
+  eventId?: string | null;
   orderStatus?: string;
   orderDate: string;
   deliveryDate: string;
@@ -478,23 +478,23 @@ export interface CateringOrder {
   serviceChargeAmount?: number;
   totalAmount?: number;
   depositRequired?: boolean;
-  depositAmount?: number;
+  depositAmount?: number | null;
   depositPaid?: boolean;
-  depositPaidAt: string;
-  deliveredAt: string;
-  prepStartedAt: string;
-  venueName?: string;
-  venueAddress?: string;
-  venueCity?: string;
-  venueState?: string;
-  venueZip?: string;
-  venueContactName?: string;
-  venueContactPhone?: string;
+  depositPaidAt?: string | null;
+  deliveredAt?: string | null;
+  prepStartedAt?: string | null;
+  venueName?: string | null;
+  venueAddress?: string | null;
+  venueCity?: string | null;
+  venueState?: string | null;
+  venueZip?: string | null;
+  venueContactName?: string | null;
+  venueContactPhone?: string | null;
   guestCount?: number;
-  specialInstructions?: string;
-  dietaryRestrictions?: string;
-  staffRequired?: number;
-  staffAssigned?: number;
+  specialInstructions?: string | null;
+  dietaryRestrictions?: string | null;
+  staffRequired?: number | null;
+  staffAssigned?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -505,8 +505,8 @@ export interface ChartOfAccount {
   accountNumber?: string;
   accountName?: string;
   accountType?: string;
-  parentId?: string;
-  description?: string;
+  parentId?: string | null;
+  description?: string | null;
   isActive?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -515,27 +515,27 @@ export interface ChartOfAccount {
 export interface Client {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   clientType?: string;
-  companyName?: string;
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-  website?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  stateProvince?: string;
-  postalCode?: string;
-  countryCode?: string;
-  defaultPaymentTerms?: number;
+  companyName?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  stateProvince?: string | null;
+  postalCode?: string | null;
+  countryCode?: string | null;
+  defaultPaymentTerms?: number | null;
   taxExempt?: boolean;
-  taxId?: string;
-  notes?: string;
+  taxId?: string | null;
+  notes?: string | null;
   tags: string[];
-  source?: string;
-  assignedTo?: string;
+  source?: string | null;
+  assignedTo?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -543,17 +543,17 @@ export interface Client {
 export interface ClientContact {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   clientId: string;
   firstName?: string;
   lastName?: string;
-  title?: string;
-  email?: string;
-  phone?: string;
-  phoneMobile?: string;
+  title?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  phoneMobile?: string | null;
   isPrimary?: boolean;
   isBillingContact?: boolean;
-  notes?: string;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -561,21 +561,21 @@ export interface ClientContact {
 export interface ClientInteraction {
   id: string;
   tenantId: string;
-  deletedAt: string;
-  clientId?: string;
-  leadId?: string;
+  deletedAt?: string | null;
+  clientId?: string | null;
+  leadId?: string | null;
   employeeId?: string;
   interactionType?: string;
   interactionDate: string;
-  subject?: string;
-  description?: string;
-  followUpDate: string;
+  subject?: string | null;
+  description?: string | null;
+  followUpDate?: string | null;
   followUpCompleted?: boolean;
-  status?: string;
-  priority?: string;
-  escalatedAt: string;
-  escalatedTo?: string;
-  correlationId?: string;
+  status?: string | null;
+  priority?: string | null;
+  escalatedAt?: string | null;
+  escalatedTo?: string | null;
+  correlationId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -583,12 +583,12 @@ export interface ClientInteraction {
 export interface ClientPreference {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   clientId: string;
   preferenceType?: string;
   preferenceKey?: string;
-  preferenceValue?: string;
-  notes?: string;
+  preferenceValue?: unknown;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -598,15 +598,15 @@ export interface CollectionAction {
   tenantId: string;
   collectionCaseId?: string;
   actionType?: string;
-  direction?: string;
-  status?: string;
+  direction?: string | null;
+  status?: string | null;
   description?: string;
-  outcome?: string;
-  nextActionDate: string;
-  promiseAmount?: number;
-  promiseDate: string;
-  scheduledFor: string;
-  completedAt: string;
+  outcome?: string | null;
+  nextActionDate?: string | null;
+  promiseAmount?: number | null;
+  promiseDate?: string | null;
+  scheduledFor?: string | null;
+  completedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -626,23 +626,23 @@ export interface CollectionCase {
   priority?: string;
   dunningStage?: string;
   daysOverdue?: number;
-  agingBucket?: string;
-  assignedTo?: string;
-  assignedAt: string;
+  agingBucket?: string | null;
+  assignedTo?: string | null;
+  assignedAt?: string | null;
   hasPaymentPlan?: boolean;
-  paymentPlanId?: string;
-  nextPaymentDue: string;
+  paymentPlanId?: string | null;
+  nextPaymentDue?: string | null;
   isDisputed?: boolean;
-  disputeReason?: string;
-  disputeResolvedAt: string;
+  disputeReason?: string | null;
+  disputeResolvedAt?: string | null;
   isEscalatedToLegal?: boolean;
-  legalCaseNumber?: string;
-  legalFirm?: string;
-  notes?: string;
-  lastActivityAt: string;
-  metadata?: string;
-  resolvedAt: string;
-  closedAt: string;
+  legalCaseNumber?: string | null;
+  legalFirm?: string | null;
+  notes?: string | null;
+  lastActivityAt?: string | null;
+  metadata?: unknown;
+  resolvedAt?: string | null;
+  closedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -652,14 +652,14 @@ export interface CollectionPaymentPlan {
   tenantId: string;
   collectionCaseId?: string;
   totalAmount?: number;
-  installmentAmount?: number;
+  installmentAmount?: number | null;
   installments?: number;
-  completedInstallments?: number;
+  completedInstallments?: number | null;
   status?: string;
   startDate: string;
-  metadata?: string;
-  completedAt: string;
-  defaultedAt: string;
+  metadata?: unknown;
+  completedAt?: string | null;
+  defaultedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -667,15 +667,15 @@ export interface CollectionPaymentPlan {
 export interface CommandBoard {
   id: string;
   tenantId: string;
-  deletedAt: string;
-  eventId?: string;
+  deletedAt?: string | null;
+  eventId?: string | null;
   name?: string;
-  description?: string;
+  description?: string | null;
   status?: string;
   isTemplate?: boolean;
-  tags?: string[];
+  tags?: string[] | null;
   autoPopulate?: boolean;
-  scope?: string;
+  scope?: unknown | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -683,10 +683,10 @@ export interface CommandBoard {
 export interface CommandBoardCard {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   boardId: string;
   title?: string;
-  content?: string;
+  content?: string | null;
   cardType?: string;
   status?: string;
   positionX?: number;
@@ -694,11 +694,11 @@ export interface CommandBoardCard {
   width?: number;
   height?: number;
   zIndex?: number;
-  color?: string;
-  metadata?: string;
-  groupId?: string;
-  entityId?: string;
-  entityType?: string;
+  color?: string | null;
+  metadata?: unknown;
+  groupId?: string | null;
+  entityId?: string | null;
+  entityType?: string | null;
   version?: number;
   createdAt: string;
   updatedAt: string;
@@ -707,12 +707,12 @@ export interface CommandBoardCard {
 export interface CommandBoardConnection {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   boardId: string;
   fromCardId: string;
   toCardId: string;
   relationshipType?: string;
-  label?: string;
+  label?: string | null;
   visible?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -721,10 +721,10 @@ export interface CommandBoardConnection {
 export interface CommandBoardGroup {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   boardId: string;
   name?: string;
-  color?: string;
+  color?: string | null;
   collapsed?: boolean;
   positionX?: number;
   positionY?: number;
@@ -738,12 +738,12 @@ export interface CommandBoardGroup {
 export interface CommandBoardLayout {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   boardId: string;
   userId: string;
   name?: string;
-  viewport?: string;
-  visibleCards?: string[];
+  viewport?: unknown;
+  visibleCards?: string[] | null;
   gridSize?: number;
   showGrid?: boolean;
   snapToGrid?: boolean;
@@ -754,14 +754,14 @@ export interface CommandBoardLayout {
 export interface Container {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   name: string;
   containerType: string;
-  locationId?: string;
-  sizeDescription?: string;
-  capacityVolumeMl?: number;
-  capacityWeightG?: number;
-  capacityPortions?: number;
+  locationId?: string | null;
+  sizeDescription?: string | null;
+  capacityVolumeMl?: number | null;
+  capacityWeightG?: number | null;
+  capacityPortions?: number | null;
   isReusable?: boolean;
   isActive?: boolean;
   createdAt: string;
@@ -771,18 +771,18 @@ export interface Container {
 export interface ContractSignature {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   contractId: string;
   signedAt: string;
   signatureData?: string;
   signerName?: string;
-  signerEmail?: string;
-  signerRole?: string;
-  ipAddress?: string;
-  verifiedAt: string;
-  invalidatedAt: string;
-  invalidationReason?: string;
-  isValid?: boolean;
+  signerEmail?: string | null;
+  signerRole?: string | null;
+  ipAddress?: string | null;
+  verifiedAt?: string | null;
+  invalidatedAt?: string | null;
+  invalidationReason?: string | null;
+  isValid?: boolean | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -794,11 +794,11 @@ export interface CorrectiveAction {
   title: string;
   sourceType: string;
   sourceId: string;
-  description: string;
-  assignedTo?: string;
+  description?: string | null;
+  assignedTo?: string | null;
   status?: string;
-  dueDate: string;
-  resolvedAt: string;
+  dueDate?: string | null;
+  resolvedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -806,7 +806,7 @@ export interface CorrectiveAction {
 export interface CrmScoringRule {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   ruleName?: string;
   field?: string;
   condition?: string;
@@ -821,7 +821,7 @@ export interface CrmScoringRule {
 export interface CycleCountRecord {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   sessionId: string;
   itemId: string;
   itemNumber: string;
@@ -833,13 +833,13 @@ export interface CycleCountRecord {
   variancePct?: number;
   countDate: string;
   countedById?: string;
-  barcode?: string;
-  notes?: string;
+  barcode?: string | null;
+  notes?: string | null;
   isVerified?: boolean;
-  verifiedById?: string;
-  verifiedAt: string;
+  verifiedById?: string | null;
+  verifiedAt?: string | null;
   syncStatus?: string;
-  offlineId?: string;
+  offlineId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -847,23 +847,23 @@ export interface CycleCountRecord {
 export interface CycleCountSession {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   locationId: string;
   sessionId: string;
   sessionName: string;
   countType?: string;
-  scheduledDate: string;
-  startedAt: string;
-  completedAt: string;
-  finalizedAt: string;
+  scheduledDate?: string | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  finalizedAt?: string | null;
   status?: string;
   totalItems?: number;
   countedItems?: number;
   totalVariance?: number;
   variancePercentage?: number;
-  notes?: string;
+  notes?: string | null;
   createdById?: string;
-  approvedById?: string;
+  approvedById?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -873,15 +873,15 @@ export interface Deal {
   tenantId: string;
   leadId: string;
   title: string;
-  value?: number;
-  currency?: string;
-  stage?: string;
-  status?: DealStatus;
-  probability?: number;
-  expectedCloseDate: string;
-  actualCloseDate: string;
-  assignedTo?: string;
-  notes?: string;
+  value?: number | null;
+  currency?: string | null;
+  stage?: string | null;
+  status?: DealStatus | null;
+  probability?: number | null;
+  expectedCloseDate?: string | null;
+  actualCloseDate?: string | null;
+  assignedTo?: string | null;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -891,10 +891,10 @@ export interface DeliveryRoute {
   tenantId: string;
   name?: string;
   routeNumber?: string;
-  driverId?: string;
-  scheduledDate: string;
+  driverId?: string | null;
+  scheduledDate?: string | null;
   status?: string;
-  totalDistance?: number;
+  totalDistance?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -905,12 +905,12 @@ export interface DisciplinaryAction {
   employeeId: string;
   actionType?: string;
   reason?: string;
-  severity?: string;
+  severity?: string | null;
   status?: string;
   issuedBy?: string;
-  escalatedTo?: string;
-  escalationReason?: string;
-  escalatedAt: string;
+  escalatedTo?: string | null;
+  escalationReason?: string | null;
+  escalatedAt?: string | null;
   issuedDate: string;
   createdAt: string;
   updatedAt: string;
@@ -919,29 +919,29 @@ export interface DisciplinaryAction {
 export interface Dish {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   recipeId: string;
   name: string;
-  description?: string;
-  category?: string;
-  serviceStyle?: string;
-  defaultContainerId?: string;
-  presentationImageUrl?: string;
+  description?: string | null;
+  category?: string | null;
+  serviceStyle?: string | null;
+  defaultContainerId?: string | null;
+  presentationImageUrl?: string | null;
   minPrepLeadDays?: number;
-  maxPrepLeadDays?: number;
-  portionSizeDescription?: string;
-  dietaryTags?: string[];
-  allergens?: string[];
-  pricePerPerson?: number;
-  costPerPerson?: number;
+  maxPrepLeadDays?: number | null;
+  portionSizeDescription?: string | null;
+  dietaryTags?: string[] | null;
+  allergens?: string[] | null;
+  pricePerPerson?: number | null;
+  costPerPerson?: number | null;
   isActive?: boolean;
-  isSeasonal?: boolean;
-  seasonLabel?: string;
-  seasonStartMonth?: number;
-  seasonEndMonth?: number;
-  isEightySix?: boolean;
-  eightySixReason?: string;
-  eightySixAt: string;
+  isSeasonal?: boolean | null;
+  seasonLabel?: string | null;
+  seasonStartMonth?: number | null;
+  seasonEndMonth?: number | null;
+  isEightySix?: boolean | null;
+  eightySixReason?: string | null;
+  eightySixAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -949,7 +949,7 @@ export interface Dish {
 export interface Document {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   name?: string;
   documentType?: string;
   fileUrl?: string;
@@ -969,14 +969,14 @@ export interface DocumentVersion {
   versionNumber: number;
   content: string;
   changeSummary?: string;
-  createdById?: string;
-  status?: string;
-  approvedBy?: string;
-  publishedBy?: string;
-  supersededBy?: string;
-  approvedAt: string;
-  publishedAt: string;
-  supersededAt: string;
+  createdById?: string | null;
+  status?: string | null;
+  approvedBy?: string | null;
+  publishedBy?: string | null;
+  supersededBy?: string | null;
+  approvedAt?: string | null;
+  publishedAt?: string | null;
+  supersededAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -985,13 +985,13 @@ export interface Driver {
   id: string;
   tenantId: string;
   name: string;
-  email?: string;
-  phone?: string;
-  licenseNumber?: string;
-  licenseExpiry: string;
-  vehicleId?: string;
+  email?: string | null;
+  phone?: string | null;
+  licenseNumber?: string | null;
+  licenseExpiry?: string | null;
+  vehicleId?: string | null;
   status?: string;
-  notes?: string;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -999,12 +999,12 @@ export interface Driver {
 export interface EmailTemplate {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   name?: string;
   templateType?: string;
   subject?: string;
   body?: string;
-  mergeFields?: string;
+  mergeFields?: unknown;
   isActive?: boolean;
   isDefault?: boolean;
   createdAt: string;
@@ -1014,15 +1014,15 @@ export interface EmailTemplate {
 export interface EmailWorkflow {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   name?: string;
   triggerType?: string;
-  triggerConfig?: string;
-  emailTemplateId?: string;
-  emailTemplateTenantId?: string;
-  recipientConfig?: string;
+  triggerConfig?: unknown;
+  emailTemplateId?: string | null;
+  emailTemplateTenantId?: string | null;
+  recipientConfig?: unknown;
   isActive?: boolean;
-  lastTriggeredAt: string;
+  lastTriggeredAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1030,18 +1030,18 @@ export interface EmailWorkflow {
 export interface EmployeeAvailability {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   employeeId?: string;
   dayOfWeek?: number;
   startTime: string;
   endTime: string;
   isAvailable?: boolean;
   effectiveFrom: string;
-  effectiveUntil: string;
-  isSuspended?: boolean;
-  suspendReason?: string;
-  suspendedAt: string;
-  reinstatedAt: string;
+  effectiveUntil?: string | null;
+  isSuspended?: boolean | null;
+  suspendReason?: string | null;
+  suspendedAt?: string | null;
+  reinstatedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1049,14 +1049,14 @@ export interface EmployeeAvailability {
 export interface EmployeeCertification {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   employeeId?: string;
   certificationType?: string;
   certificationName?: string;
   issuedDate: string;
-  expiryDate: string;
-  documentUrl?: string;
-  status?: string;
+  expiryDate?: string | null;
+  documentUrl?: string | null;
+  status?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1064,16 +1064,16 @@ export interface EmployeeCertification {
 export interface EmployeeDeduction {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   employeeId?: string;
   type?: string;
   name?: string;
-  amount?: number;
-  percentage?: number;
+  amount?: number | null;
+  percentage?: number | null;
   isPreTax?: boolean;
   effectiveDate: string;
-  endDate: string;
-  maxAnnualAmount?: number;
+  endDate?: string | null;
+  maxAnnualAmount?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1083,15 +1083,15 @@ export interface EntityVersion {
   tenantId: string;
   versionedEntityId: string;
   versionNumber: number;
-  changeReason?: string;
-  changeSummary?: string;
+  changeReason?: string | null;
+  changeSummary?: string | null;
   changeType: string;
-  snapshotData?: string;
-  metadata?: string;
-  isApproved?: boolean;
-  approvedAt: string;
-  approvedBy?: string;
-  createdBy?: string;
+  snapshotData?: string | null;
+  metadata?: string | null;
+  isApproved?: boolean | null;
+  approvedAt?: string | null;
+  approvedBy?: string | null;
+  createdBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1103,18 +1103,18 @@ export interface Equipment {
   name: string;
   type?: string;
   status?: string;
-  serialNumber?: string;
-  manufacturer?: string;
-  model?: string;
-  purchaseDate: string;
-  warrantyExpiry: string;
-  lastMaintenanceDate: string;
-  nextMaintenanceDate: string;
+  serialNumber?: string | null;
+  manufacturer?: string | null;
+  model?: string | null;
+  purchaseDate?: string | null;
+  warrantyExpiry?: string | null;
+  lastMaintenanceDate?: string | null;
+  nextMaintenanceDate?: string | null;
   maintenanceIntervalDays?: number;
   usageHours?: number;
   maxUsageHours?: number;
   condition?: string;
-  notes?: string;
+  notes?: string | null;
   isActive?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -1123,29 +1123,29 @@ export interface Equipment {
 export interface Event {
   id: string;
   tenantId: string;
-  deletedAt: string;
-  clientId?: string;
-  eventNumber?: string;
+  deletedAt?: string | null;
+  clientId?: string | null;
+  eventNumber?: string | null;
   title?: string;
   eventType?: string;
   eventDate: string;
   guestCount?: number;
   status?: string;
-  budget?: number;
-  ticketPrice?: number;
-  ticketTier?: string;
-  eventFormat?: string;
+  budget?: number | null;
+  ticketPrice?: number | null;
+  ticketTier?: string | null;
+  eventFormat?: string | null;
   accessibilityOptions: string[];
-  featuredMediaUrl?: string;
-  locationId?: string;
-  venueId?: string;
-  venueEntityId?: string;
-  assignedTo?: string;
-  venueName?: string;
-  venueAddress?: string;
-  notes?: string;
+  featuredMediaUrl?: string | null;
+  locationId?: string | null;
+  venueId?: string | null;
+  venueEntityId?: string | null;
+  assignedTo?: string | null;
+  venueName?: string | null;
+  venueAddress?: string | null;
+  notes?: string | null;
   tags: string[];
-  templateId?: string;
+  templateId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1153,14 +1153,14 @@ export interface Event {
 export interface EventBudget {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   eventId: string;
   version?: number;
   status?: string;
   totalBudgetAmount?: number;
   totalActualAmount?: number;
   varianceAmount?: number;
-  notes?: string;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1168,20 +1168,20 @@ export interface EventBudget {
 export interface EventContract {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   eventId: string;
   clientId: string;
-  contractNumber?: string;
+  contractNumber?: string | null;
   title?: string;
   status?: string;
-  documentUrl?: string;
-  documentType?: string;
-  notes?: string;
-  expiresAt: string;
-  sentAt: string;
-  viewedAt: string;
-  signedAt: string;
-  canceledBy?: string;
+  documentUrl?: string | null;
+  documentType?: string | null;
+  notes?: string | null;
+  expiresAt?: string | null;
+  sentAt?: string | null;
+  viewedAt?: string | null;
+  signedAt?: string | null;
+  canceledBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1189,12 +1189,12 @@ export interface EventContract {
 export interface EventDish {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   eventId: string;
   dishId: string;
   quantityServings?: number;
-  specialInstructions?: string;
-  course?: string;
+  specialInstructions?: string | null;
+  course?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1202,15 +1202,15 @@ export interface EventDish {
 export interface EventFollowup {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   eventId: string;
   taskType?: string;
   description?: string;
-  dueDate: string;
+  dueDate?: string | null;
   status?: string;
-  assignedTo?: string;
-  notes?: string;
-  completedAt: string;
+  assignedTo?: string | null;
+  notes?: string | null;
+  completedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1218,23 +1218,23 @@ export interface EventFollowup {
 export interface EventGuest {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   eventId?: string;
   guestName?: string;
-  guestEmail?: string;
-  guestPhone?: string;
+  guestEmail?: string | null;
+  guestPhone?: string | null;
   isPrimaryContact?: boolean;
-  dietaryRestrictions?: string[];
-  allergenRestrictions?: string[];
-  notes?: string;
-  declineReason?: string;
+  dietaryRestrictions?: string[] | null;
+  allergenRestrictions?: string[] | null;
+  notes?: string | null;
+  declineReason?: string | null;
   specialMealRequired?: boolean;
-  specialMealNotes?: string;
-  tableAssignment?: string;
-  mealPreference?: string;
+  specialMealNotes?: string | null;
+  tableAssignment?: string | null;
+  mealPreference?: string | null;
   rsvpStatus?: string;
-  rsvpRespondedAt: string;
-  checkedInAt: string;
+  rsvpRespondedAt?: string | null;
+  checkedInAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1242,16 +1242,16 @@ export interface EventGuest {
 export interface EventImport {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   fileType?: string;
   fileName?: string;
   mimeType?: string;
   parseStatus?: string;
-  totalRows?: number;
-  importedRows?: number;
-  skippedRows?: number;
-  parseErrors?: string[];
-  parsedAt: string;
+  totalRows?: number | null;
+  importedRows?: number | null;
+  skippedRows?: number | null;
+  parseErrors?: string[] | null;
+  parsedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1264,11 +1264,11 @@ export interface EventImportWorkflow {
   status?: string;
   currentStep?: number;
   totalSteps?: number;
-  inputData?: string;
-  outputData?: string;
-  stepResults?: string;
-  errors?: string;
-  warnings?: string;
+  inputData?: unknown;
+  outputData?: unknown;
+  stepResults?: unknown;
+  errors?: unknown;
+  warnings?: unknown;
   confidence?: number;
   startedAt: string;
   completedAt: string;
@@ -1279,36 +1279,36 @@ export interface EventImportWorkflow {
 export interface EventPlanningDraft {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   sessionId: string;
   userId: string;
   status?: string;
-  clientName?: string;
-  clientContactId?: string;
-  eventType?: string;
-  eventDate: string;
-  eventTime?: string;
-  guestCount?: number;
-  guestCountMin?: number;
-  guestCountMax?: number;
-  venuePreference?: string;
-  venueId?: string;
-  serviceStyle?: string;
-  dietaryRestrictions?: string;
-  menuPreferences?: string;
-  budgetMin?: number;
-  budgetMax?: number;
-  packageIds?: string[];
-  addOnIds?: string[];
-  customItems?: string;
-  timelineNotes?: string;
-  openQuestions?: string[];
-  specialNotes?: string;
-  aiSummary?: string;
-  overallConfidence?: number;
-  convertedEventId?: string;
-  proposalId?: string;
-  expiresAt: string;
+  clientName?: string | null;
+  clientContactId?: string | null;
+  eventType?: string | null;
+  eventDate?: string | null;
+  eventTime?: string | null;
+  guestCount?: number | null;
+  guestCountMin?: number | null;
+  guestCountMax?: number | null;
+  venuePreference?: string | null;
+  venueId?: string | null;
+  serviceStyle?: string | null;
+  dietaryRestrictions?: string | null;
+  menuPreferences?: unknown | null;
+  budgetMin?: number | null;
+  budgetMax?: number | null;
+  packageIds?: string[] | null;
+  addOnIds?: string[] | null;
+  customItems?: unknown | null;
+  timelineNotes?: string | null;
+  openQuestions?: string[] | null;
+  specialNotes?: string | null;
+  aiSummary?: string | null;
+  overallConfidence?: number | null;
+  convertedEventId?: string | null;
+  proposalId?: string | null;
+  expiresAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1316,7 +1316,7 @@ export interface EventPlanningDraft {
 export interface EventProfitability {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   eventId: string;
   budgetedRevenue?: number;
   budgetedFoodCost?: number;
@@ -1337,7 +1337,7 @@ export interface EventProfitability {
   marginVariancePct?: number;
   calculatedAt: string;
   calculationMethod?: string;
-  notes?: string;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1345,23 +1345,23 @@ export interface EventProfitability {
 export interface EventReport {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   eventId: string;
   name: string;
   version?: string;
   status?: string;
   completion?: number;
-  checklistData?: string;
-  parsedEventData?: string;
-  reportConfig?: string;
-  autoFillScore?: number;
-  reviewNotes?: string;
-  reviewedBy?: string;
-  reviewedAt: string;
-  completedAt: string;
-  rejectedAt: string;
-  rejectedBy?: string;
-  rejectionReason?: string;
+  checklistData?: unknown;
+  parsedEventData?: unknown | null;
+  reportConfig?: unknown | null;
+  autoFillScore?: number | null;
+  reviewNotes?: string | null;
+  reviewedBy?: string | null;
+  reviewedAt?: string | null;
+  completedAt?: string | null;
+  rejectedAt?: string | null;
+  rejectedBy?: string | null;
+  rejectionReason?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1369,18 +1369,18 @@ export interface EventReport {
 export interface EventStaff {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   eventId: string;
   staffMemberId: string;
-  role?: string;
-  notes?: string;
-  shiftStart: string;
-  shiftEnd: string;
-  status?: string;
-  confirmedAt: string;
-  checkedInAt: string;
-  checkedOutAt: string;
-  noShowReason?: string;
+  role?: string | null;
+  notes?: string | null;
+  shiftStart?: string | null;
+  shiftEnd?: string | null;
+  status?: string | null;
+  confirmedAt?: string | null;
+  checkedInAt?: string | null;
+  checkedOutAt?: string | null;
+  noShowReason?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1388,16 +1388,16 @@ export interface EventStaff {
 export interface EventSummary {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   eventId: string;
-  highlights?: string;
-  issues?: string;
-  financialPerformance?: string;
-  clientFeedback?: string;
-  insights?: string;
-  overallSummary?: string;
+  highlights?: unknown | null;
+  issues?: unknown | null;
+  financialPerformance?: unknown | null;
+  clientFeedback?: unknown | null;
+  insights?: unknown | null;
+  overallSummary?: string | null;
   generatedAt: string;
-  generationDurationMs?: number;
+  generationDurationMs?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1405,12 +1405,12 @@ export interface EventSummary {
 export interface EventTimeline {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   eventId: string;
   description?: string;
   timelineTime: string;
-  durationMinutes?: number;
-  notes?: string;
+  durationMinutes?: number | null;
+  notes?: string | null;
   sortOrder?: number;
   createdAt: string;
   updatedAt: string;
@@ -1437,14 +1437,14 @@ export interface EventWaitlistEntry {
   tenantId: string;
   eventId: string;
   guestName: string;
-  email?: string;
-  phone?: string;
-  partySize?: number;
-  status?: string;
-  notes?: string;
-  joinedAt: string;
-  notifiedAt: string;
-  seatedAt: string;
+  email?: string | null;
+  phone?: string | null;
+  partySize?: number | null;
+  status?: string | null;
+  notes?: string | null;
+  joinedAt?: string | null;
+  notifiedAt?: string | null;
+  seatedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1453,17 +1453,17 @@ export interface Facility {
   id: string;
   tenantId: string;
   name: string;
-  code?: string;
+  code?: string | null;
   facilityType?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  state?: string;
-  postalCode?: string;
-  country?: string;
-  phone?: string;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
+  phone?: string | null;
   status?: string;
-  notes?: string;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1471,13 +1471,13 @@ export interface Facility {
 export interface FacilityArea {
   id: string;
   tenantId: string;
-  venueId?: string;
+  venueId?: string | null;
   name: string;
-  code?: string;
+  code?: string | null;
   areaType?: string;
-  floor?: string;
-  description?: string;
-  squareFeet?: number;
+  floor?: string | null;
+  description?: string | null;
+  squareFeet?: number | null;
   status?: string;
   createdAt: string;
   updatedAt: string;
@@ -1486,21 +1486,21 @@ export interface FacilityArea {
 export interface FacilityAsset {
   id: string;
   tenantId: string;
-  facilityId?: string;
-  areaId?: string;
+  facilityId?: string | null;
+  areaId?: string | null;
   name: string;
   assetType?: string;
   status?: string;
-  purchaseDate: string;
-  purchaseCost?: number;
-  currentValue?: number;
-  serialNumber?: string;
-  manufacturer?: string;
-  model?: string;
-  warrantyExpiry: string;
-  lastMaintenanceAt: string;
-  nextMaintenanceAt: string;
-  notes?: string;
+  purchaseDate?: string | null;
+  purchaseCost?: number | null;
+  currentValue?: number | null;
+  serialNumber?: string | null;
+  manufacturer?: string | null;
+  model?: string | null;
+  warrantyExpiry?: string | null;
+  lastMaintenanceAt?: string | null;
+  nextMaintenanceAt?: string | null;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1508,17 +1508,17 @@ export interface FacilityAsset {
 export interface FacilitySchedule {
   id: string;
   tenantId: string;
-  facilityId?: string;
-  areaId?: string;
+  facilityId?: string | null;
+  areaId?: string | null;
   title: string;
-  description?: string;
-  scheduleType?: string;
-  status?: string;
-  startDate: string;
-  endDate: string;
-  assignedTo?: string;
-  completedAt: string;
-  notes?: string;
+  description?: string | null;
+  scheduleType?: string | null;
+  status?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  assignedTo?: string | null;
+  completedAt?: string | null;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1526,21 +1526,21 @@ export interface FacilitySchedule {
 export interface FacilityWorkOrder {
   id: string;
   tenantId: string;
-  facilityId?: string;
-  areaId?: string;
-  assetId?: string;
+  facilityId?: string | null;
+  areaId?: string | null;
+  assetId?: string | null;
   title: string;
-  description?: string;
-  priority?: string;
-  status?: string;
-  category?: string;
-  requestedBy?: string;
-  assignedTo?: string;
-  estimatedCost?: number;
-  actualCost?: number;
-  scheduledDate: string;
-  completedDate: string;
-  notes?: string;
+  description?: string | null;
+  priority?: string | null;
+  status?: string | null;
+  category?: string | null;
+  requestedBy?: string | null;
+  assignedTo?: string | null;
+  estimatedCost?: number | null;
+  actualCost?: number | null;
+  scheduledDate?: string | null;
+  completedDate?: string | null;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1548,7 +1548,7 @@ export interface FacilityWorkOrder {
 export interface FeatureFlag {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   flagKey?: string;
   enabled?: boolean;
   rolloutPercent?: number;
@@ -1570,22 +1570,22 @@ export interface ForecastInput {
 export interface Ingredient {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   name: string;
-  category?: string;
+  category?: string | null;
   defaultUnitId?: number;
-  densityGPerMl?: number;
-  shelfLifeDays?: number;
-  storageInstructions?: string;
-  allergens?: string[];
+  densityGPerMl?: number | null;
+  shelfLifeDays?: number | null;
+  storageInstructions?: string | null;
+  allergens?: string[] | null;
   isActive?: boolean;
-  inventoryItemId?: string;
-  currentLotNumber?: string;
-  currentLotReceivedAt: string;
-  currentLotExpiresAt: string;
-  isRecalled?: boolean;
-  recallReason?: string;
-  recalledAt: string;
+  inventoryItemId?: string | null;
+  currentLotNumber?: string | null;
+  currentLotReceivedAt?: string | null;
+  currentLotExpiresAt?: string | null;
+  isRecalled?: boolean | null;
+  recallReason?: string | null;
+  recalledAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1593,13 +1593,13 @@ export interface Ingredient {
 export interface InteractionAttachment {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   interactionId?: string;
   fileName?: string;
   fileUrl?: string;
   fileType?: string;
   fileSize?: number;
-  uploadedBy?: string;
+  uploadedBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1609,15 +1609,15 @@ export interface InventoryAlert {
   tenantId: string;
   itemId: string;
   alertType: string;
-  severity: string;
+  severity?: string | null;
   thresholdValue: number;
-  notes: string;
-  status?: string;
+  notes?: string | null;
+  status?: string | null;
   triggeredAt: string;
-  acknowledgedAt: string;
-  resolvedAt: string;
-  acknowledgedBy?: string;
-  resolvedBy?: string;
+  acknowledgedAt?: string | null;
+  resolvedAt?: string | null;
+  acknowledgedBy?: string | null;
+  resolvedBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1640,23 +1640,23 @@ export interface InventoryForecast {
 export interface InventoryItem {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   item_number: string;
   name: string;
-  description?: string;
+  description?: string | null;
   category: string;
   unitOfMeasure?: string;
   unitCost?: number;
   quantityOnHand?: number;
-  quantityReserved?: number;
+  quantityReserved?: number | null;
   parLevel?: number;
   reorder_level?: number;
-  supplierId?: string;
-  tags?: string[];
-  fsa_status?: string;
-  fsa_temp_logged?: boolean;
-  fsa_allergen_info?: boolean;
-  fsa_traceable?: boolean;
+  supplierId?: string | null;
+  tags?: string[] | null;
+  fsa_status?: string | null;
+  fsa_temp_logged?: boolean | null;
+  fsa_allergen_info?: boolean | null;
+  fsa_traceable?: boolean | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1668,7 +1668,7 @@ export interface InventoryStock {
   storageLocationId: string;
   quantityOnHand?: number;
   unitId: number;
-  lastCountedAt: string;
+  lastCountedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1676,24 +1676,24 @@ export interface InventoryStock {
 export interface InventorySupplier {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   name: string;
   supplierNumber?: string;
-  contactPerson?: string;
-  email?: string;
-  phone?: string;
+  contactPerson?: string | null;
+  email?: string | null;
+  phone?: string | null;
   paymentTerms?: string;
-  notes?: string;
-  tags?: string[];
-  isActive?: boolean;
-  openPOCount?: number;
-  approvedAt: string;
-  approvedBy?: string;
-  suspendedAt: string;
-  suspendedReason?: string;
-  blacklistedAt: string;
-  blacklistedReason?: string;
-  qualificationStatus?: string;
+  notes?: string | null;
+  tags?: string[] | null;
+  isActive?: boolean | null;
+  openPOCount?: number | null;
+  approvedAt?: string | null;
+  approvedBy?: string | null;
+  suspendedAt?: string | null;
+  suspendedReason?: string | null;
+  blacklistedAt?: string | null;
+  blacklistedReason?: string | null;
+  qualificationStatus?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1705,19 +1705,19 @@ export interface InventoryTransaction {
   transactionType: string;
   quantity?: number;
   unitCost?: number;
-  totalCost?: number;
-  reference?: string;
-  referenceType?: string;
-  referenceId?: string;
-  notes?: string;
+  totalCost?: number | null;
+  reference?: string | null;
+  referenceType?: string | null;
+  referenceId?: string | null;
+  notes?: string | null;
   reason?: string;
-  employeeId?: string;
-  storageLocationId?: string;
+  employeeId?: string | null;
+  storageLocationId?: string | null;
   transactionDate: string;
-  reversedAt: string;
-  reversedBy?: string;
-  reverseOfTransactionId?: string;
-  isReversed?: boolean;
+  reversedAt?: string | null;
+  reversedBy?: string | null;
+  reverseOfTransactionId?: string | null;
+  isReversed?: boolean | null;
   createdAt: string;
 }
 
@@ -1727,15 +1727,15 @@ export interface InventoryTransfer {
   fromLocationId?: string;
   toLocationId?: string;
   status?: string;
-  requestedBy?: string;
-  approvedBy?: string;
-  shippedBy?: string;
-  receivedBy?: string;
-  shippedAt: string;
-  receivedAt: string;
-  discrepancyNotes?: string;
-  hasDiscrepancy?: boolean;
-  notes?: string;
+  requestedBy?: string | null;
+  approvedBy?: string | null;
+  shippedBy?: string | null;
+  receivedBy?: string | null;
+  shippedAt?: string | null;
+  receivedAt?: string | null;
+  discrepancyNotes?: string | null;
+  hasDiscrepancy?: boolean | null;
+  notes?: string | null;
   items?: string;
   createdAt: string;
   updatedAt: string;
@@ -1747,7 +1747,7 @@ export interface InventoryTransferItem {
   transferId: string;
   itemId: string;
   quantity?: number;
-  unitId: string;
+  unitId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1768,20 +1768,20 @@ export interface Invoice {
   amountDue?: number;
   paymentTerms?: number;
   dueDate: string;
-  paidAt: string;
-  depositPercentage?: number;
-  depositRequired?: number;
-  depositPaid?: number;
+  paidAt?: string | null;
+  depositPercentage?: number | null;
+  depositRequired?: number | null;
+  depositPaid?: number | null;
   issuedAt: string;
-  sentAt: string;
-  viewedAt: string;
-  overdueSince: string;
-  reminderCount?: number;
-  lastReminderAt: string;
-  notes?: string;
-  internalNotes?: string;
-  lineItems?: string;
-  metadata?: string;
+  sentAt?: string | null;
+  viewedAt?: string | null;
+  overdueSince?: string | null;
+  reminderCount?: number | null;
+  lastReminderAt?: string | null;
+  notes?: string | null;
+  internalNotes?: string | null;
+  lineItems?: unknown | null;
+  metadata?: unknown;
   createdAt: string;
   updatedAt: string;
 }
@@ -1789,19 +1789,19 @@ export interface Invoice {
 export interface IoTAlert {
   id: string;
   tenantId: string;
-  probeId: string;
-  ruleId?: string;
+  probeId?: string | null;
+  ruleId?: string | null;
   severity: string;
-  message: string;
-  value: number;
+  message?: string | null;
+  value?: number | null;
   status?: string;
   triggeredAt: string;
   alertNumber?: string;
   alertType?: string;
   title?: string;
-  temperature?: number;
-  acknowledgedBy?: string;
-  resolvedBy?: string;
+  temperature?: number | null;
+  acknowledgedBy?: string | null;
+  resolvedBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1813,16 +1813,16 @@ export interface IotAlertRule {
   equipmentId: string;
   sensorType: string;
   condition: string;
-  threshold: number;
-  thresholdMin: number;
-  thresholdMax: number;
+  threshold?: number | null;
+  thresholdMin?: number | null;
+  thresholdMax?: number | null;
   severity: string;
   durationMs?: number;
   alertAction?: string;
   isActive?: boolean;
-  notifyRoles?: string[];
-  notifyChannels?: string[];
-  description?: string;
+  notifyRoles?: string[] | null;
+  notifyChannels?: string[] | null;
+  description?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1835,10 +1835,10 @@ export interface KitchenTask {
   status?: KitchenTaskStatus;
   priority?: number;
   complexity?: number;
-  tags?: string;
+  tags?: string | null;
   assignedTo?: string;
-  dueDate: string;
-  completedAt: string;
+  dueDate?: string | null;
+  completedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1849,9 +1849,9 @@ export interface KitchenTaskClaim {
   taskId: string;
   employeeId: string;
   claimedAt: string;
-  status?: string;
-  releasedAt: string;
-  releaseReason?: string;
+  status?: string | null;
+  releasedAt?: string | null;
+  releaseReason?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1862,10 +1862,10 @@ export interface KitchenTaskProgress {
   taskId: string;
   employeeId: string;
   progressType: string;
-  newStatus: string;
-  progressPct: number;
-  notes?: string;
-  recordedAt: string;
+  newStatus?: string | null;
+  progressPct?: number | null;
+  notes?: string | null;
+  recordedAt?: string | null;
   createdAt: string;
 }
 
@@ -1873,13 +1873,13 @@ export interface KnowledgeBaseEntry {
   id: string;
   tenantId: string;
   title: string;
-  category?: string;
-  content?: string;
-  tags?: string[];
+  category?: string | null;
+  content?: string | null;
+  tags?: string[] | null;
   status?: string;
-  authorId?: string;
-  publishedAt: string;
-  viewCount?: number;
+  authorId?: string | null;
+  publishedAt?: string | null;
+  viewCount?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1887,17 +1887,17 @@ export interface KnowledgeBaseEntry {
 export interface LaborBudget {
   id: string;
   tenantId: string;
-  deletedAt: string;
-  locationId?: string;
-  periodStart: string;
-  periodEnd: string;
+  deletedAt?: string | null;
+  locationId?: string | null;
+  periodStart?: string | null;
+  periodEnd?: string | null;
   budgetTarget?: number;
-  actualSpend?: number;
+  actualSpend?: number | null;
   budgetType?: string;
   status?: string;
-  description?: string;
-  approvedBy?: string;
-  approvedAt: string;
+  description?: string | null;
+  approvedBy?: string | null;
+  approvedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1905,21 +1905,21 @@ export interface LaborBudget {
 export interface Lead {
   id: string;
   tenantId: string;
-  deletedAt: string;
-  source?: string;
-  companyName?: string;
+  deletedAt?: string | null;
+  source?: string | null;
+  companyName?: string | null;
   contactName?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  eventType?: string;
-  eventDate: string;
-  estimatedGuests?: number;
-  estimatedValue?: number;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  eventType?: string | null;
+  eventDate?: string | null;
+  estimatedGuests?: number | null;
+  estimatedValue?: number | null;
   status?: string;
-  assignedTo?: string;
-  notes?: string;
-  convertedToClientId?: string;
-  convertedAt: string;
+  assignedTo?: string | null;
+  notes?: string | null;
+  convertedToClientId?: string | null;
+  convertedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1928,15 +1928,15 @@ export interface LogisticsDispatch {
   id: string;
   tenantId: string;
   routeId: string;
-  driverId?: string;
-  vehicleId?: string;
-  status?: string;
-  priority?: string;
-  estimatedDeliveryTime: string;
-  actualDeliveryTime: string;
-  departedAt: string;
-  failureReason?: string;
-  notes?: string;
+  driverId?: string | null;
+  vehicleId?: string | null;
+  status?: string | null;
+  priority?: string | null;
+  estimatedDeliveryTime?: string | null;
+  actualDeliveryTime?: string | null;
+  departedAt?: string | null;
+  failureReason?: string | null;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1965,21 +1965,21 @@ export interface MaintenanceWorkOrder {
   id: string;
   tenantId: string;
   workOrderNumber?: string;
-  areaId?: string;
-  equipmentId?: string;
+  areaId?: string | null;
+  equipmentId?: string | null;
   title: string;
   workOrderType?: string;
   priority?: string;
   status?: string;
-  description?: string;
-  reportedBy?: string;
-  assignedTo?: string;
-  scheduledDate: string;
-  completedAt: string;
-  estimatedCost?: number;
-  totalCost?: number;
-  partsUsed?: string;
-  notes?: string;
+  description?: string | null;
+  reportedBy?: string | null;
+  assignedTo?: string | null;
+  scheduledDate?: string | null;
+  completedAt?: string | null;
+  estimatedCost?: number | null;
+  totalCost?: number | null;
+  partsUsed?: string | null;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1988,19 +1988,19 @@ export interface Menu {
   id: string;
   tenantId: string;
   name: string;
-  description?: string;
-  category?: string;
+  description?: string | null;
+  category?: string | null;
   isActive?: boolean;
-  basePrice?: number;
-  pricePerPerson?: number;
-  minGuests?: number;
-  maxGuests?: number;
-  isSeasonal?: boolean;
-  seasonLabel?: string;
-  seasonYear?: number;
-  status?: MenuStatus;
-  publishedAt: string;
-  archivedAt: string;
+  basePrice?: number | null;
+  pricePerPerson?: number | null;
+  minGuests?: number | null;
+  maxGuests?: number | null;
+  isSeasonal?: boolean | null;
+  seasonLabel?: string | null;
+  seasonYear?: number | null;
+  status?: MenuStatus | null;
+  publishedAt?: string | null;
+  archivedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2008,13 +2008,13 @@ export interface Menu {
 export interface MenuDish {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   menuId: string;
   dishId: string;
-  course?: string;
+  course?: string | null;
   sortOrder?: number;
   isOptional?: boolean;
-  priceOverride?: number;
+  priceOverride?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2025,7 +2025,7 @@ export interface MethodVideo {
   prepMethodId: string;
   title: string;
   url: string;
-  durationSeconds?: number;
+  durationSeconds?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2033,13 +2033,13 @@ export interface MethodVideo {
 export interface Note {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   title?: string;
-  content?: string;
-  color?: string;
-  tags?: string[];
-  entityType?: string;
-  entityId?: string;
+  content?: string | null;
+  color?: string | null;
+  tags?: string[] | null;
+  entityType?: string | null;
+  entityId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2047,15 +2047,15 @@ export interface Note {
 export interface Notification {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   recipientEmployeeId: string;
   notificationType?: string;
   title?: string;
-  body?: string;
-  actionUrl?: string;
+  body?: string | null;
+  actionUrl?: string | null;
   isRead?: boolean;
-  readAt: string;
-  correlationId?: string;
+  readAt?: string | null;
+  correlationId?: string | null;
   createdAt: string;
 }
 
@@ -2072,9 +2072,9 @@ export interface OnboardingCompletion {
 export interface OnboardingTask {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   title?: string;
-  description?: string;
+  description?: string | null;
   taskType?: string;
   sortOrder?: number;
   isRequired?: boolean;
@@ -2090,7 +2090,7 @@ export interface OpenShift {
   shiftStart: string;
   shiftEnd: string;
   status?: string;
-  claimedBy?: string;
+  claimedBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2101,11 +2101,11 @@ export interface OverrideAudit {
   entityType?: string;
   entityId?: string;
   constraintId?: string;
-  guardExpression?: string;
+  guardExpression?: string | null;
   overriddenBy?: string;
   overrideReason?: string;
-  authorizedBy?: string;
-  authorizedAt: string;
+  authorizedBy?: string | null;
+  authorizedAt?: string | null;
   createdAt: string;
 }
 
@@ -2119,18 +2119,18 @@ export interface Payment {
   invoiceId?: string;
   eventId?: string;
   clientId?: string;
-  gatewayTransactionId?: string;
-  gatewayPaymentMethodId?: string;
-  processor?: string;
-  processedAt: string;
-  completedAt: string;
-  refundedAt: string;
-  chargebackAt: string;
-  fraudStatus?: string;
-  fraudScore?: number;
-  reviewedAt: string;
-  reviewedBy?: string;
-  description?: string;
+  gatewayTransactionId?: string | null;
+  gatewayPaymentMethodId?: string | null;
+  processor?: string | null;
+  processedAt?: string | null;
+  completedAt?: string | null;
+  refundedAt?: string | null;
+  chargebackAt?: string | null;
+  fraudStatus?: string | null;
+  fraudScore?: number | null;
+  reviewedAt?: string | null;
+  reviewedBy?: string | null;
+  description?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2139,25 +2139,25 @@ export interface PaymentMethod {
   id: string;
   tenantId: string;
   clientId?: string;
-  externalMethodId?: string;
+  externalMethodId?: string | null;
   type?: string;
-  cardLastFour?: string;
-  cardNetwork?: string;
-  cardExpiryMonth?: number;
-  cardExpiryYear?: number;
-  cardHolderName?: string;
-  bankAccountLastFour?: string;
-  bankAccountType?: string;
-  bankRoutingNumber?: string;
-  walletProvider?: string;
-  walletEmail?: string;
+  cardLastFour?: string | null;
+  cardNetwork?: string | null;
+  cardExpiryMonth?: number | null;
+  cardExpiryYear?: number | null;
+  cardHolderName?: string | null;
+  bankAccountLastFour?: string | null;
+  bankAccountType?: string | null;
+  bankRoutingNumber?: string | null;
+  walletProvider?: string | null;
+  walletEmail?: string | null;
   status?: string;
   isDefault?: boolean;
-  fraudFlagged?: boolean;
-  verifiedAt: string;
-  verificationMethod?: string;
-  nickname?: string;
-  expiresAt: string;
+  fraudFlagged?: boolean | null;
+  verifiedAt?: string | null;
+  verificationMethod?: string | null;
+  nickname?: string | null;
+  expiresAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2168,7 +2168,7 @@ export interface PaymentRefundAttempt {
   paymentId: string;
   requestedAmount?: number;
   effectiveAmount?: number;
-  refundReason?: string;
+  refundReason?: string | null;
   success?: boolean;
   createdAt: string;
 }
@@ -2182,20 +2182,20 @@ export interface PayrollApprovalHistory {
   newStatus?: string;
   performedBy?: string;
   performedAt: string;
-  reason?: string;
+  reason?: string | null;
   createdAt: string;
 }
 
 export interface PayrollLineItem {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   payrollRunId: string;
   employeeId: string;
   grossPay?: number;
   netPay?: number;
-  totalDeductions?: number;
-  hoursWorked?: number;
+  totalDeductions?: number | null;
+  hoursWorked?: number | null;
   hoursRegular?: number;
   hoursOvertime?: number;
   rateRegular?: number;
@@ -2207,7 +2207,7 @@ export interface PayrollLineItem {
 export interface PayrollPeriod {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   periodStart: string;
   periodEnd: string;
   status?: PayrollPeriodStatus;
@@ -2218,18 +2218,18 @@ export interface PayrollPeriod {
 export interface PayrollRun {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   payrollPeriodId?: string;
   runDate: string;
   status?: PayrollRunStatus;
   totalGross?: number;
   totalDeductions?: number;
   totalNet?: number;
-  approvedBy?: string;
-  approvedAt: string;
-  rejectedBy?: string;
-  paidAt: string;
-  rejectReason?: string;
+  approvedBy?: string | null;
+  approvedAt?: string | null;
+  rejectedBy?: string | null;
+  paidAt?: string | null;
+  rejectReason?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2237,14 +2237,14 @@ export interface PayrollRun {
 export interface PerformancePrediction {
   id: string;
   tenantId: string;
-  employeeId?: string;
-  predictionType?: string;
-  predictionHorizon?: number;
-  predictionScore?: number;
-  confidence?: string;
-  factors?: string;
-  createdAt: string;
-  expiresAt: string;
+  employeeId?: string | null;
+  predictionType?: string | null;
+  predictionHorizon?: number | null;
+  predictionScore?: number | null;
+  confidence?: string | null;
+  factors?: string | null;
+  createdAt?: string | null;
+  expiresAt?: string | null;
 }
 
 export interface PerformanceReview {
@@ -2254,10 +2254,10 @@ export interface PerformanceReview {
   reviewerId: string;
   reviewType?: string;
   scheduledDate: string;
-  rating?: number;
+  rating?: number | null;
   status?: string;
-  completedDate: string;
-  employeeAcknowledgedAt: string;
+  completedDate?: string | null;
+  employeeAcknowledgedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2265,13 +2265,13 @@ export interface PerformanceReview {
 export interface PrepComment {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   taskId: string;
   employeeId: string;
   commentText: string;
   isResolved?: boolean;
-  resolvedAt: string;
-  resolvedBy?: string;
+  resolvedAt?: string | null;
+  resolvedBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2282,14 +2282,14 @@ export interface PrepList {
   eventId: string;
   name: string;
   batchMultiplier?: number;
-  dietaryRestrictions?: string[];
+  dietaryRestrictions?: string[] | null;
   status?: PrepListStatus;
   totalItems?: number;
   totalEstimatedTime?: number;
-  notes?: string;
+  notes?: string | null;
   generatedAt: string;
-  finalizedAt: string;
-  isActive?: boolean;
+  finalizedAt?: string | null;
+  isActive?: boolean | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2309,28 +2309,28 @@ export interface PrepListImport {
 export interface PrepListItem {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   prepListId: string;
-  stationId: string;
+  stationId?: string | null;
   stationName: string;
   ingredientId: string;
   ingredientName: string;
-  category?: string;
+  category?: string | null;
   baseQuantity?: number;
   baseUnit?: string;
   scaledQuantity?: number;
   scaledUnit?: string;
   isOptional?: boolean;
-  preparationNotes?: string;
-  allergens?: string[];
-  dietarySubstitutions?: string[];
-  dishId?: string;
-  dishName?: string;
-  recipeVersionId?: string;
+  preparationNotes?: string | null;
+  allergens?: string[] | null;
+  dietarySubstitutions?: string[] | null;
+  dishId?: string | null;
+  dishName?: string | null;
+  recipeVersionId?: string | null;
   sortOrder?: number;
   isCompleted?: boolean;
-  completedAt: string;
-  completedBy?: string;
+  completedAt?: string | null;
+  completedBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2338,12 +2338,12 @@ export interface PrepListItem {
 export interface PrepMethod {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   name: string;
-  category?: string;
-  description?: string;
-  estimatedDurationMinutes?: number;
-  requiresCertification?: string[];
+  category?: string | null;
+  description?: string | null;
+  estimatedDurationMinutes?: number | null;
+  requiresCertification?: string[] | null;
   isActive?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -2353,25 +2353,25 @@ export interface PrepTask {
   id: string;
   tenantId: string;
   eventId: string;
-  prepListId?: string;
+  prepListId?: string | null;
   name: string;
   taskType?: string;
   status?: PrepTaskStatus;
-  stationId?: string;
+  stationId?: string | null;
   claimedBy?: string;
   claimedAt: string;
   quantityTotal?: number;
   quantityCompleted?: number;
-  quantityUnitId?: number;
-  servingsTotal?: number;
+  quantityUnitId?: number | null;
+  servingsTotal?: number | null;
   startByDate: string;
   dueByDate: string;
   priority?: number;
-  dishId?: string;
+  dishId?: string | null;
   locationId?: string;
-  estimatedMinutes?: number;
-  dueByTime: string;
-  notes?: string;
+  estimatedMinutes?: number | null;
+  dueByTime?: string | null;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2384,25 +2384,25 @@ export interface PrepTaskPlanWorkflow {
   status?: PrepTaskPlanWorkflowStatus;
   currentStep?: number;
   totalSteps?: number;
-  generationOptions?: string;
-  generatedTasks?: string;
-  reviewedTasks?: string;
-  approvedTaskIds?: string;
-  rejectedTaskIds?: string;
-  instantiatedTaskIds?: string;
-  scheduledWindows?: string;
-  constraintOutcomes?: string;
-  errors?: string;
-  warnings?: string;
+  generationOptions?: string | null;
+  generatedTasks?: string | null;
+  reviewedTasks?: string | null;
+  approvedTaskIds?: string | null;
+  rejectedTaskIds?: string | null;
+  instantiatedTaskIds?: string | null;
+  scheduledWindows?: string | null;
+  constraintOutcomes?: string | null;
+  errors?: string | null;
+  warnings?: string | null;
   generatedCount?: number;
   approvedCount?: number;
   instantiatedCount?: number;
-  reviewedBy?: string;
-  reviewedAt: string;
-  approvedBy?: string;
-  approvedAt: string;
-  startedAt: string;
-  completedAt: string;
+  reviewedBy?: string | null;
+  reviewedAt?: string | null;
+  approvedBy?: string | null;
+  approvedAt?: string | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2411,17 +2411,17 @@ export interface PreventiveMaintenanceSchedule {
   id: string;
   tenantId: string;
   scheduleNumber?: string;
-  areaId?: string;
-  equipmentId?: string;
+  areaId?: string | null;
+  equipmentId?: string | null;
   title?: string;
-  description?: string;
+  description?: string | null;
   frequency?: string;
   intervalDays?: number;
   nextDueAt: string;
-  lastCompletedAt: string;
-  assignedTo?: string;
-  estimatedHours?: number;
-  estimatedCost?: number;
+  lastCompletedAt?: string | null;
+  assignedTo?: string | null;
+  estimatedHours?: number | null;
+  estimatedCost?: number | null;
   status?: string;
   createdAt: string;
   updatedAt: string;
@@ -2430,15 +2430,15 @@ export interface PreventiveMaintenanceSchedule {
 export interface PricingTier {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   catalogEntryId: string;
   tierName?: string;
   minQuantity?: number;
-  maxQuantity?: number;
+  maxQuantity?: number | null;
   unitCost?: number;
-  discountPercent?: number;
-  effectiveFrom: string;
-  effectiveTo: string;
+  discountPercent?: number | null;
+  effectiveFrom?: string | null;
+  effectiveTo?: string | null;
   isActive?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -2449,8 +2449,8 @@ export interface ProcurementBudget {
   tenantId: string;
   name: string;
   fiscalYear: number;
-  periodStart: string;
-  periodEnd: string;
+  periodStart?: string | null;
+  periodEnd?: string | null;
   budgetAmount?: number;
   spentAmount?: number;
   status?: string;
@@ -2465,9 +2465,9 @@ export interface ProcurementBudgetAlert {
   utilizationPct?: number;
   alertType: string;
   message: string;
-  triggeredAt: string;
-  acknowledgedAt: string;
-  acknowledgedBy?: string;
+  triggeredAt?: string | null;
+  acknowledgedAt?: string | null;
+  acknowledgedBy?: string | null;
   isAcknowledged?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -2476,32 +2476,32 @@ export interface ProcurementBudgetAlert {
 export interface Proposal {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   proposalNumber?: string;
-  clientId?: string;
-  leadId?: string;
-  eventId?: string;
+  clientId?: string | null;
+  leadId?: string | null;
+  eventId?: string | null;
   title?: string;
-  eventDate: string;
-  eventType?: string;
-  guestCount?: number;
-  venueName?: string;
-  venueAddress?: string;
+  eventDate?: string | null;
+  eventType?: string | null;
+  guestCount?: number | null;
+  venueName?: string | null;
+  venueAddress?: string | null;
   subtotal?: number;
   taxRate?: number;
   taxAmount?: number;
   discountAmount?: number;
   total?: number;
   status?: ProposalStatus;
-  validUntil: string;
-  sentAt: string;
-  viewedAt: string;
-  acceptedAt: string;
-  rejectedAt: string;
-  notes?: string;
-  termsAndConditions?: string;
-  lineItemCount?: number;
-  publicToken?: string;
+  validUntil?: string | null;
+  sentAt?: string | null;
+  viewedAt?: string | null;
+  acceptedAt?: string | null;
+  rejectedAt?: string | null;
+  notes?: string | null;
+  termsAndConditions?: string | null;
+  lineItemCount?: number | null;
+  publicToken?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2509,34 +2509,34 @@ export interface Proposal {
 export interface ProposalDraft {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   draftId?: string;
   userId?: string;
   status?: string;
   version?: number;
   title?: string;
   clientName?: string;
-  clientEmail?: string;
-  clientPhone?: string;
-  eventSummary?: string;
-  menuSections?: string;
-  servicePlan?: string;
-  pricingBreakdown?: string;
-  timeline?: string;
-  upgradeOptions?: string;
-  visionSummary?: string;
-  notes?: string;
-  nextSteps?: string;
-  templateId?: string;
+  clientEmail?: string | null;
+  clientPhone?: string | null;
+  eventSummary?: unknown;
+  menuSections?: unknown;
+  servicePlan?: unknown;
+  pricingBreakdown?: unknown;
+  timeline?: unknown | null;
+  upgradeOptions?: unknown | null;
+  visionSummary?: string | null;
+  notes?: string | null;
+  nextSteps?: string | null;
+  templateId?: string | null;
   magicToken?: string;
-  magicTokenExpiresAt: string;
-  sentAt: string;
+  magicTokenExpiresAt?: string | null;
+  sentAt?: string | null;
   sentVia?: string;
-  viewedAt: string;
-  respondedAt: string;
+  viewedAt?: string | null;
+  respondedAt?: string | null;
   depositAmount?: number;
   depositPaid?: boolean;
-  htmlContent?: string;
+  htmlContent?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2544,18 +2544,18 @@ export interface ProposalDraft {
 export interface ProposalLineItem {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   proposalId: string;
   itemType?: string;
   category?: string;
   description?: string;
   quantity?: number;
-  unitOfMeasure?: string;
+  unitOfMeasure?: string | null;
   unitPrice?: number;
   total?: number;
   totalPrice?: number;
-  sortOrder?: number;
-  notes?: string;
+  sortOrder?: number | null;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2563,21 +2563,21 @@ export interface ProposalLineItem {
 export interface ProposalTemplate {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   name?: string;
-  description?: string;
-  eventType?: string;
-  defaultTerms?: string;
+  description?: string | null;
+  eventType?: string | null;
+  defaultTerms?: string | null;
   defaultTaxRate?: number;
-  defaultNotes?: string;
-  defaultLineItems?: string;
+  defaultNotes?: string | null;
+  defaultLineItems?: unknown;
   isActive?: boolean;
   isDefault?: boolean;
-  logoUrl?: string;
-  primaryColor?: string;
-  secondaryColor?: string;
-  accentColor?: string;
-  fontFamily?: string;
+  logoUrl?: string | null;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+  accentColor?: string | null;
+  fontFamily?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2585,24 +2585,24 @@ export interface ProposalTemplate {
 export interface PurchaseOrder {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   poNumber: string;
   vendorId: string;
   locationId: string;
   orderDate: string;
-  expectedDeliveryDate: string;
-  actualDeliveryDate: string;
+  expectedDeliveryDate?: string | null;
+  actualDeliveryDate?: string | null;
   status?: string;
   subtotal?: number;
   taxAmount?: number;
   shippingAmount?: number;
   total?: number;
-  notes?: string;
-  submittedBy?: string;
-  submittedAt: string;
-  receivedBy?: string;
-  receivedAt: string;
-  itemCount?: number;
+  notes?: string | null;
+  submittedBy?: string | null;
+  submittedAt?: string | null;
+  receivedBy?: string | null;
+  receivedAt?: string | null;
+  itemCount?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2610,7 +2610,7 @@ export interface PurchaseOrder {
 export interface PurchaseOrderItem {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   purchaseOrderId: string;
   itemId: string;
   quantityOrdered?: number;
@@ -2618,10 +2618,10 @@ export interface PurchaseOrderItem {
   unitId?: number;
   unitCost?: number;
   totalCost?: number;
-  qualityStatus?: string;
-  discrepancyType?: string;
-  discrepancyAmount?: number;
-  notes?: string;
+  qualityStatus?: string | null;
+  discrepancyType?: string | null;
+  discrepancyAmount?: number | null;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2629,33 +2629,33 @@ export interface PurchaseOrderItem {
 export interface PurchaseRequisition {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   requisitionNumber: string;
   requestedBy?: string;
   requestDate: string;
-  requiredBy: string;
-  locationId?: string;
-  department?: string;
-  justification?: string;
+  requiredBy?: string | null;
+  locationId?: string | null;
+  department?: string | null;
+  justification?: string | null;
   status?: string;
   subtotal?: number;
   estimatedTax?: number;
   estimatedShipping?: number;
   estimatedTotal?: number;
-  approvedBy?: string;
-  approvedAt: string;
-  managerApprovalBy?: string;
-  managerApprovalAt: string;
-  financeApprovalBy?: string;
-  financeApprovalAt: string;
-  convertedToPoId?: string;
-  convertedAt: string;
-  rejectionReason?: string;
-  notes?: string;
-  submittedAt: string;
-  itemCategory?: string;
+  approvedBy?: string | null;
+  approvedAt?: string | null;
+  managerApprovalBy?: string | null;
+  managerApprovalAt?: string | null;
+  financeApprovalBy?: string | null;
+  financeApprovalAt?: string | null;
+  convertedToPoId?: string | null;
+  convertedAt?: string | null;
+  rejectionReason?: string | null;
+  notes?: string | null;
+  submittedAt?: string | null;
+  itemCategory?: string | null;
   priority?: string;
-  itemCount?: number;
+  itemCount?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2663,18 +2663,18 @@ export interface PurchaseRequisition {
 export interface PurchaseRequisitionItem {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   requisitionId: string;
   itemId: string;
-  itemName?: string;
+  itemName?: string | null;
   quantityRequested?: number;
-  unitId?: number;
+  unitId?: number | null;
   estimatedUnitCost?: number;
   estimatedTotalCost?: number;
-  suggestedVendorId?: string;
-  suggestedVendorName?: string;
-  specifications?: string;
-  notes?: string;
+  suggestedVendorId?: string | null;
+  suggestedVendorName?: string | null;
+  specifications?: string | null;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2687,9 +2687,9 @@ export interface QACheck {
   result?: string;
   status?: QACheckStatus;
   inspector?: string;
-  notes?: string;
-  completedAt: string;
-  reinspectedAt: string;
+  notes?: string | null;
+  completedAt?: string | null;
+  reinspectedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2732,10 +2732,10 @@ export interface QualityCheck {
   checkNumber: string;
   title: string;
   checkType: string;
-  completedBy: string;
+  completedBy?: string | null;
   status?: string;
-  completedAt: string;
-  notes?: string;
+  completedAt?: string | null;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2746,8 +2746,8 @@ export interface QualityCheckItem {
   checkId: string;
   itemName: string;
   criterion: string;
-  passed?: boolean;
-  notes?: string;
+  passed?: boolean | null;
+  notes?: string | null;
   sortOrder?: number;
   createdAt: string;
   updatedAt: string;
@@ -2756,12 +2756,12 @@ export interface QualityCheckItem {
 export interface RateLimitConfig {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   name?: string;
   endpointPattern?: string;
   windowMs?: number;
   maxRequests?: number;
-  burstAllowance?: number;
+  burstAllowance?: number | null;
   priority?: number;
   isActive?: boolean;
   createdAt: string;
@@ -2772,9 +2772,9 @@ export interface Recipe {
   id: string;
   tenantId: string;
   name: string;
-  category?: string;
-  cuisineType?: string;
-  description?: string;
+  category?: string | null;
+  cuisineType?: string | null;
+  description?: string | null;
   tags: string[];
   isActive?: boolean;
   createdAt: string;
@@ -2784,13 +2784,13 @@ export interface Recipe {
 export interface RecipeIngredient {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   recipeVersionId: string;
   ingredientId: string;
   quantity: number;
   unitId: number;
   sortOrder: number;
-  preparationNotes?: string;
+  preparationNotes?: string | null;
   isOptional?: boolean;
   wasteFactor?: number;
   createdAt: string;
@@ -2800,17 +2800,17 @@ export interface RecipeIngredient {
 export interface RecipeStep {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   recipeVersionId: string;
   stepNumber: number;
   instruction: string;
-  durationMinutes?: number;
-  temperatureValue?: number;
-  temperatureUnit?: string;
-  equipmentNeeded?: string[];
-  tips?: string;
-  videoUrl?: string;
-  imageUrl?: string;
+  durationMinutes?: number | null;
+  temperatureValue?: number | null;
+  temperatureUnit?: string | null;
+  equipmentNeeded?: string[] | null;
+  tips?: string | null;
+  videoUrl?: string | null;
+  imageUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2821,25 +2821,25 @@ export interface RecipeVersion {
   recipeId: string;
   name: string;
   versionNumber: number;
-  category?: string;
-  cuisineType?: string;
-  description?: string;
+  category?: string | null;
+  cuisineType?: string | null;
+  description?: string | null;
   tags?: string[];
   yieldQuantity?: number;
   yieldUnitId?: number;
-  yieldDescription?: string;
-  prepTimeMinutes?: number;
-  cookTimeMinutes?: number;
-  restTimeMinutes?: number;
-  difficultyLevel?: number;
-  instructions?: string;
-  notes?: string;
+  yieldDescription?: string | null;
+  prepTimeMinutes?: number | null;
+  cookTimeMinutes?: number | null;
+  restTimeMinutes?: number | null;
+  difficultyLevel?: number | null;
+  instructions?: string | null;
+  notes?: string | null;
   totalCost?: number;
   costPerYield?: number;
-  status?: RecipeVersionStatus;
-  publishedAt: string;
-  approvedAt: string;
-  approvedBy?: string;
+  status?: RecipeVersionStatus | null;
+  publishedAt?: string | null;
+  approvedAt?: string | null;
+  approvedBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2858,13 +2858,13 @@ export interface ReorderSuggestion {
 export interface Report {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   name?: string;
   reportType?: string;
-  queryConfig?: string;
-  displayConfig?: string;
-  isShared?: boolean;
-  createdBy?: string;
+  queryConfig?: unknown;
+  displayConfig?: unknown;
+  isShared?: boolean | null;
+  createdBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2877,14 +2877,14 @@ export interface RevenueRecognitionLine {
   amount?: number;
   recognizedAmount?: number;
   status?: string;
-  dueDate: string;
-  recognizedAt: string;
-  milestoneId?: string;
-  milestoneName?: string;
-  milestoneDescription?: string;
-  description?: string;
-  notes?: string;
-  metadata?: string;
+  dueDate?: string | null;
+  recognizedAt?: string | null;
+  milestoneId?: string | null;
+  milestoneName?: string | null;
+  milestoneDescription?: string | null;
+  description?: string | null;
+  notes?: string | null;
+  metadata?: unknown;
   createdAt: string;
   updatedAt: string;
 }
@@ -2894,7 +2894,7 @@ export interface RevenueRecognitionSchedule {
   tenantId: string;
   invoiceId: string;
   eventId: string;
-  contractId: string;
+  contractId?: string | null;
   clientId: string;
   totalAmount?: number;
   recognizedAmount?: number;
@@ -2904,14 +2904,14 @@ export interface RevenueRecognitionSchedule {
   startDate: string;
   endDate: string;
   recognitionPeriod?: number;
-  serviceStartDate: string;
-  serviceEndDate: string;
+  serviceStartDate?: string | null;
+  serviceEndDate?: string | null;
   totalMilestones?: number;
   completedMilestones?: number;
-  description?: string;
-  notes?: string;
-  metadata?: string;
-  completedAt: string;
+  description?: string | null;
+  notes?: string | null;
+  metadata?: unknown;
+  completedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2919,11 +2919,11 @@ export interface RevenueRecognitionSchedule {
 export interface RolePolicy {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   roleId: string;
   roleName?: string;
-  permissions?: string[];
-  description?: string;
+  permissions?: unknown;
+  description?: string | null;
   isActive?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -2935,9 +2935,9 @@ export interface RouteStop {
   routeId: string;
   name?: string;
   stopNumber?: number;
-  plannedArrival: string;
+  plannedArrival?: string | null;
   status?: string;
-  actualArrival: string;
+  actualArrival?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2945,27 +2945,27 @@ export interface RouteStop {
 export interface SampleData {
   id: string;
   tenantId: string;
-  seededAt: string;
-  clearedAt: string;
-  isSeeded?: boolean;
-  eventsCreated?: number;
-  clientsCreated?: number;
-  usersCreated?: number;
-  recipesCreated?: number;
+  seededAt?: string | null;
+  clearedAt?: string | null;
+  isSeeded?: boolean | null;
+  eventsCreated?: number | null;
+  clientsCreated?: number | null;
+  usersCreated?: number | null;
+  recipesCreated?: number | null;
 }
 
 export interface Schedule {
   id: string;
   tenantId: string;
-  deletedAt: string;
-  locationId?: string;
+  deletedAt?: string | null;
+  locationId?: string | null;
   scheduleDate: string;
   status?: ScheduleStatus;
-  publishedAt: string;
-  publishedBy?: string;
-  approvedBy?: string;
-  approvedAt: string;
-  notes?: string;
+  publishedAt?: string | null;
+  publishedBy?: string | null;
+  approvedBy?: string | null;
+  approvedAt?: string | null;
+  notes?: string | null;
   shiftCount?: number;
   createdAt: string;
   updatedAt: string;
@@ -2974,19 +2974,19 @@ export interface Schedule {
 export interface ScheduleShift {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   scheduleId: string;
   employeeId: string;
   locationId: string;
   shiftStart: string;
   shiftEnd: string;
-  roleDuringShift?: string;
-  notes?: string;
-  swapOfferedTo?: string;
-  swapStatus?: string;
-  swapOfferedAt: string;
-  swapAcceptedAt: string;
-  inheritedContext?: string;
+  roleDuringShift?: string | null;
+  notes?: string | null;
+  swapOfferedTo?: string | null;
+  swapStatus?: string | null;
+  swapOfferedAt?: string | null;
+  swapAcceptedAt?: string | null;
+  inheritedContext?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3213,28 +3213,28 @@ export interface SelOnboardingTrainingQuestion10Definition {
 export interface Shipment {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   shipmentNumber: string;
   status?: ShipmentStatus;
-  eventId?: string;
-  supplierId?: string;
-  locationId?: string;
-  scheduledDate: string;
-  shippedDate: string;
-  estimatedDeliveryDate: string;
-  actualDeliveryDate: string;
+  eventId?: string | null;
+  supplierId?: string | null;
+  locationId?: string | null;
+  scheduledDate?: string | null;
+  shippedDate?: string | null;
+  estimatedDeliveryDate?: string | null;
+  actualDeliveryDate?: string | null;
   totalItems?: number;
-  shippingCost?: number;
-  totalValue?: number;
-  trackingNumber?: string;
-  carrier?: string;
-  shippingMethod?: string;
-  deliveredBy?: string;
-  receivedBy?: string;
+  shippingCost?: number | null;
+  totalValue?: number | null;
+  trackingNumber?: string | null;
+  carrier?: string | null;
+  shippingMethod?: string | null;
+  deliveredBy?: string | null;
+  receivedBy?: string | null;
   signatureData?: string;
-  notes?: string;
-  internalNotes?: string;
-  reference?: string;
+  notes?: string | null;
+  internalNotes?: string | null;
+  reference?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3242,19 +3242,19 @@ export interface Shipment {
 export interface ShipmentItem {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   shipmentId: string;
   itemId: string;
   quantityShipped?: number;
   quantityReceived?: number;
   quantityDamaged?: number;
-  unitId?: number;
-  unitCost?: number;
+  unitId?: number | null;
+  unitCost?: number | null;
   totalCost?: number;
-  condition?: string;
-  conditionNotes?: string;
-  lotNumber?: string;
-  expirationDate: string;
+  condition?: string | null;
+  conditionNotes?: string | null;
+  lotNumber?: string | null;
+  expirationDate?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3262,15 +3262,15 @@ export interface ShipmentItem {
 export interface SmsAutomationRule {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   name?: string;
-  description?: string;
+  description?: string | null;
   triggerType?: string;
-  triggerConfig?: string;
-  templateId?: string;
-  customMessage?: string;
+  triggerConfig?: unknown;
+  templateId?: string | null;
+  customMessage?: string | null;
   recipientType?: string;
-  recipientConfig?: string;
+  recipientConfig?: unknown;
   isActive?: boolean;
   priority?: number;
   createdAt: string;
@@ -3278,19 +3278,19 @@ export interface SmsAutomationRule {
 }
 
 export interface SoftDeletable {
-  deletedAt: string;
+  deletedAt?: string | null;
 }
 
 export interface StaffMember {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   displayName?: string;
-  email?: string;
-  phone?: string;
-  role?: string;
+  email?: string | null;
+  phone?: string | null;
+  role?: string | null;
   status?: string;
-  notes?: string;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3299,19 +3299,19 @@ export interface StaffPerformance {
   id: string;
   tenantId: string;
   employeeId: string;
-  reviewType?: string;
-  status?: string;
-  rating?: number;
-  reviewerId?: string;
-  periodStart: string;
-  periodEnd: string;
-  strengths?: string;
-  improvements?: string;
-  goals?: string;
-  notes?: string;
-  acknowledgementNotes?: string;
-  completedAt: string;
-  acknowledgedAt: string;
+  reviewType?: string | null;
+  status?: string | null;
+  rating?: number | null;
+  reviewerId?: string | null;
+  periodStart?: string | null;
+  periodEnd?: string | null;
+  strengths?: string | null;
+  improvements?: string | null;
+  goals?: string | null;
+  notes?: string | null;
+  acknowledgementNotes?: string | null;
+  completedAt?: string | null;
+  acknowledgedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3335,13 +3335,13 @@ export interface Station {
   name: string;
   stationType?: string;
   capacitySimultaneousTasks?: number;
-  equipmentList?: string[];
+  equipmentList?: string[] | null;
   isActive?: boolean;
-  inMaintenance?: boolean;
-  maintenanceReason?: string;
-  maintenanceStartAt: string;
-  currentTaskCount?: number;
-  notes?: string;
+  inMaintenance?: boolean | null;
+  maintenanceReason?: string | null;
+  maintenanceStartAt?: string | null;
+  currentTaskCount?: number | null;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3349,7 +3349,7 @@ export interface Station {
 export interface StorageLocation {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   locationId: string;
   name: string;
   storageType: string;
@@ -3363,8 +3363,8 @@ export interface TaskBundle {
   id: string;
   tenantId: string;
   name: string;
-  eventId?: string;
-  description?: string;
+  eventId?: string | null;
+  description?: string | null;
   status?: string;
   createdAt: string;
   updatedAt: string;
@@ -3383,14 +3383,14 @@ export interface TaskBundleItem {
 export interface TemperatureLog {
   id: string;
   tenantId: string;
-  equipmentId: string;
+  equipmentId?: string | null;
   logNumber: string;
   logType: string;
-  loggedBy: string;
+  loggedBy?: string | null;
   temperature: number;
   loggedAt: string;
-  withinRange: boolean;
-  notes?: string;
+  withinRange?: boolean | null;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3400,11 +3400,11 @@ export interface TemperatureProbe {
   tenantId: string;
   name: string;
   probeId: string;
-  locationId?: string;
+  locationId?: string | null;
   minTemp: number;
   maxTemp: number;
   isActive?: boolean;
-  lastCalibration: string;
+  lastCalibration?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3415,7 +3415,7 @@ export interface TemperatureReading {
   probeId: string;
   temperature: number;
   loggedAt: string;
-  withinRange: boolean;
+  withinRange?: boolean | null;
   createdAt: string;
 }
 
@@ -3431,9 +3431,9 @@ export interface TimecardApproval {
   payrollRunId: string;
   submittedBy: string;
   status?: string;
-  approvedBy?: string;
-  approvedAt: string;
-  notes?: string;
+  approvedBy?: string | null;
+  approvedAt?: string | null;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3443,9 +3443,9 @@ export interface TimecardEditRequest {
   tenantId: string;
   timeEntryId: string;
   employeeId: string;
-  requestedClockIn: string;
-  requestedClockOut: string;
-  requestedBreakMinutes?: number;
+  requestedClockIn?: string | null;
+  requestedClockOut?: string | null;
+  requestedBreakMinutes?: number | null;
   reason: string;
   status?: string;
   createdAt: string;
@@ -3455,16 +3455,16 @@ export interface TimecardEditRequest {
 export interface TimeEntry {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   employeeId: string;
-  locationId?: string;
-  shiftId?: string;
+  locationId?: string | null;
+  shiftId?: string | null;
   clockIn: string;
-  clockOut: string;
+  clockOut?: string | null;
   breakMinutes?: number;
-  notes?: string;
-  approvedBy?: string;
-  approvedAt: string;
+  notes?: string | null;
+  approvedBy?: string | null;
+  approvedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3472,17 +3472,17 @@ export interface TimeEntry {
 export interface TimelineTask {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   eventId: string;
   title?: string;
   category?: string;
   startTime: string;
   endTime: string;
   status?: string;
-  assigneeId?: string;
-  notes?: string;
-  sortOrder?: number;
-  completedAt: string;
+  assigneeId?: string | null;
+  notes?: string | null;
+  sortOrder?: number | null;
+  completedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3490,18 +3490,18 @@ export interface TimelineTask {
 export interface TimeOffRequest {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   employeeId?: string;
   startDate: string;
   endDate: string;
-  reason?: string;
+  reason?: string | null;
   requestType?: string;
   status?: string;
-  reviewedBy?: string;
-  reviewedAt: string;
-  rejectionReason?: string;
-  balanceSnapshot?: number;
-  balanceUnit?: string;
+  reviewedBy?: string | null;
+  reviewedAt?: string | null;
+  rejectionReason?: string | null;
+  balanceSnapshot?: number | null;
+  balanceUnit?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3511,12 +3511,12 @@ export interface TipPool {
   tenantId: string;
   periodId?: string;
   totalTips?: number;
-  status?: string;
+  status?: string | null;
   allocationRule?: string;
-  fixedShares?: string;
-  distributedAmount?: number;
-  distributedAt: string;
-  distributedBy?: string;
+  fixedShares?: unknown | null;
+  distributedAmount?: number | null;
+  distributedAt?: string | null;
+  distributedBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3525,26 +3525,26 @@ export interface TrainingAssignment {
   id: string;
   tenantId: string;
   moduleId: string;
-  moduleCode?: string;
-  moduleTitle?: string;
-  employeeId?: string;
-  staffRole?: string;
+  moduleCode?: string | null;
+  moduleTitle?: string | null;
+  employeeId?: string | null;
+  staffRole?: string | null;
   status?: string;
-  dueDate: string;
-  dueDateReviewNeeded?: boolean;
-  firstShiftAt: string;
-  startedAt: string;
-  completedAt: string;
-  waivedAt: string;
-  waiverReason?: string;
-  waiverApprovedBy?: string;
-  attemptCount?: number;
-  lastAttemptId?: string;
-  lastScorePercent?: number;
-  passThresholdPercent?: number;
-  maxAttempts?: number;
-  managerReviewRequired?: boolean;
-  reminderSentAt: string;
+  dueDate?: string | null;
+  dueDateReviewNeeded?: boolean | null;
+  firstShiftAt?: string | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  waivedAt?: string | null;
+  waiverReason?: string | null;
+  waiverApprovedBy?: string | null;
+  attemptCount?: number | null;
+  lastAttemptId?: string | null;
+  lastScorePercent?: number | null;
+  passThresholdPercent?: number | null;
+  maxAttempts?: number | null;
+  managerReviewRequired?: boolean | null;
+  reminderSentAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3571,8 +3571,8 @@ export interface TrainingCompletion {
   employeeId: string;
   assignmentId: string;
   moduleId: string;
-  completedAt: string;
-  score?: number;
+  completedAt?: string | null;
+  score?: number | null;
   passed?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -3581,25 +3581,25 @@ export interface TrainingCompletion {
 export interface TrainingModule {
   id: string;
   tenantId: string;
-  deletedAt: string;
-  code?: string;
+  deletedAt?: string | null;
+  code?: string | null;
   title?: string;
-  description?: string;
-  contentUrl?: string;
+  description?: string | null;
+  contentUrl?: string | null;
   contentType?: string;
-  durationMinutes?: number;
-  category?: string;
+  durationMinutes?: number | null;
+  category?: string | null;
   isRequired?: boolean;
-  passThresholdPercent?: number;
-  maxAttempts?: number;
-  requiredRole?: string;
+  passThresholdPercent?: number | null;
+  maxAttempts?: number | null;
+  requiredRole?: string | null;
   isActive?: boolean;
-  status?: string;
-  version?: number;
-  publishedAt: string;
-  archivedAt: string;
-  notes?: string;
-  createdBy?: string;
+  status?: string | null;
+  version?: number | null;
+  publishedAt?: string | null;
+  archivedAt?: string | null;
+  notes?: string | null;
+  createdBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3627,22 +3627,22 @@ export interface TrainingQuestion {
 export interface User {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   email: string;
   firstName?: string;
   lastName?: string;
   role?: string;
-  authUserId?: string;
-  employeeNumber?: string;
-  phone?: string;
+  authUserId?: string | null;
+  employeeNumber?: string | null;
+  phone?: string | null;
   employmentType?: string;
-  hourlyRate?: number;
-  salaryAnnual?: number;
+  hourlyRate?: number | null;
+  salaryAnnual?: number | null;
   hireDate: string;
-  terminationDate: string;
+  terminationDate?: string | null;
   isActive?: boolean;
-  avatarUrl?: string;
-  roleId?: string;
+  avatarUrl?: string | null;
+  roleId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3650,7 +3650,7 @@ export interface User {
 export interface VarianceReport {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   sessionId: string;
   reportType: string;
   itemId: string;
@@ -3662,17 +3662,17 @@ export interface VarianceReport {
   variancePct?: number;
   accuracyScore?: number;
   status?: string;
-  adjustmentType?: string;
-  adjustmentAmount?: number;
-  adjustmentDate: string;
-  rejectedAt: string;
-  rejectedBy?: string;
-  rejectionReason?: string;
-  notes?: string;
-  rootCause?: string;
-  resolutionNotes?: string;
-  resolvedById?: string;
-  resolvedAt: string;
+  adjustmentType?: string | null;
+  adjustmentAmount?: number | null;
+  adjustmentDate?: string | null;
+  rejectedAt?: string | null;
+  rejectedBy?: string | null;
+  rejectionReason?: string | null;
+  notes?: string | null;
+  rootCause?: string | null;
+  resolutionNotes?: string | null;
+  resolvedById?: string | null;
+  resolvedAt?: string | null;
   generatedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -3681,18 +3681,18 @@ export interface VarianceReport {
 export interface Vehicle {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   make: string;
   model: string;
-  year?: number;
-  plateNumber?: string;
-  vin?: string;
-  capacityWeight?: number;
-  capacityVolume?: number;
-  fuelType?: string;
-  mileage?: number;
+  year?: number | null;
+  plateNumber?: string | null;
+  vin?: string | null;
+  capacityWeight?: number | null;
+  capacityVolume?: number | null;
+  fuelType?: string | null;
+  mileage?: number | null;
   status?: string;
-  notes?: string;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3701,27 +3701,27 @@ export interface Vendor {
   id: string;
   tenantId: string;
   name: string;
-  type?: string;
-  status?: string;
-  email?: string;
-  phone?: string;
-  website?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  zip?: string;
-  taxId?: string;
-  paymentTerms?: string;
-  rating?: number;
-  ratingCount?: number;
-  notes?: string;
-  approvedAt: string;
-  approvedBy?: string;
-  suspendedAt: string;
-  suspendedReason?: string;
-  blacklistedAt: string;
-  blacklistedReason?: string;
-  lastContactAddedAt: string;
+  type?: string | null;
+  status?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip?: string | null;
+  taxId?: string | null;
+  paymentTerms?: string | null;
+  rating?: number | null;
+  ratingCount?: number | null;
+  notes?: string | null;
+  approvedAt?: string | null;
+  approvedBy?: string | null;
+  suspendedAt?: string | null;
+  suspendedReason?: string | null;
+  blacklistedAt?: string | null;
+  blacklistedReason?: string | null;
+  lastContactAddedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3729,27 +3729,27 @@ export interface Vendor {
 export interface VendorCatalog {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   supplierId: string;
   itemNumber?: string;
   itemName?: string;
-  description?: string;
-  category?: string;
+  description?: string | null;
+  category?: string | null;
   baseUnitCost?: number;
   currency?: string;
   unitOfMeasure?: string;
-  leadTimeDays?: number;
-  leadTimeMinDays?: number;
-  leadTimeMaxDays?: number;
-  minimumOrderQuantity?: number;
-  orderMultiple?: number;
+  leadTimeDays?: number | null;
+  leadTimeMinDays?: number | null;
+  leadTimeMaxDays?: number | null;
+  minimumOrderQuantity?: number | null;
+  orderMultiple?: number | null;
   isActive?: boolean;
-  effectiveFrom: string;
-  effectiveTo: string;
-  supplierSku?: string;
-  notes?: string;
+  effectiveFrom?: string | null;
+  effectiveTo?: string | null;
+  supplierSku?: string | null;
+  notes?: string | null;
   tags: string[];
-  lastCostUpdate: string;
+  lastCostUpdate?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3757,12 +3757,12 @@ export interface VendorCatalog {
 export interface VendorContact {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   supplierId: string;
   contactName: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  contactRole?: string;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  contactRole?: string | null;
   isPrimary?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -3771,32 +3771,32 @@ export interface VendorContact {
 export interface VendorContract {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   contractNumber: string;
   vendorId: string;
-  vendorName?: string;
+  vendorName?: string | null;
   contractType?: string;
   status?: string;
   startDate: string;
-  endDate: string;
+  endDate?: string | null;
   autoRenew?: boolean;
   renewalTermDays?: number;
   noticeDaysBeforeRenewal?: number;
   paymentTerms?: string;
-  deliveryTerms?: string;
+  deliveryTerms?: string | null;
   minimumOrderQuantity?: number;
   annualSpendCommitment?: number;
-  spendToPeriod: string;
+  spendToPeriod?: string | null;
   currencyCode?: string;
-  approvedBy?: string;
-  approvedAt: string;
-  terminatedBy?: string;
-  terminatedAt: string;
-  terminationReason?: string;
-  contractUrl?: string;
-  notes?: string;
+  approvedBy?: string | null;
+  approvedAt?: string | null;
+  terminatedBy?: string | null;
+  terminatedAt?: string | null;
+  terminationReason?: string | null;
+  contractUrl?: string | null;
+  notes?: string | null;
   complianceScore?: number;
-  lastComplianceReview: string;
+  lastComplianceReview?: string | null;
   slaBreachCount?: number;
   onTimeDeliveryRate?: number;
   qualityRating?: number;
@@ -3810,9 +3810,9 @@ export interface VendorRating {
   supplierId: string;
   category: string;
   rating?: number;
-  comment?: string;
-  ratedAt: string;
-  ratedBy?: string;
+  comment?: string | null;
+  ratedAt?: string | null;
+  ratedBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3820,22 +3820,22 @@ export interface VendorRating {
 export interface Venue {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   name?: string;
   venueType?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  stateProvince?: string;
-  postalCode?: string;
-  countryCode?: string;
-  capacity?: number;
-  contactName?: string;
-  contactPhone?: string;
-  contactEmail?: string;
-  accessNotes?: string;
-  cateringNotes?: string;
-  layoutImageUrl?: string;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  stateProvince?: string | null;
+  postalCode?: string | null;
+  countryCode?: string | null;
+  capacity?: number | null;
+  contactName?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
+  accessNotes?: string | null;
+  cateringNotes?: string | null;
+  layoutImageUrl?: string | null;
   tags: string[];
   isActive?: boolean;
   createdAt: string;
@@ -3848,8 +3848,8 @@ export interface VersionApproval {
   entityVersionId: string;
   approverId: string;
   status: string;
-  comments?: string;
-  reviewedAt: string;
+  comments?: string | null;
+  reviewedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3860,8 +3860,8 @@ export interface VersionedEntity {
   entityType: string;
   entityId: string;
   entityName: string;
-  isLocked?: boolean;
-  currentVersionId?: string;
+  isLocked?: boolean | null;
+  currentVersionId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3869,21 +3869,21 @@ export interface VersionedEntity {
 export interface WasteEntry {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   inventoryItemId?: string;
   reasonId?: number;
   quantity?: number;
-  unitId?: number;
-  locationId?: string;
-  eventId?: string;
+  unitId?: number | null;
+  locationId?: string | null;
+  eventId?: string | null;
   loggedBy?: string;
   loggedAt: string;
-  approvedBy?: string;
-  approvedAt: string;
-  status?: string;
-  unitCost?: number;
-  totalCost?: number;
-  notes?: string;
+  approvedBy?: string | null;
+  approvedAt?: string | null;
+  status?: string | null;
+  unitCost?: number | null;
+  totalCost?: number | null;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3891,11 +3891,11 @@ export interface WasteEntry {
 export interface Workflow {
   id: string;
   tenantId: string;
-  deletedAt: string;
+  deletedAt?: string | null;
   name?: string;
-  description?: string;
+  description?: string | null;
   triggerType?: string;
-  triggerConfig?: string;
+  triggerConfig?: unknown;
   isActive?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -3904,10 +3904,10 @@ export interface Workflow {
 export interface WorkforceOptimization {
   id: string;
   tenantId: string;
-  locationId?: string;
-  optimizationType?: string;
-  status?: string;
-  completedAt: string;
+  locationId?: string | null;
+  optimizationType?: string | null;
+  status?: string | null;
+  completedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3921,10 +3921,10 @@ export interface WorkOrder {
   type?: string;
   priority?: string;
   status?: WorkOrderStatus;
-  description?: string;
-  scheduledDate: string;
-  assignedTo?: string;
-  completedDate: string;
+  description?: string | null;
+  scheduledDate?: string | null;
+  assignedTo?: string | null;
+  completedDate?: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -284,11 +284,11 @@ export interface InvoiceUpdateInput {
   internalNotes?: string;
   dueDate?: string;
   paymentTerms?: number;
-  lineItems?: string;
+  lineItems?: unknown;
 }
 export interface InvoiceUpdateLineItemsInput {
   id?: string;
-  lineItems?: string;
+  lineItems?: unknown;
 }
 export interface InvoiceVoidInvoiceInput {
   id?: string;
@@ -537,7 +537,7 @@ export interface RevenueRecognitionScheduleCreateInput {
   recognitionPeriod?: number;
   description?: string;
   notes?: string;
-  metadata?: string;
+  metadata?: unknown;
 }
 export interface RevenueRecognitionSchedulePauseInput {
   id?: string;

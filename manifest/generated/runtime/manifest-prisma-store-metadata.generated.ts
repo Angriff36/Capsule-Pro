@@ -2447,7 +2447,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "board_data",
         "irName": "boardData",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -2825,7 +2825,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "columns",
         "irName": "columns",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -2836,7 +2836,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "settings",
         "irName": "settings",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -3572,7 +3572,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "match_criteria",
         "irName": "matchCriteria",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": false,
@@ -3917,7 +3917,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "metadata",
         "irName": "metadata",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -5261,7 +5261,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "preference_value",
         "irName": "preferenceValue",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -5804,7 +5804,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "metadata",
         "irName": "metadata",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -5971,7 +5971,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "metadata",
         "irName": "metadata",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -6149,7 +6149,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "scope",
         "irName": "scope",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -6349,7 +6349,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "metadata",
         "irName": "metadata",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -6806,7 +6806,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "viewport",
         "irName": "viewport",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -7322,7 +7322,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -9397,7 +9397,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "merge_fields",
         "irName": "mergeFields",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -9520,7 +9520,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "trigger_config",
         "irName": "triggerConfig",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -9553,7 +9553,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "recipient_config",
         "irName": "recipientConfig",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -11979,7 +11979,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "input_data",
         "irName": "inputData",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -11990,7 +11990,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "output_data",
         "irName": "outputData",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -12001,7 +12001,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "step_results",
         "irName": "stepResults",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -12012,7 +12012,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "errors",
         "irName": "errors",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -12023,7 +12023,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "warnings",
         "irName": "warnings",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -12300,7 +12300,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "menu_preferences",
         "irName": "menuPreferences",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -12355,7 +12355,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "custom_items",
         "irName": "customItems",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -12876,7 +12876,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "checklist_data",
         "irName": "checklistData",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -12887,7 +12887,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "parsed_event_data",
         "irName": "parsedEventData",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -12898,7 +12898,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "report_config",
         "irName": "reportConfig",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -13265,7 +13265,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "highlights",
         "irName": "highlights",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -13276,7 +13276,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "issues",
         "irName": "issues",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -13287,7 +13287,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "financial_performance",
         "irName": "financialPerformance",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -13298,7 +13298,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "client_feedback",
         "irName": "clientFeedback",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -13309,7 +13309,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "insights",
         "irName": "insights",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -17036,7 +17036,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "line_items",
         "irName": "lineItems",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -17047,7 +17047,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "metadata",
         "irName": "metadata",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": false,
@@ -24227,7 +24227,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "event_summary",
         "irName": "eventSummary",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -24238,7 +24238,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "menu_sections",
         "irName": "menuSections",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -24249,7 +24249,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "service_plan",
         "irName": "servicePlan",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -24260,7 +24260,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "pricing_breakdown",
         "irName": "pricingBreakdown",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -24271,7 +24271,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "timeline",
         "irName": "timeline",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -24282,7 +24282,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "upgrade_options",
         "irName": "upgradeOptions",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -24759,7 +24759,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "default_line_items",
         "irName": "defaultLineItems",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -27618,7 +27618,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "query_config",
         "irName": "queryConfig",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -27629,7 +27629,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "display_config",
         "irName": "displayConfig",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -27851,7 +27851,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "metadata",
         "irName": "metadata",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -28117,7 +28117,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "metadata",
         "irName": "metadata",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -28229,9 +28229,9 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "permissions",
         "irName": "permissions",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
-        "isList": true,
+        "isList": false,
         "optional": true,
         "hasDefault": true,
         "isUpdatedAt": false,
@@ -29443,7 +29443,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "trigger_config",
         "irName": "triggerConfig",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -29487,7 +29487,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "recipient_config",
         "irName": "recipientConfig",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -31741,7 +31741,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "fixed_shares",
         "irName": "fixedShares",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -35584,7 +35584,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "trigger_config",
         "irName": "triggerConfig",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
