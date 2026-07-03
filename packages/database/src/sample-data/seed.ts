@@ -119,11 +119,12 @@ export const seedSampleData = async (
   const unitRows = await prisma.$queryRaw<Array<{ id: number; code: string }>>`
     SELECT id, code FROM core.units ORDER BY id ASC LIMIT 1
   `;
-  if (unitRows.length === 0) {
+  const unitRow = unitRows[0];
+  if (!unitRow) {
     throw new Error("No units found in core.units");
   }
-  const unitId = unitRows[0].id;
-  const unitCode = unitRows[0].code;
+  const unitId = unitRow.id;
+  const unitCode = unitRow.code;
 
   // Create sample recipe with ingredients
   const ingredients = await Promise.all([
@@ -627,7 +628,7 @@ export const clearSampleData = async (
   await prisma.kitchenTask.deleteMany({
     where: {
       tenantId,
-      tags: { contains: "sample" },
+      tags: { has: "sample" },
       deletedAt: null,
     },
   });
