@@ -117,8 +117,8 @@ entity QACorrectiveAction mixin TenantScoped {
   property escalationReason: string = ""
   // Bug fix: lifecycle datetimes must be nullable
   property dueDate: datetime
-  property resolvedAt: datetime
-  property escalatedAt: datetime
+  property resolvedAt: datetime?
+  property escalatedAt: datetime?
   timestamps
 
   computed isOpen: boolean = self.status == "open"

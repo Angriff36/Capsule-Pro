@@ -2004,8 +2004,8 @@ export interface LogisticsRoute {
   totalDuration?: number;
   scheduledDate: string;
   endTime: string;
-  actualStartTime: string;
-  actualEndTime: string;
+  actualStartTime?: string | null;
+  actualEndTime?: string | null;
   completedStops?: number;
   delayMinutes?: number;
   description?: string;
@@ -2786,8 +2786,8 @@ export interface QACorrectiveAction {
   escalatedTo?: string;
   escalationReason?: string;
   dueDate: string;
-  resolvedAt: string;
-  escalatedAt: string;
+  resolvedAt?: string | null;
+  escalatedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }

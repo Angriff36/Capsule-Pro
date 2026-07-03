@@ -3397,8 +3397,8 @@ model LogisticsRoute {
   totalDuration Int @map("total_duration") @default(0)
   scheduledDate DateTime @map("scheduled_date") @db.Date
   endTime DateTime @map("end_time") @db.Timestamptz(6)
-  actualStartTime DateTime @map("actual_start_time") @db.Timestamptz(6)
-  actualEndTime DateTime @map("actual_end_time") @db.Timestamptz(6)
+  actualStartTime DateTime? @map("actual_start_time") @db.Timestamptz(6)
+  actualEndTime DateTime? @map("actual_end_time") @db.Timestamptz(6)
   completedStops Int @map("completed_stops") @default(0)
   delayMinutes Int @map("delay_minutes") @default(0)
   description String @default("")
@@ -4715,8 +4715,8 @@ model QACorrectiveAction {
   escalatedTo String @map("escalated_to") @db.Uuid @default("")
   escalationReason String @map("escalation_reason") @db.Text @default("")
   dueDate DateTime @map("due_date") @db.Timestamptz(6)
-  resolvedAt DateTime @map("resolved_at") @db.Timestamptz(6)
-  escalatedAt DateTime @map("escalated_at") @db.Timestamptz(6)
+  resolvedAt DateTime? @map("resolved_at") @db.Timestamptz(6)
+  escalatedAt DateTime? @map("escalated_at") @db.Timestamptz(6)
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 

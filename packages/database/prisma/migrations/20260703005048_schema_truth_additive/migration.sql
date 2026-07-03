@@ -320,3 +320,10 @@ ALTER TABLE "tenant_kitchen"."recipe_versions" ALTER COLUMN "tags" SET NOT NULL;
 UPDATE "tenant_kitchen"."kitchen_tasks" SET "tags" = '{}' WHERE "tags" IS NULL;
 ALTER TABLE "tenant_kitchen"."kitchen_tasks" ALTER COLUMN "tags" SET DEFAULT '{}';
 ALTER TABLE "tenant_kitchen"."kitchen_tasks" ALTER COLUMN "tags" SET NOT NULL;
+
+-- lifecycle timestamps on the freshly-created tables: null until their event
+-- (same class as claimed_at); tables were created empty with NOT NULL.
+ALTER TABLE "tenant_logistics"."logistics_routes" ALTER COLUMN "actual_start_time" DROP NOT NULL;
+ALTER TABLE "tenant_logistics"."logistics_routes" ALTER COLUMN "actual_end_time" DROP NOT NULL;
+ALTER TABLE "tenant_kitchen"."qa_corrective_actions" ALTER COLUMN "escalated_at" DROP NOT NULL;
+ALTER TABLE "tenant_kitchen"."qa_corrective_actions" ALTER COLUMN "resolved_at" DROP NOT NULL;

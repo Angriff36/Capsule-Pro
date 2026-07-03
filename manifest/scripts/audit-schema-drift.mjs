@@ -92,6 +92,9 @@ const MANIFEST_SEMANTIC_ALIASES = {
   uuid: "string",
   date: "string",
   time: "string",
+  // Native `json` DSL type (3.1.x wave) projects to a Prisma Json column,
+  // which PRISMA_TO_MANIFEST maps to "object".
+  json: "object",
 };
 
 function manifestKindFor(prismaType) {
@@ -532,6 +535,9 @@ const IR_TYPE_ACCEPTS = {
   boolean: new Set(["boolean"]),
   // Json-as-serialized-string is an established repo pattern, so string
   // accepts json. date/time project to DateTime columns (@db.Date/@db.Time).
+  // Native `json` DSL type (3.1.x wave): projects to a Prisma Json column;
+  // string accepted for the D27-deferred fields still stored as text.
+  json: new Set(["json", "string"]),
   string: new Set(["string", "json"]),
   text: new Set(["string", "json"]),
   email: new Set(["string"]),
