@@ -108,11 +108,6 @@ export async function GET(_request: NextRequest) {
         deletedAt: null,
         status: { in: ["optimized", "in_progress"] },
       },
-      include: {
-        stops: {
-          orderBy: { stopNumber: "asc" },
-        },
-      },
       take: 20,
     });
 
@@ -170,12 +165,10 @@ export async function GET(_request: NextRequest) {
 
     // Build delivery objects
     const deliveries = allShipments.map((shipment) => {
-      // Find a matching route (by event or shipment association)
-      const route = routes.find(
-        (r) =>
-          r.eventId === shipment.eventId ||
-          r.stops.some((s) => s.locationId === shipment.locationId)
-      );
+      // Find a matching route by event association.
+      // (RouteStop no longer carries a locationId column, so stop-location
+      // matching against the shipment is not possible.)
+      const route = routes.find((r) => r.eventId === shipment.eventId);
 
       const driver = route?.driverId ? driverMap[route.driverId] : null;
       const vehicle = route?.vehicleId ? vehicleMap[route.vehicleId] : null;

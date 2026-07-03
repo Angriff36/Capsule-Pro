@@ -54,11 +54,11 @@ interface LineItem {
 }
 
 interface ClientOption {
-  company_name: string | null;
+  companyName: string | null;
   email: string | null;
-  first_name: string | null;
+  firstName: string | null;
   id: string;
-  last_name: string | null;
+  lastName: string | null;
 }
 
 interface TemplateOption {
@@ -107,11 +107,11 @@ const eventTypes = [
 ];
 
 function getClientDisplayName(client: ClientOption): string {
-  if (client.company_name) {
-    return client.company_name;
+  if (client.companyName) {
+    return client.companyName;
   }
   return (
-    `${client.first_name || ""} ${client.last_name || ""}`.trim() || "No name"
+    `${client.firstName || ""} ${client.lastName || ""}`.trim() || "No name"
   );
 }
 

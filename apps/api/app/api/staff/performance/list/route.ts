@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       where.status = status;
     }
     if (employeeId) {
-      where.employee_id = employeeId;
+      where.employeeId = employeeId;
     }
 
     const reviews = await database.performanceReview.findMany({
@@ -70,10 +70,11 @@ export async function GET(request: NextRequest) {
       status: r.status,
       rating: r.rating,
       strengths: r.strengths,
-      areas_for_improvement: r.areas_for_improvement,
-      goals_next_period: r.goals_next_period,
-      manager_comments: r.manager_comments,
-      employee_comments: r.employee_comments,
+      // Not modeled in the truthful schema — columns dropped from PerformanceReview.
+      areas_for_improvement: null,
+      goals_next_period: null,
+      manager_comments: null,
+      employee_comments: null,
       createdAt: r.createdAt,
       employee_name: userMap.get(r.employeeId) || null,
       reviewer_name: userMap.get(r.reviewerId) || null,

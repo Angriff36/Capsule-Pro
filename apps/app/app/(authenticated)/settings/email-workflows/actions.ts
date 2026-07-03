@@ -80,7 +80,7 @@ export async function getEmailWorkflows(
     where: whereClause,
     orderBy: [{ createdAt: "desc" }],
     include: {
-      emailTemplate: { select: { name: true } },
+      template: { select: { name: true } },
     },
   });
 
@@ -95,7 +95,7 @@ export async function getEmailWorkflows(
     lastTriggeredAt: w.lastTriggeredAt,
     createdAt: w.createdAt,
     updatedAt: w.updatedAt,
-    templateName: w.emailTemplate?.name ?? null,
+    templateName: w.template?.name ?? null,
   })) as EmailWorkflowRow[];
 }
 
@@ -109,7 +109,7 @@ export async function getEmailWorkflowById(id: string) {
   const workflow = await database.emailWorkflow.findFirst({
     where: { tenantId, id, deletedAt: null },
     include: {
-      emailTemplate: { select: { name: true } },
+      template: { select: { name: true } },
     },
   });
 
@@ -117,7 +117,7 @@ export async function getEmailWorkflowById(id: string) {
 
   return {
     ...workflow,
-    templateName: workflow.emailTemplate?.name ?? null,
+    templateName: workflow.template?.name ?? null,
   };
 }
 

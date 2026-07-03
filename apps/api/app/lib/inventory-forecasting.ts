@@ -667,6 +667,21 @@ export async function saveForecastToDatabase(
   tenantId: string,
   forecast: ForecastResult
 ): Promise<void> {
+  // Resolve the inventory item — the schema requires inventoryItemId on
+  // forecasts. Note: SKU maps to item_number in the database.
+  const item = await database.inventoryItem.findFirst({
+    where: {
+      tenantId,
+      item_number: forecast.sku,
+      deletedAt: null,
+    },
+    select: { id: true },
+  });
+
+  if (!item) {
+    throw new Error(`Inventory item with SKU ${forecast.sku} not found`);
+  }
+
   // Save each forecast point
   for (const point of forecast.forecast) {
     const existing = await database.inventoryForecast.findFirst({
@@ -678,8 +693,6 @@ export async function saveForecastToDatabase(
     });
 
     const forecastValue = point.projectedStock;
-    const lowerBound = forecastValue * 0.9;
-    const upperBound = forecastValue * 1.1;
     let confidenceValue: number;
     if (forecast.confidence === "high") {
       confidenceValue = 0.9;
@@ -698,12 +711,9 @@ export async function saveForecastToDatabase(
           },
         },
         data: {
-          forecast: forecastValue,
-          lower_bound: lowerBound,
-          upper_bound: upperBound,
+          forecastDate: point.date,
+          projectedQuantity: forecastValue,
           confidence: confidenceValue,
-          horizon_days: forecast.daysUntilDepletion ?? 30,
-          last_updated: new Date(),
         },
       });
     } else {
@@ -711,12 +721,11 @@ export async function saveForecastToDatabase(
         data: {
           tenantId,
           sku: forecast.sku,
+          inventoryItemId: item.id,
           date: point.date,
-          forecast: forecastValue,
-          lower_bound: lowerBound,
-          upper_bound: upperBound,
+          forecastDate: point.date,
+          projectedQuantity: forecastValue,
           confidence: confidenceValue,
-          horizon_days: forecast.daysUntilDepletion ?? 30,
         },
       });
     }
@@ -730,15 +739,28 @@ export async function saveReorderSuggestionToDatabase(
   tenantId: string,
   suggestion: ReorderSuggestionResult
 ): Promise<void> {
+  // Resolve the inventory item — the schema requires inventoryItemId on
+  // reorder suggestions. Note: SKU maps to item_number in the database.
+  const item = await database.inventoryItem.findFirst({
+    where: {
+      tenantId,
+      item_number: suggestion.sku,
+      deletedAt: null,
+    },
+    select: { id: true },
+  });
+
+  if (!item) {
+    throw new Error(`Inventory item with SKU ${suggestion.sku} not found`);
+  }
+
   await database.reorderSuggestion.create({
     data: {
       tenantId,
       sku: suggestion.sku,
-      recommended_order_qty: suggestion.recommendedOrderQty,
-      reorder_point: suggestion.reorderPoint,
-      safety_stock: suggestion.reorderPoint * 0.5, // 50% of reorder point
-      lead_time_days: suggestion.leadTimeDays,
-      justification: suggestion.justification,
+      inventoryItemId: item.id,
+      suggestedQuantity: suggestion.recommendedOrderQty,
+      reason: suggestion.justification,
     },
   });
 }
@@ -784,20 +806,18 @@ export async function trackForecastAccuracy(
     (actualDate.getTime() - forecastDate.getTime()) / (1000 * 60 * 60 * 24)
   );
 
-  // Update the forecast with actual data
-  await database.inventoryForecast.update({
-    where: {
-      tenantId_id: {
-        tenantId,
-        id: forecastId,
-      },
-    },
-    data: {
-      actual_depletion_date: actualDate,
-      error_days: errorDays,
-      accuracy_tracked: true,
-    },
-  });
+  // The inventory_forecasts table has no accuracy-tracking columns
+  // (actual_depletion_date / error_days / accuracy_tracked do not exist in
+  // the truthful schema), so record the outcome in logs only.
+  log.info(
+    `[trackForecastAccuracy] Actual depletion recorded for forecast ${forecastId}`,
+    {
+      tenantId,
+      forecastId,
+      actualDepletionDate: actualDate.toISOString(),
+      errorDays,
+    }
+  );
 }
 
 /**

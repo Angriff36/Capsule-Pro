@@ -128,7 +128,7 @@ const AnalyticsEventsPage = async () => {
           varianceAmount: true,
         },
       },
-      reports: {
+      eventReports: {
         where: { deletedAt: null },
         orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
         take: 1,
@@ -170,7 +170,7 @@ const AnalyticsEventsPage = async () => {
         (sum, payment) => sum + Number(payment.amount ?? 0),
         0
       );
-      const completedReports = event.reports.filter(
+      const completedReports = event.eventReports.filter(
         (report) =>
           report.status === "completed" || report.status === "approved"
       ).length;
@@ -292,7 +292,7 @@ const AnalyticsEventsPage = async () => {
                 ) : (
                   events.map((event) => {
                     const latestBudget = event.budgets[0] ?? null;
-                    const latestReport = event.reports[0] ?? null;
+                    const latestReport = event.eventReports[0] ?? null;
                     const budgetValue = Number(
                       latestBudget?.totalBudgetAmount ?? event.budget ?? 0
                     );

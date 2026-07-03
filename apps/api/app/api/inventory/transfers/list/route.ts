@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
       database.inventoryTransfer.findMany({
         where,
         include: {
-          items: true,
+          lineItems: true,
         },
         orderBy: { requestedAt: "desc" },
         take: limit,

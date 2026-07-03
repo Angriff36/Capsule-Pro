@@ -354,7 +354,9 @@ export function ProductionBoardClient({
 
     const matchesStation =
       selectedStation === "all" ||
-      task.tags.includes(selectedStation.toLowerCase().replace(" ", "-"));
+      (task.tags ?? []).includes(
+        selectedStation.toLowerCase().replace(" ", "-")
+      );
 
     return matchesSearch && matchesStation;
   });
@@ -366,9 +368,7 @@ export function ProductionBoardClient({
   const inProgressTasks = filteredTasks.filter(
     (task) => task.status === "in_progress"
   );
-  const completedTasks = filteredTasks.filter(
-    (task) => task.status === "completed"
-  );
+  const completedTasks = filteredTasks.filter((task) => task.status === "done");
 
   // Calculate my tasks
   const myTasks = filteredTasks.filter((task) =>

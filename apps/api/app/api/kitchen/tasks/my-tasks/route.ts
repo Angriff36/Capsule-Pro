@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, KitchenTaskStatus } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -38,7 +38,10 @@ export async function GET(request: Request) {
   }
 
   // Optional filters
-  const status = searchParams.get("status"); // pending | in_progress | completed | canceled
+  const statusParam = searchParams.get("status"); // pending | in_progress | done | cancelled
+  const status = Object.values(KitchenTaskStatus).find(
+    (s) => s === statusParam
+  );
   const station = searchParams.get("station"); // filter by station/tag
 
   // Get active claims for current user
@@ -68,7 +71,7 @@ export async function GET(request: Request) {
         { tenantId },
         { id: { in: myClaimedTaskIds } },
         ...(status ? [{ status }] : []),
-        ...(station ? [{ tags: { has: station } }] : []),
+        ...(station ? [{ tags: { contains: station } }] : []),
       ],
     },
     orderBy: [

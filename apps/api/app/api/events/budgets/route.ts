@@ -56,7 +56,7 @@ export async function GET(request: Request) {
       take: limit,
       skip: offset,
       include: {
-        lineItems: {
+        budgetLineItems: {
           where: { deletedAt: null },
           orderBy: { sortOrder: "asc" },
         },

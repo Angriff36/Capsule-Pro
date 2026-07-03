@@ -51,7 +51,7 @@ export async function GET(request: Request) {
       ],
     },
     include: {
-      inventoryItem: {
+      item: {
         select: {
           id: true,
           name: true,
@@ -89,7 +89,7 @@ export async function GET(request: Request) {
         key = String(entry.reasonId);
         break;
       case "item":
-        key = entry.inventoryItem.name;
+        key = entry.item.name;
         break;
       case "location":
         key = entry.locationId || "unspecified";

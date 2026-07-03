@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     // Alert reads are §10-compliant; alert creation delegates to Manifest
     try {
       const probe = await database.temperatureProbe.findUnique({
-        where: { tenantId_probeId: { tenantId, probeId } },
+        where: { tenantId_id: { tenantId, id: probeId } },
       });
 
       let triggeredRule: {

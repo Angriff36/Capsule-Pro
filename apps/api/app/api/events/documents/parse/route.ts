@@ -798,13 +798,14 @@ async function createEventFromParsedData(
  * Link import records to an event
  */
 async function linkImportRecordsToEvent(
+  tenantId: string,
   importRecords: Array<{ importId: string; document: ProcessedDocument }>,
   eventId: string
 ): Promise<void> {
   await Promise.all(
     importRecords.map((record) =>
       database.eventImport.update({
-        where: { id: record.importId },
+        where: { tenantId_id: { tenantId, id: record.importId } },
         data: { eventId },
       })
     )
@@ -832,7 +833,7 @@ async function handleEventCreation(
   );
   log.info("[handleEventCreation] Event created", { eventId: result.eventId });
 
-  await linkImportRecordsToEvent(importRecords, result.eventId);
+  await linkImportRecordsToEvent(tenantId, importRecords, result.eventId);
 
   return result;
 }

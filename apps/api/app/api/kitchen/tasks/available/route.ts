@@ -1,6 +1,6 @@
 import { auth } from "@repo/auth/server";
 import type { Prisma } from "@repo/database";
-import { database } from "@repo/database";
+import { database, KitchenTaskStatus } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -40,7 +40,10 @@ export async function GET(request: Request) {
   }
 
   // Optional filters
-  const status = searchParams.get("status"); // pending | in_progress | completed | canceled
+  const statusParam = searchParams.get("status"); // pending | in_progress | done | cancelled
+  const status = Object.values(KitchenTaskStatus).find(
+    (s) => s === statusParam
+  );
   const minPriority = searchParams.get("minPriority"); // number 1-10
   const station = searchParams.get("station"); // filter by station/tag
 
@@ -69,7 +72,7 @@ export async function GET(request: Request) {
       ...(minPriority
         ? [{ priority: { lte: Number.parseInt(minPriority, 10) } }]
         : []),
-      ...(station ? [{ tags: { has: station } }] : []),
+      ...(station ? [{ tags: { contains: station } }] : []),
     ],
   };
 

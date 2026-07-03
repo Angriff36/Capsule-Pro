@@ -19,7 +19,6 @@ export interface KnowledgeBaseEntry {
   createdAt: Date;
   id: string;
   publishedAt: Date | null;
-  slug: string;
   status: "draft" | "published" | "archived";
   tags: string[] | null;
   tenantId: string;

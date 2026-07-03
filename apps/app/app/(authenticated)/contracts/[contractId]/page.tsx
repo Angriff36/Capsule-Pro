@@ -178,12 +178,12 @@ export default async function ContractDetailPage({
       client: {
         select: {
           id: true,
-          company_name: true,
-          first_name: true,
-          last_name: true,
+          companyName: true,
+          firstName: true,
+          lastName: true,
         },
       },
-      signatures: {
+      contractSignatures: {
         where: { deletedAt: null },
         select: {
           id: true,
@@ -224,12 +224,12 @@ export default async function ContractDetailPage({
       client: ec.client
         ? {
             id: ec.client.id,
-            company_name: ec.client.company_name,
-            first_name: ec.client.first_name,
-            last_name: ec.client.last_name,
+            company_name: ec.client.companyName,
+            first_name: ec.client.firstName,
+            last_name: ec.client.lastName,
           }
         : null,
-      signatures: ec.signatures.map((s) => ({
+      signatures: ec.contractSignatures.map((s) => ({
         id: s.id,
         signedAt: s.signedAt?.toISOString() ?? null,
         signerName: s.signerName,

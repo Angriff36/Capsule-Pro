@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const routes = await database.deliveryRoute.findMany({
       where,
       include: {
-        stops: {
+        routeStops: {
           orderBy: { stopNumber: "asc" },
         },
       },

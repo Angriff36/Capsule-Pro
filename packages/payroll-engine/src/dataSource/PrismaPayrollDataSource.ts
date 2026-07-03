@@ -1,7 +1,10 @@
 // Prisma Payroll Data Source
 // Implements PayrollDataSource interface using Prisma database client
 
-import type { PrismaClient } from "@repo/database/generated/client";
+import type {
+  PayrollPeriodStatus,
+  PrismaClient,
+} from "@repo/database/generated/client";
 import { money } from "../core/currency";
 import { calculateTaxes } from "../core/taxEngine";
 import type {
@@ -29,6 +32,32 @@ type PayrollPrismaClient = Omit<
   PrismaClient,
   "$connect" | "$disconnect" | "$on" | "$use" | "$extends"
 >;
+
+// The `payroll_periods.status` column is a Postgres enum with an
+// open/closed/locked bookkeeping lifecycle, while the payroll engine's
+// domain `PayrollPeriod.status` uses a workflow vocabulary. Bridge the two
+// explicitly so writes and reads round-trip (finalized <-> locked; the
+// engine only ever persists "finalized" today, see payrollService.ts).
+const DOMAIN_TO_DB_PERIOD_STATUS: Record<
+  PayrollPeriod["status"],
+  PayrollPeriodStatus
+> = {
+  draft: "open",
+  processing: "open",
+  pending_approval: "open",
+  approved: "closed",
+  finalized: "locked",
+  failed: "open",
+};
+
+const DB_TO_DOMAIN_PERIOD_STATUS: Record<
+  PayrollPeriodStatus,
+  PayrollPeriod["status"]
+> = {
+  open: "draft",
+  closed: "approved",
+  locked: "finalized",
+};
 
 export class PrismaPayrollDataSource implements PayrollDataSource {
   readonly #prisma: PayrollPrismaClient;
@@ -254,12 +283,12 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
         id: period.id,
         periodStart: period.startDate,
         periodEnd: period.endDate,
-        status: period.status,
+        status: DOMAIN_TO_DB_PERIOD_STATUS[period.status],
         createdAt: period.createdAt || new Date(),
         updatedAt: period.updatedAt || new Date(),
       },
       update: {
-        status: period.status,
+        status: DOMAIN_TO_DB_PERIOD_STATUS[period.status],
         updatedAt: period.updatedAt || new Date(),
       },
     });
@@ -415,13 +444,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       tenantId: period.tenantId,
       startDate: period.periodStart,
       endDate: period.periodEnd,
-      status: period.status as
-        | "draft"
-        | "processing"
-        | "pending_approval"
-        | "approved"
-        | "finalized"
-        | "failed",
+      status: DB_TO_DOMAIN_PERIOD_STATUS[period.status],
       currency: "USD",
       createdAt: period.createdAt,
       updatedAt: period.updatedAt,
@@ -462,11 +485,8 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
         id: true,
         firstName: true,
         lastName: true,
-        department: {
-          select: { name: true },
-        },
-        payrollRole: {
-          select: { name: true },
+        rolePolicy: {
+          select: { roleName: true },
         },
       },
     });
@@ -476,8 +496,8 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
         e.id,
         {
           name: `${e.firstName} ${e.lastName}`,
-          department: e.department?.name ?? undefined,
-          roleName: e.payrollRole?.name ?? "Default",
+          department: undefined, // no relation available on IR User model
+          roleName: e.rolePolicy?.roleName ?? "Default",
         },
       ])
     );

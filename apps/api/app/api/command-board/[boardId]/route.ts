@@ -32,7 +32,7 @@ async function fetchBoardWithCards(boardId: string, tenantId: string) {
       deletedAt: null,
     },
     include: {
-      cards: {
+      commandBoardCards: {
         where: {
           deletedAt: null,
         },
@@ -77,7 +77,7 @@ function formatCommandBoardWithCards(board: {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-  cards: Array<{
+  commandBoardCards: Array<{
     id: string;
     tenantId: string;
     boardId: string;
@@ -111,7 +111,7 @@ function formatCommandBoardWithCards(board: {
     created_at: board.createdAt,
     updated_at: board.updatedAt,
     deleted_at: board.deletedAt,
-    cards: board.cards.map((card) => ({
+    cards: board.commandBoardCards.map((card) => ({
       id: card.id,
       tenant_id: card.tenantId,
       board_id: card.boardId,

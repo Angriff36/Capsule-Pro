@@ -2,14 +2,11 @@ import type { PrepTask } from "@repo/database";
 
 export type PrepTaskSummary = Pick<
   PrepTask,
-  | "id"
-  | "name"
-  | "status"
-  | "quantityTotal"
-  | "servingsTotal"
-  | "dueByDate"
-  | "isEventFinish"
->;
+  "id" | "name" | "status" | "quantityTotal" | "servingsTotal" | "dueByDate"
+> & {
+  // Not on the Prisma model — populated from raw SQL (is_event_finish).
+  isEventFinish: boolean;
+};
 
 export type PrepTaskSummaryClient = Omit<PrepTaskSummary, "quantityTotal"> & {
   quantityTotal: number;

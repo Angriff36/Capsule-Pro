@@ -29,13 +29,23 @@ interface Venue {
   stateProvince: string | null;
 }
 
+interface FacilityLocation {
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  country: string | null;
+  name: string | null;
+  postalCode: string | null;
+  state: string | null;
+}
+
 interface EventData {
   eventDate: Date | null;
   eventNumber: string | null;
   eventType: string | null;
   guestCount: number | null;
   id: string;
-  location: Venue | null;
+  location: FacilityLocation | null;
   title: string;
   venue: Venue | null;
   venueAddress: string | null;
@@ -46,12 +56,12 @@ interface ClientData {
   addressLine1: string | null;
   addressLine2: string | null;
   city: string | null;
-  company_name: string | null;
+  companyName: string | null;
   countryCode: string | null;
   email: string | null;
-  first_name: string | null;
+  firstName: string | null;
   id: string;
-  last_name: string | null;
+  lastName: string | null;
   phone: string | null;
   postalCode: string | null;
   stateProvince: string | null;
@@ -68,12 +78,12 @@ interface Signature {
 interface Contract {
   client: ClientData | null;
   contractNumber: string | null;
+  contractSignatures: Signature[];
   createdAt: Date;
   event: EventData | null;
   expiresAt: Date | null;
   id: string;
   notes: string | null;
-  signatures: Signature[];
   status: string;
   title: string;
 }
@@ -111,7 +121,7 @@ async function fetchContract(contractId: string, tenantId: string) {
         },
       },
       client: true,
-      signatures: {
+      contractSignatures: {
         where: {
           deletedAt: null,
         },
@@ -198,10 +208,9 @@ function prepareEventData(event: EventData | null) {
         addressLine1: event.venue?.addressLine1 || event.location?.addressLine1,
         addressLine2: event.venue?.addressLine2 || event.location?.addressLine2,
         city: event.venue?.city || event.location?.city,
-        stateProvince:
-          event.venue?.stateProvince || event.location?.stateProvince,
+        stateProvince: event.venue?.stateProvince || event.location?.state,
         postalCode: event.venue?.postalCode || event.location?.postalCode,
-        countryCode: event.venue?.countryCode || event.location?.countryCode,
+        countryCode: event.venue?.countryCode || event.location?.country,
       }
     : event.venueAddress || undefined;
 
@@ -224,9 +233,9 @@ function prepareClientData(client: ClientData | null) {
 
   return {
     id: client.id,
-    companyName: client.company_name,
-    firstName: client.first_name,
-    lastName: client.last_name,
+    companyName: client.companyName,
+    firstName: client.firstName,
+    lastName: client.lastName,
     email: client.email,
     phone: client.phone,
     address: {
@@ -259,7 +268,7 @@ function preparePdfData(
     contract: prepareContractData(contract),
     event: prepareEventData(contract.event),
     client: prepareClientData(contract.client),
-    signatures: contract.signatures.map(prepareSignatureData),
+    signatures: contract.contractSignatures.map(prepareSignatureData),
     terms: defaultTerms,
     metadata: {
       generatedAt: new Date(),

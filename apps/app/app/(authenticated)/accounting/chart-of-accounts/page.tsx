@@ -191,7 +191,11 @@ export default async function ChartOfAccountsPage() {
                         </div>
                       ) : null}
                     </TableCell>
-                    <TableCell>{typeLabels[account.accountType]}</TableCell>
+                    <TableCell>
+                      {typeLabels[
+                        account.accountType as keyof typeof typeLabels
+                      ] ?? account.accountType}
+                    </TableCell>
                     <TableCell>
                       {account.parentId
                         ? (parentNames.get(account.parentId) ??

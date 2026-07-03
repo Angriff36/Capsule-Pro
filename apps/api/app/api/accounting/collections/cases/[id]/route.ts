@@ -67,10 +67,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
         deletedAt: null,
       },
       include: {
-        actions: {
+        collectionActions: {
           orderBy: { createdAt: "desc" },
         },
-        paymentPlans: {
+        collectionPaymentPlans: {
           orderBy: { createdAt: "desc" },
         },
       },

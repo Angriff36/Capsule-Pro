@@ -55,20 +55,20 @@ export default async function PrepTaskPlanWorkflowsPage() {
     database.prepTaskPlanWorkflow.count({
       where: {
         ...baseWhere,
-        status: { in: ["generating", "generation_completed"] },
+        status: { in: ["generating", "awaiting_review"] },
       },
     }),
     database.prepTaskPlanWorkflow.count({
       where: {
         ...baseWhere,
-        status: { in: ["reviewing", "review_completed"] },
+        status: { in: ["reviewing", "awaiting_approval"] },
       },
     }),
     database.prepTaskPlanWorkflow.count({
       where: { ...baseWhere, status: "approving" },
     }),
     database.prepTaskPlanWorkflow.count({
-      where: { ...baseWhere, status: "approved" },
+      where: { ...baseWhere, status: { in: ["instantiating", "scheduling"] } },
     }),
     database.prepTaskPlanWorkflow.count({
       where: { ...baseWhere, status: "completed" },

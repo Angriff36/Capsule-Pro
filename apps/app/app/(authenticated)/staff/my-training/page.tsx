@@ -54,16 +54,29 @@ export default async function MyTrainingPage() {
     },
     include: {
       module: true,
-      completions: {
-        where: { tenantId, employeeId },
-        take: 1,
-      },
     },
   });
 
+  const completionRecords = await database.trainingCompletion.findMany({
+    where: {
+      tenantId,
+      employeeId,
+      assignmentId: { in: assignments.map((assignment) => assignment.id) },
+    },
+  });
+  const completionsByAssignmentId = new Map<
+    string,
+    (typeof completionRecords)[number]
+  >();
+  for (const completion of completionRecords) {
+    if (!completionsByAssignmentId.has(completion.assignmentId)) {
+      completionsByAssignmentId.set(completion.assignmentId, completion);
+    }
+  }
+
   const rows: TrainingRow[] = assignments
     .map((assignment) => {
-      const completion = assignment.completions[0];
+      const completion = completionsByAssignmentId.get(assignment.id);
       return {
         id: assignment.id,
         module_id: assignment.module.id,

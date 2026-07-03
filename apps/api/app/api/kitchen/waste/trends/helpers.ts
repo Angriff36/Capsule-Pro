@@ -121,7 +121,7 @@ export async function fetchWasteEntries(
   return await database.wasteEntry.findMany({
     where: whereClause,
     include: {
-      inventoryItem: {
+      item: {
         select: {
           id: true,
           name: true,
@@ -144,7 +144,7 @@ export interface TrendDataPoint {
     loggedAt: Date;
     totalCost: { toNumber: () => number } | null;
     quantity: { toNumber: () => number };
-    inventoryItem: { name: string };
+    item: { name: string };
   }>;
   period: string;
   totalCost: number;
@@ -156,7 +156,7 @@ export function groupWasteEntriesByPeriod(
     loggedAt: Date;
     totalCost: { toNumber: () => number } | null;
     quantity: { toNumber: () => number };
-    inventoryItem: { name: string };
+    item: { name: string };
   }>,
   groupBy: GroupBy
 ): TrendDataPoint[] {
@@ -274,7 +274,7 @@ export async function analyzeWasteReasons(
 export function analyzeWastedItems(
   entries: Array<{
     totalCost: { toNumber: () => number } | null;
-    inventoryItem: { name: string };
+    item: { name: string };
   }>
 ) {
   const itemCounts: Record<
@@ -283,7 +283,7 @@ export function analyzeWastedItems(
   > = {};
 
   for (const entry of entries) {
-    const itemName = entry.inventoryItem.name;
+    const itemName = entry.item.name;
     if (!itemCounts[itemName]) {
       itemCounts[itemName] = {
         name: itemName,

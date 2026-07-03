@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, KitchenTaskStatus } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
@@ -15,7 +15,10 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
 
   // Optional filters
-  const status = searchParams.get("status"); // pending | in_progress | completed | canceled
+  const statusParam = searchParams.get("status"); // pending | in_progress | done | cancelled
+  const status = Object.values(KitchenTaskStatus).find(
+    (s) => s === statusParam
+  );
   const minPriority = searchParams.get("minPriority"); // number 1-10
 
   const tasks = await database.kitchenTask.findMany({

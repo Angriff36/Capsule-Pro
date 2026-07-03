@@ -111,7 +111,7 @@ const KitchenTasksPage = async () => {
               <CardHeader className="pb-2">
                 <CardDescription>Open</CardDescription>
                 <CardTitle className="font-bold text-2xl">
-                  {tasks.filter((t) => t.status === "open").length}
+                  {tasks.filter((t) => t.status === "pending").length}
                 </CardTitle>
               </CardHeader>
             </Card>
@@ -169,7 +169,7 @@ const KitchenTasksPage = async () => {
                           <TableCell>
                             <Badge
                               variant={
-                                task.status === "completed"
+                                task.status === "done"
                                   ? "secondary"
                                   : task.status === "in_progress"
                                     ? "default"

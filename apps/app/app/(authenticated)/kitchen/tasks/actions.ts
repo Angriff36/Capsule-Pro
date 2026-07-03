@@ -58,7 +58,7 @@ const getDateTime = (formData: FormData, key: string): Date | undefined => {
  * List all kitchen tasks with optional filters
  */
 export const getKitchenTasks = async (filters?: {
-  status?: string;
+  status?: KitchenTaskStatus;
   priority?: number;
 }): Promise<KitchenTask[]> => {
   const tenantId = await requireTenantId();
@@ -90,7 +90,7 @@ export const getKitchenTaskById = async (
  * Get tasks filtered by status
  */
 export const getKitchenTasksByStatus = async (
-  status: string
+  status: KitchenTaskStatus
 ): Promise<KitchenTask[]> => getKitchenTasks({ status });
 
 /**
@@ -106,7 +106,7 @@ export const getUrgentTasks = async (): Promise<KitchenTask[]> => {
         lte: 2, // Urgent and Critical (1-2)
       },
       status: {
-        in: ["pending", "open", "in_progress"],
+        in: ["pending", "in_progress"],
       },
     },
     orderBy: [{ dueDate: "asc" }, { createdAt: "asc" }],
@@ -313,7 +313,7 @@ export const updateKitchenTaskStatus = async (
       }
       break;
     }
-    case "canceled": {
+    case "cancelled": {
       const r = await runManifestCommand({
         entity: "KitchenTask",
         command: "cancel",
@@ -329,7 +329,7 @@ export const updateKitchenTaskStatus = async (
       }
       break;
     }
-    case "open": {
+    case "pending": {
       const r = await runManifestCommand({
         entity: "KitchenTask",
         command: "release",

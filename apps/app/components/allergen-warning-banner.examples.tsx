@@ -26,16 +26,22 @@ import {
 /**
  * Example data for demonstration purposes
  */
-const exampleWarnings: Array<
-  AllergenWarning & {
-    dishName?: string;
-    affectedGuestDetails?: Array<{
-      id: string;
-      name: string;
-      email?: string | null;
-    }>;
-  }
-> = [
+type ExampleWarning = AllergenWarning & {
+  dishName?: string;
+  affectedGuestDetails?: Array<{
+    id: string;
+    name: string;
+    email?: string | null;
+  }>;
+};
+
+const exampleWarnings: [
+  ExampleWarning,
+  ExampleWarning,
+  ExampleWarning,
+  ExampleWarning,
+  ExampleWarning,
+] = [
   {
     tenantId: "tenant-1",
     id: "warning-1",

@@ -35,21 +35,21 @@ function _formatDate(value: Date | null) {
 
 function getClientLabel(
   client: {
-    company_name: string | null;
-    first_name: string | null;
-    last_name: string | null;
+    companyName: string | null;
+    firstName: string | null;
+    lastName: string | null;
   } | null
 ) {
   if (!client) {
     return "No client";
   }
 
-  const personName = [client.first_name, client.last_name]
+  const personName = [client.firstName, client.lastName]
     .filter(Boolean)
     .join(" ")
     .trim();
 
-  return client.company_name || personName || "Unnamed client";
+  return client.companyName || personName || "Unnamed client";
 }
 
 function getDisplayInfo(pm: {
@@ -116,8 +116,8 @@ export default async function PaymentMethodsPage() {
           client: {
             select: {
               companyName: true,
-              first_name: true,
-              last_name: true,
+              firstName: true,
+              lastName: true,
             },
           },
         },

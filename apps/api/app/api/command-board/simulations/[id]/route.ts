@@ -17,6 +17,7 @@ import type {
   BoardAnnotation,
   BoardGroup,
   BoardProjection,
+  EntityType,
   SimulationContext,
   SimulationStatus,
 } from "../../types";
@@ -57,9 +58,9 @@ export async function GET(_request: Request, context: RouteContext) {
         id,
       },
       include: {
-        projections: true,
-        groups: true,
-        annotations: true,
+        boardProjections: true,
+        commandBoardGroups: true,
+        boardAnnotations: true,
       },
     });
 
@@ -83,25 +84,26 @@ export async function GET(_request: Request, context: RouteContext) {
     }
 
     // Map projections
-    const projections: BoardProjection[] = board.projections.map((p) => ({
+    const projections: BoardProjection[] = board.boardProjections.map((p) => ({
       id: p.id,
       tenant_id: p.tenantId,
       board_id: p.boardId,
-      entity_type: p.entityType,
+      entity_type: p.entityType as EntityType,
       entity_id: p.entityId,
       position_x: p.positionX,
       position_y: p.positionY,
       width: p.width,
       height: p.height,
-      z_index: p.zIndex,
-      color_override: p.colorOverride,
-      collapsed: p.collapsed,
-      group_id: p.groupId,
-      pinned: p.pinned,
+      // Not stored in schema; defaults for API compatibility
+      z_index: 0,
+      color_override: null,
+      collapsed: false,
+      group_id: null,
+      pinned: false,
     }));
 
     // Map groups
-    const groups: BoardGroup[] = board.groups.map((g) => ({
+    const groups: BoardGroup[] = board.commandBoardGroups.map((g) => ({
       id: g.id,
       tenant_id: g.tenantId,
       board_id: g.boardId,
@@ -116,15 +118,16 @@ export async function GET(_request: Request, context: RouteContext) {
     }));
 
     // Map annotations
-    const annotations: BoardAnnotation[] = board.annotations.map((a) => ({
+    const annotations: BoardAnnotation[] = board.boardAnnotations.map((a) => ({
       id: a.id,
       board_id: a.boardId,
-      annotation_type: a.annotationType,
-      from_projection_id: a.fromProjectionId,
-      to_projection_id: a.toProjectionId,
+      // Not stored in schema; defaults for API compatibility
+      annotation_type: "label",
+      from_projection_id: null,
+      to_projection_id: null,
       label: a.label,
       color: a.color,
-      style: a.style,
+      style: null,
     }));
 
     const simulationContext: SimulationContext = {

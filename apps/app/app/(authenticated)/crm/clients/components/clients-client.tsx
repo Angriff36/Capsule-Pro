@@ -67,12 +67,12 @@ import { getAvailableTags, getClients } from "../actions";
 interface Client {
   city: string | null;
   clientType: string;
-  company_name: string | null;
+  companyName: string | null;
   createdAt: Date;
   email: string | null;
-  first_name: string | null;
+  firstName: string | null;
   id: string;
-  last_name: string | null;
+  lastName: string | null;
   phone: string | null;
   stateProvince: string | null;
   tags: string[];
@@ -231,11 +231,11 @@ export function ClientsClient() {
   };
 
   const getClientDisplayName = (client: Client) => {
-    if (client.clientType === "company" && client.company_name) {
-      return client.company_name;
+    if (client.clientType === "company" && client.companyName) {
+      return client.companyName;
     }
-    if (client.first_name || client.last_name) {
-      return `${client.first_name || ""} ${client.last_name || ""}`.trim();
+    if (client.firstName || client.lastName) {
+      return `${client.firstName || ""} ${client.lastName || ""}`.trim();
     }
     return client.email || "Unnamed Client";
   };
@@ -244,9 +244,9 @@ export function ClientsClient() {
     const parts: string[] = [];
     if (
       client.clientType === "company" &&
-      (client.first_name || client.last_name)
+      (client.firstName || client.lastName)
     ) {
-      parts.push(`${client.first_name || ""} ${client.last_name || ""}`.trim());
+      parts.push(`${client.firstName || ""} ${client.lastName || ""}`.trim());
     }
     if (client.email) {
       parts.push(client.email);

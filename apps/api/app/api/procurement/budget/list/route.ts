@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
       include: {
         _count: {
           select: {
-            alerts: {
+            procurementBudgetAlerts: {
               where: { isAcknowledged: false, deletedAt: null },
             },
           },
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       created_at: b.createdAt,
       updated_at: b.updatedAt,
       deleted_at: b.deletedAt,
-      unacknowledged_alert_count: b._count.alerts,
+      unacknowledged_alert_count: b._count.procurementBudgetAlerts,
     }));
 
     return manifestSuccessResponse({ budgets: shaped });

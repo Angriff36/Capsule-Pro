@@ -14,14 +14,14 @@ import {
 
 /**
  * Shape of a waste entry row as returned by `fetchWasteEntries`
- * (Prisma Decimal fields expose `.toNumber()`; `inventoryItem` is included).
+ * (Prisma Decimal fields expose `.toNumber()`; `item` is included).
  */
 type WasteEntryRow = {
   loggedAt: Date;
   reasonId: number;
   totalCost: { toNumber: () => number } | null;
   quantity: { toNumber: () => number };
-  inventoryItem: { name: string };
+  item: { name: string };
 };
 
 /**

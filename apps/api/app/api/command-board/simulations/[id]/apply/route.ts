@@ -189,9 +189,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
         },
       },
       include: {
-        projections: true,
-        groups: true,
-        annotations: true,
+        boardProjections: true,
+        commandBoardGroups: true,
+        boardAnnotations: true,
       },
     });
 
@@ -229,9 +229,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
         },
       },
       include: {
-        projections: true,
-        groups: true,
-        annotations: true,
+        boardProjections: true,
+        commandBoardGroups: true,
+        boardAnnotations: true,
       },
     });
 
@@ -243,7 +243,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     // Map to API types
-    const originalProjections: BoardProjection[] = sourceBoard.projections.map(
+    const originalProjections: BoardProjection[] = sourceBoard.boardProjections.map(
       (p) => ({
         id: p.id,
         tenant_id: p.tenantId,
@@ -254,16 +254,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
         position_y: p.positionY,
         width: p.width,
         height: p.height,
-        z_index: p.zIndex,
-        color_override: p.colorOverride,
-        collapsed: p.collapsed,
-        group_id: p.groupId,
-        pinned: p.pinned,
+        // Not stored in schema; defaults for API compatibility
+        z_index: 0,
+        color_override: null,
+        collapsed: false,
+        group_id: null,
+        pinned: false,
       })
     );
 
     const simulatedProjections: BoardProjection[] =
-      simulationBoard.projections.map((p) => ({
+      simulationBoard.boardProjections.map((p) => ({
         id: p.id,
         tenant_id: p.tenantId,
         board_id: p.boardId,
@@ -273,14 +274,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
         position_y: p.positionY,
         width: p.width,
         height: p.height,
-        z_index: p.zIndex,
-        color_override: p.colorOverride,
-        collapsed: p.collapsed,
-        group_id: p.groupId,
-        pinned: p.pinned,
+        // Not stored in schema; defaults for API compatibility
+        z_index: 0,
+        color_override: null,
+        collapsed: false,
+        group_id: null,
+        pinned: false,
       }));
 
-    const originalGroups: BoardGroup[] = sourceBoard.groups.map((g) => ({
+    const originalGroups: BoardGroup[] = sourceBoard.commandBoardGroups.map((g) => ({
       id: g.id,
       tenant_id: g.tenantId,
       board_id: g.boardId,
@@ -294,7 +296,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       z_index: g.zIndex,
     }));
 
-    const simulatedGroups: BoardGroup[] = simulationBoard.groups.map((g) => ({
+    const simulatedGroups: BoardGroup[] = simulationBoard.commandBoardGroups.map((g) => ({
       id: g.id,
       tenant_id: g.tenantId,
       board_id: g.boardId,
@@ -308,29 +310,31 @@ export async function POST(request: NextRequest, context: RouteContext) {
       z_index: g.zIndex,
     }));
 
-    const originalAnnotations: BoardAnnotation[] = sourceBoard.annotations.map(
+    const originalAnnotations: BoardAnnotation[] = sourceBoard.boardAnnotations.map(
       (a) => ({
         id: a.id,
         board_id: a.boardId,
-        annotation_type: a.annotationType,
-        from_projection_id: a.fromProjectionId,
-        to_projection_id: a.toProjectionId,
+        // Not stored in schema; defaults for API compatibility
+        annotation_type: "label",
+        from_projection_id: null,
+        to_projection_id: null,
         label: a.label,
         color: a.color,
-        style: a.style,
+        style: null,
       })
     );
 
     const simulatedAnnotations: BoardAnnotation[] =
-      simulationBoard.annotations.map((a) => ({
+      simulationBoard.boardAnnotations.map((a) => ({
         id: a.id,
         board_id: a.boardId,
-        annotation_type: a.annotationType,
-        from_projection_id: a.fromProjectionId,
-        to_projection_id: a.toProjectionId,
+        // Not stored in schema; defaults for API compatibility
+        annotation_type: "label",
+        from_projection_id: null,
+        to_projection_id: null,
         label: a.label,
         color: a.color,
-        style: a.style,
+        style: null,
       }));
 
     // Compute delta
@@ -414,11 +418,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
             positionY: p.position_y,
             width: p.width,
             height: p.height,
-            zIndex: p.z_index,
-            colorOverride: p.color_override,
-            collapsed: p.collapsed,
-            groupId: p.group_id,
-            pinned: p.pinned,
           })),
         });
       }
@@ -430,12 +429,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
             id: crypto.randomUUID(),
             tenantId,
             boardId: sourceBoardId,
-            annotationType: a.annotation_type,
-            fromProjectionId: a.from_projection_id,
-            toProjectionId: a.to_projection_id,
             label: a.label,
             color: a.color,
-            style: a.style,
           })),
         });
       }

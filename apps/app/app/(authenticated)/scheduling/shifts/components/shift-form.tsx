@@ -64,7 +64,7 @@ interface Location {
 
 interface Schedule {
   id: string;
-  schedule_date: Date;
+  scheduleDate: Date;
   status: string;
 }
 
@@ -367,7 +367,7 @@ export function ShiftForm({
             <SelectContent>
               {schedules.map((schedule) => (
                 <SelectItem key={schedule.id} value={schedule.id}>
-                  {new Date(schedule.schedule_date).toLocaleDateString()} (
+                  {new Date(schedule.scheduleDate).toLocaleDateString()} (
                   {schedule.status})
                 </SelectItem>
               ))}

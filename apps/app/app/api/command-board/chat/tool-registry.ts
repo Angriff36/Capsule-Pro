@@ -2969,7 +2969,7 @@ async function getDashboardSummaryTool(
         database.kitchenTask.count({
           where: {
             tenantId: context.tenantId,
-            status: { in: ["pending", "in-progress"] },
+            status: { in: ["pending", "in_progress"] },
           },
         }),
         database.inventoryItem.count({

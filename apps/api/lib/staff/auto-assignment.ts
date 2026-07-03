@@ -704,9 +704,9 @@ export async function autoAssignShift(
       },
       select: {
         locationId: true,
-        shift_start: true,
-        shift_end: true,
-        role_during_shift: true,
+        shiftStart: true,
+        shiftEnd: true,
+        roleDuringShift: true,
         notes: true,
       },
     });
@@ -766,9 +766,9 @@ export async function autoAssignShift(
         body: {
           employeeId,
           locationId: shift.locationId,
-          shiftStart: shift.shift_start.getTime(),
-          shiftEnd: shift.shift_end.getTime(),
-          roleDuringShift: shift.role_during_shift ?? "",
+          shiftStart: shift.shiftStart.getTime(),
+          shiftEnd: shift.shiftEnd.getTime(),
+          roleDuringShift: shift.roleDuringShift ?? "",
           notes: shift.notes ?? "",
         },
       }

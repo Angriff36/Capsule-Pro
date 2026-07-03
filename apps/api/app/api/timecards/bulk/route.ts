@@ -115,32 +115,47 @@ async function processEditRequests(
       continue;
     }
 
-    await tx.timecardEditRequest.upsert({
+    // (tenantId, timeEntryId) is no longer a unique constraint in the schema,
+    // so upsert is not possible — emulate it with findFirst + update/create.
+    const existingRequest = await tx.timecardEditRequest.findFirst({
       where: {
-        tenantId_timeEntryId: {
-          tenantId,
-          timeEntryId: editRequest.timeEntryId,
-        },
-      },
-      create: {
         tenantId,
         timeEntryId: editRequest.timeEntryId,
-        employeeId: timeEntry.employeeId,
-        requestedClockIn: editRequest.requestedClockIn
-          ? new Date(editRequest.requestedClockIn)
-          : null,
-        requestedClockOut: editRequest.requestedClockOut
-          ? new Date(editRequest.requestedClockOut)
-          : null,
-        requestedBreakMinutes: editRequest.requestedBreakMinutes ?? null,
-        reason: editRequest.reason,
-        status: "pending",
       },
-      update: {
-        status: "pending",
-        reason: editRequest.reason,
-      },
+      select: { id: true },
     });
+
+    if (existingRequest) {
+      await tx.timecardEditRequest.update({
+        where: {
+          tenantId_id: {
+            tenantId,
+            id: existingRequest.id,
+          },
+        },
+        data: {
+          status: "pending",
+          reason: editRequest.reason,
+        },
+      });
+    } else {
+      await tx.timecardEditRequest.create({
+        data: {
+          tenantId,
+          timeEntryId: editRequest.timeEntryId,
+          employeeId: timeEntry.employeeId,
+          requestedClockIn: editRequest.requestedClockIn
+            ? new Date(editRequest.requestedClockIn)
+            : null,
+          requestedClockOut: editRequest.requestedClockOut
+            ? new Date(editRequest.requestedClockOut)
+            : null,
+          requestedBreakMinutes: editRequest.requestedBreakMinutes ?? null,
+          reason: editRequest.reason,
+          status: "pending",
+        },
+      });
+    }
   }
 }
 

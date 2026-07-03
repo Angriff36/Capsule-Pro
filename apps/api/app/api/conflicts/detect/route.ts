@@ -517,7 +517,7 @@ async function detectTimelineConflicts(
   const now = new Date();
 
   // Find incomplete high-priority tasks past due date using Prisma ORM
-  const TASK_COMPLETED_STATUS = "completed";
+  const TASK_COMPLETED_STATUS = "done";
 
   const overdueTasks = await database.prepTask.findMany({
     where: {

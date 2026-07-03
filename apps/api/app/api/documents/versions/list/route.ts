@@ -42,16 +42,35 @@ export async function GET(request: NextRequest) {
         documentId,
       },
       orderBy: { versionNumber: "desc" },
-      include: {
-        createdBy: {
-          select: { id: true, firstName: true, lastName: true, email: true },
-        },
-      },
       take: limit,
       skip: offset,
     });
 
-    return NextResponse.json({ versions, limit, offset });
+    // DocumentVersion no longer has a createdBy relation — join manually
+    // via createdById to keep the response shape identical.
+    const creatorIds = [
+      ...new Set(
+        versions
+          .map((v) => v.createdById)
+          .filter((id): id is string => Boolean(id))
+      ),
+    ];
+    const creators =
+      creatorIds.length > 0
+        ? await database.user.findMany({
+            where: { tenantId, id: { in: creatorIds } },
+            select: { id: true, firstName: true, lastName: true, email: true },
+          })
+        : [];
+    const creatorById = new Map(creators.map((u) => [u.id, u]));
+    const versionsWithCreators = versions.map((v) => ({
+      ...v,
+      createdBy: v.createdById
+        ? (creatorById.get(v.createdById) ?? null)
+        : null,
+    }));
+
+    return NextResponse.json({ versions: versionsWithCreators, limit, offset });
   } catch (error) {
     captureException(error);
     log.error("Error listing document versions:", error);

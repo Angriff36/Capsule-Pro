@@ -206,21 +206,21 @@ function formatVenueAddress(
  */
 function formatClientName(
   client: {
-    company_name?: string | null;
-    first_name?: string | null;
-    last_name?: string | null;
+    companyName?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
   } | null
 ): string {
   if (!client) {
     return "Client not specified";
   }
 
-  if (client.company_name) {
-    return client.company_name;
+  if (client.companyName) {
+    return client.companyName;
   }
 
-  if (client.first_name && client.last_name) {
-    return `${client.first_name} ${client.last_name}`;
+  if (client.firstName && client.lastName) {
+    return `${client.firstName} ${client.lastName}`;
   }
 
   return "Client not specified";

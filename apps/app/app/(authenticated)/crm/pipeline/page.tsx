@@ -67,17 +67,17 @@ function proposalStatusToStage(
 
 function getClientName(deal: {
   client: {
-    company_name: string | null;
-    first_name: string | null;
-    last_name: string | null;
+    companyName: string | null;
+    firstName: string | null;
+    lastName: string | null;
   } | null;
   lead: { companyName: string | null; contactName: string | null } | null;
 }) {
-  if (deal.client?.company_name) {
-    return deal.client.company_name;
+  if (deal.client?.companyName) {
+    return deal.client.companyName;
   }
   if (deal.client) {
-    const fullName = [deal.client.first_name, deal.client.last_name]
+    const fullName = [deal.client.firstName, deal.client.lastName]
       .filter((value): value is string => Boolean(value))
       .join(" ")
       .trim();
@@ -145,8 +145,8 @@ export default async function PipelinePage() {
       client: {
         select: {
           companyName: true,
-          first_name: true,
-          last_name: true,
+          firstName: true,
+          lastName: true,
         },
       },
       lead: {

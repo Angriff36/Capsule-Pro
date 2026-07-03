@@ -108,7 +108,7 @@ const EventBudgetPage = async ({ params }: EventBudgetPageProps) => {
     where: { tenantId, eventId, deletedAt: null },
     orderBy: [{ version: "desc" }, { createdAt: "desc" }],
     include: {
-      lineItems: {
+      budgetLineItems: {
         where: { deletedAt: null },
         orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
       },
@@ -236,9 +236,9 @@ const EventBudgetPage = async ({ params }: EventBudgetPageProps) => {
     },
     {
       label: "Line items",
-      value: String(budget.lineItems.length),
-      delta: budget.lineItems.length > 0 ? "Tracked categories" : null,
-      note: budget.lineItems.length === 0 ? "Add line items" : null,
+      value: String(budget.budgetLineItems.length),
+      delta: budget.budgetLineItems.length > 0 ? "Tracked categories" : null,
+      note: budget.budgetLineItems.length === 0 ? "Add line items" : null,
     },
   ];
 
@@ -312,7 +312,7 @@ const EventBudgetPage = async ({ params }: EventBudgetPageProps) => {
 
         <section className="space-y-4">
           <SectionHeader
-            count={`${budget.lineItems.length} items`}
+            count={`${budget.budgetLineItems.length} items`}
             description="Each line item tracks budgeted vs. actual spend by category."
             eyebrow="Line items"
             title="Categories"
@@ -329,7 +329,7 @@ const EventBudgetPage = async ({ params }: EventBudgetPageProps) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {budget.lineItems.length === 0 ? (
+                {budget.budgetLineItems.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5}>
                       <div className="py-6 text-center text-muted-foreground text-sm">
@@ -345,7 +345,7 @@ const EventBudgetPage = async ({ params }: EventBudgetPageProps) => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  budget.lineItems.map((item) => {
+                  budget.budgetLineItems.map((item) => {
                     const itemBudgeted = Number(item.budgetedAmount);
                     const itemActual = Number(item.actualAmount);
                     const itemVariance = Number(item.varianceAmount);

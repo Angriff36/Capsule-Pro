@@ -44,21 +44,21 @@ function formatDate(value: Date | null) {
 
 function getClientLabel(
   client: {
-    company_name: string | null;
-    first_name: string | null;
-    last_name: string | null;
+    companyName: string | null;
+    firstName: string | null;
+    lastName: string | null;
   } | null
 ) {
   if (!client) {
     return "No client";
   }
 
-  const personName = [client.first_name, client.last_name]
+  const personName = [client.firstName, client.lastName]
     .filter(Boolean)
     .join(" ")
     .trim();
 
-  return client.company_name || personName || "Unnamed client";
+  return client.companyName || personName || "Unnamed client";
 }
 
 const moduleLinks = [
@@ -166,11 +166,11 @@ export default async function AccountingPage() {
         client: {
           select: {
             companyName: true,
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
           },
         },
-        event: {
+        linkedEvent: {
           select: {
             title: true,
           },
@@ -196,8 +196,8 @@ export default async function AccountingPage() {
         client: {
           select: {
             companyName: true,
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
           },
         },
       },
@@ -312,7 +312,7 @@ export default async function AccountingPage() {
                   </div>
                   <div className="space-y-1 text-muted-foreground">
                     <div>{getClientLabel(invoice.client)}</div>
-                    <div>{invoice.event.title}</div>
+                    <div>{invoice.linkedEvent.title}</div>
                   </div>
                   <div>
                     <StatusPill>

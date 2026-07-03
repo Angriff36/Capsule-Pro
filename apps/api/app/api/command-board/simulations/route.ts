@@ -84,9 +84,9 @@ export async function GET(request: Request) {
       include: {
         _count: {
           select: {
-            projections: true,
-            groups: true,
-            annotations: true,
+            boardProjections: true,
+            commandBoardGroups: true,
+            boardAnnotations: true,
           },
         },
       },
@@ -111,9 +111,9 @@ export async function GET(request: Request) {
         simulation_name: board.name.replace("[Simulation] ", ""),
         created_at: board.createdAt,
         status: simStatus,
-        projections_count: board._count.projections,
-        groups_count: board._count.groups,
-        annotations_count: board._count.annotations,
+        projections_count: board._count.boardProjections,
+        groups_count: board._count.commandBoardGroups,
+        annotations_count: board._count.boardAnnotations,
       };
     });
 
@@ -173,9 +173,9 @@ export async function POST(request: NextRequest) {
         },
       },
       include: {
-        projections: true,
-        groups: true,
-        annotations: true,
+        boardProjections: true,
+        commandBoardGroups: true,
+        boardAnnotations: true,
       },
     });
 
@@ -230,12 +230,9 @@ export async function POST(request: NextRequest) {
     };
 
     // Deep copy projections with new IDs
-    const projectionIdMap = new Map<string, string>();
-    const projectionCopies = sourceBoard.projections.map((proj) => {
-      const newId = crypto.randomUUID();
-      projectionIdMap.set(proj.id, newId);
+    const projectionCopies = sourceBoard.boardProjections.map((proj) => {
       return {
-        id: newId,
+        id: crypto.randomUUID(),
         tenantId,
         boardId: simulationId,
         entityType: proj.entityType,
@@ -244,21 +241,13 @@ export async function POST(request: NextRequest) {
         positionY: proj.positionY,
         width: proj.width,
         height: proj.height,
-        zIndex: proj.zIndex,
-        colorOverride: proj.colorOverride,
-        collapsed: proj.collapsed,
-        groupId: proj.groupId,
-        pinned: proj.pinned,
       };
     });
 
     // Deep copy groups with new IDs
-    const groupIdMap = new Map<string, string>();
-    const groupCopies = sourceBoard.groups.map((group) => {
-      const newId = crypto.randomUUID();
-      groupIdMap.set(group.id, newId);
+    const groupCopies = sourceBoard.commandBoardGroups.map((group) => {
       return {
-        id: newId,
+        id: crypto.randomUUID(),
         tenantId,
         boardId: simulationId,
         name: group.name,
@@ -272,31 +261,16 @@ export async function POST(request: NextRequest) {
       };
     });
 
-    // Update projections with new group IDs
-    for (const proj of projectionCopies) {
-      if (proj.groupId && groupIdMap.has(proj.groupId)) {
-        proj.groupId = groupIdMap.get(proj.groupId)!;
-      }
-    }
-
-    // Deep copy annotations with updated projection references
-    const annotationCopies = sourceBoard.annotations.map((ann) => {
-      const newFromId = ann.fromProjectionId
-        ? (projectionIdMap.get(ann.fromProjectionId) ?? null)
-        : null;
-      const newToId = ann.toProjectionId
-        ? (projectionIdMap.get(ann.toProjectionId) ?? null)
-        : null;
+    // Deep copy annotations
+    const annotationCopies = sourceBoard.boardAnnotations.map((ann) => {
       return {
         id: crypto.randomUUID(),
         tenantId,
         boardId: simulationId,
-        annotationType: ann.annotationType,
-        fromProjectionId: newFromId,
-        toProjectionId: newToId,
         label: ann.label,
+        positionX: ann.positionX,
+        positionY: ann.positionY,
         color: ann.color,
-        style: ann.style,
       };
     });
 

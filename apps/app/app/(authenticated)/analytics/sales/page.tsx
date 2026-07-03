@@ -53,20 +53,20 @@ const titleCase = (value: string) =>
 
 const formatClientName = (
   client: {
-    company_name: string | null;
-    first_name: string | null;
-    last_name: string | null;
+    companyName: string | null;
+    firstName: string | null;
+    lastName: string | null;
   } | null
 ) => {
   if (!client) {
     return "Unassigned";
   }
 
-  if (client.company_name?.trim()) {
-    return client.company_name;
+  if (client.companyName?.trim()) {
+    return client.companyName;
   }
 
-  const fullName = [client.first_name, client.last_name]
+  const fullName = [client.firstName, client.lastName]
     .filter(Boolean)
     .join(" ")
     .trim();
@@ -174,8 +174,8 @@ const AnalyticsSalesPage = async () => {
         client: {
           select: {
             companyName: true,
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
           },
         },
         lead: {
@@ -210,11 +210,11 @@ const AnalyticsSalesPage = async () => {
         client: {
           select: {
             companyName: true,
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
           },
         },
-        event: {
+        linkedEvent: {
           select: {
             title: true,
           },
@@ -415,7 +415,7 @@ const AnalyticsSalesPage = async () => {
                         <TableCell>
                           {formatClientName(invoice.client)}
                         </TableCell>
-                        <TableCell>{invoice.event.title}</TableCell>
+                        <TableCell>{invoice.linkedEvent.title}</TableCell>
                         <TableCell>
                           <Badge
                             className="w-fit"

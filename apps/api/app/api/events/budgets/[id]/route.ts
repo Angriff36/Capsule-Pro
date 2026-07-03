@@ -39,7 +39,7 @@ export async function GET(_request: Request, context: RouteContext) {
         deletedAt: null,
       },
       include: {
-        lineItems: {
+        budgetLineItems: {
           where: { deletedAt: null },
           orderBy: { sortOrder: "asc" },
         },

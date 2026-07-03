@@ -54,7 +54,6 @@ export async function GET(request: Request) {
       where,
       include: {
         module: true,
-        completions: { where: { tenantId }, take: 1 },
       },
       orderBy: { createdAt: "desc" },
       take: limit,
@@ -72,10 +71,19 @@ export async function GET(request: Request) {
   const employeesById = new Map(
     employees.map((employee) => [employee.id, employee])
   );
+  const completions = await database.trainingCompletion.findMany({
+    where: {
+      tenantId,
+      assignmentId: { in: assignments.map((assignment) => assignment.id) },
+    },
+  });
+  const completionsByAssignmentId = new Map(
+    completions.map((completion) => [completion.assignmentId, completion])
+  );
 
   const typedAssignments: TrainingAssignment[] = assignments.map((a) => {
     const employee = a.employeeId ? employeesById.get(a.employeeId) : undefined;
-    const completion = a.completions[0];
+    const completion = completionsByAssignmentId.get(a.id);
     return {
       id: a.id,
       tenant_id: a.tenantId,

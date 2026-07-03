@@ -78,7 +78,7 @@ export async function GET(
       shipping_method: shipment.shippingMethod,
       delivered_by: shipment.deliveredBy,
       received_by: shipment.receivedBy,
-      signature: shipment.signature,
+      signature: shipment.signatureText,
       notes: shipment.notes,
       internal_notes: shipment.internalNotes,
       reference: shipment.reference,

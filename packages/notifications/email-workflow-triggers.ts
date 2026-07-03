@@ -77,7 +77,7 @@ export async function triggerEmailWorkflows(
       deletedAt: null,
     },
     include: {
-      emailTemplate: true,
+      template: true,
     },
   });
 
@@ -104,10 +104,10 @@ export async function triggerEmailWorkflows(
       }
 
       // Send email
-      if (workflow.emailTemplate) {
+      if (workflow.template) {
         await sendEmailFromTemplate(database, {
           tenantId,
-          templateId: workflow.emailTemplate.id,
+          templateId: workflow.template.id,
           notificationType: triggerType,
           recipients: filteredRecipients,
           templateData,

@@ -232,6 +232,7 @@ export const seedSampleData = async (
       status: "draft",
       totalItems: ingredients.length,
       totalEstimatedTime: 120,
+      generatedAt: new Date(),
     },
   });
 
@@ -278,7 +279,7 @@ export const seedSampleData = async (
       servingsTotal: 150,
       startByDate: today,
       dueByDate: dueDate,
-      status: "in-progress",
+      status: "in_progress",
       priority: 4,
       notes: "Sample prep task",
     },
@@ -294,16 +295,16 @@ export const seedSampleData = async (
         status: "pending",
         priority: 5,
         complexity: 1,
-        tags: ["sample", "admin"],
+        tags: "sample,admin",
       },
       {
         tenantId,
         title: "Prepare garnish station",
         summary: "Set up garnish prep for service",
-        status: "in-progress",
+        status: "in_progress",
         priority: 3,
         complexity: 2,
-        tags: ["sample", "prep"],
+        tags: "sample,prep",
       },
     ],
   });
@@ -341,6 +342,7 @@ export const seedSampleData = async (
       reasonId: wasteReason.id,
       quantity: decimal(0.5),
       loggedBy: users[0].id,
+      loggedAt: new Date(),
       notes: "Sample waste entry",
     },
   });
@@ -363,7 +365,7 @@ export const seedSampleData = async (
     data: {
       tenantId,
       locationId: location.id,
-      schedule_date: today,
+      scheduleDate: today,
       status: "published",
     },
   });
@@ -421,8 +423,7 @@ export const seedSampleData = async (
       actualTotalCost: decimal(16_900),
       budgetedGrossMargin: decimal(11_000),
       actualGrossMargin: decimal(11_600),
-      budgetedGrossMarginPct: decimal(38.6),
-      actualGrossMarginPct: decimal(40.7),
+      calculatedAt: new Date(),
     },
   });
 
@@ -626,7 +627,7 @@ export const clearSampleData = async (
   await prisma.kitchenTask.deleteMany({
     where: {
       tenantId,
-      tags: { has: "sample" },
+      tags: { contains: "sample" },
       deletedAt: null,
     },
   });
@@ -647,7 +648,7 @@ export const clearSampleData = async (
   await prisma.schedule.deleteMany({
     where: {
       tenantId,
-      schedule_date: { gte: today, lt: tomorrow },
+      scheduleDate: { gte: today, lt: tomorrow },
       deletedAt: null,
     },
   });

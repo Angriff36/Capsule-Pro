@@ -156,8 +156,8 @@ function groupStockByItemAndLocation(
   stockRecords: Array<{
     itemId: string;
     storageLocationId: string;
-    quantity_on_hand: number | string | { toNumber: () => number };
-    last_counted_at: Date | null;
+    quantityOnHand: number | string | { toNumber: () => number };
+    lastCountedAt: Date | null;
   }>
 ) {
   const stockByItemAndLocation = new Map<
@@ -172,16 +172,16 @@ function groupStockByItemAndLocation(
       stockByItemAndLocation.set(stock.itemId, itemMap);
     }
     let quantity: number;
-    if (typeof stock.quantity_on_hand === "number") {
-      quantity = stock.quantity_on_hand;
-    } else if (typeof stock.quantity_on_hand === "string") {
-      quantity = Number(stock.quantity_on_hand);
+    if (typeof stock.quantityOnHand === "number") {
+      quantity = stock.quantityOnHand;
+    } else if (typeof stock.quantityOnHand === "string") {
+      quantity = Number(stock.quantityOnHand);
     } else {
-      quantity = stock.quantity_on_hand.toNumber();
+      quantity = stock.quantityOnHand.toNumber();
     }
     itemMap.set(stock.storageLocationId, {
       quantity,
-      lastCountedAt: stock.last_counted_at,
+      lastCountedAt: stock.lastCountedAt,
     });
   }
 
@@ -539,11 +539,6 @@ async function executeStockLevelQueries(
       tenantId,
       itemId: { in: itemIds },
       ...(locationFilter && { storageLocationId: locationFilter }),
-    },
-    include: {
-      tenant: {
-        select: { id: true },
-      },
     },
   });
 

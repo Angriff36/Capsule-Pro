@@ -63,20 +63,20 @@ const titleCase = (value: string) =>
 
 const formatClientName = (
   client: {
-    company_name: string | null;
-    first_name: string | null;
-    last_name: string | null;
+    companyName: string | null;
+    firstName: string | null;
+    lastName: string | null;
   } | null
 ) => {
   if (!client) {
     return "Unassigned";
   }
 
-  if (client.company_name?.trim()) {
-    return client.company_name;
+  if (client.companyName?.trim()) {
+    return client.companyName;
   }
 
-  const fullName = [client.first_name, client.last_name]
+  const fullName = [client.firstName, client.lastName]
     .filter(Boolean)
     .join(" ")
     .trim();

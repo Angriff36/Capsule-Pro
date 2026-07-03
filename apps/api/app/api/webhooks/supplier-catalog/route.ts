@@ -232,13 +232,12 @@ export async function POST(request: Request) {
       };
 
       // Check if catalog entry already exists (read bypasses Manifest per §10)
-      const existing = await database.vendorCatalog.findUnique({
+      // (tenantId, supplierId, itemNumber) is no longer a unique key — findFirst.
+      const existing = await database.vendorCatalog.findFirst({
         where: {
-          tenantId_supplierId_itemNumber: {
-            tenantId: supplier.tenantId,
-            supplierId: payload.supplierId,
-            itemNumber: catalogProduct.sku,
-          },
+          tenantId: supplier.tenantId,
+          supplierId: payload.supplierId,
+          itemNumber: catalogProduct.sku,
         },
         select: { id: true },
       });

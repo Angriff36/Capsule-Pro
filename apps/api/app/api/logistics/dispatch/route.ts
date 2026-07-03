@@ -42,7 +42,7 @@ export async function GET(_request: NextRequest) {
         ],
       },
       include: {
-        stops: {
+        routeStops: {
           orderBy: { stopNumber: "asc" },
           take: 5, // Just show first 5 stops for preview
         },
@@ -141,13 +141,13 @@ export async function GET(_request: NextRequest) {
         driverPhone: driver?.phone || null,
         vehicleId: route.vehicleId,
         vehicleName: vehicle ? `${vehicle.make} ${vehicle.model}` : null,
-        stops: route.stops.map((s) => ({
+        stops: route.routeStops.map((s) => ({
           id: s.id,
           stopNumber: s.stopNumber,
           name: s.name,
           status: s.status,
         })),
-        stopCount: route.stops.length,
+        stopCount: route.routeStops.length,
       };
     });
 

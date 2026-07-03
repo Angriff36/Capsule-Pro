@@ -126,7 +126,7 @@ export async function POST(request: Request, { params }: { params: Params }) {
       );
     }
 
-    if (proposal.status === "expired" || proposal.status === "canceled") {
+    if (proposal.status === "expired" || proposal.status === "withdrawn") {
       return NextResponse.json(
         { message: `This proposal has been ${proposal.status}` },
         { status: 400 }

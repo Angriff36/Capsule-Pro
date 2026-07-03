@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     const workflows = await database.emailWorkflow.findMany({
       where: whereClause,
       include: {
-        emailTemplate: {
+        template: {
           select: {
             id: true,
             name: true,

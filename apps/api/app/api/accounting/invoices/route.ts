@@ -110,12 +110,12 @@ export async function GET(request: NextRequest) {
           client: {
             select: {
               id: true,
-              company_name: true,
-              first_name: true,
-              last_name: true,
+              companyName: true,
+              firstName: true,
+              lastName: true,
             },
           },
-          event: {
+          linkedEvent: {
             select: {
               id: true,
               title: true,
@@ -142,13 +142,15 @@ export async function GET(request: NextRequest) {
         depositPaid: inv.depositPaid?.toString() ?? null,
         lineItems: inv.lineItems as InvoiceResponse["lineItems"],
         metadata: inv.metadata as Record<string, unknown>,
+        // Column no longer exists in the truthful schema; kept for response shape.
+        voidedAt: null,
         clientName:
-          inv.client?.company_name ||
-          [inv.client?.first_name, inv.client?.last_name]
+          inv.client?.companyName ||
+          [inv.client?.firstName, inv.client?.lastName]
             .filter(Boolean)
             .join(" ") ||
           "",
-        eventName: inv.event?.title || null,
+        eventName: inv.linkedEvent?.title || null,
       })),
       pagination: {
         page,

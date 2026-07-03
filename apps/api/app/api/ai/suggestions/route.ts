@@ -138,7 +138,7 @@ async function getContextData(
     where: {
       tenantId,
       deletedAt: null,
-      status: { not: "completed" },
+      status: { not: "done" },
       dueByDate: { lte: endDate },
     },
     orderBy: { dueByDate: "asc" },
@@ -276,7 +276,7 @@ async function getContextData(
       shiftStart: s.shiftStart,
       shiftEnd: s.shiftEnd,
     })),
-    incompleteTaskCount: prepTasks.filter((t) => t.status !== "completed")
+    incompleteTaskCount: prepTasks.filter((t) => t.status !== "done")
       .length,
     highVolumeDays,
     totalEvents: eventsWithDishes.length,
@@ -446,7 +446,7 @@ function generateFallbackSuggestions(
   const now = Date.now();
   const urgentTasks = context.prepTasks.filter((t) => {
     const hoursUntilDue = (t.dueByDate.getTime() - now) / (1000 * 60 * 60);
-    return hoursUntilDue <= 24 && t.status !== "completed";
+    return hoursUntilDue <= 24 && t.status !== "done";
   });
 
   if (urgentTasks.length > 0) {

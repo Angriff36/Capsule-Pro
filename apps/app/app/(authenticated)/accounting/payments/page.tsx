@@ -39,21 +39,21 @@ function formatDate(value: Date | null) {
 
 function getClientLabel(
   client: {
-    company_name: string | null;
-    first_name: string | null;
-    last_name: string | null;
+    companyName: string | null;
+    firstName: string | null;
+    lastName: string | null;
   } | null
 ) {
   if (!client) {
     return "No client";
   }
 
-  const personName = [client.first_name, client.last_name]
+  const personName = [client.firstName, client.lastName]
     .filter(Boolean)
     .join(" ")
     .trim();
 
-  return client.company_name || personName || "Unnamed client";
+  return client.companyName || personName || "Unnamed client";
 }
 
 export default async function PaymentsPage() {
@@ -117,7 +117,7 @@ export default async function PaymentsPage() {
             invoiceNumber: true,
           },
         },
-        event: {
+        linkedEvent: {
           select: {
             title: true,
           },
@@ -125,8 +125,8 @@ export default async function PaymentsPage() {
         client: {
           select: {
             companyName: true,
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
           },
         },
       },
@@ -255,7 +255,7 @@ export default async function PaymentsPage() {
                   </div>
                   <div className="space-y-1 text-muted-foreground">
                     <div>{getClientLabel(payment.client)}</div>
-                    <div>{payment.event.title}</div>
+                    <div>{payment.linkedEvent.title}</div>
                   </div>
                   <div className="space-y-1 text-muted-foreground">
                     <div>{payment.methodType.replaceAll("_", " ")}</div>

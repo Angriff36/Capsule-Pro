@@ -83,7 +83,7 @@ export class InventoryTransferPrismaStore implements Store<EntityInstance> {
     const rows = await this.prisma.inventoryTransfer.findMany({
       where: { tenantId: this.tenantId, deletedAt: null },
       orderBy: { createdAt: "desc" },
-      include: { items: true },
+      include: { lineItems: true },
     });
     return rows.map((r) => this.mapToManifestEntity(r));
   }
@@ -91,7 +91,7 @@ export class InventoryTransferPrismaStore implements Store<EntityInstance> {
   async getById(id: string): Promise<EntityInstance | undefined> {
     const row = await this.prisma.inventoryTransfer.findFirst({
       where: { tenantId: this.tenantId, id, deletedAt: null },
-      include: { items: true },
+      include: { lineItems: true },
     });
     return row ? this.mapToManifestEntity(row) : undefined;
   }
@@ -152,7 +152,7 @@ export class InventoryTransferPrismaStore implements Store<EntityInstance> {
     // Re-fetch with items so the returned entity surfaces the child rows.
     const full = await this.prisma.inventoryTransfer.findFirst({
       where: { tenantId: this.tenantId, id: created.id },
-      include: { items: true },
+      include: { lineItems: true },
     });
     return this.mapToManifestEntity(full ?? created);
   }
@@ -188,7 +188,7 @@ export class InventoryTransferPrismaStore implements Store<EntityInstance> {
       const updated = await this.prisma.inventoryTransfer.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
         data: patch,
-        include: { items: true },
+        include: { lineItems: true },
       });
       return this.mapToManifestEntity(updated);
     } catch (error) {
@@ -217,7 +217,7 @@ export class InventoryTransferPrismaStore implements Store<EntityInstance> {
   }
 
   private mapToManifestEntity(row: Record<string, unknown>): EntityInstance {
-    const items = Array.isArray(row.items) ? row.items : [];
+    const items = Array.isArray(row.lineItems) ? row.lineItems : [];
     return {
       id: row.id as string,
       tenantId: row.tenantId as string,

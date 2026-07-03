@@ -39,7 +39,7 @@ export default async function EmailWorkflowsPage() {
     database.emailWorkflow.findMany({
       where: { tenantId, deletedAt: null },
       include: {
-        emailTemplate: {
+        template: {
           select: { id: true, name: true, deletedAt: true },
         },
       },
@@ -58,11 +58,11 @@ export default async function EmailWorkflowsPage() {
     triggerType: w.triggerType,
     isActive: w.isActive,
     lastTriggeredAt: w.lastTriggeredAt?.toISOString() ?? null,
-    emailTemplate: w.emailTemplate
+    emailTemplate: w.template
       ? {
-          id: w.emailTemplate.id,
-          name: w.emailTemplate.name,
-          deletedAt: w.emailTemplate.deletedAt?.toISOString() ?? null,
+          id: w.template.id,
+          name: w.template.name,
+          deletedAt: w.template.deletedAt?.toISOString() ?? null,
         }
       : null,
     createdAt: w.createdAt.toISOString(),

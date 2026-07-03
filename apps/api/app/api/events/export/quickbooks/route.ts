@@ -270,7 +270,7 @@ export async function POST(request: NextRequest) {
         budgets: {
           where: { deletedAt: null },
           include: {
-            lineItems: true,
+            budgetLineItems: true,
           },
         },
       },
@@ -298,7 +298,7 @@ export async function POST(request: NextRequest) {
           }
         : null,
       budgetItems: e.budgets.flatMap((b) =>
-        b.lineItems.map((li) => ({
+        b.budgetLineItems.map((li) => ({
           category: li.category,
           description: li.description,
           budgetedAmount: li.budgetedAmount ? Number(li.budgetedAmount) : null,

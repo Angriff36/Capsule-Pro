@@ -30,11 +30,11 @@ export async function GET(
     const vendor = await database.inventorySupplier.findFirst({
       where: { tenantId, id, deletedAt: null },
       include: {
-        vendorContacts: {
+        contacts: {
           where: { deletedAt: null },
           orderBy: [{ isPrimary: "desc" }, { contactName: "asc" }],
         },
-        vendorRatings: {
+        ratings: {
           where: { deletedAt: null },
           orderBy: { createdAt: "desc" },
           take: 20,
@@ -53,8 +53,8 @@ export async function GET(
 
     return manifestSuccessResponse({
       vendor,
-      contacts: vendor.vendorContacts,
-      ratings: vendor.vendorRatings,
+      contacts: vendor.contacts,
+      ratings: vendor.ratings,
       catalogItemCount,
     });
   } catch (error) {

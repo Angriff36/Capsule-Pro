@@ -69,14 +69,14 @@ export async function GET(_request: NextRequest, context: RouteContext) {
         client: {
           select: {
             id: true,
-            company_name: true,
-            first_name: true,
-            last_name: true,
+            companyName: true,
+            firstName: true,
+            lastName: true,
             email: true,
             defaultPaymentTerms: true,
           },
         },
-        event: {
+        linkedEvent: {
           select: {
             id: true,
             title: true,
@@ -103,6 +103,8 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       depositPaid: invoice.depositPaid?.toString() ?? null,
       lineItems: invoice.lineItems as InvoiceResponse["lineItems"],
       metadata: invoice.metadata as Record<string, unknown>,
+      // Column no longer exists in the truthful schema; kept for response shape.
+      voidedAt: null,
     });
   } catch (error) {
     captureException(error);
@@ -229,8 +231,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           select: {
             id: true,
             email: true,
-            first_name: true,
-            company_name: true,
+            firstName: true,
+            companyName: true,
           },
         },
       },
@@ -326,8 +328,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
               subject: `Reminder: Invoice ${invoice.invoiceNumber} — ${invoice.amountDue.toString()} ${currency} due`,
               react: InvoiceTemplate({
                 clientName:
-                  invoice.client?.first_name ||
-                  invoice.client?.company_name ||
+                  invoice.client?.firstName ||
+                  invoice.client?.companyName ||
                   "Valued Client",
                 invoiceNumber: invoice.invoiceNumber,
                 amountDue: invoice.amountDue.toString(),
@@ -395,7 +397,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
       include: {
         client: true,
-        event: true,
+        linkedEvent: true,
       },
     });
 

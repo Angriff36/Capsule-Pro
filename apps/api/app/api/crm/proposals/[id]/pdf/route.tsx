@@ -160,9 +160,9 @@ interface ProposalEvent {
     addressLine1: string | null;
     addressLine2: string | null;
     city: string | null;
-    stateProvince: string | null;
+    state: string | null;
     postalCode: string | null;
-    countryCode: string | null;
+    country: string | null;
   } | null;
   status: string;
   title: string;
@@ -251,10 +251,10 @@ function transformEventData(event: ProposalEvent) {
               event.venue?.addressLine2 || event.location?.addressLine2,
             city: event.venue?.city || event.location?.city,
             stateProvince:
-              event.venue?.stateProvince || event.location?.stateProvince,
+              event.venue?.stateProvince || event.location?.state,
             postalCode: event.venue?.postalCode || event.location?.postalCode,
             countryCode:
-              event.venue?.countryCode || event.location?.countryCode,
+              event.venue?.countryCode || event.location?.country,
           }
         : event.venueAddress || undefined,
     status: event.status,

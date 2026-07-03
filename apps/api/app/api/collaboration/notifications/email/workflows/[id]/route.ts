@@ -41,7 +41,7 @@ export async function GET(
         deletedAt: null,
       },
       include: {
-        emailTemplate: {
+        template: {
           select: {
             id: true,
             name: true,

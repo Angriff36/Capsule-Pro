@@ -156,30 +156,37 @@ export async function POST(request: Request) {
       }
 
       const startedAt = new Date();
-      const result = await database.trainingCompletion.upsert({
-        where: {
-          tenantId_employeeId_moduleId: {
-            tenantId,
-            employeeId,
-            moduleId: assignment.module_id,
-          },
-        },
-        create: {
-          tenantId,
-          assignmentId: body.assignmentId,
-          employeeId,
-          moduleId: assignment.module_id,
-          startedAt,
-          passed: false,
-        },
-        update: {
-          startedAt,
-        },
-        select: {
-          id: true,
-          startedAt: true,
-        },
+      // (tenantId, employeeId, moduleId) is no longer a unique key — emulate
+      // the old upsert with a findFirst + update/create on the (tenantId, id) PK.
+      const existing = await database.trainingCompletion.findFirst({
+        where: { tenantId, employeeId, moduleId: assignment.module_id },
+        select: { id: true },
       });
+      const result = existing
+        ? await database.trainingCompletion.update({
+            where: { tenantId_id: { tenantId, id: existing.id } },
+            data: {
+              startedAt,
+            },
+            select: {
+              id: true,
+              startedAt: true,
+            },
+          })
+        : await database.trainingCompletion.create({
+            data: {
+              tenantId,
+              assignmentId: body.assignmentId,
+              employeeId,
+              moduleId: assignment.module_id,
+              startedAt,
+              passed: false,
+            },
+            select: {
+              id: true,
+              startedAt: true,
+            },
+          });
 
       return NextResponse.json({
         completion: {
@@ -246,38 +253,47 @@ export async function POST(request: Request) {
         },
       });
       const completedAt = new Date();
-      const result = await database.trainingCompletion.upsert({
-        where: {
-          tenantId_employeeId_moduleId: {
-            tenantId,
-            employeeId,
-            moduleId: assignment.module_id,
-          },
-        },
-        create: {
-          tenantId,
-          assignmentId: body.assignmentId,
-          employeeId,
-          moduleId: assignment.module_id,
-          startedAt: existingCompletion?.startedAt ?? completedAt,
-          completedAt,
-          score: new Prisma.Decimal(score),
-          passed,
-          notes: body.notes || null,
-        },
-        update: {
-          completedAt,
-          score: new Prisma.Decimal(score),
-          passed,
-          notes: body.notes || null,
-        },
-        select: {
-          id: true,
-          completedAt: true,
-          score: true,
-          passed: true,
-        },
+      // (tenantId, employeeId, moduleId) is no longer a unique key — emulate
+      // the old upsert with a findFirst + update/create on the (tenantId, id) PK.
+      const existing = await database.trainingCompletion.findFirst({
+        where: { tenantId, employeeId, moduleId: assignment.module_id },
+        select: { id: true },
       });
+      const result = existing
+        ? await database.trainingCompletion.update({
+            where: { tenantId_id: { tenantId, id: existing.id } },
+            data: {
+              completedAt,
+              score: new Prisma.Decimal(score),
+              passed,
+              notes: body.notes || null,
+            },
+            select: {
+              id: true,
+              completedAt: true,
+              score: true,
+              passed: true,
+            },
+          })
+        : await database.trainingCompletion.create({
+            data: {
+              tenantId,
+              assignmentId: body.assignmentId,
+              employeeId,
+              moduleId: assignment.module_id,
+              startedAt: existingCompletion?.startedAt ?? completedAt,
+              completedAt,
+              score: new Prisma.Decimal(score),
+              passed,
+              notes: body.notes || null,
+            },
+            select: {
+              id: true,
+              completedAt: true,
+              score: true,
+              passed: true,
+            },
+          });
 
       return NextResponse.json({
         completion: {

@@ -111,14 +111,18 @@ export async function checkOverlappingShifts(
       employeeId,
       ...(excludeShiftId ? { id: { not: excludeShiftId } } : {}),
       deletedAt: null,
-      shift_start: { lt: shiftEnd },
-      shift_end: { gt: shiftStart },
+      shiftStart: { lt: shiftEnd },
+      shiftEnd: { gt: shiftStart },
     },
-    select: { id: true, shift_start: true, shift_end: true },
+    select: { id: true, shiftStart: true, shiftEnd: true },
   });
 
   return {
-    overlaps: overlappingShifts,
+    overlaps: overlappingShifts.map((s) => ({
+      id: s.id,
+      shift_start: s.shiftStart,
+      shift_end: s.shiftEnd,
+    })),
     error: null,
   };
 }
@@ -201,18 +205,18 @@ export async function checkOvertimeHours(
       tenantId,
       employeeId,
       deletedAt: null,
-      shift_start: { gte: weekStart },
-      shift_end: { lt: weekEnd },
+      shiftStart: { gte: weekStart },
+      shiftEnd: { lt: weekEnd },
       ...(excludeShiftId ? { id: { not: excludeShiftId } } : {}),
     },
-    select: { id: true, shift_start: true, shift_end: true },
+    select: { id: true, shiftStart: true, shiftEnd: true },
   });
 
   // Calculate current week hours
   let currentWeekHours = 0;
   for (const shift of existingShifts) {
     currentWeekHours +=
-      (shift.shift_end.getTime() - shift.shift_start.getTime()) / 3_600_000;
+      (shift.shiftEnd.getTime() - shift.shiftStart.getTime()) / 3_600_000;
   }
 
   const projectedHours = currentWeekHours + proposedHours;

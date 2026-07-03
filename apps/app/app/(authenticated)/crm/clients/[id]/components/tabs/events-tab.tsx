@@ -18,7 +18,7 @@ export function EventsTab({ clientId }: EventsTabProps) {
       id: string;
       createdAt: Date;
       orderNumber: string;
-      order_status: string;
+      orderStatus: string;
       totalAmount: { toString: () => string };
     }>
   >([]);
@@ -94,7 +94,7 @@ export function EventsTab({ clientId }: EventsTabProps) {
                     </div>
                     <div className="flex items-center gap-3 text-muted-foreground text-sm">
                       <Badge className="text-xs" variant="outline">
-                        {event.order_status}
+                        {event.orderStatus}
                       </Badge>
                     </div>
                   </div>

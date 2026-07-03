@@ -124,7 +124,7 @@ export async function GET(request: Request) {
     },
     include: {
       // Include related data
-      inventoryItem: {
+      item: {
         select: {
           id: true,
           name: true,

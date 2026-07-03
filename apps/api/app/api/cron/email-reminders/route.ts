@@ -209,7 +209,7 @@ async function processTaskReminders() {
             lte: twentyFourHoursFromNow,
           },
           status: {
-            notIn: ["completed", "cancelled"],
+            notIn: ["done", "cancelled"],
           },
         },
       });

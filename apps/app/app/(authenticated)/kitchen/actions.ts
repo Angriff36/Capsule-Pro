@@ -77,8 +77,7 @@ export const getWasteEntries = async (filters?: {
     },
     orderBy: { loggedAt: "desc" },
     include: {
-      inventoryItem: true,
-      reason: true,
+      item: true,
     },
   });
 };
@@ -94,8 +93,7 @@ export const getWasteEntryById = async (
   return database.wasteEntry.findFirst({
     where: { tenantId, id: entryId, deletedAt: null },
     include: {
-      inventoryItem: true,
-      reason: true,
+      item: true,
     },
   });
 };
@@ -168,8 +166,7 @@ export const createWasteEntry = async (
   const entry = await database.wasteEntry.findFirst({
     where: { tenantId, id: createdId },
     include: {
-      inventoryItem: true,
-      reason: true,
+      item: true,
     },
   });
   invariant(entry, "Created waste entry could not be loaded");
@@ -236,8 +233,7 @@ export const updateWasteEntry = async (
   const entry = await database.wasteEntry.findFirst({
     where: { tenantId, id: entryId },
     include: {
-      inventoryItem: true,
-      reason: true,
+      item: true,
     },
   });
   invariant(entry, "Updated waste entry could not be loaded");

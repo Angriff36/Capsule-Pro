@@ -35,7 +35,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
         deletedAt: null,
       },
       include: {
-        lines: {
+        revenueRecognitionLines: {
           where: { deletedAt: null },
           orderBy: { sequence: "asc" },
         },
@@ -74,7 +74,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const existing = await database.revenueRecognitionSchedule.findFirst({
       where: { tenantId, id, deletedAt: null },
       include: {
-        lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
+        revenueRecognitionLines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
       },
     });
 
@@ -145,12 +145,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         {
           tenantId,
           scheduleId: id,
-          sequence: existing.lines.length + 1,
+          sequence: existing.revenueRecognitionLines.length + 1,
           amount,
           recognizedAt: recognizedAt.toISOString(),
           status: "RECOGNIZED",
           description:
-            body.description || `Recognition ${existing.lines.length + 1}`,
+            body.description || `Recognition ${existing.revenueRecognitionLines.length + 1}`,
           metadata: body.metadata ?? {},
         },
         { entityName: "RevenueRecognitionLine" }
@@ -195,7 +195,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       const updated = await database.revenueRecognitionSchedule.findFirst({
         where: { tenantId, id, deletedAt: null },
         include: {
-          lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
+          revenueRecognitionLines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
         },
       });
 
@@ -265,7 +265,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       const updated = await database.revenueRecognitionSchedule.findFirst({
         where: { tenantId, id, deletedAt: null },
         include: {
-          lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
+          revenueRecognitionLines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
         },
       });
 
@@ -329,7 +329,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       const updated = await database.revenueRecognitionSchedule.findFirst({
         where: { tenantId, id, deletedAt: null },
         include: {
-          lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
+          revenueRecognitionLines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
         },
       });
 
@@ -358,7 +358,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       const updated = await database.revenueRecognitionSchedule.findFirst({
         where: { tenantId, id, deletedAt: null },
         include: {
-          lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
+          revenueRecognitionLines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
         },
       });
 

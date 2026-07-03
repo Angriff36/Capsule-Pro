@@ -144,7 +144,7 @@ export async function GET(request: Request) {
       orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
       include: {
         _count: {
-          select: { cards: true },
+          select: { commandBoardCards: true },
         },
       },
     });
@@ -162,7 +162,7 @@ export async function GET(request: Request) {
       created_at: board.createdAt,
       updated_at: board.updatedAt,
       deleted_at: board.deletedAt,
-      cards_count: board._count.cards,
+      cards_count: board._count.commandBoardCards,
     }));
 
     return NextResponse.json({

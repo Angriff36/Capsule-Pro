@@ -150,16 +150,16 @@ export async function POST(request: Request, context: RouteContext) {
                 itemId: item.itemId,
                 transactionType: "purchase",
                 quantity: quantityReceived,
-                unit_cost: unitCost,
+                unitCost,
                 reference: purchaseOrder.poNumber,
                 notes:
                   body.notes ?? `Received via PO ${purchaseOrder.poNumber}`,
-                transaction_date: new Date(),
-                storage_location_id: purchaseOrder.locationId,
+                transactionDate: new Date(),
+                storageLocationId: purchaseOrder.locationId,
                 reason: "purchase",
                 referenceType: "purchase_order",
                 referenceId: purchaseOrder.id,
-                employee_id: userId ?? null,
+                employeeId: userId ?? null,
               },
             });
             return transaction;

@@ -60,13 +60,6 @@ export async function GET(
         id,
         deletedAt: null,
       },
-      include: {
-        tenant: {
-          select: {
-            id: true,
-          },
-        },
-      },
     });
 
     if (!prepList) {

@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@repo/auth/server";
-import { database, type Prisma } from "@repo/database";
+import { database, type Prisma, ScheduleStatus } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import {
@@ -620,6 +620,11 @@ export async function getSchedules(params?: {
     : params?.search
       ? matchingLocations.map((location) => location.id)
       : undefined;
+  const statusFilter =
+    params?.status &&
+    (Object.values(ScheduleStatus) as string[]).includes(params.status)
+      ? (params.status as ScheduleStatus)
+      : undefined;
   const scheduleRecords =
     params?.search && locationIds?.length === 0
       ? []
@@ -627,7 +632,7 @@ export async function getSchedules(params?: {
           where: {
             tenantId,
             deletedAt: null,
-            ...(params?.status ? { status: params.status } : {}),
+            ...(statusFilter ? { status: statusFilter } : {}),
             ...(locationIds ? { locationId: { in: locationIds } } : {}),
           },
           orderBy: { scheduleDate: "desc" },

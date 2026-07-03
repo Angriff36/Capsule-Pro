@@ -129,7 +129,7 @@ const KitchenAnalyticsPage = async () => {
       where: {
         tenantId,
         deletedAt: null,
-        status: "completed",
+        status: "done",
         updatedAt: { gte: thirtyDaysAgo },
       },
     }),
@@ -205,12 +205,8 @@ const KitchenAnalyticsPage = async () => {
         loggedAt: true,
         quantity: true,
         totalCost: true,
-        inventoryItem: {
-          select: {
-            name: true,
-          },
-        },
-        reason: {
+        reasonId: true,
+        item: {
           select: {
             name: true,
           },
@@ -257,6 +253,20 @@ const KitchenAnalyticsPage = async () => {
 
   const locationMap = new Map(
     locations.map((location) => [location.id, location.name])
+  );
+
+  // WasteEntry has no reason relation — look up core waste reasons by id.
+  const wasteReasonIds = Array.from(
+    new Set(recentWasteEntries.map((entry) => entry.reasonId))
+  );
+  const wasteReasons = wasteReasonIds.length
+    ? await database.wasteReason.findMany({
+        where: { id: { in: wasteReasonIds } },
+        select: { id: true, name: true },
+      })
+    : [];
+  const wasteReasonMap = new Map(
+    wasteReasons.map((reason) => [reason.id, reason.name])
   );
   const prepListSyncRate =
     prepListTotal > 0 ? (finalizedPrepListCount / prepListTotal) * 100 : 0;
@@ -376,14 +386,14 @@ const KitchenAnalyticsPage = async () => {
                 recentWasteEntries.map((entry) => (
                   <TableRow key={entry.id}>
                     <TableCell>
-                      <div className="font-medium">
-                        {entry.inventoryItem.name}
-                      </div>
+                      <div className="font-medium">{entry.item.name}</div>
                       <div className="text-muted-foreground text-xs">
                         Qty {numberFormatter.format(Number(entry.quantity))}
                       </div>
                     </TableCell>
-                    <TableCell>{entry.reason.name}</TableCell>
+                    <TableCell>
+                      {wasteReasonMap.get(entry.reasonId) ?? "Unknown reason"}
+                    </TableCell>
                     <TableCell>
                       {dateFormatter.format(entry.loggedAt)}
                     </TableCell>

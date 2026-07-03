@@ -53,9 +53,9 @@ export async function fetchShiftsForAutoAssignment(
       id: true,
       scheduleId: true,
       locationId: true,
-      shift_start: true,
-      shift_end: true,
-      role_during_shift: true,
+      shiftStart: true,
+      shiftEnd: true,
+      roleDuringShift: true,
     },
   });
 
@@ -64,9 +64,9 @@ export async function fetchShiftsForAutoAssignment(
     id: shift.id,
     schedule_id: shift.scheduleId,
     location_id: shift.locationId,
-    shift_start: shift.shift_start,
-    shift_end: shift.shift_end,
-    role_during_shift: shift.role_during_shift,
+    shift_start: shift.shiftStart,
+    shift_end: shift.shiftEnd,
+    role_during_shift: shift.roleDuringShift,
   }));
 }
 

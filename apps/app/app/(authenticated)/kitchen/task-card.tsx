@@ -383,7 +383,7 @@ export function TaskCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {task.status !== "done" && task.status !== "completed" && (
+              {task.status !== "done" && (
                 <DropdownMenuItem onClick={() => handleStatusChange("done")}>
                   Mark as Completed
                 </DropdownMenuItem>
@@ -393,7 +393,7 @@ export function TaskCard({
                   Reopen Task
                 </DropdownMenuItem>
               )}
-              {task.status !== "canceled" && task.status !== "cancelled" && (
+              {task.status !== "cancelled" && (
                 <DropdownMenuItem
                   onClick={() => handleStatusChange("cancelled")}
                 >
@@ -460,22 +460,19 @@ export function TaskCard({
 
         {/* Action button */}
         <div className="mt-3">
-          {(task.status === "open" || task.status === "pending") &&
-            !userClaim && (
-              <Button
-                className="w-full gap-2 bg-ink text-white hover:bg-ink/90"
-                disabled={isLoading}
-                onClick={handleClaim}
-                size="sm"
-              >
-                <User className="h-4 w-4" />
-                Claim Task
-              </Button>
-            )}
+          {task.status === "pending" && !userClaim && (
+            <Button
+              className="w-full gap-2 bg-ink text-white hover:bg-ink/90"
+              disabled={isLoading}
+              onClick={handleClaim}
+              size="sm"
+            >
+              <User className="h-4 w-4" />
+              Claim Task
+            </Button>
+          )}
           {userClaim &&
             task.status !== "done" &&
-            task.status !== "completed" &&
-            task.status !== "canceled" &&
             task.status !== "cancelled" && (
               <Button
                 className="w-full gap-2"

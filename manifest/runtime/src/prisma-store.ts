@@ -10,9 +10,11 @@ import type { Store } from "@angriff36/manifest";
 import type {
   KitchenTask,
   KitchenTaskClaim,
+  KitchenTaskStatus,
   PrepTask,
   PrepTaskPlanWorkflow,
-  Prisma,
+  PrepTaskPlanWorkflowStatus,
+  PrepTaskStatus,
   PrismaClient,
   Station,
 } from "@repo/database/standalone";
@@ -106,7 +108,7 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
         locationId: (data.locationId as string) || "",
         name: data.name as string,
         taskType: (data.taskType as string) || "prep",
-        status: (data.status as string) || "pending",
+        status: (data.status as PrepTaskStatus) || "pending",
         priority: (data.priority as number) || 5,
         quantityTotal: data.quantityTotal as number,
         quantityUnitId: (data.quantityUnitId as number) || null,
@@ -155,7 +157,7 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
     const updated = await this.prisma.prepTask.update({
       where: { tenantId_id: { tenantId: this.tenantId, id } },
       data: {
-        status: data.status as string | undefined,
+        status: data.status as PrepTaskStatus | undefined,
         priority: data.priority as number | undefined,
         quantityCompleted: data.quantityCompleted as number | undefined,
         quantityTotal: data.quantityTotal as number | undefined,
@@ -361,10 +363,10 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
         id: data.id as string,
         title: (data.title as string) || "",
         summary: (data.summary as string) || "",
-        status: (data.status as string) || "pending",
+        status: (data.status as KitchenTaskStatus) || "pending",
         priority: (data.priority as number) || 5,
         complexity: (data.complexity as number) || 5,
-        tags: toStringArray(data.tags),
+        tags: toTagsString(data.tags),
         dueDate: data.dueDate ? new Date(data.dueDate as number) : undefined,
         completedAt: data.completedAt
           ? new Date(data.completedAt as number)
@@ -405,12 +407,12 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
     const updated = await this.prisma.kitchenTask.update({
       where: { tenantId_id: { tenantId: this.tenantId, id } },
       data: {
-        status: data.status as string | undefined,
+        status: data.status as KitchenTaskStatus | undefined,
         priority: data.priority as number | undefined,
         complexity: data.complexity as number | undefined,
         title: data.title as string | undefined,
         summary: data.summary as string | undefined,
-        tags: toStringArrayOrUndefined(data.tags),
+        tags: data.tags === undefined ? undefined : toTagsString(data.tags),
         dueDate: data.dueDate ? new Date(data.dueDate as number) : undefined,
         completedAt: data.completedAt
           ? new Date(data.completedAt as number)
@@ -537,8 +539,8 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
  *
  * Field mapping: every manifest property is stored 1:1 (same name) in the
  * dedicated table; JSON-shaped properties (generatedTasks, scheduledWindows,
- * errors, etc.) are stored natively as Prisma `Json` columns — objects and
- * arrays pass through directly without manual serialization.
+ * errors, etc.) are stored as JSON-encoded `@db.Text` columns — serialized
+ * on write (toJsonText) and parsed on read (fromJsonText).
  */
 export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
   constructor(
@@ -569,19 +571,19 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
         id,
         eventId: (data.eventId as string) ?? "",
         idempotencyKey: (data.idempotencyKey as string) ?? id,
-        status: (data.status as string) ?? "created",
+        status: (data.status as PrepTaskPlanWorkflowStatus) ?? "created",
         currentStep: (data.currentStep as number) ?? 0,
         totalSteps: (data.totalSteps as number) ?? 5,
-        generationOptions: toJsonValue(data.generationOptions, {}),
-        generatedTasks: toJsonValue(data.generatedTasks, []),
-        reviewedTasks: toJsonValue(data.reviewedTasks, []),
-        approvedTaskIds: toJsonValue(data.approvedTaskIds, []),
-        rejectedTaskIds: toJsonValue(data.rejectedTaskIds, []),
-        instantiatedTaskIds: toJsonValue(data.instantiatedTaskIds, []),
-        scheduledWindows: toJsonValue(data.scheduledWindows, {}),
-        constraintOutcomes: toJsonValue(data.constraintOutcomes, []),
-        errors: toJsonValue(data.errors, []),
-        warnings: toJsonValue(data.warnings, []),
+        generationOptions: toJsonText(data.generationOptions, "{}"),
+        generatedTasks: toJsonText(data.generatedTasks, "[]"),
+        reviewedTasks: toJsonText(data.reviewedTasks, "[]"),
+        approvedTaskIds: toJsonText(data.approvedTaskIds, "[]"),
+        rejectedTaskIds: toJsonText(data.rejectedTaskIds, "[]"),
+        instantiatedTaskIds: toJsonText(data.instantiatedTaskIds, "[]"),
+        scheduledWindows: toJsonText(data.scheduledWindows, "{}"),
+        constraintOutcomes: toJsonText(data.constraintOutcomes, "[]"),
+        errors: toJsonText(data.errors, "[]"),
+        warnings: toJsonText(data.warnings, "[]"),
         generatedCount: (data.generatedCount as number) ?? 0,
         approvedCount: (data.approvedCount as number) ?? 0,
         instantiatedCount: (data.instantiatedCount as number) ?? 0,
@@ -625,8 +627,8 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
           }
         }
       }
-      // JSON fields: normalize string-encoded JSON → parsed objects/arrays,
-      // then pass directly to Prisma (native Json columns).
+      // JSON fields: normalize to JSON-encoded strings for the `@db.Text`
+      // columns (objects/arrays are stringified, strings pass through).
       const jsonFields = [
         "generationOptions",
         "generatedTasks",
@@ -641,11 +643,9 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
       ] as const;
       for (const f of jsonFields) {
         if (data[f] !== undefined) {
-          updateData[f] = toJsonValue(
+          updateData[f] = toJsonText(
             data[f],
-            f === "generationOptions" || f === "scheduledWindows"
-              ? {}
-              : []
+            f === "generationOptions" || f === "scheduledWindows" ? "{}" : "[]"
           );
         }
       }
@@ -686,10 +686,11 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
 
   async delete(id: string): Promise<boolean> {
     try {
-      // PrepTaskPlanWorkflow has no deletedAt — mark status as "deleted"
+      // Soft delete — status is a Postgres enum with no "deleted" member,
+      // so deletion is tracked via deletedAt.
       await this.prisma.prepTaskPlanWorkflow.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: { status: "deleted" },
+        data: { deletedAt: new Date() },
       });
       return true;
     } catch (error) {
@@ -701,7 +702,7 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
   async clear(): Promise<void> {
     await this.prisma.prepTaskPlanWorkflow.updateMany({
       where: { tenantId: this.tenantId },
-      data: { status: "deleted" },
+      data: { deletedAt: new Date() },
     });
   }
 
@@ -720,16 +721,16 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
       status: w.status ?? "created",
       currentStep: w.currentStep ?? 0,
       totalSteps: w.totalSteps ?? 5,
-      generationOptions: w.generationOptions ?? {},
-      generatedTasks: w.generatedTasks ?? [],
-      reviewedTasks: w.reviewedTasks ?? [],
-      approvedTaskIds: w.approvedTaskIds ?? [],
-      rejectedTaskIds: w.rejectedTaskIds ?? [],
-      instantiatedTaskIds: w.instantiatedTaskIds ?? [],
-      scheduledWindows: w.scheduledWindows ?? {},
-      constraintOutcomes: w.constraintOutcomes ?? [],
-      errors: w.errors ?? [],
-      warnings: w.warnings ?? [],
+      generationOptions: fromJsonText(w.generationOptions, {}),
+      generatedTasks: fromJsonText(w.generatedTasks, []),
+      reviewedTasks: fromJsonText(w.reviewedTasks, []),
+      approvedTaskIds: fromJsonText(w.approvedTaskIds, []),
+      rejectedTaskIds: fromJsonText(w.rejectedTaskIds, []),
+      instantiatedTaskIds: fromJsonText(w.instantiatedTaskIds, []),
+      scheduledWindows: fromJsonText(w.scheduledWindows, {}),
+      constraintOutcomes: fromJsonText(w.constraintOutcomes, []),
+      errors: fromJsonText(w.errors, []),
+      warnings: fromJsonText(w.warnings, []),
       generatedCount: w.generatedCount ?? 0,
       approvedCount: w.approvedCount ?? 0,
       instantiatedCount: w.instantiatedCount ?? 0,
@@ -741,35 +742,58 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
       completedAt: w.completedAt ? w.completedAt.getTime() : 0,
       createdAt: w.createdAt ? w.createdAt.getTime() : 0,
       updatedAt: w.updatedAt ? w.updatedAt.getTime() : 0,
-      isDeleted: w.status === "deleted",
+      isDeleted: w.deletedAt != null,
     };
   }
 }
 
 /**
- * Normalize a manifest entity value to a Prisma Json-compatible input.
+ * Normalize a manifest entity value to the JSON-encoded string form stored
+ * in PrepTaskPlanWorkflow's `@db.Text` columns.
  *
  * Accepts:
- * - Already-parsed objects/arrays (preferred path for Json columns)
- * - String-encoded JSON (backward compat with callers that still serialize)
+ * - Already-encoded JSON strings (passed through)
+ * - Objects/arrays (stringified)
  *
  * Returns the `fallback` for null/undefined/empty-string.
  */
-function toJsonValue(
-  value: unknown,
-  fallback: Prisma.InputJsonValue
-): Prisma.InputJsonValue {
+function toJsonText(value: unknown, fallback: string): string {
   if (value === undefined || value === null || value === "") {
     return fallback;
   }
   if (typeof value === "string") {
-    try {
-      return JSON.parse(value) as Prisma.InputJsonValue;
-    } catch {
-      return fallback;
-    }
+    return value;
   }
-  return value as Prisma.InputJsonValue;
+  return JSON.stringify(value);
+}
+
+/**
+ * Parse a JSON-encoded `@db.Text` column back to the object/array shape the
+ * manifest entity exposes. Returns the `fallback` for null/empty/invalid JSON.
+ */
+function fromJsonText(value: unknown, fallback: unknown): unknown {
+  if (typeof value !== "string" || value === "") {
+    return value ?? fallback;
+  }
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
+/**
+ * KitchenTask.tags is a plain string column — normalize legacy array values
+ * to a comma-separated string; strings pass through unchanged.
+ */
+function toTagsString(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.map((v) => String(v)).join(",");
+  }
+  return "";
 }
 
 /**

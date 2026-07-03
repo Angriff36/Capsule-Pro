@@ -126,14 +126,26 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
       moduleId: id,
       deletedAt: null,
     },
-    include: {
-      completions: {
-        where: { tenantId },
-        take: 1,
-      },
-    },
     orderBy: { assignedAt: "desc" },
   });
+
+  const completionRecords = await database.trainingCompletion.findMany({
+    where: {
+      tenantId,
+      assignmentId: {
+        in: assignmentRecords.map((assignment) => assignment.id),
+      },
+    },
+  });
+  const completionsByAssignmentId = new Map<
+    string,
+    (typeof completionRecords)[number]
+  >();
+  for (const completion of completionRecords) {
+    if (!completionsByAssignmentId.has(completion.assignmentId)) {
+      completionsByAssignmentId.set(completion.assignmentId, completion);
+    }
+  }
 
   const employeeIds = assignmentRecords
     .map((assignment) => assignment.employeeId)
@@ -160,7 +172,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
   );
 
   const assignments: AssignmentRow[] = assignmentRecords.map((assignment) => {
-    const completion = assignment.completions[0];
+    const completion = completionsByAssignmentId.get(assignment.id);
     const employee = assignment.employeeId
       ? employeesById.get(assignment.employeeId)
       : undefined;

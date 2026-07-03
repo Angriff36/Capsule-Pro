@@ -17,6 +17,7 @@ import type {
   BoardDelta,
   BoardGroup,
   BoardProjection,
+  EntityType,
 } from "../../../types";
 
 interface RouteContext {
@@ -184,9 +185,9 @@ export async function GET(_request: Request, context: RouteContext) {
         },
       },
       include: {
-        projections: { where: { deletedAt: null } },
-        groups: { where: { deletedAt: null } },
-        annotations: { where: { deletedAt: null } },
+        boardProjections: { where: { deletedAt: null } },
+        commandBoardGroups: { where: { deletedAt: null } },
+        boardAnnotations: { where: { deletedAt: null } },
       },
     });
 
@@ -216,9 +217,9 @@ export async function GET(_request: Request, context: RouteContext) {
         },
       },
       include: {
-        projections: { where: { deletedAt: null } },
-        groups: { where: { deletedAt: null } },
-        annotations: { where: { deletedAt: null } },
+        boardProjections: { where: { deletedAt: null } },
+        commandBoardGroups: { where: { deletedAt: null } },
+        boardAnnotations: { where: { deletedAt: null } },
       },
     });
 
@@ -230,44 +231,46 @@ export async function GET(_request: Request, context: RouteContext) {
     }
 
     // Map to API types
-    const originalProjections: BoardProjection[] = sourceBoard.projections.map(
+    const originalProjections: BoardProjection[] = sourceBoard.boardProjections.map(
       (p) => ({
         id: p.id,
         tenant_id: p.tenantId,
         board_id: p.boardId,
-        entity_type: p.entityType,
+        entity_type: p.entityType as EntityType,
         entity_id: p.entityId,
         position_x: p.positionX,
         position_y: p.positionY,
         width: p.width,
         height: p.height,
-        z_index: p.zIndex,
-        color_override: p.colorOverride,
-        collapsed: p.collapsed,
-        group_id: p.groupId,
-        pinned: p.pinned,
+        // Not stored in schema; defaults for API compatibility
+        z_index: 0,
+        color_override: null,
+        collapsed: false,
+        group_id: null,
+        pinned: false,
       })
     );
 
     const simulatedProjections: BoardProjection[] =
-      simulationBoard.projections.map((p) => ({
+      simulationBoard.boardProjections.map((p) => ({
         id: p.id,
         tenant_id: p.tenantId,
         board_id: p.boardId,
-        entity_type: p.entityType,
+        entity_type: p.entityType as EntityType,
         entity_id: p.entityId,
         position_x: p.positionX,
         position_y: p.positionY,
         width: p.width,
         height: p.height,
-        z_index: p.zIndex,
-        color_override: p.colorOverride,
-        collapsed: p.collapsed,
-        group_id: p.groupId,
-        pinned: p.pinned,
+        // Not stored in schema; defaults for API compatibility
+        z_index: 0,
+        color_override: null,
+        collapsed: false,
+        group_id: null,
+        pinned: false,
       }));
 
-    const originalGroups: BoardGroup[] = sourceBoard.groups.map((g) => ({
+    const originalGroups: BoardGroup[] = sourceBoard.commandBoardGroups.map((g) => ({
       id: g.id,
       tenant_id: g.tenantId,
       board_id: g.boardId,
@@ -281,7 +284,7 @@ export async function GET(_request: Request, context: RouteContext) {
       z_index: g.zIndex,
     }));
 
-    const simulatedGroups: BoardGroup[] = simulationBoard.groups.map((g) => ({
+    const simulatedGroups: BoardGroup[] = simulationBoard.commandBoardGroups.map((g) => ({
       id: g.id,
       tenant_id: g.tenantId,
       board_id: g.boardId,
@@ -295,29 +298,31 @@ export async function GET(_request: Request, context: RouteContext) {
       z_index: g.zIndex,
     }));
 
-    const originalAnnotations: BoardAnnotation[] = sourceBoard.annotations.map(
+    const originalAnnotations: BoardAnnotation[] = sourceBoard.boardAnnotations.map(
       (a) => ({
         id: a.id,
         board_id: a.boardId,
-        annotation_type: a.annotationType,
-        from_projection_id: a.fromProjectionId,
-        to_projection_id: a.toProjectionId,
+        // Not stored in schema; defaults for API compatibility
+        annotation_type: "label",
+        from_projection_id: null,
+        to_projection_id: null,
         label: a.label,
         color: a.color,
-        style: a.style,
+        style: null,
       })
     );
 
     const simulatedAnnotations: BoardAnnotation[] =
-      simulationBoard.annotations.map((a) => ({
+      simulationBoard.boardAnnotations.map((a) => ({
         id: a.id,
         board_id: a.boardId,
-        annotation_type: a.annotationType,
-        from_projection_id: a.fromProjectionId,
-        to_projection_id: a.toProjectionId,
+        // Not stored in schema; defaults for API compatibility
+        annotation_type: "label",
+        from_projection_id: null,
+        to_projection_id: null,
         label: a.label,
         color: a.color,
-        style: a.style,
+        style: null,
       }));
 
     // Compute delta

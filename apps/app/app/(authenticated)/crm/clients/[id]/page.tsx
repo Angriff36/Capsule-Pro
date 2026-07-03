@@ -12,7 +12,21 @@ export default async function ClientDetailPage({
   try {
     const client = await getClientById(id);
 
-    return <ClientDetailClient client={client} />;
+    return (
+      <ClientDetailClient
+        client={{
+          ...client,
+          company_name: client.companyName,
+          first_name: client.firstName,
+          last_name: client.lastName,
+          contacts: client.contacts.map((contact) => ({
+            ...contact,
+            first_name: contact.firstName,
+            last_name: contact.lastName,
+          })),
+        }}
+      />
+    );
   } catch {
     notFound();
   }

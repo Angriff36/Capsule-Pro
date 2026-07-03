@@ -77,11 +77,11 @@ export async function GET(request: NextRequest) {
         take: limit,
         orderBy: { createdAt: "desc" },
         include: {
-          actions: {
+          collectionActions: {
             take: 5,
             orderBy: { createdAt: "desc" },
           },
-          paymentPlans: {
+          collectionPaymentPlans: {
             where: { status: "ACTIVE" },
           },
         },

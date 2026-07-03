@@ -22,7 +22,8 @@ export async function GET(
     const tenantId = await requireTenantId();
     const { id } = await params;
 
-    const report = await database.eventReport.findUnique({
+    // Using findFirst — multi-field filter (tenant/soft-delete) requires findFirst on Prisma 7+.
+    const report = await database.eventReport.findFirst({
       where: { id, tenantId, deletedAt: null },
       include: {
         event: {

@@ -50,7 +50,7 @@ export async function GET() {
         { tenantId },
         { deletedAt: null },
         { eventId: { in: eventIds } },
-        { status: { notIn: ["canceled", "cancelled"] } },
+        { status: { notIn: ["cancelled"] } },
       ],
     },
     select: {
@@ -83,7 +83,7 @@ export async function GET() {
     where: {
       AND: [
         { tenantId },
-        { status: { notIn: ["done", "canceled", "cancelled"] } },
+        { status: { notIn: ["done", "cancelled"] } },
       ],
     },
     select: {

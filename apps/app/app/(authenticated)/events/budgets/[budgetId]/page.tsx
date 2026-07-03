@@ -95,11 +95,11 @@ export default async function BudgetDetailPage({
   const budget = await database.eventBudget.findFirst({
     where: { tenantId, id: budgetId, deletedAt: null },
     include: {
-      lineItems: {
+      budgetLineItems: {
         where: { deletedAt: null },
         orderBy: { sortOrder: "asc" },
       },
-      event: {
+      linkedEvent: {
         select: { id: true, title: true, eventDate: true },
       },
     },
@@ -117,7 +117,7 @@ export default async function BudgetDetailPage({
   const utilizationPct =
     totalBudget > 0 ? (totalActual / totalBudget) * 100 : 0;
 
-  const lineItems = budget.lineItems.map((li) => ({
+  const lineItems = budget.budgetLineItems.map((li) => ({
     id: li.id,
     category: li.category,
     name: li.name,
@@ -144,12 +144,12 @@ export default async function BudgetDetailPage({
               / {budget.id.slice(0, 8)}
             </MonoLabel>
             <DisplayHeading>
-              {budget.event?.title ?? "Event Budget"}
+              {budget.linkedEvent?.title ?? "Event Budget"}
             </DisplayHeading>
             <CommandBandLede>
-              Budget for {budget.event?.title || "event"}
-              {budget.event?.eventDate
-                ? ` (${new Date(budget.event.eventDate).toLocaleDateString()})`
+              Budget for {budget.linkedEvent?.title || "event"}
+              {budget.linkedEvent?.eventDate
+                ? ` (${new Date(budget.linkedEvent.eventDate).toLocaleDateString()})`
                 : ""}
               . Status: <span className="capitalize">{budget.status}</span>.
               Version {budget.version}.

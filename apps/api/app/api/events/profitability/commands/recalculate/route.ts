@@ -31,7 +31,7 @@ async function calculateBudgetTotals(
 }> {
   const eventBudget = await database.eventBudget.findFirst({
     where: { tenantId, eventId, deletedAt: null },
-    include: { lineItems: { where: { deletedAt: null } } },
+    include: { budgetLineItems: { where: { deletedAt: null } } },
   });
 
   const event = await database.event.findUnique({
@@ -41,7 +41,7 @@ async function calculateBudgetTotals(
 
   const budgetedRevenue = event?.budget ? Number(event.budget) : 0;
 
-  if (!(eventBudget?.lineItems.length)) {
+  if (!(eventBudget?.budgetLineItems.length)) {
     return {
       budgetedRevenue,
       budgetedFoodCost: 0,
@@ -54,7 +54,7 @@ async function calculateBudgetTotals(
   let budgetedLaborCost = 0;
   let budgetedOverhead = 0;
 
-  for (const item of eventBudget.lineItems) {
+  for (const item of eventBudget.budgetLineItems) {
     const amount = Number(item.budgetedAmount);
     const category = item.category.toLowerCase();
 

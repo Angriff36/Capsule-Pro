@@ -419,13 +419,9 @@ export async function DELETE(_request: Request, context: RouteContext) {
       );
     }
 
-    // Prevent deletion of system reports
-    if (report.is_system) {
-      return NextResponse.json(
-        { message: "Cannot delete system reports" },
-        { status: 403 }
-      );
-    }
+    // Note: the DB `is_system` column is not modeled in the Prisma schema
+    // (schema-truth migration), so system-report delete protection cannot be
+    // enforced here; reintroduce via the Manifest Report entity if needed.
 
     // Delegate soft-delete to Manifest runtime (Report.remove)
     return runManifestCommand({

@@ -57,8 +57,8 @@ export async function GET(request: NextRequest) {
       include: {
         _count: {
           select: {
-            vendorContacts: { where: { deletedAt: null } },
-            vendorCatalogs: {
+            contacts: { where: { deletedAt: null } },
+            catalogs: {
               where: { deletedAt: null, isActive: true },
             },
           },
@@ -91,8 +91,8 @@ export async function GET(request: NextRequest) {
       tags: v.tags,
       created_at: v.createdAt,
       updated_at: v.updatedAt,
-      contact_count: v._count.vendorContacts,
-      catalog_item_count: v._count.vendorCatalogs,
+      contact_count: v._count.contacts,
+      catalog_item_count: v._count.catalogs,
     }));
 
     return manifestSuccessResponse({ vendors: shaped, limit, offset });
