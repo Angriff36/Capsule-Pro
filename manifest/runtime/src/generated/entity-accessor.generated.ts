@@ -138,7 +138,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "AutomatedFollowup": {
     "accessor": "automatedFollowup",
@@ -210,7 +210,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "BudgetLineItem": {
     "accessor": "budgetLineItem",
@@ -318,7 +318,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "CollectionPaymentPlan": {
     "accessor": "collectionPaymentPlan",
@@ -399,7 +399,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "CrmScoringRule": {
     "accessor": "crmScoringRule",
@@ -444,7 +444,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "DisciplinaryAction": {
     "accessor": "disciplinaryAction",
@@ -453,7 +453,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenant_id",
     "createdAtField": "created_at",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "Dish": {
     "accessor": "dish",
@@ -489,7 +489,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "EmailTemplate": {
     "accessor": "emailTemplate",
@@ -552,7 +552,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "Event": {
     "accessor": "event",
@@ -705,7 +705,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "FacilityArea": {
     "accessor": "facilityArea",
@@ -714,7 +714,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "FacilityAsset": {
     "accessor": "facilityAsset",
@@ -723,7 +723,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "FacilitySchedule": {
     "accessor": "facilitySchedule",
@@ -786,7 +786,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "InventoryForecast": {
     "accessor": "inventoryForecast",
@@ -831,7 +831,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "InventoryTransfer": {
     "accessor": "inventoryTransfer",
@@ -840,7 +840,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "InventoryTransferItem": {
     "accessor": "inventoryTransferItem",
@@ -858,7 +858,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "IoTAlert": {
     "accessor": "ioTAlert",
@@ -876,7 +876,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "KitchenTask": {
     "accessor": "kitchenTask",
@@ -885,7 +885,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "KitchenTaskClaim": {
     "accessor": "kitchenTaskClaim",
@@ -912,7 +912,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "LaborBudget": {
     "accessor": "laborBudget",
@@ -948,7 +948,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "MaintenanceWorkOrder": {
     "accessor": "maintenanceWorkOrder",
@@ -957,7 +957,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "Menu": {
     "accessor": "menu",
@@ -966,7 +966,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "MenuDish": {
     "accessor": "menuDish",
@@ -1038,7 +1038,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "Payment": {
     "accessor": "payment",
@@ -1047,7 +1047,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "PaymentMethod": {
     "accessor": "paymentMethod",
@@ -1056,7 +1056,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "PaymentRefundAttempt": {
     "accessor": "paymentRefundAttempt",
@@ -1074,7 +1074,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "PayrollLineItem": {
     "accessor": "payrollLineItem",
@@ -1119,7 +1119,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenant_id",
     "createdAtField": "created_at",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "PrepComment": {
     "accessor": "prepComment",
@@ -1137,7 +1137,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "PrepListImport": {
     "accessor": "prepListImport",
@@ -1173,7 +1173,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "PrepTaskPlanWorkflow": {
     "accessor": "prepTaskPlanWorkflow",
@@ -1182,7 +1182,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "PreventiveMaintenanceSchedule": {
     "accessor": "preventiveMaintenanceSchedule",
@@ -1191,7 +1191,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "PricingTier": {
     "accessor": "pricingTier",
@@ -1209,7 +1209,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "ProcurementBudgetAlert": {
     "accessor": "procurementBudgetAlert",
@@ -1218,7 +1218,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "Proposal": {
     "accessor": "proposal",
@@ -1299,7 +1299,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "QACorrectiveAction": {
     "accessor": "correctiveAction",
@@ -1308,7 +1308,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "QATemperatureLog": {
     "accessor": "temperatureLog",
@@ -1317,7 +1317,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "QualityCheck": {
     "accessor": "qualityCheck",
@@ -1326,7 +1326,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "QualityCheckItem": {
     "accessor": "qualityCheckItem",
@@ -1353,7 +1353,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "RecipeIngredient": {
     "accessor": "recipeIngredient",
@@ -1380,7 +1380,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "ReorderSuggestion": {
     "accessor": "reorderSuggestion",
@@ -1407,7 +1407,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "RevenueRecognitionSchedule": {
     "accessor": "revenueRecognitionSchedule",
@@ -1416,7 +1416,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "RolePolicy": {
     "accessor": "rolePolicy",
@@ -1632,7 +1632,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "StorageLocation": {
     "accessor": "storageLocation",
@@ -1668,7 +1668,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "TemperatureProbe": {
     "accessor": "temperatureProbe",
@@ -1677,7 +1677,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "TemperatureReading": {
     "accessor": "temperatureReading",
@@ -1722,7 +1722,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "TimecardEditRequest": {
     "accessor": "timecardEditRequest",
@@ -1731,7 +1731,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "TimelineTask": {
     "accessor": "timelineTask",
@@ -1749,7 +1749,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "TrainingAssignment": {
     "accessor": "trainingAssignment",
@@ -1758,7 +1758,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "TrainingAttempt": {
     "accessor": "trainingAttempt",
@@ -1866,7 +1866,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "Venue": {
     "accessor": "venue",
@@ -1911,7 +1911,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "Workflow": {
     "accessor": "workflow",
