@@ -12,7 +12,7 @@ enum KitchenTaskStatus {
   cancelled
 }
 
-entity KitchenTask mixin TenantScoped {
+entity KitchenTask mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property required title: string
   property required summary: string

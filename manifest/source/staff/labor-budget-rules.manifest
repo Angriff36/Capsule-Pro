@@ -4,6 +4,8 @@ use "../_base.manifest"
 
 entity LaborBudget mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property eventId: string?
+  property name: string
   property locationId: string? = ""
   property periodStart: datetime?
   property periodEnd: datetime?
@@ -118,7 +120,7 @@ entity LaborBudget mixin TenantScoped, SoftDeletable {
   store LaborBudget in durable
 }
 
-entity BudgetAlert mixin TenantScoped {
+entity BudgetAlert mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property budgetId: string = ""
   property alertType: string = ""

@@ -2,7 +2,7 @@ use "../_base.manifest"
 // Inventory - Transaction Rules
 // Manifest spec for immutable inventory transaction log entries
 
-entity InventoryTransaction mixin TenantScoped {
+entity InventoryTransaction mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required itemId: string
   property required transactionType: string

@@ -2,8 +2,10 @@ use "../_base.manifest"
 // Equipment Maintenance Scheduler - Equipment Rules
 // Manifest spec for equipment management, maintenance tracking, and predictive failure alerts
 
-entity Equipment mixin TenantScoped {
+entity Equipment mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property connectionStatus: string = "disconnected"
+  property iotDeviceId: string?
   property required locationId: string
   searchable property required name: string
   property required type: string = "general"
@@ -212,8 +214,9 @@ entity Equipment mixin TenantScoped {
   store Equipment in durable
 }
 
-entity MaintenanceWorkOrder mixin TenantScoped {
+entity MaintenanceWorkOrder mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property startedAt: datetime?
   property workOrderNumber: string = ""
   property areaId: string? = ""
   property equipmentId: string? = ""

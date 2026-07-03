@@ -2,7 +2,7 @@ use "../_base.manifest"
 // Collections Rules Manifest
 // Defines collections workflows, aging, and dunning management
 
-entity CollectionCase mixin TenantScoped {
+entity CollectionCase mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
 
   // Reference information

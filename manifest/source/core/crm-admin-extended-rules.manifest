@@ -269,6 +269,7 @@ entity CrmScoringRule mixin TenantScoped, SoftDeletable {
 
 entity Report mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property description: string?
   searchable property name: string = ""
   property reportType: string = ""
   property queryConfig: json = {}

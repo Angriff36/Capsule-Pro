@@ -5,7 +5,7 @@ use "../_base.manifest"
 // Bug fix: entity-level :block constraints for isAtCapacity/isOverCapacity removed —
 //   they would block ALL commands including removeTask/deactivate. Kept as command-level only.
 
-entity Station mixin TenantScoped {
+entity Station mixin TenantScoped, SoftDeletable {
   // No relationships: locationId is a loose location reference, not a direct FK to a Manifest entity
   // (relationship added below for parent-context resolution)
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]

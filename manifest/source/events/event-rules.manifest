@@ -4,6 +4,7 @@ use "../_base.manifest"
 
 entity Event mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property maxCapacity: int?
   property clientId: string? = ""
   unique property eventNumber: string? = ""
   searchable property required title: string = "Untitled Event"

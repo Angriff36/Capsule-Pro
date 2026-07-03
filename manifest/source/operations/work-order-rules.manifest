@@ -12,7 +12,7 @@ enum WorkOrderStatus {
   cancelled
 }
 
-entity WorkOrder mixin TenantScoped {
+entity WorkOrder mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required equipmentId: string
   property equipmentName: string = ""

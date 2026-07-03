@@ -4,6 +4,7 @@ use "../_base.manifest"
 
 entity Lead mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property score: int = 0
   property source: string? = ""
   searchable property companyName: string? = ""
   searchable property contactName: string = ""

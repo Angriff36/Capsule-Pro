@@ -7,8 +7,9 @@ use "../_base.manifest"
 
 // ── HR / STAFF cluster ────────────────────────────────────────────────────────
 
-entity TimecardApproval mixin TenantScoped {
+entity TimecardApproval mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property submittedAt: datetime = now()
   property required employeeId: string
   property required payrollRunId: string
   property required submittedBy: string
@@ -85,6 +86,7 @@ entity TimecardApproval mixin TenantScoped {
 
 entity PayrollLineItem mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property deductions: json = {}
   property required payrollRunId: string
   property required employeeId: string
   property grossPay: money = 0
@@ -150,7 +152,7 @@ entity PayrollLineItem mixin TenantScoped, SoftDeletable {
   store PayrollLineItem in durable
 }
 
-entity TipPool mixin TenantScoped {
+entity TipPool mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property periodId: string = ""
   property totalTips: money = 0
@@ -245,8 +247,9 @@ entity TipPool mixin TenantScoped {
   store TipPool in durable
 }
 
-entity DisciplinaryAction mixin TenantScoped {
+entity DisciplinaryAction mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property description: string?
   property required employeeId: string
   property actionType: string = ""
   property reason: string = ""
@@ -328,6 +331,8 @@ entity DisciplinaryAction mixin TenantScoped {
 
 entity ActionMilestone mixin TenantScoped {
   key [tenantId, id]
+  property description: string?
+  property notes: string?
   property required disciplinaryActionId: string
   searchable property title: string = ""
   property dueDate: datetime
@@ -380,8 +385,9 @@ entity ActionMilestone mixin TenantScoped {
   store ActionMilestone in durable
 }
 
-entity PerformanceReview mixin TenantScoped {
+entity PerformanceReview mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property strengths: string?
   property required employeeId: string
   property required reviewerId: string
   property reviewType: string = ""
@@ -455,6 +461,8 @@ entity PerformanceReview mixin TenantScoped {
 
 entity TrainingCompletion mixin TenantScoped {
   key [tenantId, id]
+  property notes: string?
+  property startedAt: datetime?
   property required employeeId: string
   property required assignmentId: string
   property required moduleId: string
@@ -538,6 +546,7 @@ entity OnboardingTask mixin TenantScoped, SoftDeletable {
 
 entity OnboardingCompletion mixin TenantScoped {
   key [tenantId, id]
+  property notes: string?
   property required employeeId: string
   property required taskId: string
   property completedAt: datetime = now()
@@ -628,8 +637,12 @@ entity OpenShift mixin TenantScoped {
 
 // ── LOGISTICS cluster ─────────────────────────────────────────────────────────
 
-entity DeliveryRoute mixin TenantScoped {
+entity DeliveryRoute mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property description: string?
+  property eventId: string?
+  property totalDuration: int?
+  property vehicleId: string?
   searchable property name: string = ""
   property routeNumber: string = ""
   property driverId: string? = ""
@@ -699,6 +712,11 @@ entity DeliveryRoute mixin TenantScoped {
 
 entity RouteStop mixin TenantScoped {
   key [tenantId, id]
+  property addressLine1: string?
+  property addressLine2: string?
+  property city: string?
+  property notes: string?
+  property postalCode: string?
   property required routeId: string
   property name: string = ""
   property stopNumber: int = 0
@@ -808,7 +826,7 @@ entity PaymentRefundAttempt mixin TenantScoped {
   store PaymentRefundAttempt in durable
 }
 
-entity PreventiveMaintenanceSchedule mixin TenantScoped {
+entity PreventiveMaintenanceSchedule mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property scheduleNumber: string = ""
   property areaId: string? = ""

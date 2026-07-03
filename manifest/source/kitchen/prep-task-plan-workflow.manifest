@@ -21,7 +21,7 @@ enum PrepTaskPlanWorkflowStatus {
   cancelled
 }
 
-entity PrepTaskPlanWorkflow mixin TenantScoped {
+entity PrepTaskPlanWorkflow mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property eventId: string = ""
   property idempotencyKey: string = ""

@@ -2,7 +2,7 @@ use "../_base.manifest"
 // Payment Rules Manifest
 // Defines payment processing, tracking, and reconciliation rules
 
-entity Payment mixin TenantScoped {
+entity Payment mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
 
   // Payment details

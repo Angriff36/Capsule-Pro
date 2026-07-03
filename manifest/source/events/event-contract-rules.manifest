@@ -4,6 +4,7 @@ use "../_base.manifest"
 
 entity EventContract mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property signingToken: string?
   property required eventId: string
   property required clientId: string
   unique property contractNumber: string? = ""

@@ -2,7 +2,7 @@ use "../_base.manifest"
 // Finance - Revenue Recognition Rules
 // Manifest spec for revenue recognition schedules and accrual accounting
 
-entity RevenueRecognitionSchedule mixin TenantScoped {
+entity RevenueRecognitionSchedule mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
 
   // Reference information
@@ -207,7 +207,7 @@ entity RevenueRecognitionSchedule mixin TenantScoped {
   store RevenueRecognitionSchedule in durable
 }
 
-entity RevenueRecognitionLine mixin TenantScoped {
+entity RevenueRecognitionLine mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required scheduleId: string
 

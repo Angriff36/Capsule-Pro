@@ -129,7 +129,7 @@ entity TimeEntry mixin TenantScoped, SoftDeletable {
   store TimeEntry in durable
 }
 
-entity TimecardEditRequest mixin TenantScoped {
+entity TimecardEditRequest mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required timeEntryId: string
   property required employeeId: string

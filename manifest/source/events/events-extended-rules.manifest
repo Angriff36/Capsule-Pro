@@ -157,6 +157,7 @@ event VenueDeleted: "events.venue.deleted" {
 
 entity EventTimeline mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property completedAt: datetime?
   property required eventId: string
   searchable property required description: string = ""
   // Bug fix: lifecycle datetime — no default
@@ -242,6 +243,7 @@ event EventTimelineRemoved: "events.timeline.removed" {
 
 entity TimelineTask mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property description: string?
   property required eventId: string
   searchable property required title: string = ""
   property required category: string = ""
@@ -391,6 +393,7 @@ event TimelineTaskRemoved: "events.timeline_task.removed" {
 
 entity EventImport mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property eventId: string?
   property required fileType: string = ""
   property required fileName: string = ""
   property required mimeType: string = ""

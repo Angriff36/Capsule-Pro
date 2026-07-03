@@ -2,7 +2,7 @@ use "../_base.manifest"
 // Payment Method Rules Manifest
 // Defines payment method storage and tokenization rules
 
-entity PaymentMethod mixin TenantScoped {
+entity PaymentMethod mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
 
   // Client and reference

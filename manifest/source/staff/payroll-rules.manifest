@@ -145,7 +145,7 @@ entity EmployeeDeduction mixin TenantScoped, SoftDeletable {
   store EmployeeDeduction in durable
 }
 
-entity PayrollApprovalHistory mixin TenantScoped {
+entity PayrollApprovalHistory mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property payrollRunId: string = ""
   property action: string = ""

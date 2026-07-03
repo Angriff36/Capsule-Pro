@@ -4,6 +4,15 @@ use "../_base.manifest"
 
 entity InventorySupplier mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property addressLine1: string?
+  property addressLine2: string?
+  property city: string?
+  property country: string = "US"
+  property performanceRating: decimal?
+  property postalCode: string?
+  property state: string?
+  property taxId: string?
+  property website: string?
   searchable property required name: string
   unique property supplierNumber: string = ""
   property contactPerson: string? = ""

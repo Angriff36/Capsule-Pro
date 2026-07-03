@@ -6,6 +6,7 @@ use "../_base.manifest"
 
 entity TimeOffRequest mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property submittedAt: datetime = now()
   property employeeId: string = ""
   property required startDate: datetime
   property required endDate: datetime

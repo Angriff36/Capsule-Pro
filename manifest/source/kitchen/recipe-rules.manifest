@@ -11,7 +11,7 @@ enum RecipeVersionStatus {
   published
 }
 
-entity Recipe mixin TenantScoped {
+entity Recipe mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property required name: string
   property category: string? = ""
@@ -84,7 +84,7 @@ entity Recipe mixin TenantScoped {
   store Recipe in durable
 }
 
-entity RecipeVersion mixin TenantScoped {
+entity RecipeVersion mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required recipeId: string
   searchable property required name: string

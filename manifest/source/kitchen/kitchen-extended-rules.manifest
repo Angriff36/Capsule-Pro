@@ -6,7 +6,7 @@ use "../_base.manifest"
 // ---------------------------------------------------------------------------
 // TemperatureProbe — physical IoT sensor mounted in a fridge / freezer
 // ---------------------------------------------------------------------------
-entity TemperatureProbe mixin TenantScoped {
+entity TemperatureProbe mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property required name: string
   property required probeId: string
@@ -77,8 +77,11 @@ entity TemperatureProbe mixin TenantScoped {
 // ---------------------------------------------------------------------------
 // TemperatureLog — manual HACCP temperature entry by staff
 // ---------------------------------------------------------------------------
-entity TemperatureLog mixin TenantScoped {
+entity TemperatureLog mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property eventId: string?
+  property itemName: string?
+  property unit: string = "F"
   property required equipmentId: string?
   property required logNumber: string
   property required logType: string
@@ -130,6 +133,8 @@ entity TemperatureLog mixin TenantScoped {
 // ---------------------------------------------------------------------------
 entity TemperatureReading mixin TenantScoped {
   key [tenantId, id]
+  property eventId: string?
+  property unit: string = "F"
   property required probeId: string
   property required temperature: decimal
   property required loggedAt: datetime = now()
@@ -167,7 +172,7 @@ entity TemperatureReading mixin TenantScoped {
 // ---------------------------------------------------------------------------
 // IotAlertRule — configuration for when to fire an alert on a probe/equipment
 // ---------------------------------------------------------------------------
-entity IotAlertRule mixin TenantScoped {
+entity IotAlertRule mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property required name: string
   property required equipmentId: string
@@ -244,6 +249,10 @@ entity IotAlertRule mixin TenantScoped {
 // ---------------------------------------------------------------------------
 entity IoTAlert mixin TenantScoped {
   key [tenantId, id]
+  property acknowledgedAt: datetime?
+  property eventId: string?
+  property resolutionNotes: string?
+  property resolvedAt: datetime?
   property required probeId: string?
   property ruleId: string? = ""
   property required severity: string
@@ -320,8 +329,17 @@ entity IoTAlert mixin TenantScoped {
 // ---------------------------------------------------------------------------
 // CorrectiveAction — food-safety corrective action after a quality/temp failure
 // ---------------------------------------------------------------------------
-entity CorrectiveAction mixin TenantScoped {
+entity CorrectiveAction mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property eventId: string?
+  property immediateAction: string?
+  property preventiveAction: string?
+  property resolutionNotes: string?
+  property resolvedBy: string?
+  property rootCause: string?
+  property severity: string = "medium"
+  property verificationMethod: string?
+  property verifiedBy: string?
   property required actionNumber: string
   property required title: string
   property required sourceType: string
@@ -396,8 +414,11 @@ entity CorrectiveAction mixin TenantScoped {
 // ---------------------------------------------------------------------------
 // QualityCheck — a food-safety quality check (receiving, cooling, etc.)
 // ---------------------------------------------------------------------------
-entity QualityCheck mixin TenantScoped {
+entity QualityCheck mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property description: string?
+  property eventId: string?
+  property scheduledAt: datetime?
   property required checkNumber: string
   property required title: string
   property required checkType: string
@@ -576,6 +597,7 @@ entity KitchenTaskClaim mixin TenantScoped {
 // ---------------------------------------------------------------------------
 entity KitchenTaskProgress mixin TenantScoped {
   key [tenantId, id]
+  property oldStatus: string?
   property required taskId: string
   property required employeeId: string
   property required progressType: string

@@ -8,7 +8,7 @@ enum QACheckStatus {
   reinspection_required
 }
 
-entity QACheck mixin TenantScoped {
+entity QACheck mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property location: string = ""
   property required checkType: string

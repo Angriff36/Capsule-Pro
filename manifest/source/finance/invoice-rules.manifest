@@ -2,7 +2,7 @@ use "../_base.manifest"
 // Invoice Rules Manifest
 // Defines invoice creation, management, and payment tracking
 
-entity Invoice mixin TenantScoped {
+entity Invoice mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
 
   // Invoice details

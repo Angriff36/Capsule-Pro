@@ -12,7 +12,7 @@ enum PrepTaskStatus {
   canceled
 }
 
-entity PrepTask mixin TenantScoped {
+entity PrepTask mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required eventId: string
   property prepListId: string? = ""

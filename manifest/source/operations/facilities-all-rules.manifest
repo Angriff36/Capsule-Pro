@@ -2,7 +2,7 @@ use "../_base.manifest"
 // Facilities Domain — Facility Management Rules
 // Covers Facility, FacilityArea, FacilityAsset, FacilitySchedule, FacilityWorkOrder
 
-entity Facility mixin TenantScoped {
+entity Facility mixin TenantScoped, SoftDeletable {
   // Reconciled 2026-06-06 (Task 8.3) to match the real `tenant_facilities.facilities`
   // Prisma columns so the governed Facility.create persists the exact fields the
   // facilities UI writes — no silent field drops. Prior model declared phantom
@@ -117,7 +117,7 @@ entity Facility mixin TenantScoped {
   store Facility in durable
 }
 
-entity FacilityArea mixin TenantScoped {
+entity FacilityArea mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property venueId: string? = ""
   searchable property required name: string
@@ -193,7 +193,7 @@ entity FacilityArea mixin TenantScoped {
   store FacilityArea in durable
 }
 
-entity FacilityAsset mixin TenantScoped {
+entity FacilityAsset mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property facilityId: string? = ""
   property areaId: string? = ""

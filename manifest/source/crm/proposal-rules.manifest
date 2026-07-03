@@ -15,6 +15,7 @@ enum ProposalStatus {
 
 entity Proposal mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property templateId: string?
   unique property proposalNumber: string = ""
   property clientId: string? = ""
   property leadId: string? = ""

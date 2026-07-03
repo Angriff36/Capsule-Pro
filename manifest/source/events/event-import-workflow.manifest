@@ -16,8 +16,8 @@ entity EventImportWorkflow mixin TenantScoped {
   property errors: json = []
   property warnings: json = []
   property confidence: int = 0
-  property startedAt: datetime
-  property completedAt: datetime
+  property startedAt: datetime?
+  property completedAt: datetime?
   timestamps
 
   // Computed properties for state checks

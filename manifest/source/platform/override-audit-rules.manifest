@@ -2,7 +2,7 @@ use "../_base.manifest"
 // Override Audit - Constraint Override Tracking
 // Manifest spec for recording and authorizing constraint overrides
 
-entity OverrideAudit mixin TenantScoped {
+entity OverrideAudit mixin TenantScoped, SoftDeletable {
   // No relationships: entityType/entityId are polymorphic references, not direct FKs to a single entity
   key [tenantId, id]
   property entityType: string = ""

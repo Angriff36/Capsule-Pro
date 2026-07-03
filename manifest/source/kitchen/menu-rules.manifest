@@ -12,7 +12,7 @@ enum MenuStatus {
   archived
 }
 
-entity Menu mixin TenantScoped {
+entity Menu mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property required name: string
   searchable property description: string? = ""

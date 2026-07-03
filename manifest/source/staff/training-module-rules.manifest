@@ -341,8 +341,11 @@ entity TrainingQuestion mixin TenantScoped {
   store TrainingQuestion in durable
 }
 
-entity TrainingAssignment mixin TenantScoped {
+entity TrainingAssignment mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property assignedAt: datetime = now()
+  property assignedBy: string
+  property assignedToAll: boolean = false
 
   property required moduleId: string
   property moduleCode: string? = ""

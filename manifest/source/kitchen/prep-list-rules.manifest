@@ -11,7 +11,7 @@ enum PrepListStatus {
   cancelled
 }
 
-entity PrepList mixin TenantScoped {
+entity PrepList mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required eventId: string
   searchable property required name: string

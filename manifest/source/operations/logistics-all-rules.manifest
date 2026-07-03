@@ -1,7 +1,7 @@
 use "../_base.manifest"
 // Logistics Domain — Driver, Vehicle, Route, Dispatch Rules
 
-entity Driver mixin TenantScoped {
+entity Driver mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property required name: string
   encrypted property email: string? = ""

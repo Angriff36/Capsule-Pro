@@ -4,6 +4,7 @@ use "../_base.manifest"
 
 entity EventBudget mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
+  property variancePercentage: decimal = 0
   property required eventId: string
   property version: int = 1
   indexed property status: string = "draft"
