@@ -63,6 +63,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "disciplinaryActionId",
         "irName": "disciplinaryActionId",
         "type": "String",
@@ -1923,7 +1945,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -1943,6 +1965,39 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "dayOfMonth",
+        "irName": "dayOfMonth",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "dayOfWeek",
+        "irName": "dayOfWeek",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -2342,7 +2397,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
-        "optional": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -2353,7 +2408,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
-        "optional": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -3259,7 +3314,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -3279,6 +3334,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -5538,7 +5604,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -5558,6 +5624,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -7294,7 +7371,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -7314,6 +7391,116 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "eventId",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "immediateAction",
+        "irName": "immediateAction",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "preventiveAction",
+        "irName": "preventiveAction",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolutionNotes",
+        "irName": "resolutionNotes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolvedBy",
+        "irName": "resolvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "rootCause",
+        "irName": "rootCause",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "severity",
+        "irName": "severity",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "verificationMethod",
+        "irName": "verificationMethod",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "verifiedBy",
+        "irName": "verifiedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -8283,7 +8470,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -8303,6 +8490,61 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "eventId",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "totalDuration",
+        "irName": "totalDuration",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "vehicleId",
+        "irName": "vehicleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -8406,7 +8648,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -8426,6 +8668,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -9064,6 +9328,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "documentType",
+        "irName": "documentType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "documentId",
         "irName": "documentId",
         "type": "String",
@@ -9228,7 +9503,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -9248,6 +9523,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -10353,7 +10639,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -10373,6 +10659,39 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "connectionStatus",
+        "irName": "connectionStatus",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "iotDeviceId",
+        "irName": "iotDeviceId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -10625,6 +10944,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "name": "deletedAt",
         "irName": "deletedAt",
         "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "maxCapacity",
+        "irName": "maxCapacity",
+        "type": "Int",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -10943,6 +11273,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "variancePercentage",
+        "irName": "variancePercentage",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "eventId",
         "irName": "eventId",
         "type": "String",
@@ -11080,6 +11421,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "name": "deletedAt",
         "irName": "deletedAt",
         "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "signingToken",
+        "irName": "signingToken",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -11822,6 +12174,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "eventId",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "fileType",
         "irName": "fileType",
         "type": "String",
@@ -12104,7 +12467,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
-        "optional": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -12115,7 +12478,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
-        "optional": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -13475,6 +13838,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "completedAt",
+        "irName": "completedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "eventId",
         "irName": "eventId",
         "type": "String",
@@ -13896,7 +14270,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -13916,6 +14290,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -14085,7 +14470,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -14105,6 +14490,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -14230,7 +14626,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -14250,6 +14646,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -14877,6 +15284,50 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "date",
+        "irName": "date",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sku",
+        "irName": "sku",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "events",
+        "irName": "events",
+        "type": "Json",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "promotions",
+        "irName": "promotions",
+        "type": "Json",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "inventoryItemId",
         "irName": "inventoryItemId",
         "type": "String",
@@ -15320,7 +15771,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -15340,6 +15791,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -15514,6 +15976,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "tenantId",
         "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "date",
+        "irName": "date",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sku",
+        "irName": "sku",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -16035,6 +16519,105 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "addressLine1",
+        "irName": "addressLine1",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "addressLine2",
+        "irName": "addressLine2",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "city",
+        "irName": "city",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "country",
+        "irName": "country",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "performanceRating",
+        "irName": "performanceRating",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "postalCode",
+        "irName": "postalCode",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "state",
+        "irName": "state",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "taxId",
+        "irName": "taxId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "website",
+        "irName": "website",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "name",
         "irName": "name",
         "type": "String",
@@ -16254,7 +16837,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -16274,6 +16857,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -16487,7 +17081,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -16508,6 +17102,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": false,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "requestedAt",
+        "irName": "requestedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -16712,6 +17328,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "transferId",
         "irName": "transferId",
         "type": "String",
@@ -16788,7 +17415,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -16808,6 +17435,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -17167,6 +17805,50 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "acknowledgedAt",
+        "irName": "acknowledgedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "eventId",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolutionNotes",
+        "irName": "resolutionNotes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolvedAt",
+        "irName": "resolvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "probeId",
         "irName": "probeId",
         "type": "String",
@@ -17342,7 +18024,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -17362,6 +18044,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -17553,7 +18246,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -17573,6 +18266,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -17857,6 +18561,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "oldStatus",
+        "irName": "oldStatus",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "taskId",
         "irName": "taskId",
         "type": "String",
@@ -17955,7 +18670,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -17975,6 +18690,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -18131,6 +18857,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "eventId",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -18310,6 +19058,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "score",
+        "irName": "score",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -18867,7 +19626,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -18887,6 +19646,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "startedAt",
+        "irName": "startedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -19100,7 +19881,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -19120,6 +19901,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -19850,6 +20642,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "employeeId",
         "irName": "employeeId",
         "type": "String",
@@ -20161,7 +20964,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -20181,6 +20984,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -20295,7 +21109,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -20315,6 +21129,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -20561,7 +21386,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -20581,6 +21406,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -20939,7 +21775,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -20959,6 +21795,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -21094,6 +21941,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deductions",
+        "irName": "deductions",
+        "type": "Json",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -21653,7 +22511,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -21673,6 +22531,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "strengths",
+        "irName": "strengths",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -21932,7 +22812,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -21952,6 +22832,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -22655,7 +23546,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -22675,6 +23566,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -22932,7 +23834,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -22952,6 +23854,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -23253,7 +24166,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -23273,6 +24186,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -23620,7 +24544,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -23641,6 +24565,94 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": false,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "category",
+        "irName": "category",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "committedAmount",
+        "irName": "committedAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "periodType",
+        "irName": "periodType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "thresholdCriticalPct",
+        "irName": "thresholdCriticalPct",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "thresholdWarningPct",
+        "irName": "thresholdWarningPct",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -23754,7 +24766,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -23774,6 +24786,39 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolved",
+        "irName": "resolved",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolvedAt",
+        "irName": "resolvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -23927,6 +24972,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "name": "deletedAt",
         "irName": "deletedAt",
         "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "templateId",
+        "irName": "templateId",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -26005,7 +27061,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -26025,6 +27081,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -26462,7 +27529,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -26482,6 +27549,50 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "eventId",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "scheduledAt",
+        "irName": "scheduledAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -26864,7 +27975,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -26884,6 +27995,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -27321,7 +28443,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -27341,6 +28463,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -27645,6 +28778,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "sku",
+        "irName": "sku",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "inventoryItemId",
         "irName": "inventoryItemId",
         "type": "String",
@@ -27757,6 +28901,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "name",
         "irName": "name",
         "type": "String",
@@ -27855,7 +29010,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -27875,6 +29030,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -28055,7 +29221,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -28075,6 +29241,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -28475,6 +29652,61 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "addressLine1",
+        "irName": "addressLine1",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "addressLine2",
+        "irName": "addressLine2",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "city",
+        "irName": "city",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "postalCode",
+        "irName": "postalCode",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -30191,7 +31423,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -30211,6 +31443,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -30683,7 +31926,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -30704,6 +31947,50 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": false,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "eventId",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "itemName",
+        "irName": "itemName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "unit",
+        "irName": "unit",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -30828,7 +32115,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -30848,6 +32135,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -30987,6 +32285,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "eventId",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "unit",
+        "irName": "unit",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "probeId",
         "irName": "probeId",
         "type": "String",
@@ -31052,7 +32372,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -31073,6 +32393,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": false,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "submittedAt",
+        "irName": "submittedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -31186,7 +32528,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -31206,6 +32548,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -31523,6 +32876,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "eventId",
         "irName": "eventId",
         "type": "String",
@@ -31701,6 +33065,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "submittedAt",
+        "irName": "submittedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "employeeId",
         "irName": "employeeId",
         "type": "String",
@@ -31854,7 +33229,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -31874,6 +33249,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -31999,7 +33385,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -32020,6 +33406,50 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": false,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "assignedAt",
+        "irName": "assignedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "assignedBy",
+        "irName": "assignedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "assignedToAll",
+        "irName": "assignedToAll",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -32463,6 +33893,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "startedAt",
+        "irName": "startedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -34398,6 +35850,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "supplierId",
         "irName": "supplierId",
         "type": "String",
@@ -34872,7 +36335,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -34892,6 +36355,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -35920,7 +37394,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       "id"
     ],
     "whereAccessor": "tenantId_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -35940,6 +37414,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false

@@ -342,6 +342,8 @@ entity ForecastInput mixin TenantScoped {
   key [tenantId, id]
   property date: datetime = today()
   property sku: string
+  property events: json = {}
+  property promotions: json = {}
   property required inventoryItemId: string
   property required inputDate: datetime
   property required actualUsage: decimal = 0

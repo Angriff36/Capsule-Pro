@@ -1581,6 +1581,8 @@ export interface ForecastInput {
   tenantId: string;
   date: string;
   sku: string;
+  events?: unknown;
+  promotions?: unknown;
   inventoryItemId: string;
   inputDate: string;
   actualUsage?: number;

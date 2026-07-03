@@ -15250,6 +15250,28 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
+        "name": "events",
+        "irName": "events",
+        "type": "Json",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "promotions",
+        "irName": "promotions",
+        "type": "Json",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "inventory_item_id",
         "irName": "inventoryItemId",
         "type": "String",

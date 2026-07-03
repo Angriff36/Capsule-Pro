@@ -2665,6 +2665,8 @@ model ForecastInput {
   tenantId String @map("tenant_id") @db.Uuid
   date DateTime @default(now())
   sku String
+  events Json @default("{}")
+  promotions Json @default("{}")
   inventoryItemId String @map("inventory_item_id")
   inputDate DateTime @map("input_date")
   actualUsage Decimal @map("actual_usage") @db.Decimal(12, 2) @default(0)
