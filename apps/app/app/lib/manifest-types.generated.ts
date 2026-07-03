@@ -1882,7 +1882,7 @@ export interface KitchenTask {
   status?: KitchenTaskStatus;
   priority?: number;
   complexity?: number;
-  tags?: string | null;
+  tags?: string[];
   assignedTo?: string;
   dueDate?: string | null;
   completedAt?: string | null;

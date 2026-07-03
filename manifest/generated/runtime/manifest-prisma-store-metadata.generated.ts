@@ -18276,7 +18276,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "irName": "tags",
         "type": "String",
         "isEnum": false,
-        "isList": false,
+        "isList": true,
         "optional": true,
         "hasDefault": true,
         "isUpdatedAt": false,

@@ -123,8 +123,8 @@ export const getFinanceOverview = cache(
 // Recent invoices — kept separate (list data for tables)
 // ============================================================================
 
-export const getRecentInvoices = cache(async (tenantId: string) =>
-  db.invoice.findMany({
+export const getRecentInvoices = cache(async (tenantId: string) => {
+  const invoices = await db.invoice.findMany({
     where: { tenantId, deletedAt: null },
     orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }],
     take: 8,
@@ -144,19 +144,23 @@ export const getRecentInvoices = cache(async (tenantId: string) =>
           lastName: true,
         },
       },
-      event: {
+      linkedEvent: {
         select: { title: true },
       },
     },
-  })
-);
+  });
+  return invoices.map(({ linkedEvent, ...invoice }) => ({
+    ...invoice,
+    event: linkedEvent,
+  }));
+});
 
 // ============================================================================
 // Recent payments — kept separate (list data for tables)
 // ============================================================================
 
-export const getRecentPayments = cache(async (tenantId: string) =>
-  db.payment.findMany({
+export const getRecentPayments = cache(async (tenantId: string) => {
+  const payments = await db.payment.findMany({
     where: { tenantId, deletedAt: null },
     orderBy: [{ completedAt: "desc" }, { createdAt: "desc" }],
     take: 8,
@@ -177,9 +181,13 @@ export const getRecentPayments = cache(async (tenantId: string) =>
       invoice: {
         select: { invoiceNumber: true },
       },
-      event: {
+      linkedEvent: {
         select: { title: true },
       },
     },
-  })
-);
+  });
+  return payments.map(({ linkedEvent, ...payment }) => ({
+    ...payment,
+    event: linkedEvent,
+  }));
+});

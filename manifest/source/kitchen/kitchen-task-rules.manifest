@@ -19,7 +19,9 @@ entity KitchenTask mixin TenantScoped, SoftDeletable {
   indexed property required status: KitchenTaskStatus = pending
   property priority: int = 5
   property complexity: int = 5
-  property tags: string? = ""
+  // array<string>: the physical column is text[] (station tags the production
+  // board filters on) — the scalar string declaration read arrays as never[].
+  property tags: array<string> = []
   property assignedTo: string = ""
   property dueDate: datetime?
   property completedAt: datetime?

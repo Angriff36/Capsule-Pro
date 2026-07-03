@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Manifest + Prisma Architecture Map</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --panel: #0f172a;
+      --panel2: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --line: #334155;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --blue: #38bdf8;
+      --purple: #a78bfa;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,.18), transparent 34%),
+        radial-gradient(circle at top right, rgba(167,139,250,.15), transparent 30%),
+        var(--bg);
+    }
+
+    main {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 38px 20px 70px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(34px, 5vw, 62px);
+      letter-spacing: -0.055em;
+      line-height: .98;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 25px;
+      letter-spacing: -0.025em;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    code {
+      font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+      color: #dbeafe;
+      background: rgba(255,255,255,.08);
+      border-radius: 6px;
+      padding: 2px 5px;
+      font-size: .93em;
+    }
+
+    .panel {
+      background: rgba(15, 23, 42, .82);
+      border: 1px solid rgba(148, 163, 184, .22);
+      border-radius: 22px;
+      padding: 22px;
+      box-shadow: 0 20px 70px rgba(0,0,0,.28);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .summary {
+      font-size: 19px;
+      color: #cbd5e1;
+      max-width: 820px;
+    }
+
+    .legend {
+      display: grid;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .legend-item {
+      display: grid;
+      grid-template-columns: 22px 1fr;
+      gap: 10px;
+      align-items: start;
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+
+    .swatch {
+      width: 22px;
+      height: 5px;
+      border-radius: 999px;
+      margin-top: 8px;
+    }
+
+    .good { color: #bbf7d0; }
+    .warn { color: #fde68a; }
+    .bad { color: #fecaca; }
+    .blue { color: #bae6fd; }
+    .purple { color: #ddd6fe; }
+
+    .swatch.good { background: var(--good); }
+    .swatch.warn { background: var(--warn); }
+    .swatch.bad { background: var(--bad); }
+    .swatch.blue { background: var(--blue); }
+
+    .map-wrap {
+      margin-top: 18px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    svg {
+      min-width: 1120px;
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 18px;
+      background:
+        linear-gradient(180deg, rgba(2,6,23,.65), rgba(15,23,42,.92));
+      border: 1px solid rgba(148, 163, 184, .20);
+    }
+
+    .node rect {
+      fill: #101b2f;
+      stroke: rgba(148, 163, 184, .38);
+      stroke-width: 1.2;
+      rx: 16;
+    }
+
+    .node .title {
+      fill: #f8fafc;
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .node .sub {
+      fill: #aab6c7;
+      font-size: 13px;
+    }
+
+    .node .tiny {
+      fill: #8290a3;
+      font-size: 12px;
+    }
+
+    .node.source rect { stroke: rgba(56,189,248,.72); }
+    .node.runtime rect { stroke: rgba(34,197,94,.75); }
+    .node.prisma rect { stroke: rgba(245,158,11,.8); }
+    .node.db rect { stroke: rgba(167,139,250,.7); }
+    .node.badnode rect { stroke: rgba(239,68,68,.8); }
+
+    .arrow-good {
+      stroke: var(--good);
+      stroke-width: 4;
+      fill: none;
+      marker-end: url(#arrowGood);
+    }
+
+    .arrow-blue {
+      stroke: var(--blue);
+      stroke-width: 3.3;
+      fill: none;
+      stroke-dasharray: 9 7;
+      marker-end: url(#arrowBlue);
+    }
+
+    .arrow-warn {
+      stroke: var(--warn);
+      stroke-width: 3.5;
+      fill: none;
+      marker-end: url(#arrowWarn);
+    }
+
+    .arrow-bad {
+      stroke: var(--bad);
+      stroke-width: 4;
+      fill: none;
+      stroke-dasharray: 10 7;
+      marker-end: url(#arrowBad);
+    }
+
+    .label {
+      font-size: 12px;
+      font-weight: 750;
+      paint-order: stroke;
+      stroke: rgba(2,6,23,.9);
+      stroke-width: 5px;
+      stroke-linejoin: round;
+    }
+
+    .label.good { fill: #bbf7d0; }
+    .label.blue { fill: #bae6fd; }
+    .label.warn { fill: #fde68a; }
+    .label.bad { fill: #fecaca; }
+
+    .section {
+      margin-top: 18px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .callout {
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(15, 23, 42, .72);
+      border: 1px solid rgba(148, 163, 184, .18);
+    }
+
+    .callout.goodline {
+      border-left: 4px solid var(--good);
+    }
+
+    .callout.badline {
+      border-left: 4px solid var(--bad);
+    }
+
+    .callout.warnline {
+      border-left: 4px solid var(--warn);
+    }
+
+    .callout.blueline {
+      border-left: 4px solid var(--blue);
+    }
+
+    .codeblock {
+      white-space: pre-wrap;
+      font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+      color: #dbeafe;
+      background: #020617;
+      border: 1px solid rgba(148, 163, 184, .22);
+      border-radius: 14px;
+      padding: 14px;
+      overflow-x: auto;
+      line-height: 1.5;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .rules {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .rule {
+      padding: 14px;
+      border-radius: 15px;
+      background: rgba(15, 23, 42, .68);
+      border: 1px solid rgba(148, 163, 184, .18);
+    }
+
+    .rule strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #f8fafc;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 14px;
+      margin-top: 12px;
+    }
+
+    th, td {
+      padding: 13px;
+      border: 1px solid rgba(148, 163, 184, .2);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: rgba(148, 163, 184, .13);
+      color: #f8fafc;
+    }
+
+    td {
+      background: rgba(2, 6, 23, .32);
+      color: #cbd5e1;
+    }
+
+    @media (max-width: 900px) {
+      .hero,
+      .two-col,
+      .rules {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<main>
+  <section class="hero">
+    <div class="panel">
+      <h1>Manifest + Prisma map</h1>
+      <p class="summary">
+        Manifest is the app behavior boundary. Prisma is the database plumbing underneath it.
+        The map below shows the actual paths: allowed runtime path, generated projection path,
+        internal Prisma path, and the direct Prisma bypass path that causes drift.
+      </p>
+    </div>
+
+    <aside class="panel">
+      <h2>Legend</h2>
+      <div class="legend">
+        <div class="legend-item">
+          <span class="swatch good"></span>
+          <span><b class="good">Allowed runtime path:</b> app calls Manifest; Manifest decides; storage persists.</span>
+        </div>
+        <div class="legend-item">
+          <span class="swatch blue"></span>
+          <span><b class="blue">Generated/projection path:</b> Manifest source generates app/client/schema outputs.</span>
+        </div>
+        <div class="legend-item">
+          <span class="swatch warn"></span>
+          <span><b class="warn">Internal Prisma path:</b> PrismaClient is allowed only in storage adapter plumbing.</span>
+        </div>
+        <div class="legend-item">
+          <span class="swatch bad"></span>
+          <span><b class="bad">Bypass path:</b> app code imports PrismaClient directly and skips Manifest.</span>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="panel">
+    <h2>The actual architecture map</h2>
+    <p>
+      Green is the runtime path users should trigger. Blue is what gets generated from Manifest.
+      Amber is where PrismaClient belongs. Red is what should be blocked or deleted from app code.
+    </p>
+
+    <div class="map-wrap">
+      <svg viewBox="0 0 1180 760" role="img" aria-label="Architecture map showing Manifest, Prisma, app code, generated output, and bypass paths">
+        <defs>
+          <marker id="arrowGood" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+            <path d="M0,0 L12,6 L0,12 z" fill="#22c55e"></path>
+          </marker>
+          <marker id="arrowBlue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+            <path d="M0,0 L12,6 L0,12 z" fill="#38bdf8"></path>
+          </marker>
+          <marker id="arrowWarn" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+            <path d="M0,0 L12,6 L0,12 z" fill="#f59e0b"></path>
+          </marker>
+          <marker id="arrowBad" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+            <path d="M0,0 L12,6 L0,12 z" fill="#ef4444"></path>
+          </marker>
+        </defs>
+
+        <!-- Title lanes -->
+        <text x="40" y="42" fill="#94a3b8" font-size="13" font-weight="800" letter-spacing="1.8">SOURCE / GENERATION</text>
+        <text x="40" y="306" fill="#94a3b8" font-size="13" font-weight="800" letter-spacing="1.8">RUNTIME</text>
+        <text x="40" y="602" fill="#94a3b8" font-size="13" font-weight="800" letter-spacing="1.8">BYPASS TO AVOID</text>
+
+        <!-- Source nodes -->
+        <g class="node source" transform="translate(40 70)">
+          <rect width="220" height="120"></rect>
+          <text class="title" x="18" y="34">Manifest source</text>
+          <text class="sub" x="18" y="62">entities, commands,</text>
+          <text class="sub" x="18" y="82">events, policies, states</text>
+          <text class="tiny" x="18" y="106">source of truth</text>
+        </g>
+
+        <g class="node source" transform="translate(360 50)">
+          <rect width="210" height="104"></rect>
+          <text class="title" x="18" y="34">Generated client</text>
+          <text class="sub" x="18" y="62">typed Manifest calls</text>
+          <text class="tiny" x="18" y="86">used by app/UI</text>
+        </g>
+
+        <g class="node source" transform="translate(650 50)">
+          <rect width="220" height="104"></rect>
+          <text class="title" x="18" y="34">Generated API</text>
+          <text class="sub" x="18" y="62">dispatcher / routes</text>
+          <text class="tiny" x="18" y="86">calls Manifest runtime</text>
+        </g>
+
+        <g class="node prisma" transform="translate(930 50)">
+          <rect width="210" height="104"></rect>
+          <text class="title" x="18" y="34">Prisma schema</text>
+          <text class="sub" x="18" y="62">tables, mappings,</text>
+          <text class="tiny" x="18" y="86">relations, indexes</text>
+        </g>
+
+        <!-- Runtime nodes -->
+        <g class="node runtime" transform="translate(40 330)">
+          <rect width="210" height="128"></rect>
+          <text class="title" x="18" y="34">App / UI</text>
+          <text class="sub" x="18" y="62">pages, forms, buttons</text>
+          <text class="tiny" x="18" y="88">no direct Prisma</text>
+          <text class="tiny" x="18" y="108">calls Manifest commands</text>
+        </g>
+
+        <g class="node runtime" transform="translate(330 330)">
+          <rect width="230" height="128"></rect>
+          <text class="title" x="18" y="34">Manifest command</text>
+          <text class="sub" x="18" y="62">create / complete /</text>
+          <text class="sub" x="18" y="82">acknowledge review</text>
+          <text class="tiny" x="18" y="108">behavior boundary</text>
+        </g>
+
+        <g class="node runtime" transform="translate(640 330)">
+          <rect width="230" height="128"></rect>
+          <text class="title" x="18" y="34">Manifest runtime</text>
+          <text class="sub" x="18" y="62">policy, tenant, state,</text>
+          <text class="sub" x="18" y="82">validation, events</text>
+          <text class="tiny" x="18" y="108">decides if allowed</text>
+        </g>
+
+        <g class="node prisma" transform="translate(930 330)">
+          <rect width="210" height="128"></rect>
+          <text class="title" x="18" y="34">Prisma adapter</text>
+          <text class="sub" x="18" y="62">server-only store</text>
+          <text class="sub" x="18" y="82">uses PrismaClient</text>
+          <text class="tiny" x="18" y="108">internal plumbing</text>
+        </g>
+
+        <g class="node db" transform="translate(930 540)">
+          <rect width="210" height="104"></rect>
+          <text class="title" x="18" y="34">Postgres</text>
+          <text class="sub" x="18" y="62">staff_performances</text>
+          <text class="tiny" x="18" y="86">durable rows</text>
+        </g>
+
+        <!-- Bad nodes -->
+        <g class="node badnode" transform="translate(40 630)">
+          <rect width="230" height="92"></rect>
+          <text class="title" x="18" y="34">Random app file</text>
+          <text class="sub" x="18" y="62">page/action/route imports Prisma</text>
+        </g>
+
+        <g class="node badnode" transform="translate(360 630)">
+          <rect width="230" height="92"></rect>
+          <text class="title" x="18" y="34">Direct Prisma write</text>
+          <text class="sub" x="18" y="62">prisma.staffPerformance.update()</text>
+        </g>
+
+        <!-- Blue generation arrows -->
+        <path class="arrow-blue" d="M260 110 C305 110, 315 102, 360 102"></path>
+        <text class="label blue" x="282" y="93">generates</text>
+
+        <path class="arrow-blue" d="M260 130 C390 180, 525 180, 650 112"></path>
+        <text class="label blue" x="425" y="176">generates dispatcher</text>
+
+        <path class="arrow-blue" d="M260 150 C500 238, 765 236, 930 112"></path>
+        <text class="label blue" x="636" y="236">projects DB schema</text>
+
+        <path class="arrow-blue" d="M465 154 C425 220, 220 252, 150 330"></path>
+        <text class="label blue" x="220" y="238">app imports generated client</text>
+
+        <!-- Good runtime arrows -->
+        <path class="arrow-good" d="M250 394 C280 394, 300 394, 330 394"></path>
+        <text class="label good" x="265" y="378">allowed</text>
+
+        <path class="arrow-good" d="M560 394 C590 394, 610 394, 640 394"></path>
+        <text class="label good" x="575" y="378">executes</text>
+
+        <path class="arrow-good" d="M870 394 C900 394, 910 394, 930 394"></path>
+        <text class="label good" x="885" y="378">approved state change</text>
+
+        <!-- Amber Prisma internal -->
+        <path class="arrow-warn" d="M1035 458 C1035 492, 1035 510, 1035 540"></path>
+        <text class="label warn" x="1048" y="505">PrismaClient writes/reads</text>
+
+        <path class="arrow-warn" d="M1035 330 C1035 270, 1035 205, 1035 154"></path>
+        <text class="label warn" x="1048" y="245">schema generates client</text>
+
+        <!-- Bad bypass -->
+        <path class="arrow-bad" d="M270 676 C300 676, 330 676, 360 676"></path>
+        <text class="label bad" x="292" y="660">bad</text>
+
+        <path class="arrow-bad" d="M590 676 C720 676, 815 635, 930 594"></path>
+        <text class="label bad" x="682" y="651">skips Manifest rules/events/tenant checks</text>
+
+        <path class="arrow-bad" d="M155 630 C155 560, 155 520, 155 458"></path>
+        <text class="label bad" x="168" y="548">what to prevent</text>
+
+        <!-- Boundary text -->
+        <rect x="610" y="300" width="300" height="188" rx="20" fill="none" stroke="rgba(34,197,94,.24)" stroke-width="2" stroke-dasharray="8 8"></rect>
+        <text x="632" y="486" fill="#bbf7d0" font-size="13" font-weight="800">Manifest-controlled behavior zone</text>
+
+        <rect x="910" y="300" width="250" height="374" rx="20" fill="none" stroke="rgba(245,158,11,.24)" stroke-width="2" stroke-dasharray="8 8"></rect>
+        <text x="934" y="674" fill="#fde68a" font-size="13" font-weight="800">Storage-only zone</text>
+      </svg>
+    </div>
+  </section>
+
+  <section class="panel section">
+    <h2>What the map means in plain English</h2>
+    <div class="rules">
+      <div class="rule">
+        <strong class="good">App code calls Manifest.</strong>
+        <p>Pages/forms should trigger generated Manifest commands. That keeps behavior centralized.</p>
+      </div>
+      <div class="rule">
+        <strong class="warn">PrismaClient is not deleted.</strong>
+        <p>It stays inside the Prisma adapter/store so approved Manifest changes can persist to Postgres.</p>
+      </div>
+      <div class="rule">
+        <strong class="bad">Direct Prisma from app code is the problem.</strong>
+        <p>It skips command rules, policy checks, tenant enforcement, validation, and emitted events.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel section">
+    <h2>StaffPerformance example</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>What it does for StaffPerformance</th>
+          <th>What breaks if bypassed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Manifest</td>
+          <td>Defines commands like <code>createReview</code>, <code>completeReview</code>, <code>acknowledgeReview</code>; owns allowed status flow.</td>
+          <td>Reviews can jump to invalid states or skip required acknowledgement/completion behavior.</td>
+        </tr>
+        <tr>
+          <td>Generated app/API</td>
+          <td>Gives UI and routes a standard way to call the Manifest command.</td>
+          <td>Agents invent one-off CRUD paths and the app stops behaving consistently.</td>
+        </tr>
+        <tr>
+          <td>Prisma schema</td>
+          <td>Maps app names to DB names, such as <code>tenantId</code> to <code>tenant_id</code> and model to <code>staff_performances</code>.</td>
+          <td>Wrong table/column names, duplicate models, migration drift.</td>
+        </tr>
+        <tr>
+          <td>PrismaClient</td>
+          <td>Used internally by the Manifest store to write/read the approved row.</td>
+          <td>If used directly by app code, Manifest never sees the change.</td>
+        </tr>
+        <tr>
+          <td>Postgres</td>
+          <td>Stores the durable row.</td>
+          <td>Database becomes the only truth, while app behavior becomes scattered.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel section">
+    <h2>Allowed import rule</h2>
+    <div class="two-col">
+      <div class="callout goodline">
+        <h3 class="good">Allowed</h3>
+        <p>PrismaClient import in storage plumbing only.</p>
+        <div class="codeblock">manifest/runtime/stores/prisma-store.ts
+packages/manifest-adapters/prisma/**
+apps/api/lib/manifest/storage/**
+server-only code used by Manifest runtime</div>
+      </div>
+
+      <div class="callout badline">
+        <h3 class="bad">Not allowed</h3>
+        <p>PrismaClient import in app behavior files.</p>
+        <div class="codeblock">apps/app/**/page.tsx
+apps/app/**/actions.ts
+apps/app/**/components/**
+feature-specific route.ts files
+random CRUD helper files</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel section">
+    <h2>The one-sentence rule</h2>
+    <div class="callout blueline">
+      <h3 class="blue">Manifest decides. Prisma persists.</h3>
+      <p>
+        Keep PrismaClient behind Manifest, and Prisma becomes useful database plumbing instead of a competing source of app behavior.
+      </p>
+    </div>
+  </section>
+</main>
+</body>
+</html>

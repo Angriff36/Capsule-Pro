@@ -315,3 +315,8 @@ ALTER TABLE "tenant_kitchen"."recipes" ALTER COLUMN "tags" SET NOT NULL;
 UPDATE "tenant_kitchen"."recipe_versions" SET "tags" = '{}' WHERE "tags" IS NULL;
 ALTER TABLE "tenant_kitchen"."recipe_versions" ALTER COLUMN "tags" SET DEFAULT '{}';
 ALTER TABLE "tenant_kitchen"."recipe_versions" ALTER COLUMN "tags" SET NOT NULL;
+
+-- kitchen_tasks.tags: same scalar-list repair class (found late — 6/14 rows NULL)
+UPDATE "tenant_kitchen"."kitchen_tasks" SET "tags" = '{}' WHERE "tags" IS NULL;
+ALTER TABLE "tenant_kitchen"."kitchen_tasks" ALTER COLUMN "tags" SET DEFAULT '{}';
+ALTER TABLE "tenant_kitchen"."kitchen_tasks" ALTER COLUMN "tags" SET NOT NULL;

@@ -2071,63 +2071,63 @@
     },
     "command:KitchenTask.addTag": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 153
+      "line": 155
     },
     "command:KitchenTask.cancel": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 171
+      "line": 173
     },
     "command:KitchenTask.claim": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 59
+      "line": 61
     },
     "command:KitchenTask.complete": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 79
+      "line": 81
     },
     "command:KitchenTask.create": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 179
+      "line": 181
     },
     "command:KitchenTask.reassign": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 99
+      "line": 101
     },
     "command:KitchenTask.release": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 89
+      "line": 91
     },
     "command:KitchenTask.removeTag": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 162
+      "line": 164
     },
     "command:KitchenTask.start": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 69
+      "line": 71
     },
     "command:KitchenTask.updateComplexity": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 117
+      "line": 119
     },
     "command:KitchenTask.updateDueDate": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 141
+      "line": 143
     },
     "command:KitchenTask.updatePriority": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 109
+      "line": 111
     },
     "command:KitchenTask.updateSummary": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 133
+      "line": 135
     },
     "command:KitchenTask.updateTags": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 147
+      "line": 149
     },
     "command:KitchenTask.updateTitle": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 125
+      "line": 127
     },
     "command:KitchenTaskClaim.claim": {
       "file": "kitchen/kitchen-extended-rules.manifest",
@@ -5687,19 +5687,19 @@
     },
     "constraint:KitchenTask.validComplexity": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 48
+      "line": 50
     },
     "constraint:KitchenTask.validPriority": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 47
+      "line": 49
     },
     "constraint:KitchenTask.validStatus": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 46
+      "line": 48
     },
     "constraint:KitchenTask.warnOverdue": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 50
+      "line": 52
     },
     "constraint:KitchenTaskClaim.requireEmployeeId": {
       "file": "kitchen/kitchen-extended-rules.manifest",
@@ -8195,7 +8195,7 @@
     },
     "transition:KitchenTask.status": {
       "file": "kitchen/kitchen-task-rules.manifest",
-      "line": 42
+      "line": 44
     },
     "transition:KitchenTaskClaim.status": {
       "file": "kitchen/kitchen-extended-rules.manifest",
