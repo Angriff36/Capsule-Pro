@@ -30339,6 +30339,17 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
+        "name": "signature_text",
+        "irName": "signatureText",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "notes",
         "irName": "notes",
         "type": "String",

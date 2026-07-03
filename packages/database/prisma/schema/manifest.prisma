@@ -5272,6 +5272,7 @@ model Shipment {
   deliveredBy String? @map("delivered_by") @db.Uuid @default("")
   receivedBy String? @map("received_by") @default("")
   signatureData String @map("signature_data") @default("")
+  signatureText String? @map("signature")
   notes String? @default("")
   internalNotes String? @map("internal_notes") @default("")
   reference String? @default("")

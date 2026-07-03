@@ -1,5 +1,5 @@
 {
-  "irHash": "7cc18563767233c32e9fdb4850885aab42d7a326afd5b5da6ff8f3d8d143a977",
+  "irHash": "8c37098341e01ccd03e41447163a22ca93652198527e1e5d0de0f04b115f7d97",
   "compilerVersion": "3.1.0",
   "entities": [
     {
@@ -5211,6 +5211,7 @@
         "deliveredBy",
         "receivedBy",
         "signatureData",
+        "signatureText",
         "notes",
         "internalNotes",
         "reference",

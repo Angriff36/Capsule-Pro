@@ -35,6 +35,7 @@ entity Shipment mixin TenantScoped, SoftDeletable {
   property deliveredBy: string? = ""
   property receivedBy: string? = ""
   property signatureData: string = ""
+  property signatureText: string?
   searchable property notes: string? = ""
   property internalNotes: string? = ""
   property reference: string? = ""

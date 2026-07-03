@@ -3327,6 +3327,7 @@ export interface Shipment {
   deliveredBy?: string | null;
   receivedBy?: string | null;
   signatureData?: string;
+  signatureText?: string | null;
   notes?: string | null;
   internalNotes?: string | null;
   reference?: string | null;

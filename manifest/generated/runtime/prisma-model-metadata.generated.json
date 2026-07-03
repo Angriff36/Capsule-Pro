@@ -11936,6 +11936,10 @@
         "irName": "signatureData"
       },
       {
+        "name": "signatureText",
+        "irName": "signatureText"
+      },
+      {
         "name": "notes",
         "irName": "notes"
       },

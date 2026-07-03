@@ -550,6 +550,8 @@ projections:
           optimizationType: "optimizationType"
           tenantId: "tenantId"
           updatedAt: "updatedAt"
+        Shipment:
+          signatureText: "signature"
       generator:
         provider: "prisma-client"
         # Resolved relative to the schema FOLDER (prisma/schema/), so two levels up
