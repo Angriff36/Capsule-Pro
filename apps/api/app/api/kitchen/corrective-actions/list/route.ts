@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const correctiveActions = await database.correctiveAction.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

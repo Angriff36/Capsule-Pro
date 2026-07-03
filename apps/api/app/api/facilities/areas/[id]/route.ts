@@ -29,7 +29,8 @@ export async function GET(
     const facilityArea = await database.facilityArea.findFirst({
       where: {
         id,
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     });
 

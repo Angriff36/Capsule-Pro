@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const vendorRatings = await database.vendorRating.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

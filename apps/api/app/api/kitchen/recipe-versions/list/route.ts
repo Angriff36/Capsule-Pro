@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const recipeVersions = await database.recipeVersion.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

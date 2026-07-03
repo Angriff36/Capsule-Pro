@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const performanceReviews = await database.performanceReview.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

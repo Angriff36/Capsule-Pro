@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const preventiveMaintenanceSchedules = await database.preventiveMaintenanceSchedule.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

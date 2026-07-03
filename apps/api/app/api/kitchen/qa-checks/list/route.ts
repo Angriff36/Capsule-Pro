@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const qAChecks = await database.qACheck.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

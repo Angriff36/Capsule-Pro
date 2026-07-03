@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const iotAlertRules = await database.iotAlertRule.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

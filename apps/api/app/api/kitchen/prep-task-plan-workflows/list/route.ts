@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const prepTaskPlanWorkflows = await database.prepTaskPlanWorkflow.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

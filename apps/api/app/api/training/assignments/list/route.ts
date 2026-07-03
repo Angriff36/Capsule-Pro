@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const trainingAssignments = await database.trainingAssignment.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

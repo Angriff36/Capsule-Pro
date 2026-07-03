@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const collectionCases = await database.collectionCase.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const knowledgeBaseEntrys = await database.knowledgeBaseEntry.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

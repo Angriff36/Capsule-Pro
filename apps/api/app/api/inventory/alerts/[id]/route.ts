@@ -29,7 +29,8 @@ export async function GET(
     const inventoryAlert = await database.inventoryAlert.findFirst({
       where: {
         id,
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     });
 

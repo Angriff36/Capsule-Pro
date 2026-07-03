@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const kitchenTasks = await database.kitchenTask.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

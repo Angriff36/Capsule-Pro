@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const stations = await database.station.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

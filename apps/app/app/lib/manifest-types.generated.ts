@@ -37,6 +37,8 @@ export type WorkOrderStatus = "open" | "assigned" | "in_progress" | "completed" 
 export interface ActionMilestone {
   id: string;
   tenantId: string;
+  description?: string | null;
+  notes?: string | null;
   disciplinaryActionId: string;
   title?: string;
   dueDate: string;
@@ -232,6 +234,9 @@ export interface ApiKey {
 export interface AuditSchedule {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
+  dayOfMonth?: number | null;
+  dayOfWeek?: number | null;
   name: string;
   frequency: string;
   time: string;
@@ -271,8 +276,8 @@ export interface BankAccount {
   bankName?: string;
   isDefault?: boolean;
   status?: string;
-  verifiedAt: string;
-  verificationFailedAt: string;
+  verifiedAt?: string | null;
+  verificationFailedAt?: string | null;
   verificationFailureReason?: string;
   createdAt: string;
   updatedAt: string;
@@ -368,6 +373,7 @@ export interface Budget {
 export interface BudgetAlert {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   budgetId?: string;
   alertType?: string;
   utilization?: number;
@@ -597,6 +603,7 @@ export interface CollectionAction {
 export interface CollectionCase {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   invoiceId?: string;
   invoiceNumber?: string;
   eventId?: string;
@@ -773,6 +780,16 @@ export interface ContractSignature {
 export interface CorrectiveAction {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
+  eventId?: string | null;
+  immediateAction?: string | null;
+  preventiveAction?: string | null;
+  resolutionNotes?: string | null;
+  resolvedBy?: string | null;
+  rootCause?: string | null;
+  severity?: string;
+  verificationMethod?: string | null;
+  verifiedBy?: string | null;
   actionNumber: string;
   title: string;
   sourceType: string;
@@ -872,6 +889,11 @@ export interface Deal {
 export interface DeliveryRoute {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
+  description?: string | null;
+  eventId?: string | null;
+  totalDuration?: number | null;
+  vehicleId?: string | null;
   name?: string;
   routeNumber?: string;
   driverId?: string | null;
@@ -885,6 +907,8 @@ export interface DeliveryRoute {
 export interface DisciplinaryAction {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
+  description?: string | null;
   employeeId: string;
   actionType?: string;
   reason?: string;
@@ -948,6 +972,7 @@ export interface Document {
 export interface DocumentVersion {
   id: string;
   tenantId: string;
+  documentType: string;
   documentId: string;
   versionNumber: number;
   content: string;
@@ -967,6 +992,7 @@ export interface DocumentVersion {
 export interface Driver {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   name: string;
   email?: string | null;
   phone?: string | null;
@@ -1082,6 +1108,9 @@ export interface EntityVersion {
 export interface Equipment {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
+  connectionStatus?: string;
+  iotDeviceId?: string | null;
   locationId: string;
   name: string;
   type?: string;
@@ -1107,6 +1136,7 @@ export interface Event {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
+  maxCapacity?: number | null;
   clientId?: string | null;
   eventNumber?: string | null;
   title?: string;
@@ -1137,6 +1167,7 @@ export interface EventBudget {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
+  variancePercentage?: number;
   eventId: string;
   version?: number;
   status?: string;
@@ -1152,6 +1183,7 @@ export interface EventContract {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
+  signingToken?: string | null;
   eventId: string;
   clientId: string;
   contractNumber?: string | null;
@@ -1226,6 +1258,7 @@ export interface EventImport {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
+  eventId?: string | null;
   fileType?: string;
   fileName?: string;
   mimeType?: string;
@@ -1253,8 +1286,8 @@ export interface EventImportWorkflow {
   errors?: unknown;
   warnings?: unknown;
   confidence?: number;
-  startedAt: string;
-  completedAt: string;
+  startedAt?: string | null;
+  completedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1389,6 +1422,7 @@ export interface EventTimeline {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
+  completedAt?: string | null;
   eventId: string;
   description?: string;
   timelineTime: string;
@@ -1435,6 +1469,7 @@ export interface EventWaitlistEntry {
 export interface Facility {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   name: string;
   code?: string | null;
   facilityType?: string;
@@ -1454,6 +1489,7 @@ export interface Facility {
 export interface FacilityArea {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   venueId?: string | null;
   name: string;
   code?: string | null;
@@ -1469,6 +1505,7 @@ export interface FacilityArea {
 export interface FacilityAsset {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   facilityId?: string | null;
   areaId?: string | null;
   name: string;
@@ -1542,6 +1579,8 @@ export interface FeatureFlag {
 export interface ForecastInput {
   id: string;
   tenantId: string;
+  date: string;
+  sku: string;
   inventoryItemId: string;
   inputDate: string;
   actualUsage?: number;
@@ -1590,6 +1629,7 @@ export interface InteractionAttachment {
 export interface InventoryAlert {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   itemId: string;
   alertType: string;
   severity?: string | null;
@@ -1608,6 +1648,8 @@ export interface InventoryAlert {
 export interface InventoryForecast {
   id: string;
   tenantId: string;
+  date: string;
+  sku: string;
   inventoryItemId: string;
   forecastDate: string;
   projectedQuantity?: number;
@@ -1660,6 +1702,15 @@ export interface InventorySupplier {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  country?: string;
+  performanceRating?: number | null;
+  postalCode?: string | null;
+  state?: string | null;
+  taxId?: string | null;
+  website?: string | null;
   name: string;
   supplierNumber?: string;
   contactPerson?: string | null;
@@ -1684,6 +1735,7 @@ export interface InventorySupplier {
 export interface InventoryTransaction {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   itemId: string;
   transactionType: string;
   quantity?: number;
@@ -1707,6 +1759,8 @@ export interface InventoryTransaction {
 export interface InventoryTransfer {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
+  requestedAt: string;
   fromLocationId?: string;
   toLocationId?: string;
   status?: string;
@@ -1727,6 +1781,7 @@ export interface InventoryTransfer {
 export interface InventoryTransferItem {
   id: string;
   tenantId: string;
+  notes?: string | null;
   transferId: string;
   itemId: string;
   quantity?: number;
@@ -1738,6 +1793,7 @@ export interface InventoryTransferItem {
 export interface Invoice {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   invoiceNumber?: string;
   invoiceType?: string;
   status?: string;
@@ -1772,6 +1828,10 @@ export interface Invoice {
 export interface IoTAlert {
   id: string;
   tenantId: string;
+  acknowledgedAt?: string | null;
+  eventId?: string | null;
+  resolutionNotes?: string | null;
+  resolvedAt?: string | null;
   probeId?: string | null;
   ruleId?: string | null;
   severity: string;
@@ -1792,6 +1852,7 @@ export interface IoTAlert {
 export interface IotAlertRule {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   name: string;
   equipmentId: string;
   sensorType: string;
@@ -1813,6 +1874,7 @@ export interface IotAlertRule {
 export interface KitchenTask {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   title: string;
   summary: string;
   status?: KitchenTaskStatus;
@@ -1842,6 +1904,7 @@ export interface KitchenTaskClaim {
 export interface KitchenTaskProgress {
   id: string;
   tenantId: string;
+  oldStatus?: string | null;
   taskId: string;
   employeeId: string;
   progressType: string;
@@ -1855,6 +1918,7 @@ export interface KitchenTaskProgress {
 export interface KnowledgeBaseEntry {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   title: string;
   category?: string | null;
   content?: string | null;
@@ -1871,6 +1935,8 @@ export interface LaborBudget {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
+  eventId?: string | null;
+  name: string;
   locationId?: string | null;
   periodStart?: string | null;
   periodEnd?: string | null;
@@ -1889,6 +1955,7 @@ export interface Lead {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
+  score?: number;
   source?: string | null;
   companyName?: string | null;
   contactName?: string;
@@ -1947,6 +2014,8 @@ export interface LogisticsRoute {
 export interface MaintenanceWorkOrder {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
+  startedAt?: string | null;
   workOrderNumber?: string;
   areaId?: string | null;
   equipmentId?: string | null;
@@ -1970,6 +2039,7 @@ export interface MaintenanceWorkOrder {
 export interface Menu {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   name: string;
   description?: string | null;
   category?: string | null;
@@ -2045,6 +2115,7 @@ export interface Notification {
 export interface OnboardingCompletion {
   id: string;
   tenantId: string;
+  notes?: string | null;
   employeeId: string;
   taskId: string;
   completedAt: string;
@@ -2081,6 +2152,7 @@ export interface OpenShift {
 export interface OverrideAudit {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   entityType?: string;
   entityId?: string;
   constraintId?: string;
@@ -2095,6 +2167,7 @@ export interface OverrideAudit {
 export interface Payment {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   amount?: number;
   currency?: string;
   status?: string;
@@ -2121,6 +2194,7 @@ export interface Payment {
 export interface PaymentMethod {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   clientId?: string;
   externalMethodId?: string | null;
   type?: string;
@@ -2159,6 +2233,7 @@ export interface PaymentRefundAttempt {
 export interface PayrollApprovalHistory {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   payrollRunId?: string;
   action?: string;
   previousStatus?: string;
@@ -2173,6 +2248,7 @@ export interface PayrollLineItem {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
+  deductions?: unknown;
   payrollRunId: string;
   employeeId: string;
   grossPay?: number;
@@ -2233,6 +2309,8 @@ export interface PerformancePrediction {
 export interface PerformanceReview {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
+  strengths?: string | null;
   employeeId: string;
   reviewerId: string;
   reviewType?: string;
@@ -2262,6 +2340,7 @@ export interface PrepComment {
 export interface PrepList {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   eventId: string;
   name: string;
   batchMultiplier?: number;
@@ -2335,6 +2414,7 @@ export interface PrepMethod {
 export interface PrepTask {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   eventId: string;
   prepListId?: string | null;
   name: string;
@@ -2362,6 +2442,7 @@ export interface PrepTask {
 export interface PrepTaskPlanWorkflow {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   eventId?: string;
   idempotencyKey?: string;
   status?: PrepTaskPlanWorkflowStatus;
@@ -2393,6 +2474,7 @@ export interface PrepTaskPlanWorkflow {
 export interface PreventiveMaintenanceSchedule {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   scheduleNumber?: string;
   areaId?: string | null;
   equipmentId?: string | null;
@@ -2430,6 +2512,14 @@ export interface PricingTier {
 export interface ProcurementBudget {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
+  category?: string | null;
+  committedAmount?: number;
+  description?: string | null;
+  notes?: string | null;
+  periodType?: string;
+  thresholdCriticalPct?: number;
+  thresholdWarningPct?: number;
   name: string;
   fiscalYear: number;
   periodStart?: string | null;
@@ -2444,6 +2534,9 @@ export interface ProcurementBudget {
 export interface ProcurementBudgetAlert {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
+  resolved?: boolean;
+  resolvedAt?: string | null;
   budgetId: string;
   utilizationPct?: number;
   alertType: string;
@@ -2460,6 +2553,7 @@ export interface Proposal {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
+  templateId?: string | null;
   proposalNumber?: string;
   clientId?: string | null;
   leadId?: string | null;
@@ -2665,6 +2759,7 @@ export interface PurchaseRequisitionItem {
 export interface QACheck {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   location?: string;
   checkType: string;
   result?: string;
@@ -2712,6 +2807,10 @@ export interface QATemperatureLog {
 export interface QualityCheck {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
+  description?: string | null;
+  eventId?: string | null;
+  scheduledAt?: string | null;
   checkNumber: string;
   title: string;
   checkType: string;
@@ -2754,6 +2853,7 @@ export interface RateLimitConfig {
 export interface Recipe {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   name: string;
   category?: string | null;
   cuisineType?: string | null;
@@ -2801,6 +2901,7 @@ export interface RecipeStep {
 export interface RecipeVersion {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   recipeId: string;
   name: string;
   versionNumber: number;
@@ -2830,6 +2931,7 @@ export interface RecipeVersion {
 export interface ReorderSuggestion {
   id: string;
   tenantId: string;
+  sku: string;
   inventoryItemId: string;
   suggestedQuantity?: number;
   reason: string;
@@ -2842,6 +2944,7 @@ export interface Report {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
+  description?: string | null;
   name?: string;
   reportType?: string;
   queryConfig?: unknown;
@@ -2855,6 +2958,7 @@ export interface Report {
 export interface RevenueRecognitionLine {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   scheduleId: string;
   sequence?: number;
   amount?: number;
@@ -2875,6 +2979,7 @@ export interface RevenueRecognitionLine {
 export interface RevenueRecognitionSchedule {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   invoiceId: string;
   eventId: string;
   contractId?: string | null;
@@ -2915,6 +3020,11 @@ export interface RolePolicy {
 export interface RouteStop {
   id: string;
   tenantId: string;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  notes?: string | null;
+  postalCode?: string | null;
   routeId: string;
   name?: string;
   stopNumber?: number;
@@ -3314,6 +3424,7 @@ export interface StaffTrainingSignal {
 export interface Station {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   locationId: string;
   name: string;
   stationType?: string;
@@ -3366,6 +3477,10 @@ export interface TaskBundleItem {
 export interface TemperatureLog {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
+  eventId?: string | null;
+  itemName?: string | null;
+  unit?: string;
   equipmentId?: string | null;
   logNumber: string;
   logType: string;
@@ -3381,6 +3496,7 @@ export interface TemperatureLog {
 export interface TemperatureProbe {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   name: string;
   probeId: string;
   locationId?: string | null;
@@ -3395,6 +3511,8 @@ export interface TemperatureProbe {
 export interface TemperatureReading {
   id: string;
   tenantId: string;
+  eventId?: string | null;
+  unit?: string;
   probeId: string;
   temperature: number;
   loggedAt: string;
@@ -3410,6 +3528,8 @@ export interface TenantScoped {
 export interface TimecardApproval {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
+  submittedAt: string;
   employeeId: string;
   payrollRunId: string;
   submittedBy: string;
@@ -3424,6 +3544,7 @@ export interface TimecardApproval {
 export interface TimecardEditRequest {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   timeEntryId: string;
   employeeId: string;
   requestedClockIn?: string | null;
@@ -3456,6 +3577,7 @@ export interface TimelineTask {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
+  description?: string | null;
   eventId: string;
   title?: string;
   category?: string;
@@ -3474,6 +3596,7 @@ export interface TimeOffRequest {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
+  submittedAt: string;
   employeeId?: string;
   startDate: string;
   endDate: string;
@@ -3492,6 +3615,7 @@ export interface TimeOffRequest {
 export interface TipPool {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   periodId?: string;
   totalTips?: number;
   status?: string | null;
@@ -3507,6 +3631,10 @@ export interface TipPool {
 export interface TrainingAssignment {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
+  assignedAt: string;
+  assignedBy: string;
+  assignedToAll?: boolean;
   moduleId: string;
   moduleCode?: string | null;
   moduleTitle?: string | null;
@@ -3551,6 +3679,8 @@ export interface TrainingAttempt {
 export interface TrainingCompletion {
   id: string;
   tenantId: string;
+  notes?: string | null;
+  startedAt?: string | null;
   employeeId: string;
   assignmentId: string;
   moduleId: string;
@@ -3741,6 +3871,7 @@ export interface VendorContact {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
+  notes?: string | null;
   supplierId: string;
   contactName: string;
   contactEmail?: string | null;
@@ -3790,6 +3921,7 @@ export interface VendorContract {
 export interface VendorRating {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   supplierId: string;
   category: string;
   rating?: number;
@@ -3898,6 +4030,7 @@ export interface WorkforceOptimization {
 export interface WorkOrder {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   equipmentId: string;
   equipmentName?: string;
   title: string;

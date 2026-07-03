@@ -29,7 +29,8 @@ export async function GET(
     const disciplinaryAction = await database.disciplinaryAction.findFirst({
       where: {
         id,
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     });
 

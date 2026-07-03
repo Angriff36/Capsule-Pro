@@ -29,7 +29,8 @@ export async function GET(
     const overrideAudit = await database.overrideAudit.findFirst({
       where: {
         id,
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     });
 

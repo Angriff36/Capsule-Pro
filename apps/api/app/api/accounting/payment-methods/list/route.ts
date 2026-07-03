@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const paymentMethods = await database.paymentMethod.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

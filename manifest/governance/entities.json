@@ -1,5 +1,5 @@
 {
-  "irHash": "4f807122b0515fc0e3b810e83b518e505da4ff29b340d0c9e0cfe0999160c4b2",
+  "irHash": "806cb32a3fdca56b2283ef2a49222b1976164a1d27dceb69e7246843ffc7ff3b",
   "compilerVersion": "3.1.0",
   "entities": [
     {
@@ -14,6 +14,8 @@
       "properties": [
         "id",
         "tenantId",
+        "description",
+        "notes",
         "disciplinaryActionId",
         "title",
         "dueDate",
@@ -339,6 +341,9 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
+        "dayOfMonth",
+        "dayOfWeek",
         "name",
         "frequency",
         "time",
@@ -568,6 +573,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "budgetId",
         "alertType",
         "utilization",
@@ -941,6 +947,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "invoiceId",
         "invoiceNumber",
         "eventId",
@@ -1206,6 +1213,16 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
+        "eventId",
+        "immediateAction",
+        "preventiveAction",
+        "resolutionNotes",
+        "resolvedBy",
+        "rootCause",
+        "severity",
+        "verificationMethod",
+        "verifiedBy",
         "actionNumber",
         "title",
         "sourceType",
@@ -1364,6 +1381,11 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
+        "description",
+        "eventId",
+        "totalDuration",
+        "vehicleId",
         "name",
         "routeNumber",
         "driverId",
@@ -1387,6 +1409,8 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
+        "description",
         "employeeId",
         "actionType",
         "reason",
@@ -1489,6 +1513,7 @@
       "properties": [
         "id",
         "tenantId",
+        "documentType",
         "documentId",
         "versionNumber",
         "content",
@@ -1522,6 +1547,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "name",
         "email",
         "phone",
@@ -1712,6 +1738,9 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
+        "connectionStatus",
+        "iotDeviceId",
         "locationId",
         "name",
         "type",
@@ -1755,6 +1784,7 @@
         "id",
         "tenantId",
         "deletedAt",
+        "maxCapacity",
         "clientId",
         "eventNumber",
         "title",
@@ -1795,6 +1825,7 @@
         "id",
         "tenantId",
         "deletedAt",
+        "variancePercentage",
         "eventId",
         "version",
         "status",
@@ -1824,6 +1855,7 @@
         "id",
         "tenantId",
         "deletedAt",
+        "signingToken",
         "eventId",
         "clientId",
         "contractNumber",
@@ -1943,6 +1975,7 @@
         "id",
         "tenantId",
         "deletedAt",
+        "eventId",
         "fileType",
         "fileName",
         "mimeType",
@@ -2201,6 +2234,7 @@
         "id",
         "tenantId",
         "deletedAt",
+        "completedAt",
         "eventId",
         "description",
         "timelineTime",
@@ -2284,6 +2318,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "name",
         "code",
         "facilityType",
@@ -2314,6 +2349,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "venueId",
         "name",
         "code",
@@ -2341,6 +2377,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "facilityId",
         "areaId",
         "name",
@@ -2455,6 +2492,8 @@
       "properties": [
         "id",
         "tenantId",
+        "date",
+        "sku",
         "inventoryItemId",
         "inputDate",
         "actualUsage",
@@ -2538,6 +2577,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "itemId",
         "alertType",
         "severity",
@@ -2566,6 +2606,8 @@
       "properties": [
         "id",
         "tenantId",
+        "date",
+        "sku",
         "inventoryItemId",
         "forecastDate",
         "projectedQuantity",
@@ -2655,6 +2697,15 @@
         "id",
         "tenantId",
         "deletedAt",
+        "addressLine1",
+        "addressLine2",
+        "city",
+        "country",
+        "performanceRating",
+        "postalCode",
+        "state",
+        "taxId",
+        "website",
         "name",
         "supplierNumber",
         "contactPerson",
@@ -2688,6 +2739,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "itemId",
         "transactionType",
         "quantity",
@@ -2724,6 +2776,8 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
+        "requestedAt",
         "fromLocationId",
         "toLocationId",
         "status",
@@ -2753,6 +2807,7 @@
       "properties": [
         "id",
         "tenantId",
+        "notes",
         "transferId",
         "itemId",
         "quantity",
@@ -2781,6 +2836,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "invoiceNumber",
         "invoiceType",
         "status",
@@ -2824,6 +2880,10 @@
       "properties": [
         "id",
         "tenantId",
+        "acknowledgedAt",
+        "eventId",
+        "resolutionNotes",
+        "resolvedAt",
         "probeId",
         "ruleId",
         "severity",
@@ -2853,6 +2913,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "name",
         "equipmentId",
         "sensorType",
@@ -2895,6 +2956,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "title",
         "summary",
         "status",
@@ -2939,6 +3001,7 @@
       "properties": [
         "id",
         "tenantId",
+        "oldStatus",
         "taskId",
         "employeeId",
         "progressType",
@@ -2964,6 +3027,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "title",
         "category",
         "content",
@@ -2992,6 +3056,8 @@
         "id",
         "tenantId",
         "deletedAt",
+        "eventId",
+        "name",
         "locationId",
         "periodStart",
         "periodEnd",
@@ -3021,6 +3087,7 @@
         "id",
         "tenantId",
         "deletedAt",
+        "score",
         "source",
         "companyName",
         "contactName",
@@ -3116,6 +3183,8 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
+        "startedAt",
         "workOrderNumber",
         "areaId",
         "equipmentId",
@@ -3153,6 +3222,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "name",
         "description",
         "category",
@@ -3274,6 +3344,7 @@
       "properties": [
         "id",
         "tenantId",
+        "notes",
         "employeeId",
         "taskId",
         "completedAt",
@@ -3336,6 +3407,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "entityType",
         "entityId",
         "constraintId",
@@ -3366,6 +3438,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "amount",
         "currency",
         "status",
@@ -3409,6 +3482,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "clientId",
         "externalMethodId",
         "type",
@@ -3463,6 +3537,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "payrollRunId",
         "action",
         "previousStatus",
@@ -3485,6 +3560,7 @@
         "id",
         "tenantId",
         "deletedAt",
+        "deductions",
         "payrollRunId",
         "employeeId",
         "grossPay",
@@ -3583,6 +3659,8 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
+        "strengths",
         "employeeId",
         "reviewerId",
         "reviewType",
@@ -3639,6 +3717,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "eventId",
         "name",
         "batchMultiplier",
@@ -3764,6 +3843,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "eventId",
         "prepListId",
         "name",
@@ -3813,6 +3893,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "eventId",
         "idempotencyKey",
         "status",
@@ -3854,6 +3935,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "scheduleNumber",
         "areaId",
         "equipmentId",
@@ -3912,6 +3994,14 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
+        "category",
+        "committedAmount",
+        "description",
+        "notes",
+        "periodType",
+        "thresholdCriticalPct",
+        "thresholdWarningPct",
         "name",
         "fiscalYear",
         "periodStart",
@@ -3934,6 +4024,9 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
+        "resolved",
+        "resolvedAt",
         "budgetId",
         "utilizationPct",
         "alertType",
@@ -3967,6 +4060,7 @@
         "id",
         "tenantId",
         "deletedAt",
+        "templateId",
         "proposalNumber",
         "clientId",
         "leadId",
@@ -4266,6 +4360,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "location",
         "checkType",
         "result",
@@ -4341,6 +4436,10 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
+        "description",
+        "eventId",
+        "scheduledAt",
         "checkNumber",
         "title",
         "checkType",
@@ -4412,6 +4511,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "name",
         "category",
         "cuisineType",
@@ -4490,6 +4590,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "recipeId",
         "name",
         "versionNumber",
@@ -4529,6 +4630,7 @@
       "properties": [
         "id",
         "tenantId",
+        "sku",
         "inventoryItemId",
         "suggestedQuantity",
         "reason",
@@ -4551,6 +4653,7 @@
         "id",
         "tenantId",
         "deletedAt",
+        "description",
         "name",
         "reportType",
         "queryConfig",
@@ -4575,6 +4678,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "scheduleId",
         "sequence",
         "amount",
@@ -4614,6 +4718,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "invoiceId",
         "eventId",
         "contractId",
@@ -4674,6 +4779,11 @@
       "properties": [
         "id",
         "tenantId",
+        "addressLine1",
+        "addressLine2",
+        "city",
+        "notes",
+        "postalCode",
         "routeId",
         "name",
         "stopNumber",
@@ -5272,6 +5382,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "locationId",
         "name",
         "stationType",
@@ -5357,6 +5468,10 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
+        "eventId",
+        "itemName",
+        "unit",
         "equipmentId",
         "logNumber",
         "logType",
@@ -5382,6 +5497,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "name",
         "probeId",
         "locationId",
@@ -5403,6 +5519,8 @@
       "properties": [
         "id",
         "tenantId",
+        "eventId",
+        "unit",
         "probeId",
         "temperature",
         "loggedAt",
@@ -5433,6 +5551,8 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
+        "submittedAt",
         "employeeId",
         "payrollRunId",
         "submittedBy",
@@ -5456,6 +5576,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "timeEntryId",
         "employeeId",
         "requestedClockIn",
@@ -5513,6 +5634,7 @@
         "id",
         "tenantId",
         "deletedAt",
+        "description",
         "eventId",
         "title",
         "category",
@@ -5544,6 +5666,7 @@
         "id",
         "tenantId",
         "deletedAt",
+        "submittedAt",
         "employeeId",
         "startDate",
         "endDate",
@@ -5573,6 +5696,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "periodId",
         "totalTips",
         "status",
@@ -5602,6 +5726,10 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
+        "assignedAt",
+        "assignedBy",
+        "assignedToAll",
         "moduleId",
         "moduleCode",
         "moduleTitle",
@@ -5660,6 +5788,8 @@
       "properties": [
         "id",
         "tenantId",
+        "notes",
+        "startedAt",
         "employeeId",
         "assignmentId",
         "moduleId",
@@ -5944,6 +6074,7 @@
         "id",
         "tenantId",
         "deletedAt",
+        "notes",
         "supplierId",
         "contactName",
         "contactEmail",
@@ -6017,6 +6148,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "supplierId",
         "category",
         "rating",
@@ -6201,6 +6333,7 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "equipmentId",
         "equipmentName",
         "title",

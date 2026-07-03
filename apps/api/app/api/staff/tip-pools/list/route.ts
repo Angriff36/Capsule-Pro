@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const tipPools = await database.tipPool.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

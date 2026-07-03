@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const workOrders = await database.workOrder.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

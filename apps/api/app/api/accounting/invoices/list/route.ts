@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const invoices = await database.invoice.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

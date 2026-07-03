@@ -29,7 +29,8 @@ export async function GET(
     const recipe = await database.recipe.findFirst({
       where: {
         id,
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     });
 

@@ -29,7 +29,8 @@ export async function GET(
     const auditSchedule = await database.auditSchedule.findFirst({
       where: {
         id,
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     });
 

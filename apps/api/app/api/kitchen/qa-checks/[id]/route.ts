@@ -29,7 +29,8 @@ export async function GET(
     const qACheck = await database.qACheck.findFirst({
       where: {
         id,
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     });
 

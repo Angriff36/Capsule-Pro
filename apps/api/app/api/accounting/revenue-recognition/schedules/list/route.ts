@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const revenueRecognitionSchedules = await database.revenueRecognitionSchedule.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

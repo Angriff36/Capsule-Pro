@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const temperatureProbes = await database.temperatureProbe.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

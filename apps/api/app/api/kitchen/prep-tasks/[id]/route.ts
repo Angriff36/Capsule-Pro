@@ -29,7 +29,8 @@ export async function GET(
     const prepTask = await database.prepTask.findFirst({
       where: {
         id,
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     });
 

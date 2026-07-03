@@ -29,7 +29,8 @@ export async function GET(
     const procurementBudget = await database.procurementBudget.findFirst({
       where: {
         id,
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     });
 

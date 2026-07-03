@@ -29,7 +29,8 @@ export async function GET(
     const iotAlertRule = await database.iotAlertRule.findFirst({
       where: {
         id,
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     });
 

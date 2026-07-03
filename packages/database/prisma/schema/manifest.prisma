@@ -18,6 +18,8 @@ generator client {
 model ActionMilestone {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id")
+  description String?
+  notes String?
   disciplinaryActionId String @map("disciplinary_action_id")
   title String @default("")
   dueDate DateTime @map("due_date")
@@ -361,6 +363,9 @@ model ApiKey {
 model AuditSchedule {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
+  dayOfMonth Int? @map("day_of_month")
+  dayOfWeek Int? @map("day_of_week")
   name String
   frequency String
   time String
@@ -422,8 +427,8 @@ model BankAccount {
   bankName String @map("bank_name") @default("")
   isDefault Boolean @map("is_default") @default(false)
   status String @default("active")
-  verifiedAt DateTime @map("verified_at") @db.Timestamptz(6)
-  verificationFailedAt DateTime @map("verification_failed_at") @db.Timestamptz(6)
+  verifiedAt DateTime? @map("verified_at") @db.Timestamptz(6)
+  verificationFailedAt DateTime? @map("verification_failed_at") @db.Timestamptz(6)
   verificationFailureReason String @map("verification_failure_reason") @default("")
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -587,6 +592,7 @@ model Budget {
 model BudgetAlert {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   budgetId String @map("budget_id") @db.Uuid @default("")
   alertType String @map("alert_type") @default("")
   utilization Decimal @db.Decimal(5, 2) @default(0)
@@ -974,6 +980,7 @@ model CollectionAction {
 model CollectionCase {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   invoiceId String @map("invoice_id") @db.Uuid @default("")
   invoiceNumber String @map("invoice_number") @default("")
   eventId String @map("event_id") @db.Uuid @default("")
@@ -1293,6 +1300,16 @@ model ContractSignature {
 model CorrectiveAction {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
+  eventId String? @map("event_id")
+  immediateAction String? @map("immediate_action")
+  preventiveAction String? @map("preventive_action")
+  resolutionNotes String? @map("resolution_notes")
+  resolvedBy String? @map("resolved_by")
+  rootCause String? @map("root_cause")
+  severity String @default("medium")
+  verificationMethod String? @map("verification_method")
+  verifiedBy String? @map("verified_by")
   actionNumber String @map("action_number")
   title String
   sourceType String @map("source_type")
@@ -1453,6 +1470,11 @@ model Deal {
 model DeliveryRoute {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
+  description String?
+  eventId String? @map("event_id")
+  totalDuration Int? @map("total_duration")
+  vehicleId String? @map("vehicle_id")
   name String @default("")
   routeNumber String @map("route_number") @default("")
   driverId String? @map("driver_id") @db.Uuid @default("")
@@ -1481,6 +1503,8 @@ model DeliveryRoute {
 model DisciplinaryAction {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id")
+  deletedAt DateTime? @map("deleted_at")
+  description String?
   employeeId String @map("employee_id")
   actionType String @map("action_type") @default("")
   reason String @default("")
@@ -1587,6 +1611,7 @@ model Document {
 model DocumentVersion {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  documentType String @map("document_type")
   documentId String @map("document_id") @db.Uuid
   versionNumber Int @map("version_number")
   content String @db.Text
@@ -1618,6 +1643,7 @@ model DocumentVersion {
 model Driver {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   name String
   email String? @default("")
   phone String? @default("")
@@ -1826,6 +1852,9 @@ model EntityVersion {
 model Equipment {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
+  connectionStatus String @map("connection_status") @default("disconnected")
+  iotDeviceId String? @map("iot_device_id")
   locationId String @map("location_id") @db.Uuid
   name String
   type String @default("general")
@@ -1872,6 +1901,7 @@ model Event {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  maxCapacity Int? @map("max_capacity")
   clientId String? @map("client_id") @db.Uuid @default("")
   eventNumber String? @map("event_number") @default("")
   title String @default("Untitled Event")
@@ -1951,6 +1981,7 @@ model EventBudget {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  variancePercentage Decimal @map("variance_percentage") @db.Decimal(12, 2) @default(0)
   eventId String @map("event_id") @db.Uuid
   version Int @default(1)
   status String @default("draft")
@@ -1978,6 +2009,7 @@ model EventContract {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  signingToken String? @map("signing_token")
   eventId String @map("event_id") @db.Uuid
   clientId String @map("client_id") @db.Uuid
   contractNumber String? @map("contract_number") @default("")
@@ -2110,6 +2142,7 @@ model EventImport {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  eventId String? @map("event_id")
   fileType String @map("file_type") @default("")
   fileName String @map("file_name") @default("")
   mimeType String @map("mime_type") @default("")
@@ -2146,8 +2179,8 @@ model EventImportWorkflow {
   errors Json @default("[]")
   warnings Json @default("[]")
   confidence Int @default(0)
-  startedAt DateTime @map("started_at")
-  completedAt DateTime @map("completed_at")
+  startedAt DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -2353,6 +2386,7 @@ model EventTimeline {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  completedAt DateTime? @map("completed_at")
   eventId String @map("event_id") @db.Uuid
   description String @default("")
   timelineTime DateTime @map("timeline_time") @db.Time(6)
@@ -2434,6 +2468,7 @@ model EventWaitlistEntry {
 model Facility {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   name String
   code String? @default("")
   facilityType String @map("facility_type") @default("kitchen")
@@ -2488,6 +2523,7 @@ model Facility {
 model FacilityArea {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   venueId String? @map("venue_id") @db.Uuid @default("")
   name String
   code String? @default("")
@@ -2523,6 +2559,7 @@ model FacilityArea {
 model FacilityAsset {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   facilityId String? @map("facility_id") @db.Uuid @default("")
   areaId String? @map("area_id") @db.Uuid @default("")
   name String
@@ -2626,6 +2663,8 @@ model FacilityWorkOrder {
 model ForecastInput {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  date DateTime @default(now())
+  sku String
   inventoryItemId String @map("inventory_item_id")
   inputDate DateTime @map("input_date")
   actualUsage Decimal @map("actual_usage") @db.Decimal(12, 2) @default(0)
@@ -2709,6 +2748,7 @@ model InteractionAttachment {
 model InventoryAlert {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   itemId String @map("item_id") @db.Uuid
   alertType String @map("alert_type")
   severity String?
@@ -2738,6 +2778,8 @@ model InventoryAlert {
 model InventoryForecast {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  date DateTime @default(now())
+  sku String
   inventoryItemId String @map("inventory_item_id")
   forecastDate DateTime @map("forecast_date")
   projectedQuantity Decimal @map("projected_quantity") @db.Decimal(12, 2) @default(0)
@@ -2842,6 +2884,15 @@ model InventorySupplier {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  addressLine1 String? @map("address_line1")
+  addressLine2 String? @map("address_line2")
+  city String?
+  country String @default("US")
+  performanceRating Decimal? @map("performance_rating") @db.Decimal(12, 2)
+  postalCode String? @map("postal_code")
+  state String?
+  taxId String? @map("tax_id")
+  website String?
   name String
   supplierNumber String @map("supplier_number") @default("")
   contactPerson String? @map("contact_person") @default("")
@@ -2883,6 +2934,7 @@ model InventorySupplier {
 model InventoryTransaction {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   itemId String @map("item_id") @db.Uuid
   transactionType String @map("transaction_type")
   quantity Decimal @db.Decimal(12, 3) @default(0)
@@ -2921,6 +2973,8 @@ model InventoryTransaction {
 model InventoryTransfer {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
+  requestedAt DateTime @map("requested_at") @default(now())
   fromLocationId String @map("from_location_id") @db.Uuid @default("")
   toLocationId String @map("to_location_id") @db.Uuid @default("")
   status String @default("draft")
@@ -2957,6 +3011,7 @@ model InventoryTransfer {
 model InventoryTransferItem {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  notes String?
   transferId String @map("transfer_id") @db.Uuid
   itemId String @map("item_id") @db.Uuid
   quantity Decimal @db.Decimal(12, 3) @default(0)
@@ -2982,6 +3037,7 @@ model InventoryTransferItem {
 model Invoice {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   invoiceNumber String @map("invoice_number") @default("")
   invoiceType String @map("invoice_type") @default("FINAL_PAYMENT")
   status String @default("DRAFT")
@@ -3037,6 +3093,10 @@ model Invoice {
 model IoTAlert {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  acknowledgedAt DateTime? @map("acknowledged_at")
+  eventId String? @map("event_id")
+  resolutionNotes String? @map("resolution_notes")
+  resolvedAt DateTime? @map("resolved_at")
   probeId String? @map("probe_id") @db.Uuid
   ruleId String? @map("rule_id") @db.Uuid @default("")
   severity String
@@ -3074,6 +3134,7 @@ model IoTAlert {
 model IotAlertRule {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   name String
   equipmentId String @map("equipment_id") @db.Uuid
   sensorType String @map("sensor_type")
@@ -3110,6 +3171,7 @@ model IotAlertRule {
 model KitchenTask {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   title String
   summary String
   status KitchenTaskStatus @default(pending)
@@ -3166,6 +3228,7 @@ model KitchenTaskClaim {
 model KitchenTaskProgress {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  oldStatus String? @map("old_status")
   taskId String @map("task_id") @db.Uuid
   employeeId String @map("employee_id") @db.Uuid
   progressType String @map("progress_type")
@@ -3193,6 +3256,7 @@ model KitchenTaskProgress {
 model KnowledgeBaseEntry {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   title String
   category String? @default("general")
   content String? @db.Text @default("")
@@ -3222,6 +3286,8 @@ model LaborBudget {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  eventId String? @map("event_id")
+  name String
   locationId String? @map("location_id") @db.Uuid @default("")
   periodStart DateTime? @map("period_start") @db.Date
   periodEnd DateTime? @map("period_end") @db.Date
@@ -3253,6 +3319,7 @@ model Lead {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  score Int @default(0)
   source String? @default("")
   companyName String? @map("company_name") @default("")
   contactName String @map("contact_name") @default("")
@@ -3355,6 +3422,8 @@ model LogisticsRoute {
 model MaintenanceWorkOrder {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
+  startedAt DateTime? @map("started_at")
   workOrderNumber String @map("work_order_number") @default("")
   areaId String? @map("area_id") @db.Uuid @default("")
   equipmentId String? @map("equipment_id") @db.Uuid @default("")
@@ -3395,6 +3464,7 @@ model MaintenanceWorkOrder {
 model Menu {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   name String
   description String? @default("")
   category String? @default("")
@@ -3527,6 +3597,7 @@ model Notification {
 model OnboardingCompletion {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id")
+  notes String?
   employeeId String @map("employee_id")
   taskId String @map("task_id")
   completedAt DateTime @map("completed_at") @default(now())
@@ -3598,6 +3669,7 @@ model OpenShift {
 model OverrideAudit {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   entityType String @map("entity_type") @default("")
   entityId String @map("entity_id") @db.Uuid @default("")
   constraintId String @map("constraint_id") @default("")
@@ -3625,6 +3697,7 @@ model OverrideAudit {
 model Payment {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   amount Decimal @db.Decimal(12, 2) @default(0)
   currency String @default("USD")
   status String @default("PENDING")
@@ -3672,6 +3745,7 @@ model Payment {
 model PaymentMethod {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   clientId String @map("client_id") @db.Uuid @default("")
   externalMethodId String? @map("external_method_id") @default("")
   type String @default("CREDIT_CARD")
@@ -3739,6 +3813,7 @@ model PaymentRefundAttempt {
 model PayrollApprovalHistory {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   payrollRunId String @map("payroll_run_id") @db.Uuid @default("")
   action String @default("")
   previousStatus String @map("previous_status") @default("")
@@ -3766,6 +3841,7 @@ model PayrollLineItem {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  deductions Json @default("{}")
   payrollRunId String @map("payroll_run_id") @db.Uuid
   employeeId String @map("employee_id") @db.Uuid
   grossPay Decimal @map("gross_pay") @db.Decimal(10, 2) @default(0)
@@ -3877,6 +3953,8 @@ model PerformancePrediction {
 model PerformanceReview {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id")
+  deletedAt DateTime? @map("deleted_at")
+  strengths String?
   employeeId String @map("employee_id")
   reviewerId String @map("reviewer_id")
   reviewType String @map("review_type") @default("")
@@ -3932,6 +4010,7 @@ model PrepComment {
 model PrepList {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   eventId String @map("event_id") @db.Uuid
   name String
   batchMultiplier Decimal @map("batch_multiplier") @db.Decimal(10, 2) @default(1)
@@ -4060,6 +4139,7 @@ model PrepMethod {
 model PrepTask {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   eventId String @map("event_id") @db.Uuid
   prepListId String? @map("prep_list_id") @db.Uuid @default("")
   name String
@@ -4107,6 +4187,7 @@ model PrepTask {
 model PrepTaskPlanWorkflow {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   eventId String @map("event_id") @db.Uuid @default("")
   idempotencyKey String @map("idempotency_key") @default("")
   status PrepTaskPlanWorkflowStatus @default(created)
@@ -4153,6 +4234,7 @@ model PrepTaskPlanWorkflow {
 model PreventiveMaintenanceSchedule {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   scheduleNumber String @map("schedule_number") @default("")
   areaId String? @map("area_id") @db.Uuid @default("")
   equipmentId String? @map("equipment_id") @db.Uuid @default("")
@@ -4216,6 +4298,14 @@ model PricingTier {
 model ProcurementBudget {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
+  category String?
+  committedAmount Decimal @map("committed_amount") @db.Decimal(12, 2) @default(0)
+  description String?
+  notes String?
+  periodType String @map("period_type") @default("annual")
+  thresholdCriticalPct Int @map("threshold_critical_pct") @default(100)
+  thresholdWarningPct Int @map("threshold_warning_pct") @default(80)
   name String
   fiscalYear Int @map("fiscal_year")
   periodStart DateTime? @map("period_start") @db.Date
@@ -4241,6 +4331,9 @@ model ProcurementBudget {
 model ProcurementBudgetAlert {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
+  resolved Boolean @default(false)
+  resolvedAt DateTime? @map("resolved_at")
   budgetId String @map("budget_id") @db.Uuid
   utilizationPct Decimal @map("utilization_pct") @db.Decimal(5, 2) @default(0)
   alertType String @map("alert_type")
@@ -4268,6 +4361,7 @@ model Proposal {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  templateId String? @map("template_id")
   proposalNumber String @map("proposal_number") @default("")
   clientId String? @map("client_id") @db.Uuid @default("")
   leadId String? @map("lead_id") @db.Uuid @default("")
@@ -4580,6 +4674,7 @@ model PurchaseRequisitionItem {
 model QACheck {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   location String @default("")
   checkType String @map("check_type")
   result String @default("pass")
@@ -4665,6 +4760,10 @@ model QATemperatureLog {
 model QualityCheck {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
+  description String?
+  eventId String? @map("event_id")
+  scheduledAt DateTime? @map("scheduled_at")
   checkNumber String @map("check_number")
   title String
   checkType String @map("check_type")
@@ -4745,6 +4844,7 @@ model RateLimitConfig {
 model Recipe {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   name String
   category String? @default("")
   cuisineType String? @map("cuisine_type") @default("")
@@ -4830,6 +4930,7 @@ model RecipeStep {
 model RecipeVersion {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   recipeId String @map("recipe_id") @db.Uuid
   name String
   versionNumber Int @map("version_number")
@@ -4875,6 +4976,7 @@ model RecipeVersion {
 model ReorderSuggestion {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  sku String
   inventoryItemId String @map("inventory_item_id")
   suggestedQuantity Decimal @map("suggested_quantity") @db.Decimal(12, 2) @default(0)
   reason String
@@ -4898,6 +5000,7 @@ model Report {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  description String?
   name String @default("")
   reportType String @map("report_type") @default("")
   queryConfig Json @map("query_config") @default("{}")
@@ -4920,6 +5023,7 @@ model Report {
 model RevenueRecognitionLine {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   scheduleId String @map("schedule_id") @db.Uuid
   sequence Int @default(0)
   amount Decimal @db.Decimal(12, 2) @default(0)
@@ -4955,6 +5059,7 @@ model RevenueRecognitionLine {
 model RevenueRecognitionSchedule {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   invoiceId String @map("invoice_id") @db.Uuid
   eventId String @map("event_id") @db.Uuid
   contractId String? @map("contract_id") @db.Uuid
@@ -5030,6 +5135,11 @@ model RolePolicy {
 model RouteStop {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  addressLine1 String? @map("address_line1")
+  addressLine2 String? @map("address_line2")
+  city String?
+  notes String?
+  postalCode String? @map("postal_code")
   routeId String @map("route_id") @db.Uuid
   name String @default("")
   stopNumber Int @map("stop_number") @default(0)
@@ -5344,6 +5454,7 @@ model StaffTrainingSignal {
 model Station {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   locationId String @map("location_id") @db.Uuid
   name String
   stationType String @map("station_type") @default("prep-station")
@@ -5452,6 +5563,10 @@ model TaskBundleItem {
 model TemperatureLog {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
+  eventId String? @map("event_id")
+  itemName String? @map("item_name")
+  unit String @default("F")
   equipmentId String? @map("equipment_id") @db.Uuid
   logNumber String @map("log_number")
   logType String @map("log_type")
@@ -5481,6 +5596,7 @@ model TemperatureLog {
 model TemperatureProbe {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   name String
   probeId String @map("probe_id")
   locationId String? @map("location_id") @db.Uuid @default("")
@@ -5509,6 +5625,8 @@ model TemperatureProbe {
 model TemperatureReading {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  eventId String? @map("event_id")
+  unit String @default("F")
   probeId String @map("probe_id") @db.Uuid
   temperature Decimal @db.Decimal(6, 2)
   loggedAt DateTime @map("logged_at") @db.Timestamptz(6) @default(now())
@@ -5532,6 +5650,8 @@ model TemperatureReading {
 model TimecardApproval {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
+  submittedAt DateTime @map("submitted_at") @default(now())
   employeeId String @map("employee_id") @db.Uuid
   payrollRunId String @map("payroll_run_id") @db.Uuid
   submittedBy String @map("submitted_by") @db.Uuid
@@ -5558,6 +5678,7 @@ model TimecardApproval {
 model TimecardEditRequest {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   timeEntryId String @map("time_entry_id") @db.Uuid
   employeeId String @map("employee_id") @db.Uuid
   requestedClockIn DateTime? @map("requested_clock_in") @db.Timestamptz(6)
@@ -5617,6 +5738,7 @@ model TimelineTask {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  description String?
   eventId String @map("event_id") @db.Uuid
   title String @default("")
   category String @default("")
@@ -5650,6 +5772,7 @@ model TimeOffRequest {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  submittedAt DateTime @map("submitted_at") @default(now())
   employeeId String @map("employee_id") @db.Uuid @default("")
   startDate DateTime @map("start_date") @db.Date
   endDate DateTime @map("end_date") @db.Date
@@ -5679,6 +5802,7 @@ model TimeOffRequest {
 model TipPool {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   periodId String @map("period_id") @db.Uuid @default("")
   totalTips Decimal @map("total_tips") @db.Decimal(10, 2) @default(0)
   status String? @default("open")
@@ -5705,6 +5829,10 @@ model TipPool {
 model TrainingAssignment {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
+  assignedAt DateTime @map("assigned_at") @default(now())
+  assignedBy String @map("assigned_by")
+  assignedToAll Boolean @map("assigned_to_all") @default(false)
   moduleId String @map("module_id") @db.Uuid
   moduleCode String? @map("module_code") @default("")
   moduleTitle String? @map("module_title") @default("")
@@ -5780,6 +5908,8 @@ model TrainingAttempt {
 model TrainingCompletion {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  notes String?
+  startedAt DateTime? @map("started_at")
   employeeId String @map("employee_id") @db.Uuid
   assignmentId String @map("assignment_id") @db.Uuid
   moduleId String @map("module_id") @db.Uuid
@@ -6120,6 +6250,7 @@ model VendorContact {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  notes String?
   supplierId String @map("supplier_id") @db.Uuid
   contactName String @map("contact_name")
   contactEmail String? @map("contact_email") @default("")
@@ -6192,6 +6323,7 @@ model VendorContract {
 model VendorRating {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   supplierId String @map("supplier_id") @db.Uuid
   category String
   rating Int @db.SmallInt @default(0)
@@ -6391,6 +6523,7 @@ model WorkforceOptimization {
 model WorkOrder {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   equipmentId String @map("equipment_id") @db.Uuid
   equipmentName String @map("equipment_name") @default("")
   title String
