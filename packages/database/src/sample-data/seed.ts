@@ -295,7 +295,7 @@ export const seedSampleData = async (
         status: "pending",
         priority: 5,
         complexity: 1,
-        tags: "sample,admin",
+        tags: ["sample", "admin"],
       },
       {
         tenantId,
@@ -304,7 +304,7 @@ export const seedSampleData = async (
         status: "in_progress",
         priority: 3,
         complexity: 2,
-        tags: "sample,prep",
+        tags: ["sample", "prep"],
       },
     ],
   });

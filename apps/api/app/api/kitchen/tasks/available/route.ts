@@ -72,7 +72,7 @@ export async function GET(request: Request) {
       ...(minPriority
         ? [{ priority: { lte: Number.parseInt(minPriority, 10) } }]
         : []),
-      ...(station ? [{ tags: { contains: station } }] : []),
+      ...(station ? [{ tags: { has: station } }] : []),
     ],
   };
 

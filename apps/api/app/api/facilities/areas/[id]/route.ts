@@ -8,7 +8,7 @@ import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-r
 import { auth } from "@repo/auth/server";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

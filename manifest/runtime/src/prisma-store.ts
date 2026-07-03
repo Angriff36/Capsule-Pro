@@ -366,7 +366,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
         status: (data.status as KitchenTaskStatus) || "pending",
         priority: (data.priority as number) || 5,
         complexity: (data.complexity as number) || 5,
-        tags: toTagsString(data.tags),
+        tags: toTagsArray(data.tags),
         dueDate: data.dueDate ? new Date(data.dueDate as number) : undefined,
         completedAt: data.completedAt
           ? new Date(data.completedAt as number)
@@ -412,7 +412,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
         complexity: data.complexity as number | undefined,
         title: data.title as string | undefined,
         summary: data.summary as string | undefined,
-        tags: data.tags === undefined ? undefined : toTagsString(data.tags),
+        tags: data.tags === undefined ? undefined : toTagsArray(data.tags),
         dueDate: data.dueDate ? new Date(data.dueDate as number) : undefined,
         completedAt: data.completedAt
           ? new Date(data.completedAt as number)
@@ -513,7 +513,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
       status: task.status, // No remapping — manifest uses same values as DB
       priority: task.priority,
       complexity: task.complexity,
-      tags: typeof task.tags === "string" ? task.tags : "",
+      tags: Array.isArray(task.tags) ? task.tags : [],
       dueDate: task.dueDate ? task.dueDate.getTime() : 0,
       completedAt: task.completedAt ? task.completedAt.getTime() : 0,
       claimedBy: activeClaim?.employeeId ?? "",
@@ -783,17 +783,17 @@ function fromJsonText(value: unknown, fallback: unknown): unknown {
 }
 
 /**
- * KitchenTask.tags is a plain string column — normalize legacy array values
- * to a comma-separated string; strings pass through unchanged.
+ * KitchenTask.tags is a text[] column — normalize legacy comma-separated
+ * string values to an array; arrays pass through (stringified per element).
  */
-function toTagsString(value: unknown): string {
-  if (typeof value === "string") {
-    return value;
-  }
+function toTagsArray(value: unknown): string[] {
   if (Array.isArray(value)) {
-    return value.map((v) => String(v)).join(",");
+    return value.map((v) => String(v));
   }
-  return "";
+  if (typeof value === "string" && value !== "") {
+    return value.split(",").map((v) => v.trim()).filter(Boolean);
+  }
+  return [];
 }
 
 /**

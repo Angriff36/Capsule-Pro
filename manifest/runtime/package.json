@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.71",
-    "@angriff36/manifest": "3.1.1",
+    "@angriff36/manifest": "3.1.2",
     "@js-temporal/polyfill": "^0.5.1",
     "@opentelemetry/api": "^1.9.0",
     "@repo/database": "workspace:*",

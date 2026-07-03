@@ -71,7 +71,7 @@ export async function GET(request: Request) {
         { tenantId },
         { id: { in: myClaimedTaskIds } },
         ...(status ? [{ status }] : []),
-        ...(station ? [{ tags: { contains: station } }] : []),
+        ...(station ? [{ tags: { has: station } }] : []),
       ],
     },
     orderBy: [
