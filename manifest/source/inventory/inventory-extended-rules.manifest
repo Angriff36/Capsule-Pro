@@ -255,8 +255,8 @@ entity InventoryForecast mixin TenantScoped {
   property required projectedQuantity: decimal = 0
   property required confidence: decimal = 0
   indexed property status: string = "draft"
-  property publishedAt: datetime
-  property approvedAt: datetime
+  property publishedAt: datetime?
+  property approvedAt: datetime?
   property approvedBy: string = ""
   timestamps
 

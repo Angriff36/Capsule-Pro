@@ -28354,8 +28354,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "type": "Int",
         "isEnum": false,
         "isList": false,
-        "optional": false,
-        "hasDefault": false,
+        "optional": true,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },

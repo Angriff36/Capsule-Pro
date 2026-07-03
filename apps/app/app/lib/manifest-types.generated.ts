@@ -1657,8 +1657,8 @@ export interface InventoryForecast {
   projectedQuantity?: number;
   confidence?: number;
   status?: string;
-  publishedAt: string;
-  approvedAt: string;
+  publishedAt?: string | null;
+  approvedAt?: string | null;
   approvedBy?: string;
   createdAt: string;
   updatedAt: string;
@@ -2364,7 +2364,7 @@ export interface PrepListImport {
   source: string;
   fileName: string;
   status?: string;
-  importedAt: string;
+  importedAt?: string | null;
   errorMessage?: string;
   createdAt: string;
   updatedAt: string;
@@ -2424,7 +2424,7 @@ export interface PrepTask {
   status?: PrepTaskStatus;
   stationId?: string | null;
   claimedBy?: string;
-  claimedAt: string;
+  claimedAt?: string | null;
   quantityTotal?: number;
   quantityCompleted?: number;
   quantityUnitId?: number | null;
@@ -2906,7 +2906,7 @@ export interface RecipeVersion {
   deletedAt?: string | null;
   recipeId: string;
   name: string;
-  versionNumber: number;
+  versionNumber?: number;
   category?: string | null;
   cuisineType?: string | null;
   description?: string | null;

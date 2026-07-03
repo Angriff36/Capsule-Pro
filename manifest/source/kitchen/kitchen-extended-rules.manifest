@@ -842,7 +842,7 @@ entity PrepListImport mixin TenantScoped {
   property required source: string
   property required fileName: string
   indexed property required status: string = "pending"
-  property importedAt: datetime
+  property importedAt: datetime?
   property errorMessage: string = ""
   timestamps
 

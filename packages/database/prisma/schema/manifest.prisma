@@ -2787,8 +2787,8 @@ model InventoryForecast {
   projectedQuantity Decimal @map("projected_quantity") @db.Decimal(12, 2) @default(0)
   confidence Decimal @db.Decimal(3, 2) @default(0)
   status String @default("draft")
-  publishedAt DateTime @map("published_at")
-  approvedAt DateTime @map("approved_at")
+  publishedAt DateTime? @map("published_at")
+  approvedAt DateTime? @map("approved_at")
   approvedBy String @map("approved_by") @default("")
   createdAt DateTime @map("created_at") @default(now())
   updatedAt DateTime @map("updated_at") @updatedAt
@@ -4050,7 +4050,7 @@ model PrepListImport {
   source String
   fileName String @map("file_name")
   status String @default("pending")
-  importedAt DateTime @map("imported_at")
+  importedAt DateTime? @map("imported_at")
   errorMessage String @map("error_message") @default("")
   createdAt DateTime @map("created_at") @default(now())
   updatedAt DateTime @map("updated_at") @updatedAt
@@ -4149,7 +4149,7 @@ model PrepTask {
   status PrepTaskStatus @default(open)
   stationId String? @map("station_id") @default("")
   claimedBy String @map("claimed_by") @default("")
-  claimedAt DateTime @map("claimed_at")
+  claimedAt DateTime? @map("claimed_at")
   quantityTotal Decimal @map("quantity_total") @db.Decimal(10, 2) @default(0)
   quantityCompleted Decimal @map("quantity_completed") @db.Decimal(10, 2) @default(0)
   quantityUnitId Int? @map("quantity_unit_id") @db.SmallInt @default(0)
@@ -4935,7 +4935,7 @@ model RecipeVersion {
   deletedAt DateTime? @map("deleted_at")
   recipeId String @map("recipe_id") @db.Uuid
   name String
-  versionNumber Int @map("version_number")
+  versionNumber Int @map("version_number") @default(1)
   category String? @default("")
   cuisineType String? @map("cuisine_type") @default("")
   description String? @default("")

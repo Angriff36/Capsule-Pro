@@ -21,7 +21,7 @@ entity PrepTask mixin TenantScoped, SoftDeletable {
   indexed property required status: PrepTaskStatus = open
   property stationId: string? = ""
   property claimedBy: string = ""
-  property claimedAt: datetime
+  property claimedAt: datetime?
   property quantityTotal: decimal = 0
   property quantityCompleted: decimal = 0
   property quantityUnitId: int? = 0

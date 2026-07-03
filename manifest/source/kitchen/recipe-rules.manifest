@@ -88,7 +88,7 @@ entity RecipeVersion mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required recipeId: string
   searchable property required name: string
-  property required versionNumber: int
+  property versionNumber: int = 1
   property category: string? = ""
   property cuisineType: string? = ""
   searchable property description: string? = ""
