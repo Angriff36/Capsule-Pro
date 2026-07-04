@@ -57,6 +57,8 @@ const GENERATED_MARKERS = [
 const hasGeneratedMarker = (contents) =>
   GENERATED_MARKERS.some((marker) => contents.includes(marker));
 
+const REQUEST_IDENT_RE = /\brequest\b/;
+
 const ir = JSON.parse(readFileSync(irPath, "utf8"));
 const projection = new NextJsProjection();
 
@@ -80,13 +82,35 @@ const writeArtifact = (artifact) => {
     return;
   }
   mkdirSync(dirname(destination), { recursive: true });
-  writeFileSync(destination, artifact.code, "utf8");
+  writeFileSync(destination, lintCleanRoute(artifact.code), "utf8");
   written += 1;
+};
+
+/**
+ * Keep generated routes lint/typecheck-clean under noUnusedParameters: the
+ * stock template names the handler param `request` even when the body never
+ * reads it. Prefix it `_request` ONLY when unused (list routes with
+ * pagination DO read it).
+ */
+const lintCleanRoute = (code) => {
+  const declaration = "(request: NextRequest";
+  if (!code.includes(declaration)) {
+    return code;
+  }
+  const body = code.replace(declaration, "(");
+  const usesRequest = REQUEST_IDENT_RE.test(body);
+  return usesRequest
+    ? code
+    : code.replace(declaration, "(_request: NextRequest");
 };
 
 /** Generate a single read surface for an entity and write its artifacts. */
 const emit = (surface, entityName) => {
-  const result = projection.generate(ir, { surface, entity: entityName, options });
+  const result = projection.generate(ir, {
+    surface,
+    entity: entityName,
+    options,
+  });
   for (const diagnostic of result.diagnostics) {
     if (diagnostic.severity === "error") {
       console.warn(

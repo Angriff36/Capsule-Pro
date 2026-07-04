@@ -22,12 +22,14 @@ import { ArrowLeft, DollarSign, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { OperationalPageShell } from "../../../components/operational-page-shell";
+import { toast } from "sonner";
+import { apiUrl } from "@/app/lib/api";
 import { executeCommand } from "@/app/lib/manifest-client";
 import {
   getPurchaseRequisition,
   purchaseRequisitionReject,
 } from "@/app/lib/manifest-client.generated";
+import { OperationalPageShell } from "../../../components/operational-page-shell";
 import {
   formatCurrency,
   formatDate,
@@ -71,7 +73,7 @@ const WORKFLOW_ACTIONS: Record<
 
 export default function RequisitionDetailPage() {
   const params = useParams();
-  const _router = useRouter();
+  const router = useRouter();
   const id = (params?.id ?? "") as string;
 
   const [requisition, setRequisition] = useState<Requisition | null>(null);
@@ -107,13 +109,39 @@ export default function RequisitionDetailPage() {
     }
     setUpdating(command);
     try {
-      // Convert kebab-case command to camelCase for Manifest dispatcher
-      const camelCommand = command.replace(/-([a-z])/g, (_, c) =>
-        c.toUpperCase()
-      );
-      await executeCommand("PurchaseRequisition", camelCommand, {
-        id: requisition.id,
-      });
+      if (command === "convert-to-po") {
+        // Orchestrated conversion: creates the PO + line items and records the
+        // link, all governed server-side (the bare convertToPo command only
+        // records an id — it does not build an order).
+        const response = await fetch(
+          apiUrl(
+            `/api/procurement/requisitions/${requisition.id}/convert-to-po`
+          ),
+          { method: "POST", credentials: "include" }
+        );
+        const body = (await response.json()) as {
+          error?: string;
+          redirectUrl?: string;
+          success: boolean;
+        };
+        if (!body.success) {
+          toast.error(body.error ?? "Failed to convert requisition");
+          return;
+        }
+        toast.success("Purchase order created");
+        if (body.redirectUrl) {
+          router.push(body.redirectUrl);
+          return;
+        }
+      } else {
+        // Convert kebab-case command to camelCase for Manifest dispatcher
+        const camelCommand = command.replace(/-([a-z])/g, (_, c) =>
+          c.toUpperCase()
+        );
+        await executeCommand("PurchaseRequisition", camelCommand, {
+          id: requisition.id,
+        });
+      }
       await loadRequisition();
     } catch (error) {
       console.error(`Failed to execute ${command}:`, error);
@@ -171,163 +199,165 @@ export default function RequisitionDetailPage() {
 
   return (
     <>
-    <OperationalPageShell
-      actions={
-        <>
-          <Link href="/procurement/requisitions">
-            <Button size="icon" variant="ghost">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          {actions.map((action) => (
-            <Button
-              disabled={updating === action.command}
-              key={action.command}
-              onClick={() => handleAction(action.command)}
-              size="sm"
-              variant={action.variant || "default"}
-            >
-              {updating === action.command && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              {action.label}
-            </Button>
-          ))}
-        </>
-      }
-      description={`${requisition.department || "No department"} · ${formatDate(requisition.requestDate)}`}
-      eyebrow="Procurement / Requisitions"
-      title={
-        <span className="inline-flex items-center gap-3">
-          {requisition.requisitionNumber}
-          <Badge className={config.color}>
-            <Icon className="mr-1 h-3 w-3" />
-            {config.label}
-          </Badge>
-          <Badge className={priorityConfig.color} variant="outline">
-            {priorityConfig.label}
-          </Badge>
-        </span>
-      }
-    >
-
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">Subtotal</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">
-              {formatCurrency(Number(requisition.subtotal))}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">Est. Tax</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">
-              {formatCurrency(Number(requisition.estimatedTax))}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">Est. Shipping</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">
-              {formatCurrency(Number(requisition.estimatedShipping))}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">Est. Total</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">
-              {formatCurrency(Number(requisition.estimatedTotal))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Details */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Request Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Priority</span>
-              <span>{priorityConfig.label}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Department</span>
-              <span>{requisition.department || "—"}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Request Date</span>
-              <span>{formatDate(requisition.requestDate)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Required By</span>
-              <span>{formatDate(requisition.requiredBy)}</span>
-            </div>
-            {requisition.submittedAt && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Submitted At</span>
-                <span>{formatDate(requisition.submittedAt)}</span>
+      <OperationalPageShell
+        actions={
+          <>
+            <Link href="/procurement/requisitions">
+              <Button size="icon" variant="ghost">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </Link>
+            {actions.map((action) => (
+              <Button
+                disabled={updating === action.command}
+                key={action.command}
+                onClick={() => handleAction(action.command)}
+                size="sm"
+                variant={action.variant || "default"}
+              >
+                {updating === action.command && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {action.label}
+              </Button>
+            ))}
+          </>
+        }
+        description={`${requisition.department || "No department"} · ${formatDate(requisition.requestDate)}`}
+        eyebrow="Procurement / Requisitions"
+        title={
+          <span className="inline-flex items-center gap-3">
+            {requisition.requisitionNumber}
+            <Badge className={config.color}>
+              <Icon className="mr-1 h-3 w-3" />
+              {config.label}
+            </Badge>
+            <Badge className={priorityConfig.color} variant="outline">
+              {priorityConfig.label}
+            </Badge>
+          </span>
+        }
+      >
+        {/* Summary Cards */}
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="font-medium text-sm">Subtotal</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-bold text-2xl">
+                {formatCurrency(Number(requisition.subtotal))}
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="font-medium text-sm">Est. Tax</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="font-bold text-2xl">
+                {formatCurrency(Number(requisition.estimatedTax))}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="font-medium text-sm">
+                Est. Shipping
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="font-bold text-2xl">
+                {formatCurrency(Number(requisition.estimatedShipping))}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="font-medium text-sm">Est. Total</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-bold text-2xl">
+                {formatCurrency(Number(requisition.estimatedTotal))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-        {requisition.justification && (
+        {/* Details */}
+        <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Justification</CardTitle>
+              <CardTitle>Request Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Priority</span>
+                <span>{priorityConfig.label}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Department</span>
+                <span>{requisition.department || "—"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Request Date</span>
+                <span>{formatDate(requisition.requestDate)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Required By</span>
+                <span>{formatDate(requisition.requiredBy)}</span>
+              </div>
+              {requisition.submittedAt && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Submitted At</span>
+                  <span>{formatDate(requisition.submittedAt)}</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {requisition.justification && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Justification</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm">
+                  {requisition.justification}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {requisition.rejectionReason && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Rejection Reason</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-red-600 text-sm">
+                  {requisition.rejectionReason}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Notes */}
+        {requisition.notes && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Notes</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground text-sm">
-                {requisition.justification}
+                {requisition.notes}
               </p>
             </CardContent>
           </Card>
         )}
-
-        {requisition.rejectionReason && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Rejection Reason</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-red-600 text-sm">
-                {requisition.rejectionReason}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      {/* Notes */}
-      {requisition.notes && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Notes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground text-sm">{requisition.notes}</p>
-          </CardContent>
-        </Card>
-      )}
-
       </OperationalPageShell>
 
       {/* Rejection Reason Dialog */}

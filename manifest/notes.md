@@ -2347,3 +2347,14 @@ cc9d03c75: `on EventCreated run BattleBoard.create`, `on EventConfirmed run Prep
 EventProfitability.create / EventSummary.create (saga steps rely on it). Restored + recompiled;
 event-confirm-prep-seed-runtime.test.ts 2/2 GREEN again. verify-invariants D9 now derives the
 expected reaction count from source `on` declarations instead of a hardcoded floor.
+
+## 2026-07-04 — WS4 ordering engine + requisition→PO conversion (mission Phase 3)
+prep-inventory-demand-middleware now orders NET demand (minus free stock), grouped one draft per
+(tenant, item's own InventorySupplier), converts prep units via core.unit_conversions (injected
+resolver in the factory; missing path => UNRESOLVED, never guessed), pack-rounds via catalog
+MOQ/orderMultiple, and lands unsafe lines on a PREP-UNRESOLVED draft. Per-line sourcePrepListIds
+provenance. New POST /api/procurement/requisitions/[id]/convert-to-po materializes an approved
+requisition into PurchaseOrder + items + updateTotals + convertToPo in one tx-bound runtime;
+Vendor resolved via the InventorySupplier.vendorId bridge (fails actionably if unlinked).
+generate.mjs now emits `_request` when the handler never reads it (regen had reverted the old
+biome safe-fix and tripped noUnusedParameters 160×; fix at the generator seam, not the files).
