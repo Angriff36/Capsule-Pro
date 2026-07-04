@@ -1652,7 +1652,7 @@ const BASE_TOOL_DEFINITIONS: ToolDefinition[] = [
         status: {
           type: "string",
           description:
-            "Filter by status: 'pending', 'in-progress', 'completed'. Omit for all.",
+            "Filter by status: 'pending', 'in_progress', 'done', 'cancelled'. Omit for all.",
         },
         limit: {
           type: "number",
@@ -2897,6 +2897,10 @@ async function listInventoryTool(
   }
 }
 
+const STATUS_HYPHEN_RE = /-/g;
+const STATUS_COMPLETED_RE = /^completed?$/;
+const KITCHEN_TASK_STATUSES = ["pending", "in_progress", "done", "cancelled"];
+
 async function listKitchenTasksTool(
   args: Record<string, unknown>,
   context: ManifestAgentContext
@@ -2907,7 +2911,15 @@ async function listKitchenTasksTool(
     const where: Record<string, unknown> = { tenantId: context.tenantId };
 
     if (typeof args.status === "string") {
-      where.status = args.status;
+      // Normalize LLM-supplied variants to KitchenTaskStatus enum values —
+      // an off-enum value makes Prisma throw, not return empty.
+      const normalized = args.status
+        .toLowerCase()
+        .replace(STATUS_HYPHEN_RE, "_")
+        .replace(STATUS_COMPLETED_RE, "done");
+      if (KITCHEN_TASK_STATUSES.includes(normalized)) {
+        where.status = normalized;
+      }
     }
 
     const tasks = await database.kitchenTask.findMany({

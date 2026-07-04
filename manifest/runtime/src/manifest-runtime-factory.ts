@@ -298,6 +298,13 @@ export interface CreateManifestRuntimeDeps {
     maxExpressionDepth?: number;
     maxEvaluationSteps?: number;
   };
+  /**
+   * Cross-instance event bus (Manifest Phase 6). When provided, the engine
+   * publishes every committed command's event batch post-commit, fail-open
+   * (RuntimeOptions.eventBus). The app injects a per-tenant RedisEventBus;
+   * omit for dev/test — realtime falls back to the outbox-cron path.
+   */
+  eventBus?: RuntimeOptions["eventBus"];
   /** Feature-flag resolver for the `flag()` builtin. Without it, `flag()` returns false. */
   flagProvider?: (name: string) => unknown;
   /** Idempotency configuration (Phase 2: failureTtlMs plumbing). */
@@ -338,13 +345,6 @@ export interface CreateManifestRuntimeDeps {
    * (e.g. in apps/test contexts without a DB / realtime bus).
    */
   reactionLogSink?: (row: ReactionLogRow) => void;
-  /**
-   * Cross-instance event bus (Manifest Phase 6). When provided, the engine
-   * publishes every committed command's event batch post-commit, fail-open
-   * (RuntimeOptions.eventBus). The app injects a per-tenant RedisEventBus;
-   * omit for dev/test — realtime falls back to the outbox-cron path.
-   */
-  eventBus?: RuntimeOptions["eventBus"];
   /** Require IR provenance hash verification on first engine creation. */
   requireValidProvenance?: boolean;
   /** Telemetry hooks for observability. */
@@ -840,6 +840,7 @@ export async function createManifestRuntime(
   const MIDDLEWARE_PIPELINE_NAMES = [
     "identity",
     "rbac",
+    "event-staff-active-guard",
     "sample-data-seed",
     "prep-list-seed",
     "prep-inventory-demand",

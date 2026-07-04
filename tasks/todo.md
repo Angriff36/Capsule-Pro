@@ -73,3 +73,13 @@ so agents keep forking design languages. User verdict: recipe page + site look b
 - [x] Detail page: Storage container Select in rail (governed Dish.update/clearDefaultContainer), finished-product photo in rail (upload via @repo/storage + governed Dish.update presentationImageUrl, or URL paste), Convert-to-checkable-steps button (parse-flat-instructions + /api/manifest/batch; 9/9 tests).
 - [ ] BROWSER VERIFY (extension disconnected at the end): edit+save a recipe from list AND detail, storage select round-trip, photo upload, convert POMODORO text -> steps, /api/kitchen/allergens/matrix 200.
 - [ ] FORK (Ryan): recipe-level (vs dish-level) container + hero image needs RecipeVersion IR/schema additions; compiler guard-message support (delete extraction seam when it lands).
+
+---
+
+# Follow-up 4: live-verify fallout (user's save attempt logs)
+
+- [x] Recipe.update SAME param bug (buildRecipeUpdatePayload sent name/... where command wants newName/...) — fixed; friendly 422 pipeline confirmed working in user's logs
+- [x] /kitchen crash "Value 'in-progress' not found in enum KitchenTaskStatus": 4 legacy TEXT rows normalized to in_progress (no live writer found; IR is underscore-only); list_kitchen_tasks AI tool description fixed + status filter normalized/validated
+- [x] MIDDLEWARE_PIPELINE_NAMES (62) out of sync with pipeline (63): event-staff-active-guard was wired but undeclared — added to names + MIDDLEWARE_REGISTRY (24/24 registry tests pass)
+- [ ] param-audit subagent sweeping ALL other runCommand call sites vs IR params (running)
+- [ ] tool-registry.ts pre-existing debt: complexity 39/28, ~10 scoped regexes, ~20 strict TS errors (untouched legacy)

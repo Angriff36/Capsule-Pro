@@ -92,10 +92,10 @@ export type ExecutionMode = "sync" | "async";
  * Omitted on sync entries (no retry — failures surface in the command result).
  */
 export interface RetryPolicy {
-  /** Max delivery attempts before dead-letter routing. */
-  maxAttempts: number;
   /** Base retry delay (ms); doubles each retry. */
   initialBackoffMs: number;
+  /** Max delivery attempts before dead-letter routing. */
+  maxAttempts: number;
   /** Cap on retry delay (ms). */
   maxBackoffMs: number;
 }
@@ -145,45 +145,31 @@ export type MiddlewareCategory =
  * needed to audit and wire it.
  */
 export interface MiddlewareRegistryEntry {
-  /** Stable, unique key (kebab-case; matches the middleware file stem). */
-  name: string;
-  /** One-line description of the propagation. */
-  description: string;
-  /** Domain bucket for grouping. */
-  category: MiddlewareCategory;
-
-  // ── Trigger contract ──────────────────────────────────────────────────────
-  /** Semantic event name(s) that trigger this reaction. */
-  triggeringEvents: string[];
-  /** Source entity that emits the trigger (when scoped). */
-  triggeringEntity?: string;
-  /** Source command that emits the trigger (when scoped, e.g. only `process`). */
-  triggeringCommand?: string;
-  /** Lifecycle hook(s). `two-hook` entries cannot be made async. */
-  hook: MiddlewareHook;
-
-  // ── Target contract ───────────────────────────────────────────────────────
-  /** Entity whose governed command is dispatched. */
-  targetEntity: string;
-  /** Command(s) dispatched on the target. Multiple for `multi-leg`. */
-  targetCommand: string | string[];
-  /** How the target input is derived (declarative — see {@link InputMappingMode}). */
-  inputMapping: InputMappingMode;
-
-  // ── Idempotency contract ──────────────────────────────────────────────────
-  /** Idempotency-key derivation (see {@link MiddlewareIdempotencyKey}). */
-  idempotencyKey: MiddlewareIdempotencyKey;
-
-  // ── Execution + retry policy ──────────────────────────────────────────────
-  /** Sync (inline) or async (deferred to the durable queue). */
-  executionMode: ExecutionMode;
-  /** Retry policy. Required for async; omitted for sync. */
-  retryPolicy?: RetryPolicy;
   /**
    * Registered async reaction name (matches a handler in
    * `async-reactions/handler-map.ts`). Required when `executionMode: "async"`.
    */
   asyncReactionName?: string;
+  /** Domain bucket for grouping. */
+  category: MiddlewareCategory;
+  /** One-line description of the propagation. */
+  description: string;
+
+  // ── Execution + retry policy ──────────────────────────────────────────────
+  /** Sync (inline) or async (deferred to the durable queue). */
+  executionMode: ExecutionMode;
+  /** Lifecycle hook(s). `two-hook` entries cannot be made async. */
+  hook: MiddlewareHook;
+
+  // ── Idempotency contract ──────────────────────────────────────────────────
+  /** Idempotency-key derivation (see {@link MiddlewareIdempotencyKey}). */
+  idempotencyKey: MiddlewareIdempotencyKey;
+  /** How the target input is derived (declarative — see {@link InputMappingMode}). */
+  inputMapping: InputMappingMode;
+  /** Stable, unique key (kebab-case; matches the middleware file stem). */
+  name: string;
+  /** Retry policy. Required for async; omitted for sync. */
+  retryPolicy?: RetryPolicy;
 
   /**
    * Flag for middleware whose factory takes non-standard deps (custom store
@@ -197,6 +183,20 @@ export interface MiddlewareRegistryEntry {
     | "sample-data"
     | "identity"
     | "rbac";
+  /** Command(s) dispatched on the target. Multiple for `multi-leg`. */
+  targetCommand: string | string[];
+
+  // ── Target contract ───────────────────────────────────────────────────────
+  /** Entity whose governed command is dispatched. */
+  targetEntity: string;
+  /** Source command that emits the trigger (when scoped, e.g. only `process`). */
+  triggeringCommand?: string;
+  /** Source entity that emits the trigger (when scoped). */
+  triggeringEntity?: string;
+
+  // ── Trigger contract ──────────────────────────────────────────────────────
+  /** Semantic event name(s) that trigger this reaction. */
+  triggeringEvents: string[];
 }
 
 /**
@@ -205,7 +205,7 @@ export interface MiddlewareRegistryEntry {
  */
 export const DEFAULT_REGISTRY_RETRY_POLICY: RetryPolicy = {
   maxAttempts: 5,
-  initialBackoffMs: 1_000,
+  initialBackoffMs: 1000,
   maxBackoffMs: 60_000,
 };
 
@@ -225,7 +225,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   // declared so the registry is the complete inventory of the middleware layer.
   {
     name: "identity",
-    description: "Resolves the acting user's role from the DB before policy evaluation",
+    description:
+      "Resolves the acting user's role from the DB before policy evaluation",
     category: "cross-cutting",
     triggeringEvents: [],
     hook: "before-guard",
@@ -238,7 +239,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "rbac",
-    description: "Enforces command-level RBAC permission checks against resolved role policies",
+    description:
+      "Enforces command-level RBAC permission checks against resolved role policies",
     category: "cross-cutting",
     triggeringEvents: [],
     hook: "before-guard",
@@ -250,10 +252,28 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
     specialWiring: "rbac",
   },
   {
+    name: "event-staff-active-guard",
+    description:
+      "Blocks EventStaff.assign when the referenced StaffMember is deactivated/soft-deleted (cross-entity precondition a Manifest guard cannot express)",
+    category: "cross-cutting",
+    triggeringEvents: [],
+    hook: "before-guard",
+    targetEntity: "EventStaff",
+    targetCommand: "(precondition gate — no dispatch)",
+    inputMapping: "computed",
+    idempotencyKey: { none: true },
+    executionMode: "sync",
+  },
+  {
     name: "sample-data-seed",
-    description: "SampleData.seed/reseed/clear → populate/remove demo rows via direct Prisma writes",
+    description:
+      "SampleData.seed/reseed/clear → populate/remove demo rows via direct Prisma writes",
     category: "onboarding",
-    triggeringEvents: ["SampleDataSeeded", "SampleDataReseeded", "SampleDataCleared"],
+    triggeringEvents: [
+      "SampleDataSeeded",
+      "SampleDataReseeded",
+      "SampleDataCleared",
+    ],
     triggeringEntity: "SampleData",
     hook: "after-emit",
     targetEntity: "(demo data)",
@@ -267,7 +287,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   // ── Events ────────────────────────────────────────────────────────────────
   {
     name: "event-created-client-interaction",
-    description: "EventCreated → ClientInteraction.create (attributed to the booking user)",
+    description:
+      "EventCreated → ClientInteraction.create (attributed to the booking user)",
     category: "events",
     triggeringEvents: ["EventCreated"],
     triggeringEntity: "Event",
@@ -275,22 +296,32 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
     targetEntity: "ClientInteraction",
     targetCommand: "create",
     inputMapping: "computed",
-    idempotencyKey: { template: "event-client-interaction:{tenantId}:{eventId}" },
+    idempotencyKey: {
+      template: "event-client-interaction:{tenantId}:{eventId}",
+    },
     executionMode: "async",
     retryPolicy: DEFAULT_REGISTRY_RETRY_POLICY,
     asyncReactionName: "eventCreatedClientInteraction",
   },
   {
     name: "event-updated-board-sync",
-    description: "EventUpdated/DateUpdated/LocationUpdated → fan out BattleBoard.syncFromEvent per linked board",
+    description:
+      "EventUpdated/DateUpdated/LocationUpdated → fan out BattleBoard.syncFromEvent per linked board",
     category: "events",
-    triggeringEvents: ["EventUpdated", "EventDateUpdated", "EventLocationUpdated"],
+    triggeringEvents: [
+      "EventUpdated",
+      "EventDateUpdated",
+      "EventLocationUpdated",
+    ],
     triggeringEntity: "Event",
     hook: "after-emit",
     targetEntity: "BattleBoard",
     targetCommand: "syncFromEvent",
     inputMapping: "1:N-fan-out",
-    idempotencyKey: { template: "board-sync:{tenantId}:{boardId}", perTarget: true },
+    idempotencyKey: {
+      template: "board-sync:{tenantId}:{boardId}",
+      perTarget: true,
+    },
     executionMode: "async",
     retryPolicy: DEFAULT_REGISTRY_RETRY_POLICY,
     asyncReactionName: "eventUpdatedBoardSync",
@@ -298,7 +329,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "event-location-catering-sync",
-    description: "EventLocationUpdated → fan out CateringOrder.syncVenue per active order",
+    description:
+      "EventLocationUpdated → fan out CateringOrder.syncVenue per active order",
     category: "events",
     triggeringEvents: ["EventLocationUpdated"],
     triggeringEntity: "Event",
@@ -306,14 +338,18 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
     targetEntity: "CateringOrder",
     targetCommand: "syncVenue",
     inputMapping: "1:N-fan-out",
-    idempotencyKey: { template: "event-catering-sync:{tenantId}:{orderId}", perTarget: true },
+    idempotencyKey: {
+      template: "event-catering-sync:{tenantId}:{orderId}",
+      perTarget: true,
+    },
     executionMode: "async",
     retryPolicy: DEFAULT_REGISTRY_RETRY_POLICY,
     asyncReactionName: "eventLocationCateringSync",
   },
   {
     name: "event-staff-assigned-notify",
-    description: "EventStaffAssigned → Notification.create to the assigned staff member",
+    description:
+      "EventStaffAssigned → Notification.create to the assigned staff member",
     category: "events",
     triggeringEvents: ["EventStaffAssigned"],
     triggeringEntity: "EventStaff",
@@ -330,7 +366,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "event-cancelled-cascade",
-    description: "EventCancelled → cascade unassign/cancel/void/close per eligible child",
+    description:
+      "EventCancelled → cascade unassign/cancel/void/close per eligible child",
     category: "events",
     triggeringEvents: ["EventCancelled"],
     triggeringEntity: "Event",
@@ -338,14 +375,18 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
     targetEntity: "EventStaff/CateringOrder/PrepList/Invoice/CollectionCase",
     targetCommand: ["unassign", "cancel", "voidInvoice", "close"],
     inputMapping: "multi-leg",
-    idempotencyKey: { template: "event-cancel:{tenantId}:{childId}:{command}", perTarget: true },
+    idempotencyKey: {
+      template: "event-cancel:{tenantId}:{childId}:{command}",
+      perTarget: true,
+    },
     executionMode: "async",
     retryPolicy: DEFAULT_REGISTRY_RETRY_POLICY,
     asyncReactionName: "eventCancelledCascade",
   },
   {
     name: "event-guest-count-prep-rescale",
-    description: "EventGuestCountUpdated → rescale draft PrepLists + items by new/old ratio",
+    description:
+      "EventGuestCountUpdated → rescale draft PrepLists + items by new/old ratio",
     category: "events",
     triggeringEvents: ["EventGuestCountUpdated"],
     triggeringEntity: "Event",
@@ -358,7 +399,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "event-dish-prep-sync",
-    description: "EventDishCreated/QuantityUpdated → re-derive demand on draft PrepLists",
+    description:
+      "EventDishCreated/QuantityUpdated → re-derive demand on draft PrepLists",
     category: "events",
     triggeringEvents: ["EventDishCreated", "EventDishQuantityUpdated"],
     triggeringEntity: "EventDish",
@@ -388,7 +430,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   // ── Kitchen ───────────────────────────────────────────────────────────────
   {
     name: "prep-list-seed",
-    description: "EventConfirmed → PrepList.create (seed) + PrepListFinalized → draft requisition",
+    description:
+      "EventConfirmed → PrepList.create (seed) + PrepListFinalized → draft requisition",
     category: "kitchen",
     triggeringEvents: ["EventConfirmed", "PrepListFinalized"],
     hook: "after-emit",
@@ -400,7 +443,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "prep-inventory-demand",
-    description: "PrepListFinalized → InventoryItem.reserve per derived ingredient demand",
+    description:
+      "PrepListFinalized → InventoryItem.reserve per derived ingredient demand",
     category: "kitchen",
     triggeringEvents: ["PrepListFinalized"],
     triggeringEntity: "PrepList",
@@ -408,12 +452,16 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
     targetEntity: "InventoryItem",
     targetCommand: "reserve",
     inputMapping: "1:N-fan-out",
-    idempotencyKey: { template: "prep-demand:{tenantId}:{prepListId}:{itemId}", perTarget: true },
+    idempotencyKey: {
+      template: "prep-demand:{tenantId}:{prepListId}:{itemId}",
+      perTarget: true,
+    },
     executionMode: "sync",
   },
   {
     name: "prep-list-completed-consume",
-    description: "PrepListCompleted → InventoryItem.consume per item (draws down reservation)",
+    description:
+      "PrepListCompleted → InventoryItem.consume per item (draws down reservation)",
     category: "kitchen",
     triggeringEvents: ["PrepListCompleted"],
     triggeringEntity: "PrepList",
@@ -429,7 +477,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "prep-list-cancelled-release-reservation",
-    description: "PrepListCancelled → InventoryItem.releaseReservation per reserved item",
+    description:
+      "PrepListCancelled → InventoryItem.releaseReservation per reserved item",
     category: "kitchen",
     triggeringEvents: ["PrepListCancelled"],
     triggeringEntity: "PrepList",
@@ -447,7 +496,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "prep-task-station-count",
-    description: "PrepTask lifecycle → reconcile Station.CurrentTaskCount (recompute)",
+    description:
+      "PrepTask lifecycle → reconcile Station.CurrentTaskCount (recompute)",
     category: "kitchen",
     triggeringEvents: [
       "PrepTaskAssigned",
@@ -467,7 +517,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "dish-deactivated-prune",
-    description: "DishDeactivated → retire dish from PrepTasks/PrepListItems/EventDishes",
+    description:
+      "DishDeactivated → retire dish from PrepTasks/PrepListItems/EventDishes",
     category: "kitchen",
     triggeringEvents: ["DishDeactivated"],
     triggeringEntity: "Dish",
@@ -483,7 +534,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "container-deactivated-dish-clear",
-    description: "ContainerDeactivated → Dish.clearDefaultContainer per dependent dish",
+    description:
+      "ContainerDeactivated → Dish.clearDefaultContainer per dependent dish",
     category: "kitchen",
     triggeringEvents: ["ContainerDeactivated"],
     triggeringEntity: "Container",
@@ -501,7 +553,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "chart-of-account-deactivated-deactivate-children",
-    description: "ChartOfAccountDeactivated → deactivate each active child (recursive subtree)",
+    description:
+      "ChartOfAccountDeactivated → deactivate each active child (recursive subtree)",
     category: "accounting",
     triggeringEvents: ["ChartOfAccountDeactivated"],
     triggeringEntity: "ChartOfAccount",
@@ -519,7 +572,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "ingredient-recalled-quarantine-inventory",
-    description: "IngredientRecallFlagged → InventoryItem.softDelete (food-safety quarantine)",
+    description:
+      "IngredientRecallFlagged → InventoryItem.softDelete (food-safety quarantine)",
     category: "kitchen",
     triggeringEvents: ["IngredientRecallFlagged"],
     triggeringEntity: "Ingredient",
@@ -536,7 +590,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "qa-check-failed-corrective-action",
-    description: "QACheckFailed → QACorrectiveAction.create (loads check via _subject.id)",
+    description:
+      "QACheckFailed → QACorrectiveAction.create (loads check via _subject.id)",
     category: "kitchen",
     triggeringEvents: ["QACheckFailed"],
     triggeringEntity: "QACheck",
@@ -553,7 +608,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   // ── Inventory ─────────────────────────────────────────────────────────────
   {
     name: "inventory-movement-transaction",
-    description: "InventoryConsumed/Wasted/Restocked/Adjusted → InventoryTransaction.create (ledger)",
+    description:
+      "InventoryConsumed/Wasted/Restocked/Adjusted → InventoryTransaction.create (ledger)",
     category: "inventory",
     triggeringEvents: [
       "InventoryConsumed",
@@ -573,7 +629,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "inventory-stock-sync-item",
-    description: "InventoryStock.adjust/recount → InventoryItem.adjust (two-hook delta capture)",
+    description:
+      "InventoryStock.adjust/recount → InventoryItem.adjust (two-hook delta capture)",
     category: "inventory",
     triggeringEvents: ["InventoryStockAdjusted", "InventoryStockRecounted"],
     triggeringEntity: "InventoryStock",
@@ -587,7 +644,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "inventory-transfer-received-stock-movement",
-    description: "TransferReceived → per-location InventoryStock movement (1:N across locations)",
+    description:
+      "TransferReceived → per-location InventoryStock movement (1:N across locations)",
     category: "inventory",
     triggeringEvents: ["TransferReceived"],
     triggeringEntity: "InventoryTransfer",
@@ -605,7 +663,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   // ── Procurement ───────────────────────────────────────────────────────────
   {
     name: "shipment-item-received-inventory-restock",
-    description: "ShipmentItemReceived → InventoryItem.restock (load line, preserve unitCost)",
+    description:
+      "ShipmentItemReceived → InventoryItem.restock (load line, preserve unitCost)",
     category: "procurement",
     triggeringEvents: ["ShipmentItemReceived"],
     triggeringEntity: "ShipmentItem",
@@ -622,7 +681,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "vendor-blacklisted-cancel-purchase-orders",
-    description: "VendorBlacklisted → PurchaseOrder.cancel per open order (permanent ban only)",
+    description:
+      "VendorBlacklisted → PurchaseOrder.cancel per open order (permanent ban only)",
     category: "procurement",
     triggeringEvents: ["VendorBlacklisted"],
     triggeringEntity: "Vendor",
@@ -642,7 +702,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   // ── Finance ───────────────────────────────────────────────────────────────
   {
     name: "payment-processed-invoice-apply",
-    description: "PaymentProcessed → Invoice.applyPayment (guard-safe: skip DRAFT/overpay)",
+    description:
+      "PaymentProcessed → Invoice.applyPayment (guard-safe: skip DRAFT/overpay)",
     category: "finance",
     triggeringEvents: ["PaymentProcessed"],
     triggeringEntity: "Payment",
@@ -660,7 +721,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "payment-refunded-invoice-record",
-    description: "PaymentRefunded → Invoice.recordRefund (load payment for invoiceId)",
+    description:
+      "PaymentRefunded → Invoice.recordRefund (load payment for invoiceId)",
     category: "finance",
     triggeringEvents: ["PaymentRefunded", "PaymentPartiallyRefunded"],
     triggeringEntity: "Payment",
@@ -675,7 +737,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "collection-payment-recorded-invoice-apply",
-    description: "CollectionPaymentRecorded → Invoice.applyPayment (load case for invoiceId)",
+    description:
+      "CollectionPaymentRecorded → Invoice.applyPayment (load case for invoiceId)",
     category: "finance",
     triggeringEvents: ["CollectionPaymentRecorded"],
     triggeringEntity: "CollectionCase",
@@ -690,7 +753,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "collection-written-off-invoice-write-off",
-    description: "CollectionWrittenOff → Invoice.writeOff (load case for invoiceId + amount)",
+    description:
+      "CollectionWrittenOff → Invoice.writeOff (load case for invoiceId + amount)",
     category: "finance",
     triggeringEvents: ["CollectionWrittenOff"],
     triggeringEntity: "CollectionCase",
@@ -705,7 +769,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "payment-plan-completed-collection-case-resolve",
-    description: "PaymentPlanCompleted → CollectionCase.markResolved (close dunning loop)",
+    description:
+      "PaymentPlanCompleted → CollectionCase.markResolved (close dunning loop)",
     category: "finance",
     triggeringEvents: ["PaymentPlanCompleted"],
     triggeringEntity: "CollectionPaymentPlan",
@@ -720,7 +785,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "invoice-overdue-collection-case-create",
-    description: "InvoiceMarkedOverdue → CollectionCase.create (open AR-recovery case)",
+    description:
+      "InvoiceMarkedOverdue → CollectionCase.create (open AR-recovery case)",
     category: "finance",
     triggeringEvents: ["InvoiceMarkedOverdue"],
     triggeringEntity: "Invoice",
@@ -735,7 +801,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "invoice-fully-paid-mark-paid",
-    description: "PaymentApplied (from applyPayment) → Invoice.markAsPaid when amountDue ≤ 0",
+    description:
+      "PaymentApplied (from applyPayment) → Invoice.markAsPaid when amountDue ≤ 0",
     category: "finance",
     triggeringEvents: ["PaymentApplied"],
     triggeringEntity: "Invoice",
@@ -753,7 +820,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "invoice-written-off-revrec-cancel",
-    description: "InvoiceWrittenOff → RevenueRecognitionSchedule.cancel per active schedule",
+    description:
+      "InvoiceWrittenOff → RevenueRecognitionSchedule.cancel per active schedule",
     category: "finance",
     triggeringEvents: ["InvoiceWrittenOff"],
     triggeringEntity: "Invoice",
@@ -769,7 +837,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "labor-budget-actual-recorded-alert",
-    description: "LaborBudgetActualRecorded → BudgetAlert.create when over target",
+    description:
+      "LaborBudgetActualRecorded → BudgetAlert.create when over target",
     category: "finance",
     triggeringEvents: ["LaborBudgetActualRecorded"],
     triggeringEntity: "LaborBudget",
@@ -786,7 +855,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   // ── CRM ───────────────────────────────────────────────────────────────────
   {
     name: "lead-converted-deal-create",
-    description: "LeadConvertedToClient → Deal.create (load lead for title/value)",
+    description:
+      "LeadConvertedToClient → Deal.create (load lead for title/value)",
     category: "crm",
     triggeringEvents: ["LeadConvertedToClient"],
     triggeringEntity: "Lead",
@@ -803,7 +873,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "proposal-lifecycle-lead-status",
-    description: "ProposalCreated/Sent/Accepted/Rejected → Lead.status mirror (FSM-aware)",
+    description:
+      "ProposalCreated/Sent/Accepted/Rejected → Lead.status mirror (FSM-aware)",
     category: "crm",
     triggeringEvents: [
       "ProposalCreated",
@@ -821,7 +892,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "proposal-line-item-count",
-    description: "ProposalLineItemCreated/Removed → Proposal.increment/decrementLineItemCount",
+    description:
+      "ProposalLineItemCreated/Removed → Proposal.increment/decrementLineItemCount",
     category: "crm",
     triggeringEvents: ["ProposalLineItemCreated", "ProposalLineItemRemoved"],
     triggeringEntity: "ProposalLineItem",
@@ -834,7 +906,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "deal-lifecycle-propagation",
-    description: "DealClosed → Lead.status mirror + DealAssigned → Notification.create",
+    description:
+      "DealClosed → Lead.status mirror + DealAssigned → Notification.create",
     category: "crm",
     triggeringEvents: ["DealClosed", "DealAssigned"],
     triggeringEntity: "Deal",
@@ -847,7 +920,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "client-interaction-overdue-notify",
-    description: "ClientInteractionMarkedOverdue → Notification.create for the assignee",
+    description:
+      "ClientInteractionMarkedOverdue → Notification.create for the assignee",
     category: "crm",
     triggeringEvents: ["ClientInteractionMarkedOverdue"],
     triggeringEntity: "ClientInteraction",
@@ -864,7 +938,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "client-interaction-escalated-notify",
-    description: "ClientInteractionEscalated → Notification.create for the escalation target",
+    description:
+      "ClientInteractionEscalated → Notification.create for the escalation target",
     category: "crm",
     triggeringEvents: ["ClientInteractionEscalated"],
     triggeringEntity: "ClientInteraction",
@@ -898,7 +973,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "maintenance-created-equipment-status",
-    description: "MaintenanceWorkOrderCreated → Equipment.updateStatus('maintenance')",
+    description:
+      "MaintenanceWorkOrderCreated → Equipment.updateStatus('maintenance')",
     category: "equipment",
     triggeringEvents: ["MaintenanceWorkOrderCreated"],
     triggeringEntity: "MaintenanceWorkOrder",
@@ -911,7 +987,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "maintenance-schedule-completed-work-order-create",
-    description: "MaintenanceScheduleCompleted → MaintenanceWorkOrder.create (recurrence loop)",
+    description:
+      "MaintenanceScheduleCompleted → MaintenanceWorkOrder.create (recurrence loop)",
     category: "equipment",
     triggeringEvents: ["MaintenanceScheduleCompleted"],
     triggeringEntity: "PreventiveMaintenanceSchedule",
@@ -926,9 +1003,13 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "facility-work-order-asset-status",
-    description: "FacilityWorkOrder lifecycle → FacilityAsset maintenance status (two legs)",
+    description:
+      "FacilityWorkOrder lifecycle → FacilityAsset maintenance status (two legs)",
     category: "facilities",
-    triggeringEvents: ["FacilityWorkOrderCreated", "FacilityWorkOrderCompleted"],
+    triggeringEvents: [
+      "FacilityWorkOrderCreated",
+      "FacilityWorkOrderCompleted",
+    ],
     triggeringEntity: "FacilityWorkOrder",
     hook: "after-emit",
     targetEntity: "FacilityAsset",
@@ -941,7 +1022,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   // ── Logistics ─────────────────────────────────────────────────────────────
   {
     name: "logistics-dispatch-driver-vehicle-status",
-    description: "LogisticsDispatch lifecycle → Driver/Vehicle status (assigned/delivered/failed)",
+    description:
+      "LogisticsDispatch lifecycle → Driver/Vehicle status (assigned/delivered/failed)",
     category: "logistics",
     triggeringEvents: [
       "LogisticsDispatchAssigned",
@@ -958,7 +1040,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "logistics-route-driver-vehicle-status",
-    description: "LogisticsRoute lifecycle → Driver/Vehicle status (started/completed/cancelled)",
+    description:
+      "LogisticsRoute lifecycle → Driver/Vehicle status (started/completed/cancelled)",
     category: "logistics",
     triggeringEvents: [
       "LogisticsRouteStarted",
@@ -977,7 +1060,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   // ── Staffing ──────────────────────────────────────────────────────────────
   {
     name: "schedule-published-notify-staff",
-    description: "SchedulePublished → Notification.create per distinct shift employee",
+    description:
+      "SchedulePublished → Notification.create per distinct shift employee",
     category: "staffing",
     triggeringEvents: ["SchedulePublished"],
     triggeringEntity: "Schedule",
@@ -993,7 +1077,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "time-off-approved-shift-cleanup",
-    description: "TimeOffRequestApproved → remove conflicting ScheduleShift rows",
+    description:
+      "TimeOffRequestApproved → remove conflicting ScheduleShift rows",
     category: "staffing",
     triggeringEvents: ["TimeOffRequestApproved"],
     triggeringEntity: "TimeOffRequest",
@@ -1006,7 +1091,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "staff-member-deactivated-unassign-event-staff",
-    description: "StaffMemberDeactivated → EventStaff.unassign per open assignment",
+    description:
+      "StaffMemberDeactivated → EventStaff.unassign per open assignment",
     category: "staffing",
     triggeringEvents: ["StaffMemberDeactivated"],
     triggeringEntity: "StaffMember",
@@ -1024,7 +1110,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "open-shift-claimed-create-schedule-shift",
-    description: "OpenShiftClaimed → ScheduleShift.create (load shift + parent schedule)",
+    description:
+      "OpenShiftClaimed → ScheduleShift.create (load shift + parent schedule)",
     category: "staffing",
     triggeringEvents: ["OpenShiftClaimed"],
     triggeringEntity: "OpenShift",
@@ -1039,7 +1126,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "schedule-shift-count",
-    description: "ScheduleShiftCreated/Removed → Schedule.syncShiftCount (recompute)",
+    description:
+      "ScheduleShiftCreated/Removed → Schedule.syncShiftCount (recompute)",
     category: "staffing",
     triggeringEvents: ["ScheduleShiftCreated", "ScheduleShiftRemoved"],
     triggeringEntity: "ScheduleShift",
@@ -1052,7 +1140,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "schedule-shift-first-shift-due-date",
-    description: "ScheduleShiftCreated → TrainingAssignment.applyFirstShiftDueDate (first shift only)",
+    description:
+      "ScheduleShiftCreated → TrainingAssignment.applyFirstShiftDueDate (first shift only)",
     category: "staffing",
     triggeringEvents: ["ScheduleShiftCreated"],
     triggeringEntity: "ScheduleShift",
@@ -1067,7 +1156,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   // ── Training ──────────────────────────────────────────────────────────────
   {
     name: "training-attempt-submitted-record",
-    description: "TrainingAttemptSubmitted → TrainingAttempt.create (derive passed from threshold)",
+    description:
+      "TrainingAttemptSubmitted → TrainingAttempt.create (derive passed from threshold)",
     category: "training",
     triggeringEvents: ["TrainingAttemptSubmitted"],
     triggeringEntity: "TrainingAssignment",
@@ -1082,7 +1172,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "staff-member-created-training-assignment",
-    description: "StaffMemberCreated → TrainingAssignment.create (SEL onboarding assignment)",
+    description:
+      "StaffMemberCreated → TrainingAssignment.create (SEL onboarding assignment)",
     category: "training",
     triggeringEvents: ["StaffMemberCreated"],
     triggeringEntity: "StaffMember",
@@ -1099,9 +1190,13 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   // ── Compliance ────────────────────────────────────────────────────────────
   {
     name: "employee-certification-lapsed-notify",
-    description: "EmployeeCertificationExpired/Revoked → Notification.create for the employee",
+    description:
+      "EmployeeCertificationExpired/Revoked → Notification.create for the employee",
     category: "compliance",
-    triggeringEvents: ["EmployeeCertificationExpired", "EmployeeCertificationRevoked"],
+    triggeringEvents: [
+      "EmployeeCertificationExpired",
+      "EmployeeCertificationRevoked",
+    ],
     triggeringEntity: "EmployeeCertification",
     hook: "after-emit",
     targetEntity: "Notification",
@@ -1116,16 +1211,21 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "employee-certification-lapsed-suspend-availability",
-    description: "EmployeeCertificationExpired/Revoked → suspend EmployeeAvailability rows",
+    description:
+      "EmployeeCertificationExpired/Revoked → suspend EmployeeAvailability rows",
     category: "compliance",
-    triggeringEvents: ["EmployeeCertificationExpired", "EmployeeCertificationRevoked"],
+    triggeringEvents: [
+      "EmployeeCertificationExpired",
+      "EmployeeCertificationRevoked",
+    ],
     triggeringEntity: "EmployeeCertification",
     hook: "after-emit",
     targetEntity: "EmployeeAvailability",
     targetCommand: "suspend",
     inputMapping: "1:N-fan-out",
     idempotencyKey: {
-      template: "cert-suspend:{tenantId}:{employeeCertificationId}:{availabilityId}",
+      template:
+        "cert-suspend:{tenantId}:{employeeCertificationId}:{availabilityId}",
       perTarget: true,
     },
     executionMode: "sync",
@@ -1134,7 +1234,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   // ── Payroll ───────────────────────────────────────────────────────────────
   {
     name: "timecard-edit-approved-time-entry-apply",
-    description: "TimecardEditApproved → TimeEntry.applyEdit (write corrected clock times)",
+    description:
+      "TimecardEditApproved → TimeEntry.applyEdit (write corrected clock times)",
     category: "payroll",
     triggeringEvents: ["TimecardEditApproved"],
     triggeringEntity: "TimecardEditRequest",
@@ -1149,7 +1250,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "payroll-run-paid-period-lock",
-    description: "PayrollRunPaid → PayrollPeriod.lock (load run for payrollPeriodId)",
+    description:
+      "PayrollRunPaid → PayrollPeriod.lock (load run for payrollPeriodId)",
     category: "payroll",
     triggeringEvents: ["PayrollRunPaid"],
     triggeringEntity: "PayrollRun",
@@ -1164,7 +1266,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "payroll-run-paid-cascade",
-    description: "PayrollRunPaid → close TipPool(s) + notify employees (two independent legs)",
+    description:
+      "PayrollRunPaid → close TipPool(s) + notify employees (two independent legs)",
     category: "payroll",
     triggeringEvents: ["PayrollRunPaid"],
     triggeringEntity: "PayrollRun",
@@ -1182,7 +1285,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   // ── Integrations ──────────────────────────────────────────────────────────
   {
     name: "email-template-deleted-deactivate-workflows",
-    description: "EmailTemplateDeleted → EmailWorkflow.setActive(false) per dependent workflow",
+    description:
+      "EmailTemplateDeleted → EmailWorkflow.setActive(false) per dependent workflow",
     category: "integrations",
     triggeringEvents: ["EmailTemplateDeleted"],
     triggeringEntity: "EmailTemplate",
@@ -1200,7 +1304,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   },
   {
     name: "email-template-deleted-sms-rule-deactivate",
-    description: "EmailTemplateDeleted → SmsAutomationRule.deactivate per dependent rule",
+    description:
+      "EmailTemplateDeleted → SmsAutomationRule.deactivate per dependent rule",
     category: "integrations",
     triggeringEvents: ["EmailTemplateDeleted"],
     triggeringEntity: "EmailTemplate",
@@ -1300,9 +1405,7 @@ export function diffRegistryVsWiring(wiredNames: readonly string[]): {
   const wired = new Set(wiredNames);
   const declared = new Set(MIDDLEWARE_REGISTRY.map((e) => e.name));
   const wiredButNotDeclared = [...wired].filter((n) => !declared.has(n)).sort();
-  const declaredButNotWired = [...declared]
-    .filter((n) => !wired.has(n))
-    .sort();
+  const declaredButNotWired = [...declared].filter((n) => !wired.has(n)).sort();
   return { wiredButNotDeclared, declaredButNotWired };
 }
 

@@ -203,13 +203,16 @@ function buildRecipeUpdatePayload(
   currentRecipe: NonNullable<Awaited<ReturnType<typeof loadCurrentRecipe>>>,
   recipeId: string
 ) {
+  // Recipe.update declares params newName/newCategory/... (mutates copy them
+  // onto the instance) — the guard `newName != null` fails if we send the
+  // property names instead. Same class of bug as buildVersionCreatePayload.
   return {
     id: recipeId,
-    name: body.name ?? currentRecipe.name,
-    category: body.category ?? currentRecipe.category ?? "",
-    cuisineType: body.cuisineType ?? currentRecipe.cuisineType ?? "",
-    description: body.description ?? currentRecipe.description ?? "",
-    tags: body.tags ?? currentRecipe.tags ?? [],
+    newName: body.name ?? currentRecipe.name,
+    newCategory: body.category ?? currentRecipe.category ?? "",
+    newCuisineType: body.cuisineType ?? currentRecipe.cuisineType ?? "",
+    newDescription: body.description ?? currentRecipe.description ?? "",
+    newTags: body.tags ?? currentRecipe.tags ?? [],
   };
 }
 
