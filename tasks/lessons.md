@@ -206,3 +206,15 @@ run `pnpm db:check` — schema waves land without migrations on this branch.
 **Also:** the @angriff36/manifest Prisma projection emits `@db.Uuid @default("")` (invalid
 Postgres, 177 fields) and TIMESTAMP(3)/TEXT types that fight the DB's timestamptz/enum/RLS
 reality — deferred as residual drift (~620 lines); needs a compiler-side fix (Ryan owns it).
+
+## Lesson 15: No dark hero bands on record pages; no tabs for content that fits
+
+**Date:** 2026-07-04
+**What happened:** The redesigned recipe detail used a deep-green CommandBand hero
+(the module-dashboard pattern) and hid nutrition/costing/history behind tabs. User:
+"i hate the green bar at the top... looks shitty especially on mobile" and "why are
+there 3 tabs when each tab fits into my desktop screen".
+**Rule:** Detail/record pages get a LIGHT editorial header (mono eyebrow +
+DisplayHeading + pills + compact hairline metric strip). CommandBand = module
+dashboards/landings only. Never hide panels behind tabs when they fit on screen —
+lay them out in a grid. Both encoded in DESIGN.md (§2 rule 11, §4 detail pages).

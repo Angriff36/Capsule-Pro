@@ -64,6 +64,10 @@ blue (`#1863dc`) is for links and informational values. The content column is
 10. **Match the exemplars** before inventing: `events/page.tsx`,
     `kitchen/recipes/page.tsx` (list), `events/kitchen-dashboard` (the visual
     benchmark), `staff/page.tsx` (ModuleLanding).
+11. **Don't hide content behind tabs when it fits on screen.** Tabs are a last
+    resort for genuinely long alternative views; if the panels fit (or can sit
+    side-by-side in a grid), show them all at once. (Owner verdict 2026-07 on
+    the recipe detail records tabs.)
 
 ## 3. Tokens (source of truth: `packages/design-system/styles/globals.css`)
 
@@ -147,10 +151,12 @@ import {
 </PageBody>
 ```
 
-- **Detail pages** are the same shape: hero band = the record's identity
-  (name, category eyebrow, status pills, headline metrics), then rail
-  (context: ingredients, meta, filters) + column (the record's body in
-  `SectionHeader`-led sections). Reference: `kitchen/recipes/[recipeId]`.
+- **Detail pages** use a **light editorial header, not a CommandBand**: mono
+  eyebrow + `DisplayHeading` + lede + status pills, then a compact
+  hairline-divided metric strip (`grid gap-px` cells, mono labels, ~22px
+  values). Owner verdict (2026-07): the dark band reads heavy on record pages,
+  especially mobile — reserve `CommandBand` for module dashboards/landing
+  heroes. Reference: `kitchen/recipes/[recipeId]`.
 - **Module roots** use `ModuleLanding`.
 - **Do not** use the `KitchenOperational*` exports for new work — they are a
   hex-hardcoded parity duplicate of `CommandBand`/`MetricBand` kept for the

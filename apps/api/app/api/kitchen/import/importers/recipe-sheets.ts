@@ -56,7 +56,7 @@ function parseVersionNumber(versionLabel: string): number {
   }
 
   const match = versionLabel.match(VERSION_NUMBER_RE);
-  return match ? Number.parseInt(match[1], 10) : 1;
+  return match?.[1] ? Number.parseInt(match[1], 10) : 1;
 }
 
 export async function importRecipeSheet(
@@ -130,10 +130,40 @@ export async function importRecipeSheet(
   }
 
   const recipeVersionId = (versionResult.result as { id: string }).id;
+
+  // Structured steps power the recipe-detail execution UI (checkable steps,
+  // phases, CCP detection). instructionsText above is kept as a flat-text
+  // mirror for search/legacy consumers.
+  let stepCount = 0;
+  const orderedSteps = [...sheet.instructions].sort(
+    (a, b) => a.stepNumber - b.stepNumber
+  );
+  for (const step of orderedSteps) {
+    const stepResult = await runKitchenImportCommand(
+      { id: userId, tenantId, role: userRole },
+      "RecipeStep",
+      "create",
+      {
+        tenantId,
+        recipeVersionId,
+        stepNumber: step.stepNumber,
+        instruction: step.text,
+        phase: "method",
+      }
+    );
+
+    if (!stepResult.ok) {
+      throw new Error(
+        `Failed to add step ${step.stepNumber}: ${stepResult.message}`
+      );
+    }
+
+    stepCount++;
+  }
+
   let ingredientCount = 0;
 
-  for (let index = 0; index < sheet.ingredients.length; index++) {
-    const line = sheet.ingredients[index];
+  for (const [index, line] of sheet.ingredients.entries()) {
     const ingredientId = await findOrCreateIngredientId(
       line.name,
       line.unit,
@@ -171,7 +201,7 @@ export async function importRecipeSheet(
   }
 
   return {
-    summaryLine: `Recipe sheet: ${recipeName} (${ingredientCount} ingredients, ${sheet.instructions.length} steps)`,
+    summaryLine: `Recipe sheet: ${recipeName} (${ingredientCount} ingredients, ${stepCount} steps)`,
     ingredientCount,
   };
 }

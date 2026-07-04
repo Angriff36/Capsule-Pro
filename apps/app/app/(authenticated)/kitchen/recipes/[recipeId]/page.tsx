@@ -404,6 +404,7 @@ const RecipeDetailPage = async ({
           name: ingredient.name,
           note: cleanString(ingredient.notes),
         }))}
+        instructionsText={cleanString(recipe.instructions)}
         isActive={recipe.is_active}
         isSubrecipe={recipe.is_subrecipe}
         name={recipe.name}
@@ -425,11 +426,9 @@ const RecipeDetailPage = async ({
       <section className="space-y-6">
         <SectionHeader eyebrow="Records" title="Analysis & history" />
         <RecipeDetailTabs
-          ingredients={ingredients}
           recipe={recipe}
           recipeVersionId={recipeVersionId}
-          steps={stepRows}
-          tabs={["nutrition", "costing", "history"]}
+          variant="sections"
         />
       </section>
     </>

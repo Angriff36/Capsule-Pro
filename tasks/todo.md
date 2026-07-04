@@ -49,3 +49,15 @@ so agents keep forking design languages. User verdict: recipe page + site look b
 - [x] E2E verified: POMODORO SAUCE CSV imports clean, renders in redesigned detail page
 - [ ] UPSTREAM (Ryan): fix @angriff36/manifest Prisma projection — @db.Uuid @default("") (177 fields), TIMESTAMP(3) vs timestamptz(6), enum vs TEXT; then regenerate schema + one clean repair to zero drift
 - [ ] Importer is non-atomic (Recipe.create → RecipeVersion.create; mid-failure leaves orphan recipe)
+
+---
+
+# Follow-up 2: design feedback + steps pipeline
+
+- [x] Recipe detail: replaced deep-green CommandBand with light editorial header + compact time strip (mobile-friendly)
+- [x] Nutrition/Costing/History un-tabbed -> visible sections grid (RecipeDetailTabs variant="sections"); dead overview/ingredients/steps tabs deleted (~450 lines); HistoryTabContent refactored (complexity 34->ok, window.confirm -> AlertDialog); file fully lint-clean
+- [x] recipe-sheets importer now creates real RecipeStep rows (phase "method"); step count in summary = created rows
+- [x] Detail view falls back to flat instructions text for legacy text-only imports
+- [x] Versions/cost 500s root-caused: orphaned API dev server couldn't spawn compile workers (killed wrapper); restarted clean — version history works
+- [x] DESIGN.md updated: rule 11 (no tabs when content fits), detail-page light header pattern
+- [ ] Ingredient unit resolution: "5 POUNDS" imports as quantity 5 unit "g" with the real amount in notes — unit-resolver needs pounds/quarts/cups mapping

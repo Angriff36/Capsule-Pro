@@ -1,18 +1,10 @@
 "use client";
 
 import {
-  CommandBand,
-  CommandBandBody,
-  CommandBandHeader,
-  CommandBandLede,
   DisplayHeading,
   FilterRail,
   FilterRailGroup,
   FilterRailLabel,
-  MetricBand,
-  MetricCell,
-  MetricLabel,
-  MetricValue,
   MonoLabel,
   OperationalColumn,
   PageBody,
@@ -37,8 +29,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-// Recipe detail per DESIGN.md: deep-green CommandBand identity hero (Playfair
-// headline, mono eyebrow, time metrics), then rail (ingredients + at-a-glance)
+// Recipe detail per DESIGN.md: light editorial header (mono eyebrow, Playfair
+// headline, compact hairline time strip — no dark hero band; too heavy on
+// record pages, especially mobile), then rail (ingredients + at-a-glance)
 // beside phase-grouped, checkable instructions. Coral is reserved for the
 // attention signals: allergens and CCP food-safety steps (>=135°F hot hold).
 // Step progress stays device-local (localStorage), no backend.
@@ -108,6 +101,9 @@ export interface RecipeCookbookViewProps {
   equipment: string[];
   heroImageUrl: string | null;
   ingredients: CookbookIngredient[];
+  // Flat-text method fallback for recipes without structured steps (e.g.
+  // legacy bulk imports that only populated recipe_versions.instructions).
+  instructionsText: string | null;
   isActive: boolean;
   isSubrecipe: boolean;
   name: string;
@@ -178,43 +174,52 @@ export function RecipeCookbookView(recipe: RecipeCookbookViewProps) {
 
   return (
     <>
-      <CommandBand>
-        <CommandBandHeader>
-          <div className="min-w-0 space-y-4">
-            <MonoLabel tone="dark">Kitchen / {recipe.categoryLabel}</MonoLabel>
-            <DisplayHeading className="text-balance" size="md">
-              {recipe.name}
-            </DisplayHeading>
-            {recipe.description && (
-              <CommandBandLede>{recipe.description}</CommandBandLede>
-            )}
-            {(recipe.isSubrecipe ||
-              !recipe.isActive ||
-              recipe.allergens.length > 0) && (
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                {recipe.isSubrecipe && <HeroPill>Sub-Recipe</HeroPill>}
-                {!recipe.isActive && <HeroPill>Inactive</HeroPill>}
-                {recipe.allergens.map((a) => (
-                  <HeroPill key={a} tone="coral">
-                    <AlertTriangle className="size-3" />
-                    {a}
-                  </HeroPill>
-                ))}
-              </div>
-            )}
-          </div>
-        </CommandBandHeader>
-        <CommandBandBody>
-          <MetricBand>
-            {timeMetrics.map((m) => (
-              <MetricCell key={m.label}>
-                <MetricLabel>{m.label}</MetricLabel>
-                <MetricValue>{m.value || "—"}</MetricValue>
-              </MetricCell>
-            ))}
-          </MetricBand>
-        </CommandBandBody>
-      </CommandBand>
+      <header className="space-y-6">
+        <div className="min-w-0 space-y-3">
+          <MonoLabel>Kitchen / {recipe.categoryLabel}</MonoLabel>
+          <DisplayHeading className="max-w-4xl text-balance" size="md">
+            {recipe.name}
+          </DisplayHeading>
+          {recipe.description && (
+            <p className="max-w-2xl text-[16px] text-muted-foreground leading-relaxed">
+              {recipe.description}
+            </p>
+          )}
+          {(recipe.isSubrecipe ||
+            !recipe.isActive ||
+            recipe.allergens.length > 0) && (
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              {recipe.isSubrecipe && <StatusPill>Sub-Recipe</StatusPill>}
+              {!recipe.isActive && (
+                <StatusPill className="text-muted-foreground">
+                  Inactive
+                </StatusPill>
+              )}
+              {recipe.allergens.map((a) => (
+                <span
+                  className="inline-flex items-center gap-1.5 rounded-full border border-coral-soft bg-coral/10 px-3 py-1 font-mono text-[11px] text-ink uppercase tracking-[0.18em]"
+                  key={a}
+                >
+                  <AlertTriangle className="size-3 text-coral" />
+                  {a}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+        <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-card border border-card-border bg-card-border sm:grid-cols-4">
+          {timeMetrics.map((m) => (
+            <div className="bg-canvas px-4 py-3.5" key={m.label}>
+              <dt className="font-mono text-[10px] text-muted-foreground uppercase tracking-[0.28em]">
+                {m.label}
+              </dt>
+              <dd className="mt-1 text-[22px] text-ink leading-tight">
+                {m.value || "—"}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </header>
 
       {recipe.heroImageUrl && (
         <div className="relative aspect-[21/9] w-full overflow-hidden rounded-media border border-hairline">
@@ -384,6 +389,18 @@ export function RecipeCookbookView(recipe: RecipeCookbookViewProps) {
                   )}
                 </div>
               </>
+            ) : recipe.instructionsText ? (
+              <div className="space-y-3">
+                <div className="rounded-card border border-hairline bg-canvas p-6">
+                  <p className="whitespace-pre-wrap text-[15px] text-ink leading-relaxed">
+                    {recipe.instructionsText}
+                  </p>
+                </div>
+                <p className="text-[13px] text-muted-foreground">
+                  Imported as flat text — edit the recipe to convert these into
+                  checkable, phase-grouped steps.
+                </p>
+              </div>
             ) : (
               <div className="flex flex-col items-center gap-2 rounded-card border border-hairline bg-soft-stone px-6 py-14 text-center">
                 <p className="font-medium text-[16px] text-ink">
@@ -559,27 +576,6 @@ function StepRow({
 function StepChip({ children }: { children: React.ReactNode }) {
   return (
     <span className="inline-flex items-center gap-1 rounded-full border border-hairline bg-soft-stone/60 px-2.5 py-0.5 font-mono text-[11px] text-ink/80">
-      {children}
-    </span>
-  );
-}
-
-function HeroPill({
-  children,
-  tone,
-}: {
-  children: React.ReactNode;
-  tone?: "coral";
-}) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em]",
-        tone === "coral"
-          ? "border-coral-soft/50 bg-coral/20 text-white"
-          : "border-white/25 bg-white/10 text-white/85"
-      )}
-    >
       {children}
     </span>
   );
