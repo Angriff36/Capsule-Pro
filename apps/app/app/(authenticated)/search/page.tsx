@@ -204,7 +204,7 @@ const GROUP_CONFIG: Record<
   ingredients: {
     label: "Ingredients",
     icon: <Leaf className="size-4" />,
-    href: (_item) => "/kitchen/recipes?tab=ingredients",
+    href: (item) => `/kitchen/ingredients/${item.id}`,
     title: (item) => (item.name as string) || "Unknown Ingredient",
     description: (item) => (
       <p className="text-muted-foreground text-sm">

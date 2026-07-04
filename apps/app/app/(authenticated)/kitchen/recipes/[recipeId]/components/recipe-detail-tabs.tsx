@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -947,7 +948,14 @@ function HistoryTabContent({
                       key={ingredient.id}
                     >
                       <div>
-                        <div className="font-medium">{ingredient.name}</div>
+                        <div className="font-medium">
+                          <Link
+                            className="underline-offset-2 hover:underline"
+                            href={`/kitchen/ingredients/${ingredient.ingredientId}`}
+                          >
+                            {ingredient.name}
+                          </Link>
+                        </div>
                         {ingredient.preparationNotes && (
                           <div className="text-muted-foreground">
                             {ingredient.preparationNotes}

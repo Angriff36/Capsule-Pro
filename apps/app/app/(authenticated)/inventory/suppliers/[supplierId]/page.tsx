@@ -67,18 +67,18 @@ export default function InventorySupplierDetailPage() {
           listInventoryItems({ limit: 500 }),
           listVendors(),
         ]);
-      setSupplier((supplierResult as Row) ?? null);
+      setSupplier((supplierResult as unknown as Row) ?? null);
       setCatalogs(
-        (catalogResult.data as Row[]).filter(
+        (catalogResult.data as unknown as Row[]).filter(
           (row) => row.supplierId === supplierId
         )
       );
       setItems(
-        (itemsResult.data as Row[]).filter(
+        (itemsResult.data as unknown as Row[]).filter(
           (row) => row.supplierId === supplierId
         )
       );
-      setVendors(vendorsResult.data as Row[]);
+      setVendors(vendorsResult.data as unknown as Row[]);
     } catch (error) {
       console.error("Failed to load supplier:", error);
       toast.error("Failed to load supplier");

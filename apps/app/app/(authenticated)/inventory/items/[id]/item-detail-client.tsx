@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import Link from "next/link";
 import {
   formatCurrency,
   getFSAStatusColor,
@@ -86,7 +87,16 @@ const ItemDetailClient = ({ item }: ItemDetailClientProps) => {
           <div className="flex justify-between">
             <span className="text-muted-foreground">Supplier</span>
             <span className="font-medium">
-              {item.supplier?.name ?? "No supplier assigned"}
+              {item.supplierId ? (
+                <Link
+                  className="underline-offset-2 hover:underline"
+                  href={`/inventory/suppliers/${item.supplierId}`}
+                >
+                  {item.supplier?.name ?? item.supplierId}
+                </Link>
+              ) : (
+                "No supplier assigned"
+              )}
             </span>
           </div>
           {item.tags.length > 0 && (
