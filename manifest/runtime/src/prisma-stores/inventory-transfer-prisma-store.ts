@@ -71,13 +71,17 @@ function pad(n: number, width: number): string {
 }
 
 export class InventoryTransferPrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
-    /** RuntimeContext.user.id, plumbed via createPrismaStoreProvider's 3rd arg.
-     * Used as InventoryTransfer.requestedBy (audit field for who initiated). */
-    private readonly requestedBy: string
-  ) {}
+  private readonly prisma: PrismaClient;
+  private readonly tenantId: string;
+  /** RuntimeContext.user.id, plumbed via createPrismaStoreProvider's 3rd arg.
+   * Used as InventoryTransfer.requestedBy (audit field for who initiated). */
+  private readonly requestedBy: string;
+
+  constructor(prisma: PrismaClient, tenantId: string, requestedBy: string) {
+    this.prisma = prisma;
+    this.tenantId = tenantId;
+    this.requestedBy = requestedBy;
+  }
 
   async getAll(): Promise<EntityInstance[]> {
     const rows = await this.prisma.inventoryTransfer.findMany({

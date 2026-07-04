@@ -10,7 +10,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
-import { uploadFile } from "@repo/storage";
+import { uploadFile } from "@repo/storage"
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -64,7 +64,7 @@ function parsePaymentTerms(terms: string | null): number {
     return 30;
   }
   const match = terms.match(PAYMENT_TERMS_REGEX);
-  return match ? Number.parseInt(match[1], 10) : 30;
+  return match?.[1] ? Number.parseInt(match[1], 10) : 30;
 }
 
 /**

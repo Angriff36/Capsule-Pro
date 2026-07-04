@@ -211,11 +211,6 @@ export interface RecipeForDishCreation {
   name: string;
 }
 
-interface TemplateSuggestion {
-  added: boolean;
-  name: string;
-}
-
 interface MenuDishesSectionProps {
   availableDishes: AvailableDishOption[];
   eventDishes: EventDishRow[];

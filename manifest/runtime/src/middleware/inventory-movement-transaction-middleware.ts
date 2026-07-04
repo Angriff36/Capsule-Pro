@@ -158,6 +158,7 @@ export function createInventoryMovementTransactionMiddleware(
 
       for (const event of movements) {
         const spec = MOVEMENT_SPECS[event.name];
+        if (!spec) continue;
         const payload = event.payload as MovementPayload | undefined;
 
         const itemId =

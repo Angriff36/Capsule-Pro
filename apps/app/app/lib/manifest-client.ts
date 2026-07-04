@@ -159,3 +159,64 @@ export async function executeCommand<T = unknown>(
 
   return json;
 }
+
+export interface ManifestBatchOperation {
+  command: string;
+  entity: string;
+  params?: Record<string, unknown>;
+}
+
+export interface BatchOpResult<T = unknown> {
+  events?: unknown[];
+  noop?: boolean;
+  result?: T;
+}
+
+/**
+ * Execute an ordered array of governed commands as ONE server-side transaction
+ * (POST /api/manifest/batch): every op commits together or the first failure
+ * rolls the whole batch back. Returns the per-op results on success; throws
+ * {@link CommandFailedError} on failure (the server message names the failing
+ * op index). The server caps a batch at 50 ops (MANIFEST_BATCH_MAX_SIZE) —
+ * chunk larger selections before calling.
+ */
+export async function executeCommandBatch<T = unknown>(
+  operations: ManifestBatchOperation[]
+): Promise<BatchOpResult<T>[]> {
+  const res = await apiFetch("/api/manifest/batch", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ operations }),
+  });
+
+  let json:
+    | { results?: BatchOpResult<T>[]; success: true }
+    | CommandError
+    | null = null;
+  try {
+    json = (await res.json()) as
+      | { results?: BatchOpResult<T>[]; success: true }
+      | CommandError;
+  } catch {
+    json = null;
+  }
+
+  if (!(res.ok && json) || json.success !== true) {
+    const errObj = json as CommandError | null;
+    const message =
+      errObj?.friendlyError?.message ||
+      errObj?.error ||
+      errObj?.message ||
+      `Batch failed (HTTP ${res.status})`;
+    throw new CommandFailedError(
+      message,
+      res.status,
+      errObj?.constraintOutcomes,
+      errObj?.diagnostics,
+      errObj?.kind,
+      errObj?.friendlyError
+    );
+  }
+
+  return json.results ?? [];
+}

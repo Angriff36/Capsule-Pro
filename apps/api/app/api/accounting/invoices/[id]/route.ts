@@ -29,27 +29,6 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-function _formatInvoiceResponse(invoice: Record<string, unknown>) {
-  return {
-    ...invoice,
-    subtotal: String(invoice.subtotal),
-    taxAmount: String(invoice.taxAmount),
-    discountAmount: String(invoice.discountAmount),
-    total: String(invoice.total),
-    amountPaid: String(invoice.amountPaid),
-    amountDue: String(invoice.amountDue),
-    depositPercentage: invoice.depositPercentage
-      ? String(invoice.depositPercentage)
-      : null,
-    depositRequired: invoice.depositRequired
-      ? String(invoice.depositRequired)
-      : null,
-    depositPaid: invoice.depositPaid ? String(invoice.depositPaid) : null,
-    lineItems: invoice.lineItems,
-    metadata: invoice.metadata,
-  };
-}
-
 /**
  * GET /api/accounting/invoices/[id]
  * Get a single invoice by ID (read — bypasses Manifest per §10)

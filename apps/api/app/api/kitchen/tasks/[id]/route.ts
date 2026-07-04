@@ -231,6 +231,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
   }
+
+  return NextResponse.json(
+    { message: "No supported task fields provided for update" },
+    { status: 400 }
+  );
 }
 
 /**

@@ -840,18 +840,6 @@ function NoAuditLogsIllustration() {
 // =============================================================================
 
 /**
- * Shared props for ambient animation in empty states
- */
-interface AmbientAnimationOptions {
-  /** Ambient animation intensity (0-1) */
-  ambientIntensity?: number;
-  /** Ambient animation variant */
-  ambientVariant?: AmbientAnimationProps["variant"];
-  /** Enable ambient animation for the empty state */
-  enableAmbientAnimation?: boolean;
-}
-
-/**
  * EmptyListState - Generic empty list with CTA to create item
  * Role-aware: Viewers see messaging explaining content will appear when admin adds it
  */
@@ -887,7 +875,6 @@ export function EmptyListState({
   ambientVariant = "particles",
   ambientIntensity = 0.6,
 }: EmptyListStateProps) {
-  const _canCreate = canRoleCreate(userRole);
   const messaging = getRoleAwareEmptyMessage(
     itemName,
     userRole,

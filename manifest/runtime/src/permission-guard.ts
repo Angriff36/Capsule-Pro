@@ -99,31 +99,42 @@ export const AI_APPROVAL_COMMANDS = new Set<string>([
 // ---------------------------------------------------------------------------
 
 export class PermissionDeniedError extends Error {
+  public commandName: string;
+  public entityName: string | undefined;
+  public userRole: string;
+  public requiredPermission: Permission;
+
   constructor(
-    public commandName: string,
-    public entityName: string | undefined,
-    public userRole: string,
-    public requiredPermission: Permission
+    commandName: string,
+    entityName: string | undefined,
+    userRole: string,
+    requiredPermission: Permission
   ) {
     super(
       `Permission denied: Role '${userRole}' cannot execute '${commandName}'` +
         (entityName ? ` on entity '${entityName}'` : "") +
         `. Required permission: '${requiredPermission}'`
     );
+    this.commandName = commandName;
+    this.entityName = entityName;
+    this.userRole = userRole;
+    this.requiredPermission = requiredPermission;
     this.name = "PermissionDeniedError";
   }
 }
 
 export class AIApprovalRequiredError extends Error {
-  constructor(
-    public commandName: string,
-    public entityName: string | undefined
-  ) {
+  public commandName: string;
+  public entityName: string | undefined;
+
+  constructor(commandName: string, entityName: string | undefined) {
     super(
       `AI approval required: Command '${commandName}'` +
         (entityName ? ` on entity '${entityName}'` : "") +
         ` requires 'settings.ai_approve' permission`
     );
+    this.commandName = commandName;
+    this.entityName = entityName;
     this.name = "AIApprovalRequiredError";
   }
 }

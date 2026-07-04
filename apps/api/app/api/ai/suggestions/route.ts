@@ -392,8 +392,12 @@ Generate ${maxSuggestions} prioritized suggestions based on this state.`;
     const suggestions: SuggestedAction[] = (
       (aiResponse.suggestions as AiSuggestion[]) || []
     ).map((s, index) => {
-      const config =
-        SUGGESTION_TYPES[s.suggestionType] || SUGGESTION_TYPES.optimization;
+      const config = SUGGESTION_TYPES[s.suggestionType] ||
+        SUGGESTION_TYPES.optimization || {
+          type: "optimization" as SuggestionType,
+          defaultCategory: "general" as SuggestionCategory,
+          defaultPriority: "low" as SuggestionPriority,
+        };
 
       return {
         id: `suggestion-${Date.now()}-${index}`,

@@ -143,7 +143,6 @@ function IngredientRowItem({
   onMoveDown,
   onSearchIngredients,
   onSearchRecipes,
-  isSearching,
 }: {
   ingredient: IngredientRow;
   index: number;
@@ -382,7 +381,6 @@ function IngredientRowItem({
                 <Button
                   className="h-9 w-9"
                   onClick={() => {
-                    const _newIng = { ...ingredient, id: `copy-${Date.now()}` };
                     // This will be handled by parent component
                   }}
                   size="icon"
@@ -528,7 +526,11 @@ export function RichRecipeEditor({
     value: string | boolean
   ) => {
     const updated = [...ingredients];
-    updated[index] = { ...updated[index], [field]: value };
+    const current = updated[index];
+    if (!current) {
+      return;
+    }
+    updated[index] = { ...current, [field]: value };
     setIngredients(updated);
   };
 
@@ -538,20 +540,15 @@ export function RichRecipeEditor({
       return;
     }
     const updated = [...ingredients];
-    [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
+    const a = updated[index];
+    const b = updated[newIndex];
+    if (!(a && b)) {
+      return;
+    }
+    [updated[index], updated[newIndex]] = [b, a];
     // Update sort orders
     updated.forEach((ing, idx) => ({ ...ing, sortOrder: idx }));
     setIngredients(updated);
-  };
-
-  const _handleDuplicateIngredient = (index: number) => {
-    const original = ingredients[index];
-    const duplicate = {
-      ...original,
-      id: `copy-${Date.now()}`,
-      sortOrder: ingredients.length,
-    };
-    setIngredients([...ingredients, duplicate]);
   };
 
   const handleScale = (factor: number) => {

@@ -21,7 +21,7 @@
 
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
-import { createRateLimiter, slidingWindow } from "@repo/rate-limit";
+import { createRateLimiter, slidingWindow } from "@repo/rate-limit"
 import { NextResponse } from "next/server";
 
 // ============================================================================
@@ -87,14 +87,6 @@ const WINDOW_PARSERS: Record<string, (value: number) => number> = {
   d: (v) => v * 24 * 60 * 60 * 1000,
 };
 
-// Window string unit names for Duration format
-const _WINDOW_UNITS: Record<string, string> = {
-  s: "s",
-  m: "m",
-  h: "h",
-  d: "d",
-};
-
 /**
  * Duration type from @upstash/ratelimit
  * Format: "${number} ${unit}" or "${number}${unit}"
@@ -137,6 +129,11 @@ function parseWindow(window: string): number {
     );
   }
   const [, value, unit] = match;
+  if (!(value && unit)) {
+    throw new Error(
+      `Invalid window format: ${window}. Use format like "1m", "1h", "1d"`
+    );
+  }
   const parser = WINDOW_PARSERS[unit];
   if (!parser) {
     throw new Error(`Unknown time unit: ${unit}`);
@@ -383,7 +380,6 @@ export async function checkRateLimit(
 
   // Check rate limit
   const key = `${endpoint}:${identifier}`;
-  const _startTime = Date.now();
 
   try {
     const { success, remaining, reset } = await rateLimiter.limit(key);

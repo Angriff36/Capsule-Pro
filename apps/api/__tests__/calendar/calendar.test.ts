@@ -49,7 +49,7 @@ vi.mock("@/app/lib/tenant", () => ({
 }));
 vi.mock("@/app/lib/invariant", () => ({
   InvariantError: class extends Error {
-    name = "InvariantError";
+    override name = "InvariantError";
   },
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
@@ -596,7 +596,7 @@ describe("GET /api/calendar", () => {
     await GET(req);
 
     expect(mockEventFindMany).toHaveBeenCalledTimes(1);
-    const call = mockEventFindMany.mock.calls[0][0];
+    const call = mockEventFindMany.mock.calls[0]![0];
     expect(call.where.tenantId).toBe(TEST_TENANT_ID);
     expect(call.where.deletedAt).toBeNull();
     expect(call.where.eventDate.gte).toBeInstanceOf(Date);
@@ -612,9 +612,16 @@ describe("PATCH /api/calendar/reschedule", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     makeAuthedUser();
+    // Freeze the clock so the route's past-date guard is deterministic:
+    // the reschedule cases use 2026-06-15 / 2026-06-20 as *future* dates and
+    // 2020-01-01 as a *past* date relative to this fixed "now". Without a fixed
+    // clock these tests rot once the real date passes 2026-06-15.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-01T08:00:00.000Z"));
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -831,7 +838,7 @@ describe("PATCH /api/calendar/reschedule", () => {
         }),
       })
     );
-    const callBody = vi.mocked(runManifestCommand).mock.calls[0][0]
+    const callBody = vi.mocked(runManifestCommand).mock.calls[0]![0]
       .body as Record<string, unknown>;
     const newStart = callBody.shiftStart as number;
     const newEnd = callBody.shiftEnd as number;

@@ -22,6 +22,32 @@ entity Container mixin TenantScoped, SoftDeletable {
   computed hasPortionCapacity: boolean = self.capacityPortions > 0
   computed hasAnyCapacity: boolean = self.capacityVolumeMl > 0 or self.capacityWeightG > 0 or self.capacityPortions > 0
   computed isDeactivated: boolean = self.isActive == false
+  // Dish-load rollups over this container's hasMany `dishes` back-relation (the
+  // Dishes that name this Container as their defaultContainer). Both FILTER on a
+  // Dish lifecycle boolean to isolate a single facet:
+  //   activeDishCount    = how many ACTIVE catalog dishes default to this
+  //                        container (utilization signal — which containers the
+  //                        live menu actually leans on);
+  //   eightySixDishCount = how many of this container's dishes are currently
+  //                        86'd / pulled from service (operational signal — a
+  //                        spike means this container's menu items are heavily
+  //                        out right now).
+  // The two facets are intentionally distinct, not subset-of-each-other: a Dish
+  // can be an active catalog item AND temporarily 86'd (isAvailable = isActive
+  // and isEightySix == false). The FILTER is the meaning — drop it and
+  // activeDishCount would tally EVERY dish (incl. deactivated/soft-pulled),
+  // turning a live-menu signal into a meaningless lifetime total; flip the
+  // boolean and the rollup silently reports the opposite facet with no compile
+  // error. The container-aggregate-computeds regression test locks the
+  // relationship + predicate property + literal + shape.
+  // NO money leg by design: Dish.pricePerPerson is a per-guest menu price, not a
+  // cost attributable to a plating container — summing it across a container's
+  // dishes would invent a financial number with no real meaning (unlike the
+  // StorageLocation/Equipment/Vehicle children, which carry a genuine per-parent
+  // money facet). IR-only computeds (no stored column, no migration);
+  // request-cached like the Equipment/Vehicle/StorageLocation/Lead precedent.
+  computed activeDishCount: int = count_of(filter(self.dishes, (d) => d.isActive == true)) cache request
+  computed eightySixDishCount: int = count_of(filter(self.dishes, (d) => d.isEightySix == true)) cache request
 
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
 

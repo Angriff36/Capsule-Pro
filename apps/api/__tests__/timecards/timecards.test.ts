@@ -16,7 +16,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // vi.mock factories are hoisted above imports, so we use vi.hoisted() to
 // create the mock database and model stubs at hoist time.
 // ---------------------------------------------------------------------------
-const { modelStubs, mockDatabase } = vi.hoisted(() => {
+const { mockDatabase } = vi.hoisted(() => {
   function createModelStub() {
     return {
       findMany: vi.fn(() => Promise.resolve([])),
@@ -157,17 +157,18 @@ import { GET as listTimeOffRequests } from "@/app/api/timecards/time-off-request
 
 // Convenience accessors through the Proxy (auto-creates stubs on first access)
 const db = {
+  // The Proxy auto-creates a stub on first access, so these are never undefined.
   get timeEntry() {
-    return mockDatabase.timeEntry;
+    return mockDatabase.timeEntry!;
   },
   get timecardEditRequest() {
-    return mockDatabase.timecardEditRequest;
+    return mockDatabase.timecardEditRequest!;
   },
   get timeOffRequest() {
-    return mockDatabase.timeOffRequest;
+    return mockDatabase.timeOffRequest!;
   },
   get user() {
-    return mockDatabase.user;
+    return mockDatabase.user!;
   },
 };
 
@@ -227,16 +228,6 @@ function createMockTimeOffRequest(overrides: Record<string, unknown> = {}) {
     deletedAt: null,
     createdAt: new Date("2026-04-28T10:00:00Z"),
     updatedAt: new Date("2026-04-28T10:00:00Z"),
-    ...overrides,
-  };
-}
-
-function _createMockUser(overrides: Record<string, unknown> = {}) {
-  return {
-    id: TEST_USER_ID,
-    tenantId: TEST_TENANT_ID,
-    role: "admin",
-    authUserId: "clerk-timecard-test",
     ...overrides,
   };
 }

@@ -67,6 +67,9 @@ export async function setupEventCompletely(
   }
 
   const event = events[0];
+  if (!event) {
+    throw new Error(`Event not found: ${eventId}`);
+  }
 
   // ── Result builder ───────────────────────────────────────────────────
 
@@ -102,14 +105,15 @@ export async function setupEventCompletely(
          ORDER BY created_at DESC
          LIMIT 1`;
 
-      if (clients.length > 0) {
+      const client = clients[0];
+      if (client) {
         await database.$executeRaw`UPDATE tenant_events.events
-           SET client_id = ${clients[0].id}::uuid, updated_at = NOW()
+           SET client_id = ${client.id}::uuid, updated_at = NOW()
            WHERE tenant_id = ${tenantId}::uuid AND id = ${eventId}::uuid`;
         result.steps.clientAssigned = {
           completed: true,
           skipped: false,
-          detail: `Assigned client: ${clients[0].company_name}`,
+          detail: `Assigned client: ${client.company_name}`,
         };
       } else {
         result.steps.clientAssigned = {
@@ -173,11 +177,12 @@ export async function setupEventCompletely(
        FROM tenant_events.event_dishes
        WHERE tenant_id = ${tenantId}::uuid AND event_id = ${eventId}::uuid AND deleted_at IS NULL`;
 
-    if (Number(existingDishes[0].cnt) > 0) {
+    const existingDishCount = existingDishes[0]?.cnt ?? 0n;
+    if (Number(existingDishCount) > 0) {
       result.steps.dishesAdded = {
         completed: true,
         skipped: true,
-        detail: `${existingDishes[0].cnt} dish(es) already configured`,
+        detail: `${existingDishCount} dish(es) already configured`,
       };
     } else {
       // Pick up to 3 active dishes
@@ -243,11 +248,12 @@ export async function setupEventCompletely(
        FROM tenant_events.event_staff
        WHERE "tenantId" = ${tenantId}::text AND "eventId" = ${eventId}::text AND "deletedAt" IS NULL`;
 
-    if (Number(existingStaff[0].cnt) > 0) {
+    const existingStaffCount = existingStaff[0]?.cnt ?? 0n;
+    if (Number(existingStaffCount) > 0) {
       result.steps.staffAssigned = {
         completed: true,
         skipped: true,
-        detail: `${existingStaff[0].cnt} staff already assigned`,
+        detail: `${existingStaffCount} staff already assigned`,
       };
     } else {
       const employees = await database.$queryRaw<
@@ -340,7 +346,7 @@ export async function setupEventCompletely(
        FROM tenant_kitchen.prep_lists
        WHERE tenant_id = ${tenantId}::uuid AND event_id = ${eventId}::uuid`;
 
-    if (Number(existingPrepLists[0].cnt) > 0) {
+    if (Number(existingPrepLists[0]?.cnt ?? 0n) > 0) {
       result.steps.prepListGenerated = {
         completed: true,
         skipped: true,
@@ -391,7 +397,7 @@ export async function setupEventCompletely(
        FROM tenant_events.event_contracts
        WHERE tenant_id = ${tenantId}::uuid AND event_id = ${eventId}::uuid AND deleted_at IS NULL`;
 
-    if (Number(existingContracts[0].cnt) > 0) {
+    if (Number(existingContracts[0]?.cnt ?? 0n) > 0) {
       result.steps.contractCreated = {
         completed: true,
         skipped: true,
@@ -436,7 +442,7 @@ export async function setupEventCompletely(
        FROM tenant_events.event_budgets
        WHERE tenant_id = ${tenantId}::uuid AND event_id = ${eventId}::uuid AND deleted_at IS NULL`;
 
-    if (Number(existingBudgets[0].cnt) > 0) {
+    if (Number(existingBudgets[0]?.cnt ?? 0n) > 0) {
       result.steps.budgetCreated = {
         completed: true,
         skipped: true,

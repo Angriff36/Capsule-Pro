@@ -145,7 +145,6 @@ export async function GET(request: NextRequest) {
     ]);
 
     const totalRevenue = Number(revenueInvoices._sum.total ?? 0);
-    const _amountPaid = Number(revenueInvoices._sum.amountPaid ?? 0);
     const amountDue = Number(revenueInvoices._sum.amountDue ?? 0);
     const taxAmount = Number(revenueInvoices._sum.taxAmount ?? 0);
     const voidedTotal = Number(voidedInvoices._sum.total ?? 0);

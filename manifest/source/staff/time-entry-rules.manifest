@@ -24,6 +24,7 @@ entity TimeEntry mixin TenantScoped, SoftDeletable {
   relationship belongsTo shift: ScheduleShift fields [tenantId, shiftId] references [tenantId, id]
   relationship belongsTo employee: User with employeeId
   relationship belongsTo location: Facility with locationId
+  relationship hasMany editRequests: TimecardEditRequest
 
   default policy TimeEntryDefaultAccess execute: roleAllows(user.role, "manageAccess") "Time entry management"
   command clockIn(employeeId: string, locationId: string, shiftId: string, notes: string) {
@@ -154,7 +155,7 @@ entity TimecardEditRequest mixin TenantScoped, SoftDeletable {
   transition status from "pending" to ["approved", "rejected"]
 
   default policy TimecardEditRequestDefaultAccess execute: roleAllows(user.role, "manageAccess") "Time entry management"
-  command create(timeEntryId: string, employeeId: string, requestedClockIn: datetime, requestedClockOut: datetime, requestedBreakMinutes: number, reason: string) {
+  command create(optional timeEntryId: string, optional employeeId: string, requestedClockIn: datetime, requestedClockOut: datetime, requestedBreakMinutes: number, reason: string) {
     guard timeEntryId != null and timeEntryId != "" "Time entry ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard reason != null and reason != "" "Reason is required"

@@ -5,7 +5,7 @@
  */
 
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest"
 import { AmbientAnimation } from "./ambient-animation";
 
 describe("AmbientAnimation", () => {

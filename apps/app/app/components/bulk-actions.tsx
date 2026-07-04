@@ -15,7 +15,10 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { executeCommand } from "@/app/lib/manifest-client";
+import {
+  executeCommandBatch,
+  type ManifestBatchOperation,
+} from "@/app/lib/manifest-client";
 
 /** Checkbox-selection state for a list of stable string ids. */
 export function useBulkSelection(allIds: string[]) {
@@ -72,11 +75,10 @@ export interface BulkAction {
 
 /**
  * Floating bar shown when ≥1 item is selected. Each action dispatches its governed
- * command once per selected id, sequentially, then reports a success/failure summary.
- *
- * ponytail: sequential dispatch — one governed command per id, in order. Simple and
- * order-safe for the few-dozen-row selections this targets. If a selection ever spans
- * hundreds of rows, batch with a bounded Promise pool.
+ * command for every selected id as atomic batched transactions via the canonical
+ * batch endpoint (POST /api/manifest/batch) — one server transaction per chunk of
+ * MAX_BATCH_SIZE (50), so N selected rows cost ⌈N/50⌉ round-trips (was N) and each
+ * chunk commits atomically or rolls back together.
  */
 export function BulkActionBar({
   entity,
@@ -106,25 +108,31 @@ export function BulkActionBar({
       return;
     }
     setRunning(action.command);
-    let ok = 0;
-    const errors: string[] = [];
-    for (const id of selectedIds) {
-      try {
-        await executeCommand(entity, action.command, { id, ...action.body });
-        ok += 1;
-      } catch (err) {
-        errors.push(err instanceof Error ? err.message : String(err));
+    // Chunk at the server's MAX_BATCH_SIZE (50): each chunk is one atomic
+    // transaction (POST /api/manifest/batch) — all ops in the chunk commit or
+    // the chunk rolls back. N round-trips collapses to ⌈N/50⌉.
+    const CHUNK_SIZE = 50;
+    const operations: ManifestBatchOperation[] = selectedIds.map((id) => ({
+      entity,
+      command: action.command,
+      params: { id, ...action.body },
+    }));
+    let done = 0;
+    try {
+      for (let i = 0; i < operations.length; i += CHUNK_SIZE) {
+        const results = await executeCommandBatch(
+          operations.slice(i, i + CHUNK_SIZE)
+        );
+        done += results.length;
       }
+      toast.success(`${action.label}: ${done} of ${count} succeeded`);
+      onClear();
+      onDone?.();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    } finally {
+      setRunning(null);
     }
-    setRunning(null);
-    if (ok > 0) {
-      toast.success(`${action.label}: ${ok} of ${count} succeeded`);
-    }
-    if (errors.length > 0) {
-      toast.error(`${errors.length} failed — ${errors[0]}`);
-    }
-    onClear();
-    onDone?.();
   };
 
   return (

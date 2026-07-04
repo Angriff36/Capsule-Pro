@@ -48,7 +48,7 @@ async function buildSystemUserContext(
  * Get proposal draft by magic token (no auth required)
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Params }
 ) {
   try {

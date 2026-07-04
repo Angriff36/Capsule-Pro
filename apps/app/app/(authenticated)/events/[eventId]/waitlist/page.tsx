@@ -478,8 +478,11 @@ export default function WaitlistPage() {
               </TableHeader>
               <TableBody>
                 {guests.map((guest) => {
-                  const cfg =
-                    STATUS_CONFIG[guest.rsvp_status] || STATUS_CONFIG.pending;
+                  const cfg = STATUS_CONFIG[guest.rsvp_status] ?? {
+                    label: "Pending",
+                    variant: "secondary" as const,
+                    color: "bg-muted/50 text-foreground",
+                  };
                   return (
                     <TableRow key={guest.id}>
                       <TableCell className="font-medium">

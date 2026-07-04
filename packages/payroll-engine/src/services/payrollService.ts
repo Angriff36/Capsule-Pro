@@ -273,8 +273,8 @@ export class PayrollService {
     startDate: Date,
     endDate: Date
   ): string {
-    const startStr = startDate.toISOString().split("T")[0];
-    const endStr = endDate.toISOString().split("T")[0];
+    const startStr = startDate.toISOString().split("T")[0]!;
+    const endStr = endDate.toISOString().split("T")[0]!;
     const combined = `${tenantId}:${startStr}:${endStr}`;
 
     // Simple hash for deterministic ID
@@ -353,7 +353,7 @@ export class InMemoryPayrollDataSource implements PayrollDataSource {
 
   async savePayrollRecords(records: PayrollRecord[]): Promise<void> {
     if (records.length > 0) {
-      this.records.set(records[0].periodId, records);
+      this.records.set(records[0]!.periodId, records);
     }
   }
 

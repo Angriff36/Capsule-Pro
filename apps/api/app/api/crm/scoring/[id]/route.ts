@@ -56,6 +56,9 @@ export async function PUT(
     }
 
     const current = existing[0];
+    if (!current) {
+      return NextResponse.json({ message: "Rule not found" }, { status: 404 });
+    }
 
     // Merge incoming values with current values (COALESCE semantics from old route)
     const mergedRuleName = rule_name ?? current.rule_name;

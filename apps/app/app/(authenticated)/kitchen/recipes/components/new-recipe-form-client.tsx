@@ -54,12 +54,14 @@ function parseIngredientsText(text: string): Array<{
     const match = trimmed.match(INGREDIENT_LINE_REGEX);
     if (match) {
       const [, qty, unit, name] = match;
-      return {
-        name: name.trim(),
-        quantity: Number.parseFloat(qty),
-        unit: unit || null,
-        sortOrder: idx,
-      };
+      if (name !== undefined) {
+        return {
+          name: name.trim(),
+          quantity: Number.parseFloat(qty ?? ""),
+          unit: unit || null,
+          sortOrder: idx,
+        };
+      }
     }
     return {
       name: trimmed,

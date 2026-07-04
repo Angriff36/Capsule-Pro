@@ -139,11 +139,6 @@ describe("Command Board Annotation Tests", () => {
         id: TEST_BOARD_ID,
       } as any);
 
-      const _annotationData = {
-        boardId: TEST_BOARD_ID,
-        annotationType: "connection",
-      };
-
       // Verify runtime was set up correctly
       expect(mockRuntime.runCommand).toBeDefined();
     });
@@ -332,7 +327,6 @@ describe("Command Board Annotation Tests", () => {
         lastName: "User",
       });
 
-      const _existingMetadata = { priority: "low", tags: ["a", "b"] };
       const newMetadata = { priority: "high", extra: "data" };
 
       const mockRuntime = {
@@ -550,7 +544,7 @@ describe("Command Board Annotation Tests", () => {
       mockAnnotation.findMany.mockResolvedValue(connectionAnnotations as any);
 
       // Filter by annotationType
-      expect(connectionAnnotations[0].annotationType).toBe("connection");
+      expect(connectionAnnotations[0]!.annotationType).toBe("connection");
     });
 
     it("should return empty array when no annotations exist", async () => {

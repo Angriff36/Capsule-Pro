@@ -1,0 +1,24 @@
+{
+  "task": "Create or update canonical decision documentation before making architecture-affecting changes.",
+  "repo_root": "C:\\projects\\capsule-pro",
+  "canonical_root": "C:\\projects\\capsule-pro\\canonical",
+  "rules": [
+    "Search canonical/ before changing features, routes, generators, Manifest behavior, app wiring, integrations, CI, auth, tenants, or data models.",
+    "Before adding any new entry, cd into canonical/ and run treex (it operates on cwd, ignores path args). Do not grep to check whether something already exists — a differently-named existing entry will not match and you will create a duplicate or misnamed unit.",
+    "If a matching canonical unit exists, obey Ryan Final Decision over current repo patterns.",
+    "If code disagrees with a final canonical decision, report drift instead of copying the drift.",
+    "If ambiguity exists, create or update the relevant canonical unit using canonical/_templates/canonical-unit.md.",
+    "Fill in all factual sections that can be proven from repo evidence.",
+    "Leave Ryan Final Decision as NEEDS-RYAN unless Ryan explicitly decided it.",
+    "Use UNKNOWN, NONE, or SOURCE REQUIRED instead of guessing.",
+    "Record practical options with real app impact.",
+    "Do not implement a second source of truth to work around uncertainty."
+  ],
+  "required_output": {
+    "canonical_files_created_or_updated": [],
+    "decisions_needed_from_ryan": [],
+    "repo_drift_found": [],
+    "safe_work_completed": [],
+    "blocked_work": []
+  }
+}

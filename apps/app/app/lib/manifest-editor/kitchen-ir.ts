@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import type { EntityDetail, EntityListItem } from "@repo/types/manifest-editor";
+import type { EntityDetail, EntityListItem } from "@repo/types/manifest-editor"
 
 type RawIrExpression = unknown;
 

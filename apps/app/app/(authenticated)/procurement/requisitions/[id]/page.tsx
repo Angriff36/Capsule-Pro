@@ -22,6 +22,7 @@ import { ArrowLeft, DollarSign, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { OperationalPageShell } from "../../../components/operational-page-shell";
 import { executeCommand } from "@/app/lib/manifest-client";
 import {
   getPurchaseRequisition,
@@ -169,33 +170,15 @@ export default function RequisitionDetailPage() {
   const actions = WORKFLOW_ACTIONS[requisition.status] || [];
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/procurement/requisitions">
-          <Button size="icon" variant="ghost">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="font-semibold text-2xl">
-              {requisition.requisitionNumber}
-            </h1>
-            <Badge className={config.color}>
-              <Icon className="mr-1 h-3 w-3" />
-              {config.label}
-            </Badge>
-            <Badge className={priorityConfig.color} variant="outline">
-              {priorityConfig.label}
-            </Badge>
-          </div>
-          <p className="text-muted-foreground">
-            {requisition.department || "No department"} &middot;{" "}
-            {formatDate(requisition.requestDate)}
-          </p>
-        </div>
-        <div className="flex gap-2">
+    <>
+    <OperationalPageShell
+      actions={
+        <>
+          <Link href="/procurement/requisitions">
+            <Button size="icon" variant="ghost">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </Link>
           {actions.map((action) => (
             <Button
               disabled={updating === action.command}
@@ -210,8 +193,23 @@ export default function RequisitionDetailPage() {
               {action.label}
             </Button>
           ))}
-        </div>
-      </div>
+        </>
+      }
+      description={`${requisition.department || "No department"} · ${formatDate(requisition.requestDate)}`}
+      eyebrow="Procurement / Requisitions"
+      title={
+        <span className="inline-flex items-center gap-3">
+          {requisition.requisitionNumber}
+          <Badge className={config.color}>
+            <Icon className="mr-1 h-3 w-3" />
+            {config.label}
+          </Badge>
+          <Badge className={priorityConfig.color} variant="outline">
+            {priorityConfig.label}
+          </Badge>
+        </span>
+      }
+    >
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -330,6 +328,8 @@ export default function RequisitionDetailPage() {
         </Card>
       )}
 
+      </OperationalPageShell>
+
       {/* Rejection Reason Dialog */}
       <Dialog
         onOpenChange={(open) => {
@@ -373,6 +373,6 @@ export default function RequisitionDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

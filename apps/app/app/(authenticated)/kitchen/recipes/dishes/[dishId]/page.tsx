@@ -105,10 +105,10 @@ export default async function DishDetailPage({
     `
   );
 
-  if (dishes.length === 0) {
+  const dish = dishes[0];
+  if (!dish) {
     return notFound();
   }
-  const dish = dishes[0];
 
   const margin =
     dish.price_per_person && dish.cost_per_person

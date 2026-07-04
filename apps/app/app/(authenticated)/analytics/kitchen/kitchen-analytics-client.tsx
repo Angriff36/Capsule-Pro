@@ -116,15 +116,6 @@ const AnalyticsKitchenPage = () => {
   const { stationThroughput, kitchenHealth, topPerformers, trends } = data;
 
   // Calculate summary stats
-  const totalStationLoad = stationThroughput.reduce(
-    (sum, s) => sum + s.load,
-    0
-  );
-  const _avgLoad =
-    stationThroughput.length > 0
-      ? Math.round(totalStationLoad / stationThroughput.length)
-      : 0;
-
   const avgCompletion =
     stationThroughput.length > 0
       ? Math.round(
@@ -398,7 +389,9 @@ const AnalyticsKitchenPage = () => {
               stationNames.forEach((name, index) => {
                 chartConfig[name] = {
                   label: name,
-                  color: chartColors[index % chartColors.length],
+                  color:
+                    chartColors[index % chartColors.length] ??
+                    "hsl(var(--chart-1))",
                 };
               });
 

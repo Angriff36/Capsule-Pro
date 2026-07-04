@@ -191,6 +191,7 @@ describe.skipIf(!(ENABLED && TENANT_ID))("flip durable smoke (real DB)", () => {
     it(`${entity}.create persists to the real typed table, not manifest_entity`, async () => {
       const meta = META[entity];
       expect(meta, `no metadata for ${entity}`).toBeTruthy();
+      if (!meta) throw new Error(`no metadata for ${entity}`);
 
       const runner = makeRunner(entity);
       const res = await runner.create(buildBody(meta));

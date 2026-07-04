@@ -295,7 +295,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       expect(Array.isArray(body.conflicts)).toBe(true);
       expect(body.conflicts).toHaveLength(1);
 
-      const conflict = (body.conflicts as Record<string, any>[])[0];
+      const conflict = (body.conflicts as Record<string, any>[])[0]!;
       expect(conflict).toHaveProperty("id");
       expect(conflict).toHaveProperty("type", "scheduling");
       expect(conflict).toHaveProperty("severity");
@@ -336,7 +336,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       expect(response.status).toBe(200);
       expect(Array.isArray(body.conflicts)).toBe(true);
 
-      const conflict = (body.conflicts as Record<string, any>[])[0];
+      const conflict = (body.conflicts as Record<string, any>[])[0]!;
       expect(conflict.type).toBe("inventory");
     });
 
@@ -368,7 +368,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       expect(response.status).toBe(200);
       expect(body.conflicts).toHaveLength(1);
 
-      const conflict = (body.conflicts as Record<string, any>[])[0];
+      const conflict = (body.conflicts as Record<string, any>[])[0]!;
       expect(conflict.type).toBe("venue");
       expect(conflict).toHaveProperty("resolutionOptions");
     });
@@ -401,7 +401,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       expect(response.status).toBe(200);
       expect(body.conflicts).toHaveLength(1);
 
-      const conflict = (body.conflicts as Record<string, any>[])[0];
+      const conflict = (body.conflicts as Record<string, any>[])[0]!;
       expect(conflict.type).toBe("equipment");
       expect(conflict).toHaveProperty("resolutionOptions");
       // Equipment conflict should have proper severity based on event_count
@@ -433,7 +433,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       expect(response.status).toBe(200);
       expect(body.conflicts).toHaveLength(1);
 
-      const conflict = (body.conflicts as Record<string, any>[])[0];
+      const conflict = (body.conflicts as Record<string, any>[])[0]!;
       expect(conflict.type).toBe("timeline");
       expect(conflict.severity).toBe("critical"); // priority <= 2 is critical
     });
@@ -465,7 +465,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       expect(response.status).toBe(200);
       expect(body.conflicts).toHaveLength(1);
 
-      const conflict = (body.conflicts as Record<string, any>[])[0];
+      const conflict = (body.conflicts as Record<string, any>[])[0]!;
       expect(conflict.type).toBe("financial");
       // marginVariance < -10 is critical
       expect(conflict.severity).toBe("critical");
@@ -544,8 +544,8 @@ describe("Conflict Detection API Route Stabilization", () => {
         message: string;
       }>;
       expect(warnings.length).toBeGreaterThan(0);
-      expect(warnings[0].detectorType).toBe("staff");
-      expect(warnings[0].message).toContain("Unable to check");
+      expect(warnings[0]!.detectorType).toBe("staff");
+      expect(warnings[0]!.message).toContain("Unable to check");
     });
 
     it("returns partial results with warnings for SQL syntax errors", async () => {
@@ -907,7 +907,7 @@ describe("Conflict Detection API Route Stabilization", () => {
 
       expect(response.status).toBe(200);
 
-      const conflict = (body.conflicts as Record<string, any>[])[0];
+      const conflict = (body.conflicts as Record<string, any>[])[0]!;
 
       // Required fields
       expect(typeof conflict.id).toBe("string");

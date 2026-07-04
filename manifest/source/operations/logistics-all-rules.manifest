@@ -39,9 +39,12 @@ entity Driver mixin TenantScoped, SoftDeletable {
   transition status from "available" to ["on_route", "off_duty", "inactive"]
   transition status from "on_route" to ["available", "off_duty", "inactive"]
   transition status from "off_duty" to ["available", "on_route", "inactive"]
+  // reactivate (guard admits "inactive") brings a removed driver back to "available";
+  // remove (guard self.status != "on_route", admits "inactive") is idempotent via the self-loop.
+  transition status from "inactive" to ["available", "inactive"]
 
   default policy DriverDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
-  command create(name: string, email: string, phone: string, licenseNumber: string, licenseExpiry: datetime, vehicleId: string, status: string, notes: string) {
+  command create(name: string, email: string, phone: string, licenseNumber: string, licenseExpiry: datetime, optional vehicleId: string, status: string, notes: string) {
     guard name != null and name != "" "Name is required"
 
     mutate name = name
@@ -129,6 +132,9 @@ entity Driver mixin TenantScoped, SoftDeletable {
   }
 
   relationship belongsTo vehicle: Vehicle with vehicleId
+  relationship hasMany deliveryRoutes: DeliveryRoute
+  relationship hasMany dispatches: LogisticsDispatch
+  relationship hasMany routes: LogisticsRoute
 
   store Driver in durable
 }
@@ -150,6 +156,17 @@ entity Vehicle mixin TenantScoped, SoftDeletable {
 
   computed isAvailable: boolean = self.status == "available"
   computed displayName: string = self.make + " " + self.model + (self.year > 0 ? " " + self.year : "")
+  // Fleet-utilization rollups over the Vehicle's route children (the hasMany
+  // routes back-relation). The FILTERS carry the business meaning — count ONLY
+  // in_progress routes (not planned/completed/cancelled) as the live workload on
+  // this vehicle right now, and sum ONLY completed routes' distance (not planned
+  // estimates that may still change) as lifetime distance actually driven. Drop
+  // or flip a predicate literal and the rollup silently reports the wrong number
+  // with no compile error; the vehicle-aggregate-computeds regression test locks
+  // the shape. IR-only computeds (no stored column, no migration); request-cached
+  // like the Equipment/Event/Client/Invoice/Lead precedent.
+  computed activeRouteCount: int = count_of(filter(self.routes, (r) => r.status == "in_progress")) cache request
+  computed completedRouteDistance: decimal = sum(filter(self.routes, (r) => r.status == "completed"), (r) => r.totalDistance) cache request
 
   constraint validStatus: self.status in ["available", "in_use", "maintenance", "out_of_service"] "Invalid vehicle status"
 
@@ -162,6 +179,7 @@ entity Vehicle mixin TenantScoped, SoftDeletable {
   // Back-relations (U11): inverse hasMany for children that belongTo Vehicle
   relationship hasMany routes: LogisticsRoute
   relationship hasMany dispatches: LogisticsDispatch
+  relationship hasMany drivers: Driver
 
   default policy VehicleDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
   command create(make: string, model: string, year: int, plateNumber: string, vin: string, capacityWeight: decimal, capacityVolume: decimal, fuelType: string, mileage: decimal, status: string, notes: string) {
@@ -283,10 +301,30 @@ entity LogisticsRoute mixin TenantScoped {
   computed isActive: boolean = self.status == "in_progress"
   computed isDelayed: boolean = self.delayMinutes > 0 and self.status == "in_progress"
 
+  // Route-execution rollups over the dispatch children (the hasMany dispatches
+  // back-relation). The FILTERS carry the business meaning — count the dispatches
+  // that reached a TERMINAL outcome, split by outcome: delivered = goods that made
+  // it to the venue on this route, failed = deliveries that fell over (breakdown,
+  // wrong address, access denied). The two facets read the SAME status property but
+  // DIFFERENT terminal literals, so neither is the other's restatement (delivered
+  // and failed are mutually exclusive ends; the remaining pending/assigned/in_transit
+  // states are still in flight and counted by neither). Count-only on purpose —
+  // LogisticsDispatch has no money/decimal field, so there is nothing to sum (the
+  // route's distance/duration live on the route itself, not the dispatch; summing a
+  // status would be meaningless, the Container/TrainingModule lesson). Drop or flip a
+  // literal and the rollup silently reports the wrong number with no compile error;
+  // the logistics-route-aggregate-computeds regression test locks the shape. IR-only
+  // computeds (no stored column, no migration); request-cached like the
+  // Vehicle/Container/TrainingModule precedent.
+  computed deliveredDispatchCount: int = count_of(filter(self.dispatches, (d) => d.status == "delivered")) cache request
+  computed failedDispatchCount: int = count_of(filter(self.dispatches, (d) => d.status == "failed")) cache request
+
   constraint validStatus: self.status in ["planned", "in_progress", "completed", "cancelled"] "Invalid route status"
 
   transition status from "planned" to ["in_progress", "cancelled"]
   transition status from "in_progress" to ["completed", "cancelled"]
+  transition status from "completed" to ["cancelled"]
+  transition status from "cancelled" to ["cancelled"]
 
   relationship belongsTo vehicle: Vehicle with vehicleId
   relationship belongsTo driver: Driver with driverId
@@ -295,7 +333,7 @@ entity LogisticsRoute mixin TenantScoped {
   relationship hasMany dispatches: LogisticsDispatch
 
   default policy LogisticsRouteDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
-  command create(name: string, vehicleId: string, driverId: string, scheduledDate: datetime, endTime: datetime, totalDistance: number, totalDuration: number, description: string) {
+  command create(name: string, optional vehicleId: string, optional driverId: string, scheduledDate: datetime, endTime: datetime, totalDistance: number, totalDuration: number, description: string) {
     guard name != null and name != "" "Route name is required"
 
     mutate name = name
@@ -421,8 +459,17 @@ entity LogisticsDispatch mixin TenantScoped {
   relationship belongsTo vehicle: Vehicle fields [tenantId, vehicleId] references [tenantId, id]
 
   transition status from "pending" to ["assigned"]
-  transition status from "assigned" to ["in_transit", "pending"]
+  // "assigned" self-loop: reassign re-writes an already-assigned dispatch to a
+  // new driver/vehicle (mutate status = "assigned"). The engine validates every
+  // status mutation, incl. no-op self-transitions (notes.md §21), so without the
+  // self-loop reassign silently dropped the whole update — the driver/vehicle
+  // change was lost. Mirrors invoice PARTIALLY_PAID / equipment active precedents.
+  transition status from "assigned" to ["in_transit", "pending", "assigned"]
   transition status from "in_transit" to ["delivered", "failed"]
+  // "failed" -> "assigned": reassign recovers a failed dispatch onto a new
+  // driver/vehicle (guarded by reassign). Without this edge a failed dispatch
+  // could never be reassigned — the recovery path was dead.
+  transition status from "failed" to ["assigned"]
 
   default policy LogisticsDispatchDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
   command assign(routeId: string, driverId: string, vehicleId: string, priority: string, estimatedDeliveryTime: datetime, notes: string) {

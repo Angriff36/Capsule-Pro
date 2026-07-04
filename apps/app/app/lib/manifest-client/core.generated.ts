@@ -216,7 +216,6 @@ export interface CallPlanningSessionFinalizeInput {
 export interface CallPlanningSessionStartInput {
   id?: string;
   sourceType?: string;
-  userId?: string;
 }
 export interface CallPlanningSessionUpdateTranscriptInput {
   id?: string;

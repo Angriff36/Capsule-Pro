@@ -37,6 +37,7 @@ import {
   Users,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 import { apiFetch } from "@/app/lib/api";
 import { logisticsDispatchAssign } from "@/app/lib/manifest-client.generated";
 
@@ -218,22 +219,18 @@ export default function DispatchPage() {
   const groupedRoutes = groupRoutesByStatus(data.routes);
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Dispatch Board
-          </h1>
-          <p className="text-muted-foreground">
-            Assign drivers to routes and track today&apos;s deliveries.
-          </p>
-        </div>
-        <Button onClick={loadData} variant="outline">
-          <Navigation className="mr-2 h-4 w-4" />
-          Refresh
-        </Button>
-      </div>
+    <>
+      <OperationalPageShell
+        actions={
+          <Button onClick={loadData} variant="outline">
+            <Navigation className="mr-2 h-4 w-4" />
+            Refresh
+          </Button>
+        }
+        description="Assign drivers to routes and track today's deliveries."
+        eyebrow="Logistics / Dispatch"
+        title="Dispatch board"
+      >
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -437,6 +434,8 @@ export default function DispatchPage() {
         </div>
       </div>
 
+      </OperationalPageShell>
+
       {/* Assign Dialog */}
       <Dialog onOpenChange={setShowAssignDialog} open={showAssignDialog}>
         <DialogContent className="max-w-md">
@@ -496,6 +495,6 @@ export default function DispatchPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

@@ -269,7 +269,7 @@ describe("GET /api/knowledge-base/entries/list", () => {
     await GET(req);
 
     expect(mockKbFindMany).toHaveBeenCalledTimes(1);
-    const where = mockKbFindMany.mock.calls[0][0].where;
+    const where = mockKbFindMany.mock.calls[0]![0].where;
     expect(where.category).toBe("hr");
     expect(where.tenantId).toBe(KB_TENANT_ID);
   });
@@ -281,7 +281,7 @@ describe("GET /api/knowledge-base/entries/list", () => {
     const req = makeGetRequest({ status: "published" });
     await GET(req);
 
-    const where = mockKbFindMany.mock.calls[0][0].where;
+    const where = mockKbFindMany.mock.calls[0]![0].where;
     expect(where.status).toBe("published");
   });
 
@@ -292,7 +292,7 @@ describe("GET /api/knowledge-base/entries/list", () => {
     const req = makeGetRequest({ tag: "onboarding" });
     await GET(req);
 
-    const where = mockKbFindMany.mock.calls[0][0].where;
+    const where = mockKbFindMany.mock.calls[0]![0].where;
     expect(where.tags).toEqual({ has: "onboarding" });
   });
 
@@ -303,7 +303,7 @@ describe("GET /api/knowledge-base/entries/list", () => {
     const req = makeGetRequest({ search: "welcome" });
     await GET(req);
 
-    const where = mockKbFindMany.mock.calls[0][0].where;
+    const where = mockKbFindMany.mock.calls[0]![0].where;
     expect(where.OR).toEqual([
       { title: { contains: "welcome", mode: "insensitive" } },
       { content: { contains: "welcome", mode: "insensitive" } },
@@ -321,7 +321,7 @@ describe("GET /api/knowledge-base/entries/list", () => {
     });
     await GET(req);
 
-    const where = mockKbFindMany.mock.calls[0][0].where;
+    const where = mockKbFindMany.mock.calls[0]![0].where;
     expect(where.category).toBe("hr");
     expect(where.status).toBe("published");
     expect(where.tags).toEqual({ has: "onboarding" });
@@ -334,7 +334,7 @@ describe("GET /api/knowledge-base/entries/list", () => {
     const req = makeGetRequest();
     await GET(req);
 
-    const where = mockKbFindMany.mock.calls[0][0].where;
+    const where = mockKbFindMany.mock.calls[0]![0].where;
     expect(where.category).toBeUndefined();
   });
 
@@ -347,7 +347,7 @@ describe("GET /api/knowledge-base/entries/list", () => {
     const req = makeGetRequest();
     await GET(req);
 
-    const call = mockKbFindMany.mock.calls[0][0];
+    const call = mockKbFindMany.mock.calls[0]![0];
     expect(call.take).toBe(50);
     expect(call.skip).toBe(0);
   });
@@ -359,7 +359,7 @@ describe("GET /api/knowledge-base/entries/list", () => {
     const req = makeGetRequest({ limit: "20", offset: "40" });
     await GET(req);
 
-    const call = mockKbFindMany.mock.calls[0][0];
+    const call = mockKbFindMany.mock.calls[0]![0];
     expect(call.take).toBe(20);
     expect(call.skip).toBe(40);
   });
@@ -371,7 +371,7 @@ describe("GET /api/knowledge-base/entries/list", () => {
     const req = makeGetRequest({ limit: "500" });
     await GET(req);
 
-    const call = mockKbFindMany.mock.calls[0][0];
+    const call = mockKbFindMany.mock.calls[0]![0];
     expect(call.take).toBe(200);
   });
 
@@ -382,7 +382,7 @@ describe("GET /api/knowledge-base/entries/list", () => {
     const req = makeGetRequest();
     await GET(req);
 
-    const call = mockKbFindMany.mock.calls[0][0];
+    const call = mockKbFindMany.mock.calls[0]![0];
     expect(call.orderBy).toEqual({ updatedAt: "desc" });
   });
 

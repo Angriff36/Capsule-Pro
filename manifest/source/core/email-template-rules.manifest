@@ -58,6 +58,10 @@ entity EmailTemplate mixin TenantScoped, SoftDeletable {
 
     emit EmailTemplateDeleted
   }
+
+  relationship hasMany emailWorkflows: EmailWorkflow
+  relationship hasMany smsAutomationRules: SmsAutomationRule
+
   store EmailTemplate in durable
 }
 

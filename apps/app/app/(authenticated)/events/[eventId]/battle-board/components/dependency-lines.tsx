@@ -18,7 +18,7 @@ const ROW_HEIGHT = 48;
 
 export function DependencyLines({
   tasks,
-  eventDate,
+  eventDate: _eventDate,
   showDependencies,
   zoom,
   taskPositions,

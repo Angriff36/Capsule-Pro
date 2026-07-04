@@ -24,7 +24,7 @@ function groupFilesByKind(
   for (let index = 0; index < files.length; index++) {
     const file = files[index];
     const detection = detections[index];
-    if (!detection) {
+    if (!(file && detection)) {
       continue;
     }
     const existing = groups.get(detection.kind) ?? [];
@@ -93,7 +93,7 @@ export function filterEventDocumentFiles(
   files: File[],
   detections: SmartImportDetection[]
 ): File[] {
-  return files.filter((file, index) => {
+  return files.filter((_file, index) => {
     const detection = detections[index];
     return detection?.kind === "event-document";
   });

@@ -96,7 +96,7 @@ const STATUS_CONFIG: Record<
 function getPhaseIndex(status: string): number {
   const normalized = status.toLowerCase();
   for (let i = WORKFLOW_PHASES.length - 1; i >= 0; i--) {
-    if (WORKFLOW_PHASES[i].key === normalized) {
+    if (WORKFLOW_PHASES[i]?.key === normalized) {
       return i;
     }
   }
@@ -206,6 +206,7 @@ export function WorkflowDetailClient({
       clearInterval(pollRef.current);
       pollRef.current = null;
     }
+    return undefined;
   }, [workflow?.parseStatus, loadWorkflow]);
 
   const handleCommand = async (command: "resume" | "retry" | "cancel") => {

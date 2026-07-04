@@ -464,8 +464,8 @@ export async function checkShiftAgainstAvailability(
   const isCovered = availableWindows.some((window) => {
     const [wStartH, wStartM] = window.start_time!.split(":").map(Number);
     const [wEndH, wEndM] = window.end_time!.split(":").map(Number);
-    const windowStart = wStartH * 60 + wStartM;
-    const windowEnd = wEndH * 60 + wEndM;
+    const windowStart = (wStartH ?? 0) * 60 + (wStartM ?? 0);
+    const windowEnd = (wEndH ?? 0) * 60 + (wEndM ?? 0);
     return shiftStartMinutes >= windowStart && shiftEndMinutes <= windowEnd;
   });
 

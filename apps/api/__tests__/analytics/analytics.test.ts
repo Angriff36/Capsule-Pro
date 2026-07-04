@@ -16,8 +16,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // --- Mocks ---
 
-vi.mock("@repo/database", () => ({
-  database: {
+vi.mock("@repo/database", () => {
+  const database = {
     $queryRaw: vi.fn(),
     budgetAlert: {
       findMany: vi.fn(),
@@ -31,8 +31,12 @@ vi.mock("@repo/database", () => ({
     user: {
       findFirst: vi.fn(),
     },
-  },
-}));
+  };
+  // The staff-summary route imports `analyticsDatabase` (read-replica client);
+  // in the real package it falls back to the primary connection, so it shares
+  // the same models/$queryRaw. Alias it to the same mock object.
+  return { database, analyticsDatabase: database };
+});
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({ getTenantIdForOrg: vi.fn() }));

@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-07-04T16:10:25.857Z",
+  "generatedAt": "2026-07-04T16:28:17.551Z",
   "basePath": "/api",
   "routes": [
     {
@@ -9770,12 +9770,6 @@
           "type": "string",
           "location": "body",
           "required": true
-        },
-        {
-          "name": "userId",
-          "type": "string",
-          "location": "body",
-          "required": true
         }
       ],
       "source": {
@@ -14578,7 +14572,7 @@
           "name": "vehicleId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "status",
@@ -23912,13 +23906,13 @@
           "name": "vehicleId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "driverId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "scheduledDate",
@@ -24203,7 +24197,7 @@
           "name": "equipmentId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "assignedTo",
@@ -35285,13 +35279,13 @@
           "name": "timeEntryId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "employeeId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "requestedClockIn",

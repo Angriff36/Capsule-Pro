@@ -52,7 +52,7 @@ interface OperationsSectionProps {
 }
 
 export function OperationsSection({
-  eventId,
+  eventId: _eventId,
   battleBoardHref,
   prepTasks,
   taskSummary,

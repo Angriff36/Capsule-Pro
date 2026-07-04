@@ -59,7 +59,7 @@ vi.mock("@/lib/manifest-response", () => ({
 }));
 vi.mock("@/app/lib/invariant", () => {
   class InvariantError extends Error {
-    name = "InvariantError" as const;
+    override name = "InvariantError" as const;
   }
   return { invariant: vi.fn(), InvariantError };
 });
@@ -297,7 +297,7 @@ describe("Recipes API", () => {
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(makeRequest("/api/kitchen/recipes?limit=999999") as Request);
 
-      const arg = vi.mocked(database.recipe.findMany).mock.calls[0][0] as {
+      const arg = vi.mocked(database.recipe.findMany).mock.calls[0]![0] as {
         take: number;
         skip: number;
       };
@@ -312,7 +312,7 @@ describe("Recipes API", () => {
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(makeRequest("/api/kitchen/recipes?limit=0") as Request);
 
-      const arg = vi.mocked(database.recipe.findMany).mock.calls[0][0] as {
+      const arg = vi.mocked(database.recipe.findMany).mock.calls[0]![0] as {
         take: number;
       };
       expect(arg.take).toBe(1);
@@ -325,7 +325,7 @@ describe("Recipes API", () => {
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(makeRequest("/api/kitchen/recipes?page=3&limit=10") as Request);
 
-      const arg = vi.mocked(database.recipe.findMany).mock.calls[0][0] as {
+      const arg = vi.mocked(database.recipe.findMany).mock.calls[0]![0] as {
         take: number;
         skip: number;
       };
@@ -384,7 +384,7 @@ describe("Recipes API", () => {
       expect(body.limit).toBe(50);
       expect(body.offset).toBe(0);
 
-      const arg = vi.mocked(database.recipe.findMany).mock.calls[0][0] as {
+      const arg = vi.mocked(database.recipe.findMany).mock.calls[0]![0] as {
         where: Record<string, unknown>;
         orderBy: Record<string, unknown>;
         take: number;
@@ -408,7 +408,7 @@ describe("Recipes API", () => {
       );
 
       expect(res.status).toBe(200);
-      const arg = vi.mocked(database.recipe.findMany).mock.calls[0][0] as {
+      const arg = vi.mocked(database.recipe.findMany).mock.calls[0]![0] as {
         take: number;
       };
       expect(arg.take).toBe(200);
@@ -467,7 +467,7 @@ describe("Recipes API", () => {
       expect(body.success).toBe(true);
       expect(body.recipe.id).toBe(TEST_RECIPE_ID);
 
-      const arg = vi.mocked(database.recipe.findFirst).mock.calls[0][0] as {
+      const arg = vi.mocked(database.recipe.findFirst).mock.calls[0]![0] as {
         where: Record<string, unknown>;
       };
       expect(arg.where).toEqual({

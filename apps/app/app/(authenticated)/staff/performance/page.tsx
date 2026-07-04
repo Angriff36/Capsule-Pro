@@ -33,6 +33,9 @@ import {
 } from "@repo/design-system/components/ui/tabs";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
+  OperationalPageShell,
+} from "../../components/operational-page-shell";
+import {
   AlertTriangle,
   Calendar,
   CheckCircle2,
@@ -301,20 +304,18 @@ export default function PerformancePageClient() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h1 className="font-semibold text-2xl tracking-tight">Performance</h1>
-          <p className="text-muted-foreground">
-            Track reviews, ratings, goals, and staff development.
-          </p>
-        </div>
-        <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Schedule Review
-        </Button>
-      </div>
+    <>
+      <OperationalPageShell
+        actions={
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Schedule Review
+          </Button>
+        }
+        description="Track reviews, ratings, goals, and staff development."
+        eyebrow="Staff / Performance"
+        title="Performance"
+      >
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -583,6 +584,7 @@ export default function PerformancePageClient() {
           )}
         </TabsContent>
       </Tabs>
+      </OperationalPageShell>
 
       {/* Create Review Dialog */}
       <Dialog onOpenChange={setShowCreateDialog} open={showCreateDialog}>
@@ -771,6 +773,6 @@ export default function PerformancePageClient() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

@@ -46,7 +46,7 @@ let commandRecords: SmokeCommandRecord[] = [];
 
 const SMOKE_USER = {
   id: "smoke-admin",
-  tenantId: getSmokeFixtureIds().tenantId,
+  tenantId: getSmokeFixtureIds().tenantId!,
   role: "admin",
 } as const;
 

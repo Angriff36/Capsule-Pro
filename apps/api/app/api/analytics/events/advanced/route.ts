@@ -1,5 +1,7 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+// OLAP reads route to the read replica; the account provisioning write below
+// stays on the primary `database` (a read replica rejects writes).
+import { analyticsDatabase, database } from "@repo/database";
 import { NextResponse } from "next/server";
 
 async function getTenantIdForOrg(orgId: string): Promise<string> {
@@ -105,7 +107,7 @@ export async function GET(request: Request) {
 
     // Fetch all necessary data in parallel queries
     const [events, profitabilityData] = await Promise.all([
-      database.$queryRawUnsafe<
+      analyticsDatabase.$queryRawUnsafe<
         Array<{
           id: string;
           event_type: string;
@@ -138,7 +140,7 @@ export async function GET(request: Request) {
         tenantId,
         months
       ),
-      database.$queryRawUnsafe<
+      analyticsDatabase.$queryRawUnsafe<
         Array<{
           event_id: string;
           actual_revenue: string;
@@ -171,7 +173,7 @@ export async function GET(request: Request) {
 
     const clients =
       clientIds.length > 0
-        ? await database.$queryRawUnsafe<
+        ? await analyticsDatabase.$queryRawUnsafe<
             Array<{
               id: string;
               company_name: string | null;
@@ -392,7 +394,7 @@ export async function GET(request: Request) {
 
     // For menu items, we need to query dishes and their usage
     // Since we don't have direct event-dish relationship, we'll use venue/dish popularity as proxy
-    const topDishes = await database.$queryRawUnsafe<
+    const topDishes = await analyticsDatabase.$queryRawUnsafe<
       Array<{
         dish_id: string;
         dish_name: string;

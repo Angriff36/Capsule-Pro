@@ -4,6 +4,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../../../lib/tenant";
+import { OperationalPageShell } from "../../../../components/operational-page-shell";
 import { Header } from "../../../../components/header";
 import { NewDishForm } from "../../components/new-dish-form-client";
 
@@ -33,9 +34,14 @@ const NewDishPage = async () => {
           <Link href="/kitchen/recipes?tab=dishes">Back to dishes</Link>
         </Button>
       </Header>
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+      <OperationalPageShell
+        description="Create a new dish for menus and events."
+        eyebrow="Kitchen / Dishes"
+        title="New dish"
+        withCanvas={false}
+      >
         <NewDishForm recipes={recipes} />
-      </div>
+      </OperationalPageShell>
     </>
   );
 };

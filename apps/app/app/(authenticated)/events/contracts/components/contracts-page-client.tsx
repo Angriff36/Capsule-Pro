@@ -140,7 +140,7 @@ export const ContractsPageClient = ({
   uniqueStatuses,
   uniqueClients,
   uniqueDocumentTypes,
-  tenantId,
+  tenantId: _tenantId,
 }: ContractsPageClientProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");

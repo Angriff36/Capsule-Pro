@@ -18,6 +18,7 @@ import {
 import { DollarSign, Eye, FileText, Loader2, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 import { listPurchaseOrders } from "@/app/lib/manifest-client.generated";
 import {
   formatCurrency,
@@ -84,23 +85,19 @@ export default function PurchaseOrdersPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Purchase Orders
-          </h1>
-          <p className="text-muted-foreground">
-            Track and manage purchase orders for your operation.
-          </p>
-        </div>
+    <OperationalPageShell
+      actions={
         <Link href="/procurement/purchase-orders/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
             New Purchase Order
           </Button>
         </Link>
-      </div>
+      }
+      description="Track and manage purchase orders for your operation."
+      eyebrow="Procurement / Purchase orders"
+      title="Purchase orders"
+    >
 
       {/* Summary */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -247,6 +244,6 @@ export default function PurchaseOrdersPage() {
           )}
         </TabsContent>
       </Tabs>
-    </div>
+    </OperationalPageShell>
   );
 }

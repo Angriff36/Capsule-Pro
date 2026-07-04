@@ -17,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   AlertTriangle,
   CheckCircle,
@@ -30,6 +29,10 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
+import {
+  OperationalPageShell,
+  OperationalSection,
+} from "../../components/operational-page-shell";
 import {
   completePurchaseOrderReceiving,
   type DiscrepancyType,
@@ -241,17 +244,8 @@ export default function ReceivingPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      {/* Page Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-0.5">
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Warehouse Receiving
-          </h1>
-          <p className="text-muted-foreground">
-            Scan items, log receipts, and update stock levels
-          </p>
-        </div>
+    <OperationalPageShell
+      actions={
         <div className="flex gap-2">
           <Button asChild className="gap-2" variant="outline">
             <Link href="/warehouse/receiving/reports">
@@ -266,15 +260,12 @@ export default function ReceivingPage() {
             </Link>
           </Button>
         </div>
-      </div>
-
-      <Separator />
-
-      {/* Purchase Order Lookup Section */}
-      <section className="space-y-4">
-        <h2 className="font-medium text-muted-foreground text-sm">
-          Purchase Order Lookup
-        </h2>
+      }
+      description="Scan items, log receipts, and update stock levels."
+      eyebrow="Warehouse / Receiving"
+      title="Warehouse receiving"
+    >
+      <OperationalSection title="Purchase order lookup">
         <Card tone="canvas">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -315,7 +306,7 @@ export default function ReceivingPage() {
             </div>
           </CardContent>
         </Card>
-      </section>
+      </OperationalSection>
 
       {selectedPO && (
         <section className="space-y-4">
@@ -614,6 +605,6 @@ export default function ReceivingPage() {
           </div>
         </section>
       )}
-    </div>
+    </OperationalPageShell>
   );
 }

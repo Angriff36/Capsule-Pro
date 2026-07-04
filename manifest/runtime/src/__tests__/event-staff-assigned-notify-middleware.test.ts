@@ -207,7 +207,7 @@ describe("Middleware conformance: EventStaffAssigned → Notification for the as
     // one notification, addressed to the assigned staff member.
     const notifications = await notificationsOf(provider);
     expect(notifications).toHaveLength(1);
-    const notification = notifications[0];
+    const notification = notifications[0]!;
     expect(notification.recipientEmployeeId).toBe(STAFF_ID);
     expect(notification.tenantId).toBe(TENANT);
     expect(notification.notificationType).toBe("event_staff_assigned");
@@ -242,10 +242,11 @@ describe("Middleware conformance: EventStaffAssigned → Notification for the as
 
     const notifications = await notificationsOf(provider);
     expect(notifications).toHaveLength(1);
-    expect(notifications[0].recipientEmployeeId).toBe(STAFF_ID);
+    const notification = notifications[0]!;
+    expect(notification.recipientEmployeeId).toBe(STAFF_ID);
     // Generic fallback title (no event name available), still a valid non-empty title.
-    expect(String(notifications[0].title).length).toBeGreaterThan(0);
-    expect(notifications[0].correlationId).toBe("event-missing-999");
+    expect(String(notification.title).length).toBeGreaterThan(0);
+    expect(notification.correlationId).toBe("event-missing-999");
   });
 
   it("notifies each distinct assignment's own staff member", async () => {

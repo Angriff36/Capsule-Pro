@@ -7,6 +7,7 @@
  */
 
 import { invariant } from "@/app/lib/invariant";
+import { isPlainRecord } from "@/app/lib/is-record";
 import type {
   CreateVenueInput,
   UpdateVenueInput,
@@ -24,10 +25,6 @@ const VENUE_TYPES: readonly VenueType[] = [
   "other",
 ];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
 
 function isVenueType(value: unknown): value is VenueType {
   return typeof value === "string" && VENUE_TYPES.includes(value as VenueType);
@@ -112,7 +109,7 @@ function validateOptionalJson(
 export function validateCreateVenueRequest(
   body: unknown
 ): asserts body is CreateVenueInput {
-  invariant(isRecord(body), "Request body must be an object");
+  invariant(isPlainRecord(body), "Request body must be an object");
 
   invariant(
     typeof body.name === "string",
@@ -156,7 +153,7 @@ export function validateCreateVenueRequest(
 export function validateUpdateVenueRequest(
   body: unknown
 ): asserts body is UpdateVenueInput {
-  invariant(isRecord(body), "Request body must be an object");
+  invariant(isPlainRecord(body), "Request body must be an object");
 
   if (body.name !== undefined) {
     invariant(typeof body.name === "string", "name must be a string");

@@ -41,6 +41,11 @@ import {
 import { createManifestRuntimeLogger } from "@/lib/manifest/manifest-runtime-log";
 import type { RuntimeEngine } from "@angriff36/manifest";
 
+// This route builds the Manifest runtime (createManifestRuntime), which depends
+// on Node-only APIs (Prisma, node:crypto). Pin it to the Node.js runtime so it
+// never gets bundled for the Edge runtime. Enforced by
+// manifest-runtime-node.invariant.test.ts.
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 

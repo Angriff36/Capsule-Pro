@@ -162,7 +162,7 @@ function DateNavigator({
 
 function StatsSidebar({
   totalTasks,
-  pendingTasks,
+  pendingTasks: _pendingTasks,
   inProgressTasks,
   completedTasks,
   myTasks,
@@ -381,7 +381,6 @@ export function ProductionBoardClient({
     router.push("/kitchen/tasks/new");
   }, [router]);
 
-  const _currentStation = STATIONS.find((s) => s.id === selectedStation);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-canvas">

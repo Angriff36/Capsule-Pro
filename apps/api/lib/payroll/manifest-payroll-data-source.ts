@@ -125,11 +125,12 @@ export class ManifestPayrollDataSource extends PrismaPayrollDataSource {
    * Maps to PayrollRun.create → PayrollRun.process → loop PayrollLineItem.create.
    */
   override async savePayrollRecords(records: PayrollRecord[]): Promise<void> {
-    if (records.length === 0) {
+    const firstRecord = records[0];
+    if (!firstRecord) {
       return;
     }
 
-    const periodId = records[0].periodId;
+    const periodId = firstRecord.periodId;
 
     // Aggregate totals across all records
     const summary = records.reduce(

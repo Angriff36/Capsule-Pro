@@ -146,8 +146,8 @@ describe("Conflict Detection API - Correlation ID", () => {
       const infoCalls = mockLog.info.mock.calls;
       expect(infoCalls.length).toBe(2); // start and completion
 
-      const startLog = infoCalls[0];
-      const completionLog = infoCalls[1];
+      const startLog = infoCalls[0]!;
+      const completionLog = infoCalls[1]!;
 
       expect(startLog[1]).toHaveProperty("correlationId");
       expect(completionLog[1]).toHaveProperty("correlationId");
@@ -255,7 +255,6 @@ describe("Conflict Detection API - Correlation ID", () => {
       });
 
       const response = await POST(request);
-      const _body = (await response.json()) as Record<string, unknown>;
 
       // Response header should have the same correlation ID
       expect(response.headers.get("x-correlation-id")).toBe(

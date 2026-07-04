@@ -374,8 +374,8 @@ describe("Deductions", () => {
     );
 
     expect(result.preTaxDeductions).toHaveLength(1);
-    expect(result.preTaxDeductions[0].amount).toBe(200);
-    expect(result.preTaxDeductions[0].name).toBe("Health Insurance");
+    expect(result.preTaxDeductions[0]!.amount).toBe(200);
+    expect(result.preTaxDeductions[0]!.name).toBe("Health Insurance");
   });
 
   it("should apply percentage deductions", () => {
@@ -409,7 +409,7 @@ describe("Deductions", () => {
     );
 
     expect(result.preTaxDeductions).toHaveLength(1);
-    expect(result.preTaxDeductions[0].amount).toBe(60); // 6% of 1000
+    expect(result.preTaxDeductions[0]!.amount).toBe(60); // 6% of 1000
   });
 
   it("should separate pre-tax and post-tax deductions", () => {
@@ -455,9 +455,9 @@ describe("Deductions", () => {
     );
 
     expect(result.preTaxDeductions).toHaveLength(1);
-    expect(result.preTaxDeductions[0].amount).toBe(100);
+    expect(result.preTaxDeductions[0]!.amount).toBe(100);
     expect(result.postTaxDeductions).toHaveLength(1);
-    expect(result.postTaxDeductions[0].amount).toBe(50);
+    expect(result.postTaxDeductions[0]!.amount).toBe(50);
   });
 });
 
@@ -687,13 +687,13 @@ describe("Payroll balance verification", () => {
   it("should validate that gross - taxes - deductions = net", () => {
     const employees = [createTestEmployee()];
     const roles = [createTestRole({ baseRate: 25 })];
-    const timeEntries = [createTestTimeEntry(employees[0].id, 40)];
+    const timeEntries = [createTestTimeEntry(employees[0]!.id, 40)];
 
     const deductions: Deduction[] = [
       {
         id: "ded1",
         tenantId: testTenantId,
-        employeeId: employees[0].id,
+        employeeId: employees[0]!.id,
         type: "health_insurance",
         name: "Health Insurance",
         amount: 100,
@@ -726,7 +726,7 @@ describe("Idempotency", () => {
   it("should generate same record ID for same period and employee", () => {
     const employees = [createTestEmployee()];
     const roles = [createTestRole()];
-    const timeEntries = [createTestTimeEntry(employees[0].id, 40)];
+    const timeEntries = [createTestTimeEntry(employees[0]!.id, 40)];
 
     const input: PayrollCalculationInput = {
       tenantId: testTenantId,
@@ -741,6 +741,6 @@ describe("Idempotency", () => {
     const result1 = calculatePayroll(input);
     const result2 = calculatePayroll(input);
 
-    expect(result1.records[0].id).toBe(result2.records[0].id);
+    expect(result1.records[0]!.id).toBe(result2.records[0]!.id);
   });
 });

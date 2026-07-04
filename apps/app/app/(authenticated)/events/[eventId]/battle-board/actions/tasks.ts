@@ -467,7 +467,8 @@ export async function addEventStaff(
     employeeId
   );
 
-  if (employee.length === 0) {
+  const employeeRow = employee[0];
+  if (!employeeRow) {
     throw new Error("Employee not found or inactive");
   }
 
@@ -505,7 +506,7 @@ export async function addEventStaff(
 
   return {
     success: true,
-    employeeName: `${employee[0].first_name} ${employee[0].last_name}`,
+    employeeName: `${employeeRow.first_name} ${employeeRow.last_name}`,
   };
 }
 

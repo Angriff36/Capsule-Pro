@@ -218,7 +218,6 @@ export async function GET(
     const url = new URL(request.url);
     const shouldDownload = url.searchParams.get("download") === "true";
     const {
-      _includeSummary,
       includeMenu,
       includeStaff,
       includeGuests,

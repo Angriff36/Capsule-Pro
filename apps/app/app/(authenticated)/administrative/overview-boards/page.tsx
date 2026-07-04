@@ -1,14 +1,35 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
+  CommandBand,
+  CommandBandActions,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricDelta,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  OperationalLine,
+  PageCanvas,
+  SectionHeader,
+  StatusPill,
+} from "@repo/design-system/components/blocks/page-shell";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
+import { ClipboardCheck } from "lucide-react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { getEventValidationStatus, getWeekDateRange } from "../lib/validation";
@@ -371,30 +392,28 @@ function buildBoardSnapshots(
   openShifts: number,
   budgetAlerts: number
 ) {
+  const eventDiff = eventIssuesLength - lastWeekIssues;
+
   return [
     {
-      title: "Event Response Board",
-      value: `${eventIssuesLength} event${eventIssuesLength === 1 ? "" : "s"} need review`,
-      trend: `${eventIssuesLength - lastWeekIssues >= 0 ? "+" : ""}${eventIssuesLength - lastWeekIssues} vs. last week`,
-      description: "Event readiness and staffing validations for the week.",
+      label: "Event Response",
+      value: eventIssuesLength,
+      delta: `${eventDiff >= 0 ? "+" : ""}${eventDiff} vs. last week · readiness & staffing`,
     },
     {
-      title: "Kitchen Throughput Board",
-      value: `${kitchenCompletionPct}% tasks complete`,
-      trend: `${kitchenPctDiff >= 0 ? "+" : ""}${kitchenPctDiff} pts vs. last week`,
-      description: "Prep list syncs, waste logs, and production progress.",
+      label: "Kitchen Throughput",
+      value: `${kitchenCompletionPct}%`,
+      delta: `${kitchenPctDiff >= 0 ? "+" : ""}${kitchenPctDiff} pts vs. last week · prep & production`,
     },
     {
-      title: "Scheduling Command Board",
-      value: `${openShifts} open shift${openShifts === 1 ? "" : "s"}`,
-      trend: "Live staffing gaps across locations",
-      description: "Coverage gaps based on open shift marketplace.",
+      label: "Scheduling",
+      value: openShifts,
+      delta: "Open shifts · live coverage gaps",
     },
     {
-      title: "Command Board Alerts",
-      value: `${budgetAlerts} active alert${budgetAlerts === 1 ? "" : "s"}`,
-      trend: "Budget thresholds and escalations",
-      description: "Financial alerts requiring executive attention.",
+      label: "Command Alerts",
+      value: budgetAlerts,
+      delta: "Active alerts · budget & escalation",
     },
   ];
 }
@@ -487,153 +506,173 @@ const AdministrativeOverviewBoardsPage = async () => {
   );
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      <div className="space-y-0.5">
-        <h1 className="font-semibold text-2xl tracking-tight">
-          Overview Boards
-        </h1>
-        <p className="text-muted-foreground">
-          Strategic snapshots that keep leadership aware of cross-module
-          momentum.
-        </p>
-      </div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Administrative / Overview</MonoLabel>
+            <DisplayHeading size="md">Overview boards</DisplayHeading>
+            <CommandBandLede>
+              Strategic snapshots that keep leadership aware of cross-module
+              momentum.
+            </CommandBandLede>
+          </div>
+          <CommandBandActions>
+            <Button
+              asChild
+              className="border-white/25 bg-transparent text-white hover:bg-white/10"
+              size="sm"
+              variant="outline"
+            >
+              <Link href="/administrative/kanban">Open Kanban</Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link href="/administrative">Production prep</Link>
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
 
-      <Separator />
+        <CommandBandBody>
+          <MetricBand cols={4}>
+            {boardSnapshots.map((snapshot) => (
+              <MetricCell key={snapshot.label}>
+                <MetricLabel>{snapshot.label}</MetricLabel>
+                <MetricValue>{snapshot.value}</MetricValue>
+                <MetricDelta>{snapshot.delta}</MetricDelta>
+              </MetricCell>
+            ))}
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
 
-      <section className="space-y-4">
-        <h2 className="font-medium text-muted-foreground text-sm">
-          Board Snapshots
-        </h2>
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {boardSnapshots.map((snapshot) => (
-            <Card className="h-full" key={snapshot.title} tone="soft-stone">
-              <CardHeader>
-                <CardTitle className="text-lg">{snapshot.title}</CardTitle>
-                <CardDescription>{snapshot.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="font-bold text-2xl">{snapshot.value}</p>
-                <p className="text-muted-foreground text-sm">
-                  {snapshot.trend}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <h2 className="font-medium text-muted-foreground text-sm">
-          Executive Actions
-        </h2>
-        <Card tone="canvas">
-          <CardHeader>
-            <CardTitle>Top Decisions</CardTitle>
-            <CardDescription>Awaiting sign-off from leadership</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-6 md:grid-cols-3">
+      <OperationalColumn>
+        <section className="space-y-6">
+          <SectionHeader
+            description="Awaiting sign-off from leadership"
+            title="Executive actions"
+          />
+          <div className="rounded-[22px] border border-hairline bg-canvas p-6 sm:p-8">
             {executiveActions.length === 0 ? (
-              <div className="rounded border border-border/60 border-dashed p-6 text-center text-muted-foreground text-sm md:col-span-3">
-                No executive approvals pending.
-              </div>
+              <Empty className="border-none py-8">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <ClipboardCheck />
+                  </EmptyMedia>
+                  <EmptyTitle>No executive approvals pending</EmptyTitle>
+                  <EmptyDescription>
+                    Review and in-progress admin tasks will surface here when
+                    they need leadership sign-off.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             ) : (
-              executiveActions.map((action) => (
-                <div
-                  className="space-y-3 rounded border border-border/60 p-4"
-                  key={action.title}
-                >
-                  <p className="font-medium text-sm">{action.title}</p>
-                  <p className="text-muted-foreground text-xs">
-                    {action.owner}
-                  </p>
-                  <p className="text-muted-foreground text-xs">{action.eta}</p>
-                  <Badge variant="secondary">{action.status}</Badge>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="space-y-4">
-        <h2 className="font-medium text-muted-foreground text-sm">
-          Alerts & Board Health
-        </h2>
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card tone="canvas">
-            <CardHeader>
-              <CardTitle>Critical Alerts</CardTitle>
-              <CardDescription>
-                Issues that need cross-team attention
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {criticalAlerts.length === 0 ? (
-                  <div className="rounded border border-border/60 border-dashed p-4 text-muted-foreground text-sm">
-                    No active alerts.
-                  </div>
-                ) : (
-                  criticalAlerts.map((alert, index) => (
-                    <div key={alert.label}>
-                      <div className="flex items-center justify-between">
-                        <p className="font-medium text-sm">{alert.label}</p>
-                        <Badge variant="destructive">Action</Badge>
-                      </div>
-                      <p className="mt-1 text-muted-foreground text-sm">
-                        {alert.detail}
-                      </p>
-                      {index < criticalAlerts.length - 1 && (
-                        <Separator className="mt-3" />
-                      )}
+              <div className="grid gap-4 md:grid-cols-3">
+                {executiveActions.map((action) => (
+                  <div
+                    className="space-y-3 rounded-[16px] border border-hairline bg-soft-stone/40 p-5"
+                    key={action.title}
+                  >
+                    <p className="font-medium text-ink text-sm leading-snug">
+                      {action.title}
+                    </p>
+                    <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
+                      {action.owner}
+                    </p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-muted-foreground text-xs">{action.eta}</p>
+                      <StatusPill>{action.status}</StatusPill>
                     </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="space-y-6">
+          <SectionHeader
+            description="Cross-team issues and channel freshness"
+            title="Alerts & board health"
+          />
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="rounded-[22px] border border-hairline bg-canvas p-6 sm:p-8">
+              <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.22em]">
+                Critical alerts
+              </p>
+              <div className="mt-6">
+                {criticalAlerts.length === 0 ? (
+                  <Empty className="border-none py-6">
+                    <EmptyHeader>
+                      <EmptyTitle>No active alerts</EmptyTitle>
+                      <EmptyDescription>
+                        Overdue tasks, budget thresholds, and shift coverage
+                        gaps will appear here.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                ) : (
+                  criticalAlerts.map((alert) => (
+                    <OperationalLine key={alert.label}>
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <p className="font-medium text-ink text-sm">
+                          {alert.label}
+                        </p>
+                        <p className="text-muted-foreground text-sm">
+                          {alert.detail}
+                        </p>
+                      </div>
+                      <Badge variant="destructive">Action</Badge>
+                    </OperationalLine>
                   ))
                 )}
               </div>
-            </CardContent>
-          </Card>
-          <Card tone="canvas">
-            <CardHeader>
-              <CardTitle>Board Health</CardTitle>
-              <CardDescription>
-                Freshness of updates across channels
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">
+            </div>
+
+            <div className="rounded-[22px] border border-hairline bg-canvas p-6 sm:p-8">
+              <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.22em]">
+                Board health
+              </p>
+              <div className="mt-6">
+                <OperationalLine className="w-full justify-between">
+                  <span className="text-muted-foreground text-sm">
                     Tab updates today
                   </span>
-                  <span className="font-medium">{tasksUpdatedToday}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">
+                  <span className="font-display text-2xl text-ink">
+                    {tasksUpdatedToday}
+                  </span>
+                </OperationalLine>
+                <OperationalLine className="w-full justify-between">
+                  <span className="text-muted-foreground text-sm">
                     New tasks created
                   </span>
-                  <span className="font-medium">{tasksCreatedToday}</span>
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">
+                  <span className="font-display text-2xl text-ink">
+                    {tasksCreatedToday}
+                  </span>
+                </OperationalLine>
+                <OperationalLine className="w-full justify-between">
+                  <span className="text-muted-foreground text-sm">
                     Average response time
                   </span>
-                  <span className="font-medium">
+                  <span className="font-display text-2xl text-ink">
                     {avgResponseMinutes > 0
                       ? `${Math.round(avgResponseMinutes)}m`
                       : "N/A"}
                   </span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Teams active</span>
-                  <span className="font-medium">{activeTeams}</span>
-                </div>
+                </OperationalLine>
+                <OperationalLine className="w-full justify-between">
+                  <span className="text-muted-foreground text-sm">
+                    Teams active
+                  </span>
+                  <span className="font-display text-2xl text-ink">
+                    {activeTeams}
+                  </span>
+                </OperationalLine>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-    </div>
+            </div>
+          </div>
+        </section>
+      </OperationalColumn>
+    </PageCanvas>
   );
 };
 

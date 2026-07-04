@@ -229,14 +229,16 @@ export default async function MenuDetailPage({
               Menu Dishes ({menu.dishes.length})
             </h2>
 
-            {sortedCourses.map((course) => (
+            {sortedCourses.map((course) => {
+              const courseDishes = dishesByCourse[course] ?? [];
+              return (
               <Card key={course}>
                 <CardHeader>
                   <CardTitle className="text-xl capitalize">{course}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {dishesByCourse[course].map((dish) => (
+                    {courseDishes.map((dish) => (
                       <div
                         className="flex items-start justify-between rounded-lg border p-4"
                         key={dish.dishId}
@@ -279,7 +281,7 @@ export default async function MenuDetailPage({
                       </div>
                     ))}
 
-                    {dishesByCourse[course].length === 0 && (
+                    {courseDishes.length === 0 && (
                       <p className="text-muted-foreground text-sm">
                         No dishes in this course.
                       </p>
@@ -287,7 +289,8 @@ export default async function MenuDetailPage({
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
 
             {menu.dishes.length === 0 && (
               <Card>

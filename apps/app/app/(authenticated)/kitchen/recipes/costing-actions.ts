@@ -571,6 +571,10 @@ export async function getCostingSummaryStats(): Promise<{
       FROM calculated_costs cc
     `;
 
+    if (!stats) {
+      return { success: false, error: "Failed to fetch summary stats" };
+    }
+
     return {
       success: true,
       data: {

@@ -1,12 +1,12 @@
 /**
- * scalar-type-map.mjs — single shared Manifest scalar → TypeScript type mapping.
+ * scalar-type-map.mjs — Manifest scalar → TypeScript mapping for COMMAND INPUT types.
  *
- * WHY THIS EXISTS (D23 remediation):
- *   The scalar→TS map was triplicated across generate-capsule-client.mjs:
- *     (1) the toTsTypes() regex pass for the types surface,
- *     (2) the SCALAR_TO_TS object for command parameter typing,
- *     (3) implicit in the hooks generator's reliance on the client output.
- *   This module is the one canonical source. Both generators import from here.
+ * As of manifest 2.18.6 the stock `--surface types` projection emits correct entity
+ * types directly: numeric → number, `array`/`list` → typed `T[]`, enums → unions, and
+ * (via `dateSerialization: iso-string` in manifest.config.yaml) datetime → string. The
+ * old `toTsTypes()` regex post-process was retired. This module now exists only for
+ * `paramTsType`, which types COMMAND INPUT interfaces from raw IR params in
+ * generate-capsule-client.mjs (the stock client surface isn't used for those).
  *
  * Wire convention: dates are ISO 8601 strings (manifest/capsule-conventions.json
  * dateSerialization). Money/decimal/int/float/bigint are JS number on the wire.
@@ -30,6 +30,10 @@ export const SCALAR_TO_TS = {
   uuid: "string",
 };
 
+export function toTsTypes(content) {
+  return content;
+}
+
 /**
  * Resolve an IR parameter (type object) to its TypeScript type string.
  * Handles simple scalars, generic arrays (e.g. array<string>), and falls back
@@ -51,25 +55,4 @@ export function paramTsType(p) {
     return `${innerType}[]`;
   }
   return base;
-}
-
-/**
- * Regex-based source transform: replace raw Manifest scalar names in the
- * stock `types` projection output with correct TypeScript types.
- *
- * The stock `types` surface emits raw scalar names (int/decimal/money/array/Date)
- * as TS types, which don't compile. This maps them to TS per Capsule's wire
- * conventions.
- *
- * @param {string} src — raw types projection output.
- * @returns {string} — compilable TypeScript with scalar names resolved.
- */
-export function toTsTypes(src) {
-  return src
-    .replace(/:\s*(int|bigint|float|decimal|money|number)\b/g, ": number")
-    .replace(/:\s*bool\b/g, ": boolean")
-    .replace(/:\s*array\b/g, ": unknown[]")
-    .replace(/:\s*json\b/g, ": unknown")
-    .replace(/:\s*(text|uuid)\b/g, ": string")
-    .replace(/:\s*Date\b/g, ": string");
 }

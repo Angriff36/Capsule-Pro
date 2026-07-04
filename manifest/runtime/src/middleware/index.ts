@@ -78,6 +78,11 @@ export {
   type EventCancelledCascadeMiddlewareOptions,
 } from "./event-cancelled-cascade-middleware";
 export {
+  createEventContractEventActiveGuardMiddleware,
+  type EventContractEventActiveGuardDiagnostic,
+  type EventContractEventActiveGuardMiddlewareOptions,
+} from "./event-contract-event-active-guard-middleware";
+export {
   createEventCreatedClientInteractionMiddleware,
   type EventClientInteractionDiagnostic,
   type EventCreatedClientInteractionMiddlewareOptions,
@@ -87,6 +92,21 @@ export {
   type EventDishPrepSyncDiagnostic,
   type EventDishPrepSyncMiddlewareOptions,
 } from "./event-dish-prep-sync-middleware";
+export {
+  createEventFinalizedClientInteractionMiddleware,
+  type EventFinalizedClientInteractionDiagnostic,
+  type EventFinalizedClientInteractionMiddlewareOptions,
+} from "./event-finalized-client-interaction-middleware";
+export {
+  createEventFinalizedFollowupCreateMiddleware,
+  type EventFinalizedFollowupDiagnostic,
+  type EventFinalizedFollowupMiddlewareOptions,
+} from "./event-finalized-followup-create-middleware";
+export {
+  createEventFinalizedReleaseReservationMiddleware,
+  type EventFinalizedReleaseReservationDiagnostic,
+  type EventFinalizedReleaseReservationMiddlewareOptions,
+} from "./event-finalized-release-reservation-middleware";
 export {
   createEventGuestCountPrepRescaleMiddleware,
   type EventGuestCountPrepRescaleMiddlewareOptions,
@@ -240,6 +260,11 @@ export {
   type PayrollRunPaidPeriodLockMiddlewareOptions,
 } from "./payroll-run-paid-period-lock-middleware";
 export {
+  createPerformancePredictionRiskNotifyMiddleware,
+  type PerformancePredictionRiskNotifyDiagnostic,
+  type PerformancePredictionRiskNotifyMiddlewareOptions,
+} from "./performance-prediction-risk-notify-middleware";
+export {
   createPrepInventoryDemandMiddleware,
   type PrepDemandDiagnostic,
   type PrepInventoryDemandMiddlewareOptions,
@@ -265,6 +290,11 @@ export {
   type PrepTaskStationCountDiagnostic,
   type PrepTaskStationCountMiddlewareOptions,
 } from "./prep-task-station-count-middleware";
+export {
+  createProposalClientActiveGuardMiddleware,
+  type ProposalClientActiveGuardDiagnostic,
+  type ProposalClientActiveGuardMiddlewareOptions,
+} from "./proposal-client-active-guard-middleware";
 export {
   createProposalLifecycleLeadStatusMiddleware,
   type ProposalLeadStatusDiagnostic,

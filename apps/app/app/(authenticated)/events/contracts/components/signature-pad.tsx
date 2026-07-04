@@ -76,8 +76,12 @@ export function SignaturePad({
     let clientY: number;
 
     if ("touches" in event) {
-      clientX = event.touches[0].clientX;
-      clientY = event.touches[0].clientY;
+      const touch = event.touches[0];
+      if (!touch) {
+        return { x: 0, y: 0 };
+      }
+      clientX = touch.clientX;
+      clientY = touch.clientY;
     } else {
       clientX = event.clientX;
       clientY = event.clientY;

@@ -782,12 +782,8 @@ model ChartOfAccount {
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
-  parent ChartOfAccount? @relation("ChartOfAccount_parent", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  chartOfAccounts ChartOfAccount[] @relation("ChartOfAccount_parent")
-
   @@map("chart_of_accounts")
   @@id([tenantId, id])
-  @@unique([id])
   @@index([tenantId])
   @@index([tenantId, accountNumber])
   @@index([id])
@@ -1657,8 +1653,8 @@ model Driver {
 
   vehicle Vehicle? @relation(fields: [vehicleId], references: [id])
   deliveryRoutes DeliveryRoute[]
-  logisticsDispatches LogisticsDispatch[]
-  logisticsRoutes LogisticsRoute[]
+  dispatches LogisticsDispatch[]
+  routes LogisticsRoute[]
 
   @@map("drivers")
   @@id([tenantId, id])
@@ -1877,10 +1873,11 @@ model Equipment {
 
   location Facility @relation(fields: [tenantId, locationId], references: [tenantId, id])
   temperatureLogs TemperatureLog[]
+  qaTemperatureLogs QATemperatureLog[]
   workOrders MaintenanceWorkOrder[]
   iotAlertRules IotAlertRule[]
   preventiveMaintenanceSchedules PreventiveMaintenanceSchedule[]
-  workOrders2 WorkOrder[]
+  equipmentWorkOrders WorkOrder[]
 
   @@map("equipment")
   @@id([tenantId, id])
@@ -1993,7 +1990,7 @@ model EventBudget {
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
   linkedEvent Event @relation(fields: [tenantId, eventId], references: [tenantId, id])
-  budgetLineItems BudgetLineItem[]
+  lineItems BudgetLineItem[]
 
   @@map("event_budgets")
   @@id([tenantId, id])
@@ -3074,7 +3071,7 @@ model Invoice {
   client Client @relation(fields: [tenantId, clientId], references: [tenantId, id])
   payments Payment[]
   collectionCases CollectionCase[]
-  revenueRecognitionSchedules RevenueRecognitionSchedule[]
+  revenueSchedules RevenueRecognitionSchedule[]
 
   @@map("invoices")
   @@id([tenantId, id])
@@ -3725,7 +3722,7 @@ model Payment {
   invoice Invoice @relation(fields: [tenantId, invoiceId], references: [tenantId, id])
   linkedEvent Event @relation(fields: [tenantId, eventId], references: [tenantId, id])
   client Client @relation(fields: [tenantId, clientId], references: [tenantId, id])
-  paymentRefundAttempts PaymentRefundAttempt[]
+  refundAttempts PaymentRefundAttempt[]
 
   @@map("payments")
   @@id([tenantId, id])
@@ -4688,7 +4685,7 @@ model QACheck {
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
-  qACorrectiveActions QACorrectiveAction[]
+  correctiveActions QACorrectiveAction[]
 
   @@map("qa_checks")
   @@id([tenantId, id])
@@ -4746,6 +4743,8 @@ model QATemperatureLog {
   loggedAt DateTime @map("logged_at") @db.Timestamptz(6)
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
+
+  equipment Equipment @relation(fields: [equipmentId], references: [id])
 
   @@map("qa_temperature_logs")
   @@id([tenantId, id])
@@ -5257,6 +5256,324 @@ model ScheduleShift {
 // CREATE POLICY tenant_isolation ON "schedule_shifts"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
+model SelOnboardingTrainingModuleDefinition {
+  id String
+  tenantId String @map("tenant_id")
+  moduleId String @map("module_id") @default("f8c17fcf-54fb-4e41-9bea-cbb13a353ebb")
+  code String @default("sel_event_staff_onboarding")
+  title String @default("SEL Event Staff — Onboarding Training")
+  description String @default("Required pre-shift training for all Mangia staff working SEL Friday Lunch events. Covers client context, compliance requirements, pre-event workflow, buffet service, and wrap-up procedures. Must be completed before first shift.")
+  contentType String @map("content_type") @default("interactive")
+  contentUrl String @map("content_url") @default("TBD")
+  durationMinutes Int @map("duration_minutes") @default(20)
+  category String @default("onboarding")
+  isRequired Boolean @map("is_required") @default(true)
+  passThresholdPercent Int @map("pass_threshold_percent") @default(80)
+  maxAttempts Int @map("max_attempts") @default(3)
+  requiredRole String @map("required_role") @default("staff")
+  createdAt DateTime @map("created_at") @default(now())
+  updatedAt DateTime @map("updated_at") @updatedAt
+
+  @@map("sel_onboarding_training_module_definitions")
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "sel_onboarding_training_module_definitions" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "sel_onboarding_training_module_definitions"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
+model SelOnboardingTrainingQuestion01Definition {
+  id String
+  tenantId String @map("tenant_id")
+  questionId String @map("question_id") @default("1a4f8a91-f4ee-48cd-9178-171c9c75fceb")
+  moduleId String @map("module_id") @default("f8c17fcf-54fb-4e41-9bea-cbb13a353ebb")
+  code String @default("Q1")
+  sectionTitle String @map("section_title") @default("Context")
+  displayOrder Int @map("display_order") @default(1)
+  prompt String @default("Mangia is SEL's only catering vendor on Friday Lunch events.")
+  optionA String @map("option_a") @default("True")
+  optionB String @map("option_b") @default("False")
+  optionC String @map("option_c") @default("")
+  optionD String @map("option_d") @default("")
+  correctOptionKey String @map("correct_option_key") @default("B")
+  explanation String @default("False. Mangia is not SEL's only Friday Lunch vendor.")
+  whyItMatters String @map("why_it_matters") @default("Staff need to understand we earn our spot.")
+  createdAt DateTime @map("created_at") @default(now())
+  updatedAt DateTime @map("updated_at") @updatedAt
+
+  @@map("sel_onboarding_training_question01_definitions")
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "sel_onboarding_training_question01_definitions" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "sel_onboarding_training_question01_definitions"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
+model SelOnboardingTrainingQuestion02Definition {
+  id String
+  tenantId String @map("tenant_id")
+  questionId String @map("question_id") @default("cad9ca72-2f74-430f-9b04-d9956b865509")
+  moduleId String @map("module_id") @default("f8c17fcf-54fb-4e41-9bea-cbb13a353ebb")
+  code String @default("Q2")
+  sectionTitle String @map("section_title") @default("Context")
+  displayOrder Int @map("display_order") @default(2)
+  prompt String @default("What is SEL's primary reason for choosing Mangia over other vendors?")
+  optionA String @map("option_a") @default("We are the cheapest option")
+  optionB String @map("option_b") @default("We are the closest to campus")
+  optionC String @map("option_c") @default("Professionalism, quality, and consistency")
+  optionD String @map("option_d") @default("We have the most staff available")
+  correctOptionKey String @map("correct_option_key") @default("C")
+  explanation String @default("SEL chooses Mangia for professionalism, quality, and consistency.")
+  whyItMatters String @map("why_it_matters") @default("This is the service standard every SEL shift must reinforce.")
+  createdAt DateTime @map("created_at") @default(now())
+  updatedAt DateTime @map("updated_at") @updatedAt
+
+  @@map("sel_onboarding_training_question02_definitions")
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "sel_onboarding_training_question02_definitions" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "sel_onboarding_training_question02_definitions"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
+model SelOnboardingTrainingQuestion03Definition {
+  id String
+  tenantId String @map("tenant_id")
+  questionId String @map("question_id") @default("c0d36c00-3b06-4d74-a026-b619883d0578")
+  moduleId String @map("module_id") @default("f8c17fcf-54fb-4e41-9bea-cbb13a353ebb")
+  code String @default("Q3")
+  sectionTitle String @map("section_title") @default("Compliance")
+  displayOrder Int @map("display_order") @default(3)
+  prompt String @default("Your WA State Food Worker Card must be current...")
+  optionA String @map("option_a") @default("Within 30 days of your first shift")
+  optionB String @map("option_b") @default("Before your first shift")
+  optionC String @map("option_c") @default("Within your first week")
+  optionD String @map("option_d") @default("By the end of your first month")
+  correctOptionKey String @map("correct_option_key") @default("B")
+  explanation String @default("Your WA State Food Worker Card must be current before your first shift.")
+  whyItMatters String @map("why_it_matters") @default("No current card means you are not shift-ready.")
+  createdAt DateTime @map("created_at") @default(now())
+  updatedAt DateTime @map("updated_at") @updatedAt
+
+  @@map("sel_onboarding_training_question03_definitions")
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "sel_onboarding_training_question03_definitions" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "sel_onboarding_training_question03_definitions"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
+model SelOnboardingTrainingQuestion04Definition {
+  id String
+  tenantId String @map("tenant_id")
+  questionId String @map("question_id") @default("05e4752c-e786-42d0-91e8-c0b638e0ba33")
+  moduleId String @map("module_id") @default("f8c17fcf-54fb-4e41-9bea-cbb13a353ebb")
+  code String @default("Q4")
+  sectionTitle String @map("section_title") @default("Compliance")
+  displayOrder Int @map("display_order") @default(4)
+  prompt String @default("Where do you pick up your SEL visitor badge?")
+  optionA String @map("option_a") @default("At your assigned building")
+  optionB String @map("option_b") @default("At the Mangia vehicle")
+  optionC String @map("option_c") @default("At Building One security desk")
+  optionD String @map("option_d") @default("The BOH Lead brings it to you")
+  correctOptionKey String @map("correct_option_key") @default("C")
+  explanation String @default("Pick up the badge at Building One security desk.")
+  whyItMatters String @map("why_it_matters") @default("Arriving at the right check-in point prevents delays.")
+  createdAt DateTime @map("created_at") @default(now())
+  updatedAt DateTime @map("updated_at") @updatedAt
+
+  @@map("sel_onboarding_training_question04_definitions")
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "sel_onboarding_training_question04_definitions" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "sel_onboarding_training_question04_definitions"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
+model SelOnboardingTrainingQuestion05Definition {
+  id String
+  tenantId String @map("tenant_id")
+  questionId String @map("question_id") @default("2c8fb412-5928-4410-97fe-c8d3fa90fd5f")
+  moduleId String @map("module_id") @default("f8c17fcf-54fb-4e41-9bea-cbb13a353ebb")
+  code String @default("Q5")
+  sectionTitle String @map("section_title") @default("Compliance")
+  displayOrder Int @map("display_order") @default(5)
+  prompt String @default("Where must your visitor badge be worn at all times on SEL campus?")
+  optionA String @map("option_a") @default("In your pocket for safekeeping")
+  optionB String @map("option_b") @default("Clipped to your bag")
+  optionC String @map("option_c") @default("Above the waistline, visible at all times")
+  optionD String @map("option_d") @default("Anywhere comfortable")
+  correctOptionKey String @map("correct_option_key") @default("C")
+  explanation String @default("Wear the badge above the waistline and keep it visible.")
+  whyItMatters String @map("why_it_matters") @default("Campus badge rules are mandatory, not optional.")
+  createdAt DateTime @map("created_at") @default(now())
+  updatedAt DateTime @map("updated_at") @updatedAt
+
+  @@map("sel_onboarding_training_question05_definitions")
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "sel_onboarding_training_question05_definitions" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "sel_onboarding_training_question05_definitions"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
+model SelOnboardingTrainingQuestion06Definition {
+  id String
+  tenantId String @map("tenant_id")
+  questionId String @map("question_id") @default("504c8378-1eee-4e4c-a489-a746c417d489")
+  moduleId String @map("module_id") @default("f8c17fcf-54fb-4e41-9bea-cbb13a353ebb")
+  code String @default("Q6")
+  sectionTitle String @map("section_title") @default("Pre-Event Workflow")
+  displayOrder Int @map("display_order") @default(6)
+  prompt String @default("Put the pre-event steps in the correct order:")
+  optionA String @map("option_a") @default("Badge → Clock in → Arrive → Meet crew")
+  optionB String @map("option_b") @default("Arrive → Clock in → Badge → Meet crew")
+  optionC String @map("option_c") @default("Arrive → Badge → Clock in → Meet crew")
+  optionD String @map("option_d") @default("Clock in → Arrive → Badge → Meet crew")
+  correctOptionKey String @map("correct_option_key") @default("B")
+  explanation String @default("The correct order is Arrive → Clock in → Badge → Meet crew.")
+  whyItMatters String @map("why_it_matters") @default("The sequence matters for timekeeping, access, and crew readiness.")
+  createdAt DateTime @map("created_at") @default(now())
+  updatedAt DateTime @map("updated_at") @updatedAt
+
+  @@map("sel_onboarding_training_question06_definitions")
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "sel_onboarding_training_question06_definitions" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "sel_onboarding_training_question06_definitions"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
+model SelOnboardingTrainingQuestion07Definition {
+  id String
+  tenantId String @map("tenant_id")
+  questionId String @map("question_id") @default("fab41a4d-86bb-4587-991f-8a60f02466df")
+  moduleId String @map("module_id") @default("f8c17fcf-54fb-4e41-9bea-cbb13a353ebb")
+  code String @default("Q7")
+  sectionTitle String @map("section_title") @default("Pre-Event Workflow")
+  displayOrder Int @map("display_order") @default(7)
+  prompt String @default("When do you clock in on Nowsta?")
+  optionA String @map("option_a") @default("After you pick up your badge")
+  optionB String @map("option_b") @default("When the BOH Lead arrives")
+  optionC String @map("option_c") @default("At your scheduled start time when you arrive on site")
+  optionD String @map("option_d") @default("When service begins")
+  correctOptionKey String @map("correct_option_key") @default("C")
+  explanation String @default("Clock in at your scheduled start time when you arrive on site.")
+  whyItMatters String @map("why_it_matters") @default("Nowsta timekeeping starts when you are on site and ready to work.")
+  createdAt DateTime @map("created_at") @default(now())
+  updatedAt DateTime @map("updated_at") @updatedAt
+
+  @@map("sel_onboarding_training_question07_definitions")
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "sel_onboarding_training_question07_definitions" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "sel_onboarding_training_question07_definitions"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
+model SelOnboardingTrainingQuestion08Definition {
+  id String
+  tenantId String @map("tenant_id")
+  questionId String @map("question_id") @default("d7cbf992-dde5-4af1-8f96-a25e162ab385")
+  moduleId String @map("module_id") @default("f8c17fcf-54fb-4e41-9bea-cbb13a353ebb")
+  code String @default("Q8")
+  sectionTitle String @map("section_title") @default("Buffet Service")
+  displayOrder Int @map("display_order") @default(8)
+  prompt String @default("During buffet service, which portion do Mangia staff always serve?")
+  optionA String @map("option_a") @default("Side dishes only")
+  optionB String @map("option_b") @default("Everything equally")
+  optionC String @map("option_c") @default("The protein")
+  optionD String @map("option_d") @default("Whatever the BOH Lead decides on the day")
+  correctOptionKey String @map("correct_option_key") @default("C")
+  explanation String @default("Mangia staff always serve the protein during buffet service.")
+  whyItMatters String @map("why_it_matters") @default("Serving responsibilities need to stay consistent across lines.")
+  createdAt DateTime @map("created_at") @default(now())
+  updatedAt DateTime @map("updated_at") @updatedAt
+
+  @@map("sel_onboarding_training_question08_definitions")
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "sel_onboarding_training_question08_definitions" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "sel_onboarding_training_question08_definitions"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
+model SelOnboardingTrainingQuestion09Definition {
+  id String
+  tenantId String @map("tenant_id")
+  questionId String @map("question_id") @default("4f71378e-8c1d-4f01-b4a7-9393df1da0f8")
+  moduleId String @map("module_id") @default("f8c17fcf-54fb-4e41-9bea-cbb13a353ebb")
+  code String @default("Q9")
+  sectionTitle String @map("section_title") @default("Buffet Service")
+  displayOrder Int @map("display_order") @default(9)
+  prompt String @default("What is the typical staffing configuration per buffet line?")
+  optionA String @map("option_a") @default("1 Server + 1 Runner")
+  optionB String @map("option_b") @default("3 Servers")
+  optionC String @map("option_c") @default("2 Servers + 1 Runner")
+  optionD String @map("option_d") @default("2 Runners + 1 Server")
+  correctOptionKey String @map("correct_option_key") @default("C")
+  explanation String @default("A typical line uses 2 Servers and 1 Runner.")
+  whyItMatters String @map("why_it_matters") @default("Knowing the standard line build helps staff slot in quickly.")
+  createdAt DateTime @map("created_at") @default(now())
+  updatedAt DateTime @map("updated_at") @updatedAt
+
+  @@map("sel_onboarding_training_question09_definitions")
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "sel_onboarding_training_question09_definitions" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "sel_onboarding_training_question09_definitions"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
+model SelOnboardingTrainingQuestion10Definition {
+  id String
+  tenantId String @map("tenant_id")
+  questionId String @map("question_id") @default("67760aa3-4fca-4c3d-92ef-bdad9c8d7b89")
+  moduleId String @map("module_id") @default("f8c17fcf-54fb-4e41-9bea-cbb13a353ebb")
+  code String @default("Q10")
+  sectionTitle String @map("section_title") @default("Wrap-Up")
+  displayOrder Int @map("display_order") @default(10)
+  prompt String @default("Which of the following is the correct final checkout sequence?")
+  optionA String @map("option_a") @default("Clock out → Return badge → Sign out → Check in with BOH Lead")
+  optionB String @map("option_b") @default("Check in with BOH Lead → Sign out of staff sheet → Return SEL badge → Clock out of Nowsta")
+  optionC String @map("option_c") @default("Return badge → Clock out → Sign out → Check in with BOH Lead")
+  optionD String @map("option_d") @default("Sign out → Return badge → Check in with BOH Lead → Clock out")
+  correctOptionKey String @map("correct_option_key") @default("B")
+  explanation String @default("The correct sequence is Check in with BOH Lead → Sign out → Return badge → Clock out.")
+  whyItMatters String @map("why_it_matters") @default("The checkout order closes accountability and campus access correctly.")
+  createdAt DateTime @map("created_at") @default(now())
+  updatedAt DateTime @map("updated_at") @updatedAt
+
+  @@map("sel_onboarding_training_question10_definitions")
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "sel_onboarding_training_question10_definitions" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "sel_onboarding_training_question10_definitions"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
 model Shipment {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
@@ -5388,8 +5705,8 @@ model StaffMember {
   createdAt DateTime @map("createdAt") @default(now())
   updatedAt DateTime @map("updatedAt") @updatedAt
 
-  eventStaffs EventStaff[]
-  staffTrainingSignals StaffTrainingSignal[]
+  eventStaff EventStaff[]
+  trainingSignals StaffTrainingSignal[]
   trainingAttempts TrainingAttempt[]
 
   @@map("staff_members")
@@ -5732,7 +6049,7 @@ model TimeEntry {
   shift ScheduleShift? @relation(fields: [tenantId, shiftId], references: [tenantId, id])
   employee User @relation(fields: [employeeId], references: [id])
   location Facility? @relation(fields: [locationId], references: [id])
-  timecardEditRequests TimecardEditRequest[]
+  editRequests TimecardEditRequest[]
 
   @@map("time_entries")
   @@id([tenantId, id])
@@ -6008,7 +6325,6 @@ model TrainingQuestion {
 
   @@map("training_questions")
   @@id([tenantId, id])
-  @@unique([id])
   @@schema("tenant_staff")
 }
 
@@ -6047,10 +6363,6 @@ model User {
   bankAccounts BankAccount[]
   clientInteractions ClientInteraction[]
   commandBoardLayouts CommandBoardLayout[]
-  cycleCountRecordsCountedBy CycleCountRecord[] @relation("CycleCountRecord_countedBy")
-  cycleCountRecordsVerifiedBy CycleCountRecord[] @relation("CycleCountRecord_verifiedBy")
-  cycleCountSessionsCreatedBy CycleCountSession[] @relation("CycleCountSession_createdBy")
-  cycleCountSessionsApprovedBy CycleCountSession[] @relation("CycleCountSession_approvedBy")
   disciplinaryActions DisciplinaryAction[]
   employeeAvailabilities EmployeeAvailability[]
   employeeCertifications EmployeeCertification[]
@@ -6063,20 +6375,24 @@ model User {
   onboardingCompletions OnboardingCompletion[]
   payrollLineItems PayrollLineItem[]
   performancePredictions PerformancePrediction[]
-  performanceReviewsEmployee PerformanceReview[] @relation("PerformanceReview_employee")
-  performanceReviewsReviewer PerformanceReview[] @relation("PerformanceReview_reviewer")
   prepComments PrepComment[]
   scheduleShifts ScheduleShift[]
-  staffPerformancesEmployee StaffPerformance[] @relation("StaffPerformance_employee")
-  staffPerformancesReviewer StaffPerformance[] @relation("StaffPerformance_reviewer")
-  timecardApprovals TimecardApproval[]
-  timecardEditRequests TimecardEditRequest[]
   timeEntries TimeEntry[]
   timeOffRequests TimeOffRequest[]
+  timecardApprovals TimecardApproval[]
+  timecardEditRequests TimecardEditRequest[]
   trainingAssignments TrainingAssignment[]
   trainingCompletions TrainingCompletion[]
   varianceReports VarianceReport[]
   versionApprovals VersionApproval[]
+  cycleCountRecordsCountedBy CycleCountRecord[] @relation("CycleCountRecord_countedBy")
+  cycleCountRecordsVerifiedBy CycleCountRecord[] @relation("CycleCountRecord_verifiedBy")
+  cycleCountSessionsCreatedBy CycleCountSession[] @relation("CycleCountSession_createdBy")
+  cycleCountSessionsApprovedBy CycleCountSession[] @relation("CycleCountSession_approvedBy")
+  performanceReviewsEmployee PerformanceReview[] @relation("PerformanceReview_employee")
+  performanceReviewsReviewer PerformanceReview[] @relation("PerformanceReview_reviewer")
+  staffPerformancesEmployee StaffPerformance[] @relation("StaffPerformance_employee")
+  staffPerformancesReviewer StaffPerformance[] @relation("StaffPerformance_reviewer")
 
   @@map("employees")
   @@id([tenantId, id])

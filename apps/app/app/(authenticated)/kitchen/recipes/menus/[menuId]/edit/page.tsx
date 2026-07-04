@@ -46,7 +46,7 @@ export default async function EditMenuPage({
             initialData={menu}
             menuId={menuId}
           >
-            {({ handleSubmit, isSubmitting, error, dishesSelector }) => (
+            {({ handleSubmit, isSubmitting, dishesSelector }) => (
               <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="grid gap-6">
                   {/* Basic Info Section */}

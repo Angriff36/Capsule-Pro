@@ -50,9 +50,9 @@ Basil,Fresh`;
     const rows = parseCsv(csv);
 
     expect(rows).toHaveLength(2);
-    expect(rows[0].name).toBe("Tomato Sauce");
-    expect(rows[0].description).toBe("Rich, slow-cooked sauce");
-    expect(rows[1].name).toBe("Basil");
+    expect(rows[0]!.name).toBe("Tomato Sauce");
+    expect(rows[0]!.description).toBe("Rich, slow-cooked sauce");
+    expect(rows[1]!.name).toBe("Basil");
   });
 
   it("returns empty array when only a header row is present", () => {

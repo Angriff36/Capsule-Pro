@@ -28,7 +28,7 @@ entity StaffPerformance mixin TenantScoped {
   computed isAcknowledged: boolean = self.status == "acknowledged"
   computed isCancelled: boolean = self.status == "cancelled"
 
-  transition status from "draft" to ["in_review", "cancelled"]
+  transition status from "draft" to ["in_review", "cancelled", "completed"]
   transition status from "in_review" to ["completed", "draft"]
   transition status from "completed" to ["acknowledged"]
 

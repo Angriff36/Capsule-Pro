@@ -51,13 +51,11 @@ import type {
 } from "../event-details-types";
 import {
   useAddDishToEvent,
-  useCreateDishAndAdd,
   useCreateDishVariant,
   useDeleteEventSummary,
   useEventDetails,
   useGenerateEventSummary,
   useGeneratePrepList,
-  useGenerateTaskBreakdown,
   useQuickRsvp,
   useRemoveDishFromEvent,
   useSaveTaskBreakdown,
@@ -552,8 +550,9 @@ async function runGenerateBreakdown(
   ];
   let idx = 0;
   progressIntervalRef.current = globalThis.setInterval(() => {
-    if (idx < messages.length) {
-      setGenerationProgress(messages[idx]);
+    const message = messages[idx];
+    if (message !== undefined) {
+      setGenerationProgress(message);
       idx++;
     }
   }, 1500);
@@ -817,10 +816,8 @@ export function EventDetailsClient({
   const addDishMutation = useAddDishToEvent();
   const removeDishMutation = useRemoveDishFromEvent();
   const createVariantMutation = useCreateDishVariant();
-  const _createDishAndAddMutation = useCreateDishAndAdd();
   const generateSummaryMutation = useGenerateEventSummary();
   const deleteSummaryMutation = useDeleteEventSummary();
-  const _generateBreakdownMutation = useGenerateTaskBreakdown();
   const saveBreakdownMutation = useSaveTaskBreakdown();
   const generatePrepListMutation = useGeneratePrepList();
   const quickRsvpMutation = useQuickRsvp();

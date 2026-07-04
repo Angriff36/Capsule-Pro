@@ -23,6 +23,36 @@ entity User mixin TenantScoped, SoftDeletable {
 
   belongsTo rolePolicy: RolePolicy with roleId
 
+  relationship hasMany adminChatMessages: AdminChatMessage
+  relationship hasMany adminChatParticipants: AdminChatParticipant
+  relationship hasMany aiEventSetupSessions: AiEventSetupSession
+  relationship hasMany apiKeys: ApiKey
+  relationship hasMany bankAccounts: BankAccount
+  relationship hasMany clientInteractions: ClientInteraction
+  relationship hasMany commandBoardLayouts: CommandBoardLayout
+  relationship hasMany disciplinaryActions: DisciplinaryAction
+  relationship hasMany employeeAvailabilities: EmployeeAvailability
+  relationship hasMany employeeCertifications: EmployeeCertification
+  relationship hasMany employeeDeductions: EmployeeDeduction
+  relationship hasMany inventoryTransactions: InventoryTransaction
+  relationship hasMany kitchenTaskClaims: KitchenTaskClaim
+  relationship hasMany kitchenTaskProgresses: KitchenTaskProgress
+  relationship hasMany knowledgeBaseEntries: KnowledgeBaseEntry
+  relationship hasMany notifications: Notification
+  relationship hasMany onboardingCompletions: OnboardingCompletion
+  relationship hasMany payrollLineItems: PayrollLineItem
+  relationship hasMany performancePredictions: PerformancePrediction
+  relationship hasMany prepComments: PrepComment
+  relationship hasMany scheduleShifts: ScheduleShift
+  relationship hasMany timeEntries: TimeEntry
+  relationship hasMany timeOffRequests: TimeOffRequest
+  relationship hasMany timecardApprovals: TimecardApproval
+  relationship hasMany timecardEditRequests: TimecardEditRequest
+  relationship hasMany trainingAssignments: TrainingAssignment
+  relationship hasMany trainingCompletions: TrainingCompletion
+  relationship hasMany varianceReports: VarianceReport
+  relationship hasMany versionApprovals: VersionApproval
+
   computed fullName: string = self.firstName + " " + self.lastName
   computed isTerminated: boolean = self.terminationDate != null
   computed isHourly: boolean = self.employmentType == "full_time" or self.employmentType == "part_time"

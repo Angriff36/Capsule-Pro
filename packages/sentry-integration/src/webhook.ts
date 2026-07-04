@@ -69,22 +69,23 @@ const extractSlugsFromUrl = (
 
     // Check for organization pattern: /organizations/{org}/...
     const orgIndex = pathParts.indexOf("organizations");
-    if (orgIndex !== -1 && orgIndex + 1 < pathParts.length) {
-      const organizationSlug = pathParts[orgIndex + 1];
+    const organizationSlug = pathParts[orgIndex + 1];
+    if (orgIndex !== -1 && organizationSlug !== undefined) {
       // Project slug might be in the URL or we use a default
       const projectIndex = pathParts.indexOf("projects");
-      const projectSlug =
-        projectIndex !== -1 && projectIndex + 1 < pathParts.length
-          ? pathParts[projectIndex + 1]
-          : "default";
+      const projectFromUrl =
+        projectIndex !== -1 ? pathParts[projectIndex + 1] : undefined;
+      const projectSlug = projectFromUrl ?? "default";
       return { organizationSlug, projectSlug };
     }
 
     // Legacy pattern: /{org}/{project}/issues/{issue}/
-    if (pathParts.length >= 2) {
+    const legacyOrg = pathParts[0];
+    const legacyProject = pathParts[1];
+    if (legacyOrg !== undefined && legacyProject !== undefined) {
       return {
-        organizationSlug: pathParts[0],
-        projectSlug: pathParts[1],
+        organizationSlug: legacyOrg,
+        projectSlug: legacyProject,
       };
     }
 

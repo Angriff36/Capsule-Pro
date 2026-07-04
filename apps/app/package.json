@@ -26,6 +26,7 @@
     "@repo/email": "workspace:*",
     "@repo/event-parser": "workspace:*",
     "@repo/feature-flags": "workspace:*",
+    "@repo/manifest-runtime": "workspace:*",
     "@repo/next-config": "workspace:*",
     "@repo/notifications": "workspace:*",
     "@repo/observability": "workspace:*",

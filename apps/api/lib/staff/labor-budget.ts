@@ -221,10 +221,6 @@ export async function createLaborBudget(input: LaborBudgetInput) {
     periodStart,
     periodEnd,
     budgetTarget,
-    budgetUnit,
-    threshold80Pct = true,
-    threshold90Pct = true,
-    threshold100Pct = true,
   } = input;
 
   // Validate event budget has event_id
@@ -405,6 +401,9 @@ export async function calculateBudgetUtilization(
   }
 
   const budgetData = budget[0];
+  if (!budgetData) {
+    return null;
+  }
   let actualSpend = 0;
 
   if (budgetData.budget_unit === "hours") {

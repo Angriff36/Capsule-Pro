@@ -270,12 +270,6 @@ interface EventTemplateSelectorProps {
   open: boolean;
 }
 
-const _categoryColors = {
-  social: "bg-muted/50 text-foreground",
-  corporate: "bg-muted/50 text-foreground",
-  specialty: "bg-muted/50 text-foreground",
-};
-
 export function EventTemplateSelector({
   open,
   onOpenChange,
@@ -283,10 +277,9 @@ export function EventTemplateSelector({
 }: EventTemplateSelectorProps) {
   const groupedTemplates = EVENT_TEMPLATES.reduce(
     (acc, template) => {
-      if (!acc[template.category]) {
-        acc[template.category] = [];
-      }
-      acc[template.category].push(template);
+      const group = acc[template.category] ?? [];
+      group.push(template);
+      acc[template.category] = group;
       return acc;
     },
     {} as Record<string, EventTemplate[]>

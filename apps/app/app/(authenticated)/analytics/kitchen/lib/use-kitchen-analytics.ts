@@ -4,6 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 // NOTE: Keeping apiFetch for custom analytics aggregation endpoint (/api/analytics/kitchen) — no generated client for analytics
 import { apiFetch } from "@/app/lib/api";
 import { invariant } from "@/app/lib/invariant";
+import {
+  assertRecord as expectRecord,
+  isPlainRecord,
+} from "@/app/lib/is-record";
 
 interface KitchenAnalyticsSummary {
   endDate: string;
@@ -76,17 +80,6 @@ export interface UseKitchenAnalyticsReturn {
   refetch: () => void;
 }
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null;
-
-const expectRecord = (
-  value: unknown,
-  path: string
-): Record<string, unknown> => {
-  invariant(isRecord(value), `${path} must be an object`);
-  return value;
-};
-
 const expectArray = (value: unknown, path: string): unknown[] => {
   invariant(Array.isArray(value), `${path} must be an array`);
   return value;
@@ -108,7 +101,7 @@ const expectNumber = (value: unknown, path: string): number => {
 export const parseKitchenAnalyticsResponse = (
   payload: unknown
 ): KitchenAnalyticsData => {
-  invariant(isRecord(payload), "payload must be an object");
+  invariant(isPlainRecord(payload), "payload must be an object");
 
   const summary = expectRecord(payload.summary, "payload.summary");
   const stationThroughput = expectArray(

@@ -39,11 +39,6 @@ function formatDisplay(date: Date | undefined): string {
   return format(date, "MMM d, yyyy");
 }
 
-function formatTime(date: Date | undefined): string {
-  if (!date) return "";
-  return format(date, "HH:mm");
-}
-
 function synthEvent(value: string): React.ChangeEvent<HTMLInputElement> {
   return {
     target: { value },

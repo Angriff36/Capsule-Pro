@@ -21,7 +21,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // InvariantError used by requireCurrentUser for auth failures
 class MockInvariantError extends Error {
-  name = "InvariantError";
+  override name = "InvariantError";
 }
 vi.mock("@/app/lib/invariant", () => ({
   InvariantError: MockInvariantError,

@@ -81,7 +81,7 @@ vi.mock("@/lib/manifest-response", async () => {
 });
 vi.mock("@/app/lib/invariant", () => {
   class InvariantError extends Error {
-    name = "InvariantError" as const;
+    override name = "InvariantError" as const;
     constructor(m: string) {
       super(m);
       this.name = "InvariantError";
@@ -553,7 +553,7 @@ describe("Equipment API", () => {
       };
       for (const sev of severities) {
         expect(order[sev]).toBeGreaterThanOrEqual(lastOrder);
-        lastOrder = order[sev];
+        lastOrder = order[sev] ?? lastOrder;
       }
     });
   });

@@ -28,10 +28,11 @@ export function getChannelName(tenantId: string): string {
  */
 export function getModuleFromEventType(eventType: string): string {
   const parts = eventType.split(".");
-  if (parts.length < 2) {
+  const module = parts[0];
+  if (parts.length < 2 || !module) {
     throw new Error(`Invalid eventType format: ${eventType}`);
   }
-  return parts[0];
+  return module;
 }
 
 /**
@@ -42,7 +43,8 @@ export function getModuleFromEventType(eventType: string): string {
  */
 export function parseChannelName(channel: string): { tenantId: string } | null {
   const match = channel.match(/^tenant:(.+)$/);
-  return match ? { tenantId: match[1] } : null;
+  const tenantId = match?.[1];
+  return tenantId ? { tenantId } : null;
 }
 
 /**

@@ -871,8 +871,8 @@ describe("Forecast Integration Tests", () => {
 
     // Verify forecast entries are monotonically decreasing
     for (let i = 1; i < result.forecast.length; i++) {
-      expect(result.forecast[i].projectedStock).toBeLessThanOrEqual(
-        result.forecast[i - 1].projectedStock
+      expect(result.forecast[i]!.projectedStock).toBeLessThanOrEqual(
+        result.forecast[i - 1]!.projectedStock
       );
     }
   });

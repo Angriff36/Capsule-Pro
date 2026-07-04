@@ -113,7 +113,7 @@ async function generateForEvent(
   return { eventId, ok: true, proposalId };
 }
 
-export async function GET() {
+export async function GET(_request: NextRequest) {
   const { orgId } = await auth();
   if (!orgId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });

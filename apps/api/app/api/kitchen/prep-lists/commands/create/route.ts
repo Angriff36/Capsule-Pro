@@ -204,6 +204,9 @@ export async function POST(request: NextRequest): Promise<Response> {
       if (input.items && Array.isArray(input.items)) {
         for (let i = 0; i < input.items.length; i++) {
           const item = input.items[i];
+          if (!item) {
+            continue;
+          }
           const itemId = randomUUID();
 
           await tx.$executeRaw(

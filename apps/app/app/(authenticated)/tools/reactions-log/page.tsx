@@ -9,6 +9,7 @@
 
 import { auth } from "@repo/auth/server";
 import { redirect } from "next/navigation";
+import { OperationalPageShell } from "@/app/(authenticated)/components/operational-page-shell";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { ReactionsLogClient } from "./reactions-log-client";
 
@@ -32,19 +33,12 @@ export default async function ReactionsLogPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
-      <div className="mb-8">
-        <h1 className="font-semibold text-2xl tracking-tight">
-          Reaction Execution Log
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Live trace of every governed command and the reactions it fired —
-          which reaction ran, what triggered it, the payload shape, and whether
-          it succeeded or silently failed.
-        </p>
-      </div>
-
+    <OperationalPageShell
+      description="Live trace of every governed command and the reactions it fired — which reaction ran, what triggered it, the payload shape, and whether it succeeded or silently failed."
+      eyebrow="Tools / Reactions"
+      title="Reaction execution log"
+    >
       <ReactionsLogClient tenantId={tenantId} />
-    </div>
+    </OperationalPageShell>
   );
 }

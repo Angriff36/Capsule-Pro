@@ -342,7 +342,7 @@ describe("PUT /api/accounting/payments/[id] (process) — gateway trust boundary
       );
 
       expect(mocks.processPaymentGatewayMock).toHaveBeenCalledTimes(1);
-      const gatewayArgs = mocks.processPaymentGatewayMock.mock.calls[0][0];
+      const gatewayArgs = mocks.processPaymentGatewayMock.mock.calls[0]![0];
       // Inputs come from the persisted payment row, NOT the body.
       expect(gatewayArgs).toEqual({
         paymentId: PAYMENT_ID,

@@ -38,10 +38,9 @@ export async function GET(request: NextRequest) {
     // Group by sku
     const grouped = forecasts.reduce(
       (acc, forecast) => {
-        if (!acc[forecast.sku]) {
-          acc[forecast.sku] = [];
-        }
-        acc[forecast.sku].push(forecast);
+        const bucket = acc[forecast.sku] ?? [];
+        bucket.push(forecast);
+        acc[forecast.sku] = bucket;
         return acc;
       },
       {} as Record<string, typeof forecasts>

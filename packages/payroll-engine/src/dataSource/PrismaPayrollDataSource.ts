@@ -299,8 +299,8 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       return;
     }
 
-    const tenantId = records[0].tenantId;
-    const periodId = records[0].periodId;
+    const tenantId = records[0]!.tenantId;
+    const periodId = records[0]!.periodId;
     // The run shares the period id (the create payload below sets `id: periodId`),
     // so the run id is known up front and never depends on the upsert result.
     const payrollRunId = periodId;

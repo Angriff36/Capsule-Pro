@@ -28,7 +28,7 @@ async function test() {
     console.log("Accounts count:", accounts.length);
 
     if (accounts.length > 0) {
-      const tenantId = accounts[0].id;
+      const tenantId = accounts[0]!.id;
       console.log("Testing inventory for tenant:", tenantId);
 
       const items = await database.inventoryItem.findMany({

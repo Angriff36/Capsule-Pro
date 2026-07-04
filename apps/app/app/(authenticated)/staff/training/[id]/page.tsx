@@ -1,9 +1,5 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import {
-  DisplayHeading,
-  MonoLabel,
-} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -13,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -26,6 +21,7 @@ import { ArrowLeft, Clock, FileText, Users } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
+import { OperationalPageShell } from "../../../components/operational-page-shell";
 import { AssignTrainingDialog } from "./components/assign-training-dialog";
 import { DeleteTrainingModuleButton } from "./components/delete-training-module-button";
 import { EditTrainingModuleDialog } from "./components/edit-training-module-dialog";
@@ -200,21 +196,14 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
   ).length;
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      <div className="flex items-start gap-4">
-        <Link href="/staff/training">
-          <Button size="icon" variant="ghost">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div className="flex-1 space-y-1">
-          <MonoLabel tone="dark">Operations / Staff / Training</MonoLabel>
-          <DisplayHeading>{module.title}</DisplayHeading>
-          <p className="text-muted-foreground">
-            {module.description || "No description provided."}
-          </p>
-        </div>
+    <OperationalPageShell
+      actions={
         <div className="flex items-center gap-2">
+          <Link href="/staff/training">
+            <Button size="icon" variant="ghost">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
           <EditTrainingModuleDialog
             defaultValues={{
               title: module.title,
@@ -234,9 +223,11 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
             moduleTitle={module.title}
           />
         </div>
-      </div>
-
-      <Separator />
+      }
+      description={module.description || "No description provided."}
+      eyebrow="Staff / Training"
+      title={module.title}
+    >
 
       {/* Module Stats */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -447,7 +438,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </OperationalPageShell>
   );
 };
 

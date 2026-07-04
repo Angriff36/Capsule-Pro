@@ -5,7 +5,7 @@
  * Transforms entity changes, AI operations, and collaborator actions into a unified feed.
  */
 
-import { database, type Prisma } from "@repo/database";
+import { analyticsDatabase, database, type Prisma } from "@repo/database";
 
 export interface ActivityCreateInput {
   action: string;
@@ -443,6 +443,129 @@ function formatEntityType(entityType: string): string {
 /**
  * Get activity statistics for a tenant
  */
+const READ_ONLY_COMMANDS = new Set([
+  "get",
+  "list",
+  "find",
+  "search",
+  "count",
+  "export",
+]);
+
+/**
+ * Map append-only reaction_logs rows into ActivityFeed-shaped items when the
+ * governed ActivityFeed table has no rows yet (historical observability data).
+ */
+export function mapReactionLogsToFeedItems(
+  logs: Array<{
+    id: string;
+    tenantId: string;
+    entity: string | null;
+    command: string;
+    status: string;
+    emittedEvents: string[];
+    errorMessage: string | null;
+    actorId: string | null;
+    correlationId: string | null;
+    createdAt: Date;
+  }>
+): Array<{
+  id: string;
+  tenantId: string;
+  activityType: string;
+  entityType: string | null;
+  entityId: string | null;
+  action: string;
+  title: string;
+  description: string | null;
+  metadata: Record<string, unknown> | null;
+  performedBy: string | null;
+  performerName: string | null;
+  correlationId: string | null;
+  parentId: string | null;
+  sourceType: string | null;
+  sourceId: string | null;
+  importance: string;
+  visibility: string;
+  createdAt: Date;
+}> {
+  return logs.map((log) => {
+    const entityLabel = log.entity ?? "System";
+    const failed = log.status === "failed";
+    const events =
+      log.emittedEvents.length > 0 ? log.emittedEvents.join(", ") : null;
+
+    return {
+      id: log.id,
+      tenantId: log.tenantId,
+      activityType: failed ? "system_event" : "entity_change",
+      entityType: log.entity,
+      entityId: null,
+      action: log.command,
+      title: failed
+        ? `${entityLabel}.${log.command} failed`
+        : `${entityLabel}.${log.command}`,
+      description: failed
+        ? (log.errorMessage ?? "Command failed")
+        : events
+          ? `Emitted ${events}`
+          : `${entityLabel} ${log.command} completed`,
+      metadata: {
+        source: "reaction_logs",
+        status: log.status,
+        emittedEvents: log.emittedEvents,
+      },
+      performedBy: log.actorId,
+      performerName: null,
+      correlationId: log.correlationId,
+      parentId: null,
+      sourceType: "manifest_command",
+      sourceId: null,
+      importance: failed ? "high" : "normal",
+      visibility: "all",
+      createdAt: log.createdAt,
+    };
+  });
+}
+
+export async function getReactionLogActivities(
+  tenantId: string,
+  options: ActivityFilterOptions = {}
+): Promise<{ activities: unknown[]; hasMore: boolean; totalCount: number }> {
+  const limit = Math.min(options.limit ?? 50, 200);
+  const offset = options.offset ?? 0;
+
+  const where = {
+    tenantId,
+    ...(options.entityType ? { entity: options.entityType } : {}),
+    ...(options.startDate || options.endDate
+      ? {
+          createdAt: {
+            gte: options.startDate,
+            lte: options.endDate,
+          },
+        }
+      : {}),
+  };
+
+  const [totalCount, logs] = await Promise.all([
+    analyticsDatabase.reactionLog.count({ where }),
+    analyticsDatabase.reactionLog.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: offset,
+    }),
+  ]);
+
+  const activities = mapReactionLogsToFeedItems(logs);
+  return {
+    activities,
+    hasMore: offset + activities.length < totalCount,
+    totalCount,
+  };
+}
+
 export async function getActivityStats(tenantId: string): Promise<{
   totalActivities: number;
   todayCount: number;
@@ -495,11 +618,78 @@ export async function getActivityStats(tenantId: string): Promise<{
     byEntity[row.entity_type] = Number(row.count);
   }
 
+  if (total > 0) {
+    return {
+      totalActivities: total,
+      todayCount: today,
+      weekCount: week,
+      byType,
+      byEntity,
+    };
+  }
+
+  const reactionTotal = await analyticsDatabase.reactionLog.count({ where: { tenantId } });
+  if (reactionTotal === 0) {
+    return {
+      totalActivities: 0,
+      todayCount: 0,
+      weekCount: 0,
+      byType: {},
+      byEntity: {},
+    };
+  }
+
+  const [reactionToday, reactionWeek] = await Promise.all([
+    analyticsDatabase.reactionLog.count({
+      where: { tenantId, createdAt: { gte: todayStart } },
+    }),
+    analyticsDatabase.reactionLog.count({
+      where: { tenantId, createdAt: { gte: weekStart } },
+    }),
+  ]);
+
   return {
-    totalActivities: total,
-    todayCount: today,
-    weekCount: week,
-    byType,
-    byEntity,
+    totalActivities: reactionTotal,
+    todayCount: reactionToday,
+    weekCount: reactionWeek,
+    byType: { entity_change: reactionTotal },
+    byEntity: {},
   };
+}
+
+/**
+ * Fire-and-forget activity row for a successful governed command.
+ */
+export function recordManifestCommandActivity(
+  tenantId: string,
+  entityType: string,
+  entityId: string,
+  command: string,
+  result: Record<string, unknown>,
+  performedBy?: string,
+  correlationId?: string
+): void {
+  if (READ_ONLY_COMMANDS.has(command)) {
+    return;
+  }
+
+  const entityName = String(
+    result.name ?? result.title ?? result.label ?? entityId
+  );
+
+  void recordEntityChange(
+    tenantId,
+    entityType,
+    entityId,
+    command,
+    entityName,
+    performedBy,
+    undefined,
+    {
+      correlationId,
+      source: "manifest_command",
+    }
+  ).catch(() => {
+    // Observability must not break command execution.
+  });
 }

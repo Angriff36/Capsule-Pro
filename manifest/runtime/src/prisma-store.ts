@@ -65,10 +65,13 @@ export interface EntityInstance {
  * separate KitchenTaskClaim table for tracking claims.
  */
 export class PrepTaskPrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
+  private readonly prisma: PrismaClient;
+  private readonly tenantId: string;
+
+  constructor(prisma: PrismaClient, tenantId: string) {
+    this.prisma = prisma;
+    this.tenantId = tenantId;
+  }
 
   async getAll(): Promise<EntityInstance[]> {
     // Fetch all prep tasks for this tenant
@@ -299,10 +302,13 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
  * uses the same values as the DB: pending, in_progress, done, cancelled.
  */
 export class KitchenTaskPrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
+  private readonly prisma: PrismaClient;
+  private readonly tenantId: string;
+
+  constructor(prisma: PrismaClient, tenantId: string) {
+    this.prisma = prisma;
+    this.tenantId = tenantId;
+  }
 
   async getAll(): Promise<EntityInstance[]> {
     const tasks = (await this.prisma.kitchenTask.findMany({
@@ -543,10 +549,13 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
  * on write (toJsonText) and parsed on read (fromJsonText).
  */
 export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
+  private readonly prisma: PrismaClient;
+  private readonly tenantId: string;
+
+  constructor(prisma: PrismaClient, tenantId: string) {
+    this.prisma = prisma;
+    this.tenantId = tenantId;
+  }
 
   async getAll(): Promise<EntityInstance[]> {
     const rows = await this.prisma.prepTaskPlanWorkflow.findMany({
@@ -862,6 +871,10 @@ export function createPrismaStoreProvider(
       case "Event":
         return new EventPrismaStore(prisma, tenantId);
       default: {
+        if (_manifestStoreIssueReporter && !_loggedMissingStoreEntities.has(entityName)) {
+          _loggedMissingStoreEntities.add(entityName);
+          _manifestStoreIssueReporter(entityName, "missing");
+        }
         return;
       }
     }
@@ -874,10 +887,13 @@ export function createPrismaStoreProvider(
  * Maps Manifest Station entities to the Prisma Station table.
  */
 export class StationPrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
+  private readonly prisma: PrismaClient;
+  private readonly tenantId: string;
+
+  constructor(prisma: PrismaClient, tenantId: string) {
+    this.prisma = prisma;
+    this.tenantId = tenantId;
+  }
 
   async getAll(): Promise<EntityInstance[]> {
     const stations = await this.prisma.station.findMany({

@@ -807,7 +807,6 @@ describe("Rate Limiting Middleware", () => {
 
     it("should not modify original response", () => {
       const originalResponse = new Response();
-      const _originalHeaders = new Map(originalResponse.headers);
 
       const resetDate = new Date();
       addRateLimitHeaders(originalResponse, 100, 50, resetDate);

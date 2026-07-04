@@ -193,7 +193,7 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
 
       expect(response.status).toBe(200);
       expect(mocks.runManifestCommandMock).toHaveBeenCalledTimes(1);
-      const callArgs = mocks.runManifestCommandMock.mock.calls[0][0];
+      const callArgs = mocks.runManifestCommandMock.mock.calls[0]![0];
       expect(callArgs.entity).toBe("RevenueRecognitionSchedule");
       expect(callArgs.command).toBe("startRecognition");
       expect(callArgs.body).toEqual({ id: SCHEDULE_ID, tenantId: TENANT_ID });
@@ -295,12 +295,12 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       ).toBeGreaterThanOrEqual(2);
 
       // First call: create the recognition line
-      const createCall = mocks.manifestRunCommandMock.mock.calls[0];
+      const createCall = mocks.manifestRunCommandMock.mock.calls[0]!;
       expect(createCall[0]).toBe("create");
       expect(createCall[2]).toEqual({ entityName: "RevenueRecognitionLine" });
 
       // Second call: update schedule amounts
-      const updateCall = mocks.manifestRunCommandMock.mock.calls[1];
+      const updateCall = mocks.manifestRunCommandMock.mock.calls[1]!;
       expect(updateCall[0]).toBe("recognizeAmount");
       expect(updateCall[2]).toMatchObject({
         entityName: "RevenueRecognitionSchedule",
@@ -335,7 +335,7 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       expect(
         mocks.manifestRunCommandMock.mock.calls.length
       ).toBeGreaterThanOrEqual(3);
-      const completeCall = mocks.manifestRunCommandMock.mock.calls[2];
+      const completeCall = mocks.manifestRunCommandMock.mock.calls[2]!;
       expect(completeCall[0]).toBe("completeIfFullyRecognized");
     });
   });
@@ -405,13 +405,13 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       expect(mocks.runManifestCommandMock).toHaveBeenCalledTimes(2);
 
       // First call: reverse the line
-      const lineCall = mocks.runManifestCommandMock.mock.calls[0][0];
+      const lineCall = mocks.runManifestCommandMock.mock.calls[0]![0];
       expect(lineCall.entity).toBe("RevenueRecognitionLine");
       expect(lineCall.command).toBe("reverse");
       expect(lineCall.instanceId).toBe(LINE_ID);
 
       // Second call: update schedule totals
-      const scheduleCall = mocks.runManifestCommandMock.mock.calls[1][0];
+      const scheduleCall = mocks.runManifestCommandMock.mock.calls[1]![0];
       expect(scheduleCall.entity).toBe("RevenueRecognitionSchedule");
       expect(scheduleCall.command).toBe("reverseRecognition");
       expect(scheduleCall.body.recognizedAmount).toBe("7500.00");
@@ -455,7 +455,7 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
 
       expect(response.status).toBe(200);
       expect(mocks.runManifestCommandMock).toHaveBeenCalledTimes(1);
-      const callArgs = mocks.runManifestCommandMock.mock.calls[0][0];
+      const callArgs = mocks.runManifestCommandMock.mock.calls[0]![0];
       expect(callArgs.entity).toBe("RevenueRecognitionSchedule");
       expect(callArgs.command).toBe("cancel");
     });
@@ -496,7 +496,7 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
 
       expect(response.status).toBe(200);
       expect(mocks.runManifestCommandMock).toHaveBeenCalledTimes(1);
-      const callArgs = mocks.runManifestCommandMock.mock.calls[0][0];
+      const callArgs = mocks.runManifestCommandMock.mock.calls[0]![0];
       expect(callArgs.entity).toBe("RevenueRecognitionSchedule");
       expect(callArgs.command).toBe("adjustSchedule");
       expect(callArgs.body.newTotalAmount).toBe(12_000);
@@ -522,7 +522,7 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
 
       expect(response.status).toBe(200);
       expect(mocks.runManifestCommandMock).toHaveBeenCalledTimes(1);
-      const callArgs = mocks.runManifestCommandMock.mock.calls[0][0];
+      const callArgs = mocks.runManifestCommandMock.mock.calls[0]![0];
       expect(callArgs.entity).toBe("RevenueRecognitionSchedule");
       expect(callArgs.command).toBe("adjustSchedule");
       expect(callArgs.body.description).toBe("Updated subscription");

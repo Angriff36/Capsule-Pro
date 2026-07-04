@@ -14,11 +14,12 @@ import type {
   OverrideRequest,
 } from "@angriff36/manifest/ir";
 import { resolveCommand } from "./command-resolver";
+import { parseDatetimeToEpochMs } from "./datetime-boundary";
+import { getCommandParamSchema } from "./generated/command-param-schemas.generated";
 import {
   refreshParentContext,
   resolveParentContext,
 } from "./parent-context-resolver";
-import { parseDatetimeToEpochMs } from "./datetime-boundary";
 
 export {
   refreshParentContext,
@@ -120,6 +121,7 @@ export type RunManifestCommandFailureKind =
   | "guard_failed"
   | "constraint_blocked"
   | "command_failed"
+  | "invalid_params"
   | "runtime_error";
 
 export interface RunManifestCommandCoreSuccess {
@@ -348,6 +350,36 @@ export async function runManifestCommandCore(
     }
 
     const command = resolved.command;
+
+    // Pre-flight Zod parameter validation: reject malformed requests with a 400
+    // BEFORE the runtime is created — skipping IR/store setup, the DB, and the
+    // engine for bad input (Zod Pre-Validation Short-Circuit). Schemas are
+    // non-strict (unknown body keys like `id`/`overrideRequests` are ignored), so
+    // the gate only fails on missing required params / wrong primitive types — a
+    // strict subset of what the engine itself enforces. Commands with no
+    // generated schema skip the gate; the runtime remains the authority.
+    const paramSchema = getCommandParamSchema(entity, command);
+    if (paramSchema) {
+      const parsed = paramSchema.safeParse(body);
+      if (!parsed.success) {
+        const issues = parsed.error.issues
+          .slice(0, 5)
+          .map(
+            (issue) =>
+              `${issue.path.length > 0 ? issue.path.join(".") : "(root)"}: ${issue.message}`
+          )
+          .join("; ");
+        return {
+          ok: false,
+          entity,
+          command,
+          kind: "invalid_params",
+          httpStatus: 400,
+          message: `Invalid parameters for ${entity}.${command}: ${issues}`,
+        };
+      }
+    }
+
     const runtime = await deps.createRuntime({ user, entityName: entity });
 
     // R1 — Boundary datetime coercion: coerce ISO strings and Date objects to

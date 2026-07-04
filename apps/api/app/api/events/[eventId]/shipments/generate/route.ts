@@ -238,10 +238,6 @@ export async function POST(
 
     // Determine location (use provided location or event's location)
     const shipToLocationId = locationId || event.locationId;
-    const _totalValue = requirements.reduce(
-      (sum, req) => sum + req.requiredQuantity * req.unitCost,
-      0
-    );
 
     // Delegate shipment creation to manifest runtime
     const shipmentResult = await runManifestCommand({

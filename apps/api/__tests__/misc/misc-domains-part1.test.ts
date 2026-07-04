@@ -30,7 +30,7 @@ vi.mock("@/lib/manifest/execute-command", () => ({
 // InvariantError is caught by the dispatcher → maps to 401
 vi.mock("@/app/lib/invariant", () => {
   class InvariantError extends Error {
-    name = "InvariantError";
+    override name = "InvariantError";
     constructor(message: string) {
       super(message);
       this.name = "InvariantError";

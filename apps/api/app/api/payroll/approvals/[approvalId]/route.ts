@@ -89,6 +89,12 @@ export async function PUT(request: Request, context: RouteContext) {
     }
 
     const approval = approvalResult[0];
+    if (!approval) {
+      return NextResponse.json(
+        { message: "Approval not found" },
+        { status: 404 }
+      );
+    }
     const payrollRunId = approval.payroll_run_id;
     const currentStatus = approval.previous_status;
 
@@ -212,6 +218,12 @@ export async function PUT(request: Request, context: RouteContext) {
     }
 
     const updatedRun = updatedRuns[0];
+    if (!updatedRun) {
+      return NextResponse.json(
+        { message: "Payroll run updated but could not read back" },
+        { status: 500 }
+      );
+    }
 
     const response = {
       id: updatedRun.id,

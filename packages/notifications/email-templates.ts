@@ -79,7 +79,9 @@ export function validateTemplateData(
   let match: RegExpExecArray | null;
 
   while ((match = placeholderRegex.exec(template)) !== null) {
-    requiredFields.add(match[1]);
+    if (match[1] !== undefined) {
+      requiredFields.add(match[1]);
+    }
   }
 
   const missingFields: string[] = [];
@@ -105,7 +107,9 @@ export function extractMergeFields(template: string): string[] {
   let match: RegExpExecArray | null;
 
   while ((match = placeholderRegex.exec(template)) !== null) {
-    fields.add(match[1]);
+    if (match[1] !== undefined) {
+      fields.add(match[1]);
+    }
   }
 
   return Array.from(fields);

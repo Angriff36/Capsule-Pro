@@ -293,7 +293,7 @@ export interface BattleBoard {
   boardName?: string;
   boardType?: string;
   schemaVersion?: string;
-  boardData?: unknown;
+  boardData?: json;
   documentUrl?: string | null;
   sourceDocumentType?: string | null;
   documentImportedAt?: string | null;
@@ -331,8 +331,8 @@ export interface BoardConfig {
   tenantId: string;
   deletedAt?: string | null;
   name?: string;
-  columns?: unknown;
-  settings?: unknown;
+  columns?: json;
+  settings?: json;
   createdBy?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -410,7 +410,7 @@ export interface BulkCombineRule {
   id: string;
   tenantId: string;
   name: string;
-  matchCriteria: unknown;
+  matchCriteria: json;
   isActive?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -445,7 +445,7 @@ export interface CallPlanningSession {
   status?: string;
   sourceType?: string;
   transcriptText?: string | null;
-  metadata?: unknown | null;
+  metadata?: json | null;
   startedAt: string;
   endedAt?: string | null;
   createdAt: string;
@@ -578,7 +578,7 @@ export interface ClientPreference {
   clientId: string;
   preferenceType?: string;
   preferenceKey?: string;
-  preferenceValue?: unknown;
+  preferenceValue?: json;
   notes?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -632,7 +632,7 @@ export interface CollectionCase {
   legalFirm?: string | null;
   notes?: string | null;
   lastActivityAt?: string | null;
-  metadata?: unknown;
+  metadata?: json;
   resolvedAt?: string | null;
   closedAt?: string | null;
   createdAt: string;
@@ -649,7 +649,7 @@ export interface CollectionPaymentPlan {
   completedInstallments?: number | null;
   status?: string;
   startDate: string;
-  metadata?: unknown;
+  metadata?: json;
   completedAt?: string | null;
   defaultedAt?: string | null;
   createdAt: string;
@@ -667,7 +667,7 @@ export interface CommandBoard {
   isTemplate?: boolean;
   tags?: string[] | null;
   autoPopulate?: boolean;
-  scope?: unknown | null;
+  scope?: json | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -687,7 +687,7 @@ export interface CommandBoardCard {
   height?: number;
   zIndex?: number;
   color?: string | null;
-  metadata?: unknown;
+  metadata?: json;
   groupId?: string | null;
   entityId?: string | null;
   entityType?: string | null;
@@ -734,7 +734,7 @@ export interface CommandBoardLayout {
   boardId: string;
   userId: string;
   name?: string;
-  viewport?: unknown;
+  viewport?: json;
   visibleCards?: string[] | null;
   gridSize?: number;
   showGrid?: boolean;
@@ -1015,7 +1015,7 @@ export interface EmailTemplate {
   templateType?: string;
   subject?: string;
   body?: string;
-  mergeFields?: unknown;
+  mergeFields?: json;
   isActive?: boolean;
   isDefault?: boolean;
   createdAt: string;
@@ -1028,10 +1028,10 @@ export interface EmailWorkflow {
   deletedAt?: string | null;
   name?: string;
   triggerType?: string;
-  triggerConfig?: unknown;
+  triggerConfig?: json;
   emailTemplateId?: string | null;
   emailTemplateTenantId?: string | null;
-  recipientConfig?: unknown;
+  recipientConfig?: json;
   isActive?: boolean;
   lastTriggeredAt?: string | null;
   createdAt: string;
@@ -1282,11 +1282,11 @@ export interface EventImportWorkflow {
   status?: string;
   currentStep?: number;
   totalSteps?: number;
-  inputData?: unknown;
-  outputData?: unknown;
-  stepResults?: unknown;
-  errors?: unknown;
-  warnings?: unknown;
+  inputData?: json;
+  outputData?: json;
+  stepResults?: json;
+  errors?: json;
+  warnings?: json;
   confidence?: number;
   startedAt?: string | null;
   completedAt?: string | null;
@@ -1313,12 +1313,12 @@ export interface EventPlanningDraft {
   venueId?: string | null;
   serviceStyle?: string | null;
   dietaryRestrictions?: string | null;
-  menuPreferences?: unknown | null;
+  menuPreferences?: json | null;
   budgetMin?: number | null;
   budgetMax?: number | null;
   packageIds?: string[] | null;
   addOnIds?: string[] | null;
-  customItems?: unknown | null;
+  customItems?: json | null;
   timelineNotes?: string | null;
   openQuestions?: string[] | null;
   specialNotes?: string | null;
@@ -1369,9 +1369,9 @@ export interface EventReport {
   version?: string;
   status?: string;
   completion?: number;
-  checklistData?: unknown;
-  parsedEventData?: unknown | null;
-  reportConfig?: unknown | null;
+  checklistData?: json;
+  parsedEventData?: json | null;
+  reportConfig?: json | null;
   autoFillScore?: number | null;
   reviewNotes?: string | null;
   reviewedBy?: string | null;
@@ -1408,11 +1408,11 @@ export interface EventSummary {
   tenantId: string;
   deletedAt?: string | null;
   eventId: string;
-  highlights?: unknown | null;
-  issues?: unknown | null;
-  financialPerformance?: unknown | null;
-  clientFeedback?: unknown | null;
-  insights?: unknown | null;
+  highlights?: json | null;
+  issues?: json | null;
+  financialPerformance?: json | null;
+  clientFeedback?: json | null;
+  insights?: json | null;
   overallSummary?: string | null;
   generatedAt: string;
   generationDurationMs?: number | null;
@@ -1583,8 +1583,8 @@ export interface ForecastInput {
   tenantId: string;
   date: string;
   sku: string;
-  events?: unknown;
-  promotions?: unknown;
+  events?: json;
+  promotions?: json;
   inventoryItemId: string;
   inputDate: string;
   actualUsage?: number;
@@ -1823,8 +1823,8 @@ export interface Invoice {
   lastReminderAt?: string | null;
   notes?: string | null;
   internalNotes?: string | null;
-  lineItems?: unknown | null;
-  metadata?: unknown;
+  lineItems?: json | null;
+  metadata?: json;
   createdAt: string;
   updatedAt: string;
 }
@@ -2252,7 +2252,7 @@ export interface PayrollLineItem {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  deductions?: unknown;
+  deductions?: json;
   payrollRunId: string;
   employeeId: string;
   grossPay?: number;
@@ -2599,12 +2599,12 @@ export interface ProposalDraft {
   clientName?: string;
   clientEmail?: string | null;
   clientPhone?: string | null;
-  eventSummary?: unknown;
-  menuSections?: unknown;
-  servicePlan?: unknown;
-  pricingBreakdown?: unknown;
-  timeline?: unknown | null;
-  upgradeOptions?: unknown | null;
+  eventSummary?: json;
+  menuSections?: json;
+  servicePlan?: json;
+  pricingBreakdown?: json;
+  timeline?: json | null;
+  upgradeOptions?: json | null;
   visionSummary?: string | null;
   notes?: string | null;
   nextSteps?: string | null;
@@ -2651,7 +2651,7 @@ export interface ProposalTemplate {
   defaultTerms?: string | null;
   defaultTaxRate?: number;
   defaultNotes?: string | null;
-  defaultLineItems?: unknown;
+  defaultLineItems?: json;
   isActive?: boolean;
   isDefault?: boolean;
   logoUrl?: string | null;
@@ -2958,8 +2958,8 @@ export interface Report {
   description?: string | null;
   name?: string;
   reportType?: string;
-  queryConfig?: unknown;
-  displayConfig?: unknown;
+  queryConfig?: json;
+  displayConfig?: json;
   isShared?: boolean | null;
   createdBy?: string | null;
   createdAt: string;
@@ -2982,7 +2982,7 @@ export interface RevenueRecognitionLine {
   milestoneDescription?: string | null;
   description?: string | null;
   notes?: string | null;
-  metadata?: unknown;
+  metadata?: json;
   createdAt: string;
   updatedAt: string;
 }
@@ -3009,7 +3009,7 @@ export interface RevenueRecognitionSchedule {
   completedMilestones?: number;
   description?: string | null;
   notes?: string | null;
-  metadata?: unknown;
+  metadata?: json;
   completedAt?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -3021,7 +3021,7 @@ export interface RolePolicy {
   deletedAt?: string | null;
   roleId: string;
   roleName?: string;
-  permissions?: unknown;
+  permissions?: json;
   description?: string | null;
   isActive?: boolean;
   createdAt: string;
@@ -3371,11 +3371,11 @@ export interface SmsAutomationRule {
   name?: string;
   description?: string | null;
   triggerType?: string;
-  triggerConfig?: unknown;
+  triggerConfig?: json;
   templateId?: string | null;
   customMessage?: string | null;
   recipientType?: string;
-  recipientConfig?: unknown;
+  recipientConfig?: json;
   isActive?: boolean;
   priority?: number;
   createdAt: string;
@@ -3632,7 +3632,7 @@ export interface TipPool {
   totalTips?: number;
   status?: string | null;
   allocationRule?: string;
-  fixedShares?: unknown | null;
+  fixedShares?: json | null;
   distributedAmount?: number | null;
   distributedAt?: string | null;
   distributedBy?: string | null;
@@ -4022,7 +4022,7 @@ export interface Workflow {
   name?: string;
   description?: string | null;
   triggerType?: string;
-  triggerConfig?: unknown;
+  triggerConfig?: json;
   isActive?: boolean;
   createdAt: string;
   updatedAt: string;

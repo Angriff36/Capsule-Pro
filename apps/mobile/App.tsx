@@ -16,6 +16,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { OfflineBanner } from "./src/components/OfflineBanner";
 import { useNetworkStatus, useOfflineSync } from "./src/hooks";
 import { AppNavigator } from "./src/navigation";
+import { HighContrastProvider, useHighContrast } from "./src/providers/high-contrast";
 import { SignInScreen } from "./src/screens";
 import { clearAuthTokenGetter, setAuthTokenGetter } from "./src/store";
 
@@ -33,9 +34,10 @@ const queryClient = new QueryClient({
 function AppContent() {
   const { isOnline } = useNetworkStatus();
   const { syncStatus } = useOfflineSync();
+  const { colors } = useHighContrast();
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <StatusBar style="auto" />
       <OfflineBanner
         isOnline={isOnline}
@@ -97,8 +99,10 @@ export default function App() {
             </ClerkLoading>
             <ClerkLoaded>
               <SignedIn>
-                <AuthTokenBridge />
-                <AppContent />
+                <HighContrastProvider>
+                  <AuthTokenBridge />
+                  <AppContent />
+                </HighContrastProvider>
               </SignedIn>
               <SignedOut>
                 <SignInScreen />

@@ -303,16 +303,46 @@ describe("Shipment Persistence (write → read alignment)", () => {
     // Instance-scoped verbs go through the canonical dispatcher (the concrete
     // per-command routes were pruned by commit 12c1a4f9b — constitution §6).
     // The dispatcher derives `instanceId` from `body.id`.
-    const instanceScopedVerbs = [
-      "update",
-      "cancel",
-      "schedule",
-      "ship",
-      "startPreparing",
-      "markDelivered",
+    //
+    // Each body carries the verb's required command params so it clears the
+    // dispatcher's Zod pre-flight gate (which 400s on missing required params
+    // BEFORE the mocked runtime runs); `id` is the unused instance-id key on
+    // top. We are asserting instanceId forwarding, so the param values are
+    // arbitrary valid placeholders.
+    const instanceScopedVerbs: Array<{
+      verb: string;
+      body: Record<string, unknown>;
+    }> = [
+      {
+        verb: "update",
+        body: {
+          trackingNumber: "T-1",
+          carrier: "UPS",
+          shippingMethod: "ground",
+          estimatedDeliveryDate: 1_735_689_600_000,
+          shippingCost: 10,
+          notes: "",
+          internalNotes: "",
+        },
+      },
+      { verb: "cancel", body: { userId: TEST_USER_ID, reason: "supplier delay" } },
+      {
+        verb: "schedule",
+        body: { userId: TEST_USER_ID, scheduledDate: 1_735_689_600_000 },
+      },
+      { verb: "ship", body: { userId: TEST_USER_ID, trackingNumber: "1Z9999" } },
+      { verb: "startPreparing", body: { userId: TEST_USER_ID } },
+      {
+        verb: "markDelivered",
+        body: {
+          userId: TEST_USER_ID,
+          receivedBy: "Jane Doe",
+          signatureData: "data:image/png;base64,xyz",
+        },
+      },
     ];
 
-    for (const verb of instanceScopedVerbs) {
+    for (const { verb, body } of instanceScopedVerbs) {
       it(`${verb} command forwards instanceId from body.id to runCommand`, async () => {
         const { POST } = await import(
           "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -321,7 +351,7 @@ describe("Shipment Persistence (write → read alignment)", () => {
           `http://localhost:3000/api/manifest/Shipment/commands/${verb}`,
           {
             method: "POST",
-            body: JSON.stringify({ id: "ship-003" }),
+            body: JSON.stringify({ id: "ship-003", ...body }),
           }
         );
 
@@ -351,6 +381,11 @@ describe("Shipment Persistence (write → read alignment)", () => {
           body: JSON.stringify({
             shipmentNumber: "SHP-NEW",
             carrier: "FedEx",
+            scheduledDate: 1_735_689_600_000,
+            shippingMethod: "ground",
+            notes: "",
+            supplierId: "",
+            eventId: "",
           }),
         }
       );

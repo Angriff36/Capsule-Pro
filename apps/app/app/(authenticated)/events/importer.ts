@@ -93,11 +93,12 @@ const parseCsv = (input: string): CsvRow[] => {
     pushRow();
   }
 
-  if (rows.length === 0) {
+  const headerRow = rows[0];
+  if (!headerRow) {
     return [];
   }
 
-  const headers = rows[0].map(normalizeHeader);
+  const headers = headerRow.map(normalizeHeader);
   return rows.slice(1).map((values) => {
     const rowData: CsvRow = {};
     headers.forEach((header, idx) => {

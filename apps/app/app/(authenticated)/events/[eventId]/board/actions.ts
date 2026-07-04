@@ -612,10 +612,8 @@ export async function getDraftImpact(
     if (!(a.shiftStart && a.shiftEnd)) {
       continue;
     }
-    if (!busyIntervals[a.staffMemberId]) {
-      busyIntervals[a.staffMemberId] = [];
-    }
-    busyIntervals[a.staffMemberId].push({
+    const intervals = (busyIntervals[a.staffMemberId] ??= []);
+    intervals.push({
       start: a.shiftStart.toISOString(),
       end: a.shiftEnd.toISOString(),
       label: eventTitleMap.get(a.eventId) ?? "another event",

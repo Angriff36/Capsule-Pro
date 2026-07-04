@@ -1,4 +1,4 @@
-import { authMiddleware, type ClerkMiddlewareAuth } from "@repo/auth/proxy";
+import { authMiddleware, type ClerkMiddlewareAuth } from "@repo/auth/proxy"
 import { internationalizationMiddleware } from "@repo/internationalization/proxy";
 import { parseError } from "@repo/observability/error";
 import { secure } from "@repo/security";
@@ -28,7 +28,7 @@ const securityHeaders = env.FLAGS_SECRET
 // Custom middleware for Arcjet security checks
 const arcjetMiddleware = async (request: NextRequest) => {
   if (!env.ARCJET_KEY) {
-    return;
+    return undefined;
   }
 
   try {
@@ -45,6 +45,8 @@ const arcjetMiddleware = async (request: NextRequest) => {
     const message = parseError(error);
     return NextResponse.json({ error: message }, { status: 403 });
   }
+
+  return undefined;
 };
 
 // Compose non-Clerk middleware with Nemo

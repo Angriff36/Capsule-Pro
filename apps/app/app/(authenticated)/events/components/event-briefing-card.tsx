@@ -40,7 +40,7 @@ interface EventBriefingCardProps {
 
 export function EventBriefingCard({
   eventId,
-  eventTitle,
+  eventTitle: _eventTitle,
 }: EventBriefingCardProps) {
   const [briefing, setBriefing] = useState<EventBriefingResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);

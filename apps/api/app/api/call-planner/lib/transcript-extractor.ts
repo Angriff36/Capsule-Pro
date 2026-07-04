@@ -476,7 +476,7 @@ function parseCurrency(value: string): number {
 /**
  * Generate a summary of the extracted event details
  */
-function generateSummary(result: ExtractedEventDetails, transcript: string): string {
+function generateSummary(result: ExtractedEventDetails, _transcript: string): string {
   const parts: string[] = [];
 
   if (result.clientName) {

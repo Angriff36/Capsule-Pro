@@ -214,7 +214,7 @@ describe("parseIngredientInput", () => {
       { name: "parsley", quantity: 1, unit: "bunch", isOptional: true },
     ]);
     const result = parseIngredientInput(input);
-    expect(result[0].isOptional).toBe(true);
+    expect(result[0]!.isOptional).toBe(true);
   });
 
   it("parses JSON with optional field (alias)", () => {
@@ -222,7 +222,7 @@ describe("parseIngredientInput", () => {
       { name: "parsley", quantity: 1, unit: "bunch", optional: true },
     ]);
     const result = parseIngredientInput(input);
-    expect(result[0].isOptional).toBe(true);
+    expect(result[0]!.isOptional).toBe(true);
   });
 
   it("parses JSON with string quantity", () => {
@@ -230,7 +230,7 @@ describe("parseIngredientInput", () => {
       { name: "flour", quantity: "2.5", unit: "cups" },
     ]);
     const result = parseIngredientInput(input);
-    expect(result[0].quantity).toBe(2.5);
+    expect(result[0]!.quantity).toBe(2.5);
   });
 
   it("filters out JSON items with empty names", () => {
@@ -240,7 +240,7 @@ describe("parseIngredientInput", () => {
     ]);
     const result = parseIngredientInput(input);
     expect(result).toHaveLength(1);
-    expect(result[0].name).toBe("flour");
+    expect(result[0]!.name).toBe("flour");
   });
 
   it("filters out JSON items with whitespace-only names", () => {
@@ -261,7 +261,7 @@ describe("parseIngredientInput", () => {
     ]);
     const result = parseIngredientInput(input);
     expect(result).toHaveLength(1);
-    expect(result[0].name).toBe("flour");
+    expect(result[0]!.name).toBe("flour");
   });
 
   it("handles JSON with missing quantity (defaults to 1)", () => {
@@ -279,7 +279,7 @@ describe("parseIngredientInput", () => {
   it("handles JSON with non-finite quantity (defaults to 1)", () => {
     const input = JSON.stringify([{ name: "salt", quantity: Number.NaN }]);
     const result = parseIngredientInput(input);
-    expect(result[0].quantity).toBe(1);
+    expect(result[0]!.quantity).toBe(1);
   });
 
   it("handles JSON with Infinity quantity (defaults to 1)", () => {
@@ -287,19 +287,19 @@ describe("parseIngredientInput", () => {
       { name: "salt", quantity: Number.POSITIVE_INFINITY },
     ]);
     const result = parseIngredientInput(input);
-    expect(result[0].quantity).toBe(1);
+    expect(result[0]!.quantity).toBe(1);
   });
 
   it("handles JSON with empty unit string (treated as null)", () => {
     const input = JSON.stringify([{ name: "salt", quantity: 1, unit: "  " }]);
     const result = parseIngredientInput(input);
-    expect(result[0].unit).toBeNull();
+    expect(result[0]!.unit).toBeNull();
   });
 
   it("handles JSON with empty notes string (treated as null)", () => {
     const input = JSON.stringify([{ name: "salt", quantity: 1, notes: "  " }]);
     const result = parseIngredientInput(input);
-    expect(result[0].preparationNotes).toBeNull();
+    expect(result[0]!.preparationNotes).toBeNull();
   });
 
   // --- Text format ---
@@ -307,16 +307,16 @@ describe("parseIngredientInput", () => {
     const input = "2 cups flour\n1 tsp salt\n3 eggs";
     const result = parseIngredientInput(input);
     expect(result).toHaveLength(3);
-    expect(result[0].name).toBe("flour");
-    expect(result[0].unit).toBe("cups");
-    expect(result[0].quantity).toBe(2);
-    expect(result[1].name).toBe("salt");
-    expect(result[1].unit).toBe("tsp");
-    expect(result[1].quantity).toBe(1);
+    expect(result[0]!.name).toBe("flour");
+    expect(result[0]!.unit).toBe("cups");
+    expect(result[0]!.quantity).toBe(2);
+    expect(result[1]!.name).toBe("salt");
+    expect(result[1]!.unit).toBe("tsp");
+    expect(result[1]!.quantity).toBe(1);
     // "3 eggs" — regex treats "eggs" as unit, name falls back to full line
-    expect(result[2].name).toBe("3 eggs");
-    expect(result[2].unit).toBe("eggs");
-    expect(result[2].quantity).toBe(3);
+    expect(result[2]!.name).toBe("3 eggs");
+    expect(result[2]!.unit).toBe("eggs");
+    expect(result[2]!.quantity).toBe(3);
   });
 
   it("parses text with CRLF line endings", () => {
@@ -335,20 +335,20 @@ describe("parseIngredientInput", () => {
     const input = "  2 cups flour  \n  1 tsp salt  ";
     const result = parseIngredientInput(input);
     expect(result).toHaveLength(2);
-    expect(result[0].name).toBe("flour");
-    expect(result[1].name).toBe("salt");
+    expect(result[0]!.name).toBe("flour");
+    expect(result[1]!.name).toBe("salt");
   });
 
   it("sets preparationNotes to null for text format", () => {
     const input = "2 cups flour";
     const result = parseIngredientInput(input);
-    expect(result[0].preparationNotes).toBeNull();
+    expect(result[0]!.preparationNotes).toBeNull();
   });
 
   it("sets isOptional to false for text format", () => {
     const input = "2 cups flour";
     const result = parseIngredientInput(input);
-    expect(result[0].isOptional).toBe(false);
+    expect(result[0]!.isOptional).toBe(false);
   });
 
   // --- Edge cases ---
@@ -357,7 +357,7 @@ describe("parseIngredientInput", () => {
     // parseJsonArray returns null, so it falls through to text parsing
     const result = parseIngredientInput(input);
     expect(result).toHaveLength(1);
-    expect(result[0].name).toBe("[not valid json");
+    expect(result[0]!.name).toBe("[not valid json");
   });
 
   it("handles single-line text input", () => {
@@ -369,7 +369,7 @@ describe("parseIngredientInput", () => {
   it("handles ingredient with commas in name (text format)", () => {
     const input = "2 cups flour, all-purpose";
     const result = parseIngredientInput(input);
-    expect(result[0].name).toBe("flour, all-purpose");
+    expect(result[0]!.name).toBe("flour, all-purpose");
   });
 
   it("handles unicode characters in ingredient names", () => {
@@ -377,14 +377,14 @@ describe("parseIngredientInput", () => {
       { name: "crème fraîche", quantity: 1, unit: "cup" },
     ]);
     const result = parseIngredientInput(input);
-    expect(result[0].name).toBe("crème fraîche");
+    expect(result[0]!.name).toBe("crème fraîche");
   });
 
   it("handles very long ingredient names", () => {
     const longName = "a".repeat(500);
     const input = JSON.stringify([{ name: longName, quantity: 1 }]);
     const result = parseIngredientInput(input);
-    expect(result[0].name).toBe(longName);
+    expect(result[0]!.name).toBe(longName);
   });
 
   it("handles JSON with extra unknown fields (ignores them)", () => {
@@ -393,7 +393,7 @@ describe("parseIngredientInput", () => {
     ]);
     const result = parseIngredientInput(input);
     expect(result).toHaveLength(1);
-    expect(result[0].name).toBe("salt");
+    expect(result[0]!.name).toBe("salt");
   });
 
   // --- Regression: ensure no undefined values leak ---

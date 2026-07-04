@@ -80,12 +80,6 @@ const COLOR_VARIANTS = {
   orange: "border border-hairline bg-muted/20 text-foreground",
 } as const;
 
-const _SECTION_COLORS = {
-  prep: "bg-blue-500",
-  setup: "bg-green-500",
-  cleanup: "bg-orange-500",
-} as const;
-
 interface TaskCardProps {
   onAssign?: (taskId: string) => void;
   onComplete?: (taskId: string, completed: boolean) => void;
@@ -93,7 +87,7 @@ interface TaskCardProps {
   task: TaskBreakdownItem;
 }
 
-function TaskCard({ task, section, onComplete, onAssign }: TaskCardProps) {
+function TaskCard({ task, onComplete, onAssign }: TaskCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
 
@@ -299,7 +293,6 @@ function TaskSectionComponent({
   const config = SECTION_CONFIG[section];
 
   const totalTime = tasks.reduce((sum, t) => sum + t.durationMinutes, 0);
-  const _completedCount = 0;
 
   const formatTotalTime = (minutes: number): string => {
     if (minutes < 60) {
@@ -445,6 +438,10 @@ export function TaskBreakdownDisplay({
       }
 
       const newTask = allTasks[currentIndex];
+      if (!newTask) {
+        currentIndex++;
+        return;
+      }
       setDisplayedTasks((prev) => ({
         ...prev,
         [newTask.section]: [...prev[newTask.section], newTask.task],
@@ -667,7 +664,7 @@ interface GenerateTaskBreakdownModalProps {
 }
 
 export function GenerateTaskBreakdownModal({
-  eventId,
+  eventId: _eventId,
   eventTitle,
   eventDate,
   guestCount,
@@ -699,11 +696,6 @@ export function GenerateTaskBreakdownModal({
       setIsGenerating(false);
     }
   };
-
-  const _dateFormatter = new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
 
   return (
     <Dialog onOpenChange={onOpenChange} open={isOpen}>

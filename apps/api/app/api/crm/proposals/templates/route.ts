@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth/server";
+import type { NextRequest } from "next/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
@@ -9,7 +10,7 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
  * GET /api/crm/proposals/templates
  * List all active proposal templates
  */
-export async function GET() {
+export async function GET(_request: NextRequest) {
   try {
     const { orgId } = await auth();
     if (!orgId) {

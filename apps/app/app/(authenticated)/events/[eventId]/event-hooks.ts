@@ -343,7 +343,6 @@ export function useDeleteEventSummary() {
   return useMutation({
     mutationFn: ({
       summaryId,
-      eventId,
     }: {
       summaryId: string;
       eventId: string;

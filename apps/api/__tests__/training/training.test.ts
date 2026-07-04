@@ -1366,7 +1366,7 @@ describe("Training API", () => {
       );
       await createAssignmentViaHandler(request);
 
-      const callArgs = vi.mocked(runManifestCommand).mock.calls[0][0];
+      const callArgs = vi.mocked(runManifestCommand).mock.calls[0]![0];
       expect(callArgs.body.assignedBy).toBe(TEST_USER_ID);
       expect(callArgs.body.moduleId).toBe("mod-001");
       expect(callArgs.body.employeeId).toBe("emp-001");

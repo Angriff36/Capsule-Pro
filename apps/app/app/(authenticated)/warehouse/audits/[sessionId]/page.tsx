@@ -61,6 +61,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { OperationalPageShell } from "../../../components/operational-page-shell";
 import { formatCurrency } from "@/app/lib/format";
 import {
   cycleCountRecordCreate,
@@ -554,37 +555,15 @@ export default function CycleCountSessionDetailPage() {
       : 0;
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <>
+    <OperationalPageShell
+      actions={
+        <>
           <Button asChild size="sm" variant="ghost">
             <Link href="/warehouse/audits">
               <ArrowLeftIcon className="h-4 w-4" />
             </Link>
           </Button>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="font-bold text-2xl tracking-tight">
-                {session.session_name}
-              </h1>
-              <Badge variant={statusVariant[session.status]}>
-                {statusLabel[session.status]}
-              </Badge>
-            </div>
-            <p className="text-muted-foreground">
-              {countTypeLabel[session.count_type]} Count
-              {session.scheduled_date && (
-                <span>
-                  {" "}
-                  • Scheduled for{" "}
-                  {new Date(session.scheduled_date).toLocaleDateString()}
-                </span>
-              )}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
           {session.status === "in_progress" && (
             <>
               <Button onClick={() => setIsAddDialogOpen(true)}>
@@ -613,8 +592,30 @@ export default function CycleCountSessionDetailPage() {
           >
             <RefreshCwIcon className="h-4 w-4" />
           </Button>
-        </div>
-      </div>
+        </>
+      }
+      description={
+        <>
+          {countTypeLabel[session.count_type]} Count
+          {session.scheduled_date && (
+            <span>
+              {" "}
+              • Scheduled for{" "}
+              {new Date(session.scheduled_date).toLocaleDateString()}
+            </span>
+          )}
+        </>
+      }
+      eyebrow="Warehouse / Audits"
+      title={
+        <span className="inline-flex items-center gap-3">
+          {session.session_name}
+          <Badge variant={statusVariant[session.status]}>
+            {statusLabel[session.status]}
+          </Badge>
+        </span>
+      }
+    >
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -720,6 +721,8 @@ export default function CycleCountSessionDetailPage() {
           </Table>
         </CardContent>
       </Card>
+
+      </OperationalPageShell>
 
       {/* Add Item Dialog */}
       <Dialog onOpenChange={setIsAddDialogOpen} open={isAddDialogOpen}>
@@ -914,6 +917,6 @@ export default function CycleCountSessionDetailPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }

@@ -51,7 +51,7 @@ const irPath = join(here, "..", "..", "..", "ir", "kitchen.ir.json");
 // biome-ignore lint/suspicious/noExplicitAny: IR is structural JSON; engine accepts it.
 const ir: any = JSON.parse(readFileSync(irPath, "utf8"));
 
-const SEL_MODULE_ID = "training-module-sel-event-staff-onboarding";
+import { SEL_ONBOARDING_MODULE_ID as SEL_MODULE_ID } from "../training/sel-onboarding-ids";
 
 const TENANT = "t-staff-onboard";
 // admin satisfies StaffMember.create's policy AND the middleware's
@@ -184,7 +184,7 @@ describe("Middleware conformance: StaffMemberCreated → TrainingAssignment.crea
     );
     expect(defs).toHaveLength(1);
     // The surviving definition is the real one StaffMember.create emits.
-    expect(defs[0].channel).toBe("staff.staff-member.created");
+    expect(defs[0]!.channel).toBe("staff.staff-member.created");
   });
 
   it("creating a staff member auto-assigns the SEL onboarding training", async () => {
@@ -200,7 +200,8 @@ describe("Middleware conformance: StaffMemberCreated → TrainingAssignment.crea
       "TrainingAssignment"
     ).getAll()) as Record<string, unknown>[];
     expect(assignments).toHaveLength(1);
-    const assignment = assignments[0];
+    const assignment = assignments[0]!;
+    expect(assignment).toBeDefined();
     // create mutates employeeId = staffMemberId — _subject.id, NOT the unreachable
     // computed the reaction tried to read.
     expect(assignment.employeeId).toBe(STAFF_ID);
@@ -246,6 +247,6 @@ describe("Middleware conformance: StaffMemberCreated → TrainingAssignment.crea
       "TrainingAssignment"
     ).getAll()) as Record<string, unknown>[];
     expect(assignments).toHaveLength(1);
-    expect(assignments[0].id).toBe("assignment-pre-existing");
+    expect(assignments[0]!.id).toBe("assignment-pre-existing");
   });
 });

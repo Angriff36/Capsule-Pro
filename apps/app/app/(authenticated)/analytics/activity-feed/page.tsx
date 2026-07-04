@@ -6,6 +6,13 @@
  */
 
 import { auth } from "@repo/auth/server";
+import {
+  OperationalColumn,
+  PageBody,
+  PageCanvas,
+  PageLead,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { ActivityFeedClient } from "../components/activity-feed-client";
@@ -29,22 +36,25 @@ export default async function ActivityFeedPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
-      {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="font-semibold text-2xl tracking-tight">Activity Feed</h1>
-        <p className="mt-2 text-muted-foreground">
-          Monitor all system events, entity changes, AI plan approvals, and
-          collaborator actions across your organization.
-        </p>
-      </div>
-
-      {/* Activity Feed */}
-      <ActivityFeedClient
-        enableRealtime={false}
-        tenantId={tenantId}
-        userId={userId}
+    <PageCanvas>
+      <PageLead
+        description="Monitor system events, entity changes, AI plan approvals, and collaborator actions across your organization."
+        eyebrow="Analytics / Activity"
+        title="Activity feed"
       />
-    </div>
+
+      <PageBody>
+        <OperationalColumn>
+          <section className="space-y-6">
+            <SectionHeader title="Recent activity" />
+            <ActivityFeedClient
+              enableRealtime={false}
+              tenantId={tenantId}
+              userId={userId}
+            />
+          </section>
+        </OperationalColumn>
+      </PageBody>
+    </PageCanvas>
   );
 }

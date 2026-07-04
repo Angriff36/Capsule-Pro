@@ -28,6 +28,7 @@ import {
 import { BookOpen } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { OperationalPageShell, OperationalSection } from "../../components/operational-page-shell";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { ChartOfAccountsActions } from "./chart-of-accounts-actions";
 
@@ -79,24 +80,21 @@ export default async function ChartOfAccountsPage() {
   );
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Chart of Accounts
-          </h1>
-          <p className="text-muted-foreground">
-            Live ledger accounts for the current tenant, pulled directly from
-            Prisma.
-          </p>
+    <OperationalPageShell
+      actions={
+        <div className="flex flex-wrap gap-2">
+          <ChartOfAccountsActions />
+          <Button asChild variant="outline">
+            <Link href="/accounting">Back to accounting overview</Link>
+          </Button>
         </div>
-        <ChartOfAccountsActions />
-        <Button asChild variant="outline">
-          <Link href="/accounting">Back to accounting overview</Link>
-        </Button>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-4">
+      }
+      description="Live ledger accounts for the current tenant, pulled directly from Prisma."
+      eyebrow="Accounting / Chart of accounts"
+      title="Chart of accounts"
+    >
+      <OperationalSection title="Overview">
+        <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Total accounts</CardDescription>
@@ -132,6 +130,7 @@ export default async function ChartOfAccountsPage() {
           </CardContent>
         </Card>
       </div>
+      </OperationalSection>
 
       {accounts.length === 0 ? (
         <Card>
@@ -223,6 +222,6 @@ export default async function ChartOfAccountsPage() {
           </CardContent>
         </Card>
       )}
-    </div>
+    </OperationalPageShell>
   );
 }

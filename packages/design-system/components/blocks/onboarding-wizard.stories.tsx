@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 import { Calendar, ClipboardList, Users, UtensilsCrossed } from "lucide-react";
 import { useState } from "react";
 import {

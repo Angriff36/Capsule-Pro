@@ -104,19 +104,19 @@ describe("ManifestPayrollDataSource.savePayrollRecords", () => {
     // create + process + 2 line items, in order.
     const calls = runManifestCommandCore.mock.calls;
     expect(calls).toHaveLength(4);
-    expect(calls[0][1]).toMatchObject({
+    expect(calls[0]?.[1]).toMatchObject({
       entity: "PayrollRun",
       command: "create",
     });
-    expect(calls[1][1]).toMatchObject({
+    expect(calls[1]?.[1]).toMatchObject({
       entity: "PayrollRun",
       command: "process",
     });
-    expect(calls[2][1]).toMatchObject({
+    expect(calls[2]?.[1]).toMatchObject({
       entity: "PayrollLineItem",
       command: "create",
     });
-    expect(calls[3][1]).toMatchObject({
+    expect(calls[3]?.[1]).toMatchObject({
       entity: "PayrollLineItem",
       command: "create",
     });

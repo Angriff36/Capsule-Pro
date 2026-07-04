@@ -95,26 +95,28 @@ export async function GET(request: Request) {
         key = entry.locationId || "unspecified";
         break;
       case "date":
-        key = new Date(entry.loggedAt).toISOString().split("T")[0];
+        key = new Date(entry.loggedAt).toISOString().split("T")[0] ?? "";
         break;
       default:
         key = "all";
     }
 
-    if (!groupedData[key]) {
-      groupedData[key] = {
+    let group = groupedData[key];
+    if (!group) {
+      group = {
         key,
         totalCost: 0,
         totalQuantity: 0,
         count: 0,
         entries: [],
       };
+      groupedData[key] = group;
     }
 
-    groupedData[key].totalCost += Number(entry.totalCost || 0);
-    groupedData[key].totalQuantity += Number(entry.quantity);
-    groupedData[key].count += 1;
-    groupedData[key].entries.push(entry);
+    group.totalCost += Number(entry.totalCost || 0);
+    group.totalQuantity += Number(entry.quantity);
+    group.count += 1;
+    group.entries.push(entry);
   }
 
   // Convert to array and sort by cost descending

@@ -154,7 +154,7 @@ export const DisplayPreferencesProvider = ({
       const next =
         FONT_SIZE_VALUES[
           (FONT_SIZE_VALUES.indexOf(current) + 1) % FONT_SIZE_VALUES.length
-        ];
+        ] ?? current;
       persist(FONT_SIZE_KEY, next);
       return next;
     });
@@ -165,7 +165,7 @@ export const DisplayPreferencesProvider = ({
       const next =
         DENSITY_VALUES[
           (DENSITY_VALUES.indexOf(current) + 1) % DENSITY_VALUES.length
-        ];
+        ] ?? current;
       persist(DENSITY_KEY, next);
       return next;
     });

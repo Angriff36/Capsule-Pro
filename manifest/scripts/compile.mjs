@@ -3,9 +3,17 @@
 /**
  * Manifest Compile Script - Merges Multiple Manifests
  *
- * The Manifest CLI's --glob flag has a "last file wins" bug where only the
- * last manifest is included in the IR. This script uses the programmatic
- * compileToIR API to properly merge all manifests into a single IR.
+ * NOTE (2026-06-27): The old "--glob last file wins" bug this script once worked
+ * around is FIXED in the stock CLI (Ryan authored the fix — `compileCommand`
+ * auto-merges multiple sources into one `.json` output; commit d6d42fc, shipped
+ * since v2.10.0, present in the installed 2.18.3). Bare `manifest compile
+ * '<glob>' -o kitchen.ir.json` now merges correctly. DO NOT treat the CLI as
+ * broken. See canonical/manifest/generation/ir-compilation/README.md.
+ *
+ * This wrapper is RETAINED not for the merge (now native) but because it also
+ * emits sibling artifacts the bare CLI does not: the commands manifest +
+ * registry, provenance, merge report, and module graph. Verify bare-CLI parity
+ * before retiring it.
  *
  * All manifests are compiled and merged into manifest/ir/kitchen.ir.json
  */
@@ -234,7 +242,6 @@ const {
 const OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.ir.json");
 const COMMANDS_FILE = join(OUTPUT_DIR, "kitchen.commands.json");
 const MERGE_REPORT_FILE = join(OUTPUT_DIR, "kitchen.merge-report.json");
-const SHARDS_DIR = join(OUTPUT_DIR, "shards");
 const MODULE_GRAPH_FILE = join(OUTPUT_DIR, "module-graph.json");
 // Statically importable by the runtime (sibling of commands.registry.json) so
 // the error serializer can annotate violations with their DSL source location.
@@ -321,19 +328,12 @@ async function compileMergedManifests() {
       process.exit(1);
     }
 
-    const manifestName = manifestFile
-      .replace(/\.manifest$/, "")
-      .replace(/\//g, "-");
     // Native compileToIR (2.5.1+) populates command.entity, so the old
     // enforceCommandOwnership repair is no longer applied (see U6 / D14).
     compiledEntries.push({
       source: manifestFile,
       ir,
     });
-
-    mkdirSync(SHARDS_DIR, { recursive: true });
-    const shardPath = join(SHARDS_DIR, `${manifestName}.ir.json`);
-    writeFileSync(shardPath, JSON.stringify(ir, null, 2));
   }
 
   enforceNoDuplicateCommandIntent(compiledEntries.filter((e) => !e.skipped));
@@ -530,7 +530,7 @@ async function compileMergedManifests() {
   };
   writeFileSync(MODULE_GRAPH_FILE, JSON.stringify(moduleGraph, null, 2));
   console.log(
-    `[manifest/compile] Emitted module graph (${moduleGraph.sources.length} sources) + IR shards`
+    `[manifest/compile] Emitted module graph (${moduleGraph.sources.length} sources)`
   );
 
   // DSL source-map sidecar: entity/command/constraint/transition → file+line.

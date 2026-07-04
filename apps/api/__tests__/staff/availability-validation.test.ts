@@ -307,7 +307,7 @@ describe("checkOverlappingAvailability", () => {
     );
     expect(result.hasOverlap).toBe(true);
     expect(result.overlappingAvailability).toHaveLength(1);
-    expect(result.overlappingAvailability[0].id).toBe("avail-existing");
+    expect(result.overlappingAvailability[0]?.id).toBe("avail-existing");
   });
 
   it("returns hasOverlap=false when DB row's date window matches but time is disjoint", async () => {
@@ -398,7 +398,7 @@ describe("checkOverlappingAvailability", () => {
     );
     expect(result.hasOverlap).toBe(true);
     expect(result.overlappingAvailability).toHaveLength(1);
-    expect(result.overlappingAvailability[0].id).toBe("avail-midday");
+    expect(result.overlappingAvailability[0]?.id).toBe("avail-midday");
   });
 
   it("passes excludeAvailabilityId into the parameterized query (update path)", async () => {

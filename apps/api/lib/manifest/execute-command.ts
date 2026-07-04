@@ -7,6 +7,7 @@ import {
   runManifestCommandCore,
 } from "@repo/manifest-runtime/run-manifest-command-core";
 import { captureException } from "@sentry/nextjs";
+import { recordManifestCommandActivity } from "@/app/lib/activity-feed-service";
 import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 import { mapFailureToExplanation } from "@/lib/manifest/friendly-error-mapper";
 import { logManifestIssue } from "@/lib/manifest/issue-log";
@@ -77,6 +78,10 @@ function logCoreFailure(
           constraintOutcomes: failure.constraintOutcomes,
         },
       });
+      return;
+    case "invalid_params":
+      // Pre-flight Zod rejection: malformed client input, not a system fault.
+      logManifestIssue({ kind: "invalid_params", ...base });
       return;
     case "runtime_error":
       logManifestIssue({
@@ -212,6 +217,18 @@ export async function runManifestCommand(
         commandName: params.command,
       },
     }).catch(() => {});
+
+    recordManifestCommandActivity(
+      params.user.tenantId,
+      params.entity,
+      entityId,
+      params.command,
+      resultData ?? {},
+      params.user.id,
+      typeof params.body?.correlationId === "string"
+        ? params.body.correlationId
+        : undefined
+    );
   }
 
   return manifestSuccessResponse({
@@ -307,6 +324,9 @@ export async function runManifestBatch(
           [];
         for (let i = 0; i < operations.length; i++) {
           const op = operations[i];
+          if (!op) {
+            continue;
+          }
           const result = await runManifestCommandCore(deps, {
             entity: op.entity,
             command: op.command,

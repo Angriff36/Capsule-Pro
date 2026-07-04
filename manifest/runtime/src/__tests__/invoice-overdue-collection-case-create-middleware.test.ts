@@ -216,7 +216,7 @@ describe("Middleware conformance: InvoiceMarkedOverdue → CollectionCase.create
     // store, so a case now exists for the overdue invoice.
     const cases = await casesForTenant(provider);
     expect(cases).toHaveLength(1);
-    const opened = cases[0];
+    const opened = cases[0]!;
     expect(opened.invoiceId).toBe(INVOICE_ID);
     expect(opened.invoiceNumber).toBe("INV-9001");
     expect(opened.clientId).toBe(CLIENT_ID);
@@ -265,7 +265,7 @@ describe("Middleware conformance: InvoiceMarkedOverdue → CollectionCase.create
 
     const cases = await casesForTenant(provider);
     expect(cases).toHaveLength(1);
-    expect(cases[0].id).toBe("case-pre-existing");
+    expect(cases[0]!.id).toBe("case-pre-existing");
   });
 
   it("skips a zero-total invoice (would fail CollectionCase.amount_positive)", async () => {

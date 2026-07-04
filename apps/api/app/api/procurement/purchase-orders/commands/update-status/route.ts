@@ -55,11 +55,12 @@ export async function POST(request: NextRequest) {
       SELECT status FROM tenant_inventory.purchase_orders
       WHERE tenant_id = ${tenantId}::uuid AND id = ${orderId}::uuid AND deleted_at IS NULL
     `;
-    if (!current.length) {
+    const currentRow = current[0];
+    if (!currentRow) {
       return manifestErrorResponse("PO not found", 404);
     }
 
-    const currentStatus = current[0].status;
+    const currentStatus = currentRow.status;
     const allowed = VALID_TRANSITIONS[currentStatus] || [];
     if (!allowed.includes(status)) {
       return manifestErrorResponse(
@@ -70,6 +71,12 @@ export async function POST(request: NextRequest) {
 
     // Delegate governed status mutation to Manifest runtime
     const command = STATUS_TO_COMMAND[status];
+    if (!command) {
+      return manifestErrorResponse(
+        `Unsupported status transition: ${status}`,
+        400
+      );
+    }
     const result = await runManifestCommand({
       entity: "PurchaseOrder",
       command,

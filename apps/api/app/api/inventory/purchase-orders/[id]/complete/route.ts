@@ -78,6 +78,24 @@ export async function POST(request: Request, context: RouteContext) {
       );
     }
 
+    // Idempotency guard: "received" and "cancelled" are terminal states (the
+    // governed PurchaseOrder FSM treats them as such). This route adds
+    // quantityReceived to InventoryItem.quantityOnHand on every call, so a
+    // retried/duplicate POST against an already-completed PO would re-increment
+    // stock (double-apply corruption). Honor the same terminal invariant the
+    // runtime command enforces until this route is migrated (see header TODO).
+    if (
+      purchaseOrder.status === "received" ||
+      purchaseOrder.status === "cancelled"
+    ) {
+      return NextResponse.json(
+        {
+          message: `Purchase order is already ${purchaseOrder.status} and cannot be received again`,
+        },
+        { status: 409 }
+      );
+    }
+
     // Validate all items belong to this purchase order
     const validItemIds = new Set(purchaseOrder.items.map((item) => item.id));
     for (const updateItem of body.items) {

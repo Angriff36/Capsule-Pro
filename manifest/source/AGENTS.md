@@ -1,855 +1,182 @@
----
-source: Manifest published docs (mintlify) — embedded verbatim
-divergences: U6, U4, U1, U2, U7, U11, U30
-pages: language/modules, language/tenancy, language/roles, language/types, language/advanced-entities
-note: >-
-  These are COMPLETE Manifest documentation pages. Not every section applies to this directory. Read the embedded page(s) and follow the parts relevant to the change you are making here. Do not treat unrelated sections as required work.
----
+# Manifest language — what you can write in a `.manifest` file
 
-# Manifest reference for `manifest/source`
+Every construct authorable in `.manifest` source, with a plain-English
+description and a link to the official docs. Pulled from the Mintlify docs
+(`manifest` repo, `mintlify/language/*`). Docs base:
+`https://manifest-b1e8623f.mintlify.app`.
 
-**Why this file:** Authoring the 102 .manifest files: consolidate the per-file tenant block into one shared base (U6 keystone), DRY infra fields via mixins (U4), declare a role hierarchy instead of literal role arrays (U1), put onDelete/onUpdate referential actions and back-relations in the IR (U2/U11), and model closed value-sets as enums (U7).
-
-**Relevant divergences:** U6, U4, U1, U2, U7, U11, U30 — see `manifest/MANIFEST-DIVERGENCES.md` for the full remediation detail.
-
-**How to use:** These are COMPLETE Manifest documentation pages. Not every section applies to this directory. Read the embedded page(s) and follow the parts relevant to the change you are making here. Do not treat unrelated sections as required work.
+**Scope:** things you *write* in `.manifest` files. Projections, store adapters,
+extensibility hooks, and the CLI are config / runtime / codegen — not `.manifest`
+syntax — so they are excluded. Use this as the checklist of language features
+before hand-rolling logic in app code or middleware.
 
 ---
 
-## 📄 Manifest doc — `language/modules` · Modules: multi-file projects and imports
+## File anatomy & ordering — [`manifest-files`](https://manifest-b1e8623f.mintlify.app/language/manifest-files)
+
+- **[Anatomy of a file](https://manifest-b1e8623f.mintlify.app/language/manifest-files#anatomy-of-a-file)** — A `.manifest` file is a flat list of top-level declarations; no wrapper, no semicolons, no enforced order except `use` imports first.
+- **[Comments](https://manifest-b1e8623f.mintlify.app/language/manifest-files#comments)** — `//` line comments and `/* */` block comments for humans.
+- **[Top-level declarations](https://manifest-b1e8623f.mintlify.app/language/manifest-files#top-level-declarations)** — The menu of things you can put at the top level: entity, enum, value, command, policy, store, event, reaction, saga, role, webhook, schedule, tenant.
+- **[Ordering rules](https://manifest-b1e8623f.mintlify.app/language/manifest-files#ordering-rules)** — `use` imports must come first; one tenant per program; no entity generics; no `import` statements.
+- **[What is not allowed](https://manifest-b1e8623f.mintlify.app/language/manifest-files#what-is-not-allowed)** — The explicit list of forbidden constructs.
+
+## Modules / multi-file projects — [`modules`](https://manifest-b1e8623f.mintlify.app/language/modules)
+
+- **[`use` declarations](https://manifest-b1e8623f.mintlify.app/language/modules#use-declarations)** — Pull another `.manifest` file into this one with `use "./relative/path.manifest"`; the compiler discovers the whole graph, detects cycles, and merges into one IR.
+
+## Entities — [`entities`](https://manifest-b1e8623f.mintlify.app/language/entities)
+
+- **[Basic declaration](https://manifest-b1e8623f.mintlify.app/language/entities#basic-declaration)** — `entity Name { … }` defines a typed business object with properties, relationships, behavior, and rules.
+- **[Properties](https://manifest-b1e8623f.mintlify.app/language/entities#properties)** — `property name: type` declares a stored field.
+- **[Modifiers](https://manifest-b1e8623f.mintlify.app/language/entities#modifiers)** — `required`, `optional`, `readonly`, `unique`, `encrypted`, `masked`, `searchable`, `private`, `indexed` — flags that change how a property behaves.
+- **[Default values](https://manifest-b1e8623f.mintlify.app/language/entities#default-values)** — `property name: type = value` sets a value used when the field is omitted on create.
+- **[Relationships](https://manifest-b1e8623f.mintlify.app/language/entities#relationships)** — `hasMany`, `hasOne`, `belongsTo`, `ref` connect entities and define cardinality.
+- **[Constraints](https://manifest-b1e8623f.mintlify.app/language/entities#constraints)** — Boolean expressions that must hold for an instance to be valid.
+- **[Constraint severity](https://manifest-b1e8623f.mintlify.app/language/entities#constraint-severity)** — `ok` (info only), `warn` (records an outcome but doesn't stop), `block` (stops execution, the default); long-form syntax adds `messageTemplate` and `details`.
+- **[Overrideable constraints](https://manifest-b1e8623f.mintlify.app/language/entities#overrideable-constraints)** — Mark a `block` constraint `overrideable` and pair it with an `overridePolicy` so an authorized caller can bypass it.
+- **[Composite primary keys](https://manifest-b1e8623f.mintlify.app/language/entities#composite-primary-keys)** — `key [a, b]` makes several fields together form the identity.
+- **[Alternate keys](https://manifest-b1e8623f.mintlify.app/language/entities#alternate-keys)** — `unique [a, b]` declares a non-PK uniqueness rule (many allowed).
+- **[Composite foreign keys](https://manifest-b1e8623f.mintlify.app/language/entities#composite-foreign-keys)** — For `belongsTo`/`ref`, spell out the FK columns with `fields […] references […]`.
+- **[Referential actions](https://manifest-b1e8623f.mintlify.app/language/entities#referential-actions)** — `onDelete` / `onUpdate` with `cascade`, `restrict`, `setNull`, `setDefault`, `noAction`.
+- **[Concurrency controls](https://manifest-b1e8623f.mintlify.app/language/entities#concurrency-controls-vnext)** — `versionProperty` / `versionAtProperty` enable optimistic-lock checks on mutations.
+- **[State transitions](https://manifest-b1e8623f.mintlify.app/language/entities#state-transitions-vnext)** — `transition status from "x" to ["y","z"]` whitelists allowed state changes.
+- **[Default policies](https://manifest-b1e8623f.mintlify.app/language/entities#default-policies-vnext)** — `default policy` applies to every command on the entity that doesn't declare its own.
+- **[Cross-entity constraints](https://manifest-b1e8623f.mintlify.app/language/entities#cross-entity-constraints)** — Constraints can reach through relationships to check related entities.
+- **[External entities](https://manifest-b1e8623f.mintlify.app/language/entities#external-entities)** — `external entity` marks a table owned by another system so persistence projections skip it.
+
+## Advanced entities — [`advanced-entities`](https://manifest-b1e8623f.mintlify.app/language/advanced-entities)
+
+- **[Entity inheritance (`extends`)](https://manifest-b1e8623f.mintlify.app/language/advanced-entities#entity-inheritance-extends)** — `entity B extends A` reuses A's properties, computed fields, constraints, commands, and policies.
+- **[Overriding inherited members](https://manifest-b1e8623f.mintlify.app/language/advanced-entities#overriding-inherited-members)** — Redeclare a property or command by name in the child to replace the inherited one.
+- **[Mixin composition](https://manifest-b1e8623f.mintlify.app/language/advanced-entities#mixin-composition)** — `mixin Name { … }` defines a reusable bundle of properties/constraints; `mixin Name` inside an entity applies it.
+- **[Combining extends and mixins](https://manifest-b1e8623f.mintlify.app/language/advanced-entities#combining-extends-and-mixins)** — Use both `extends` and `mixin` in the same entity.
+
+## Commands — [`commands`](https://manifest-b1e8623f.mintlify.app/language/commands)
+
+- **[Declaring a command](https://manifest-b1e8623f.mintlify.app/language/commands#declaring-a-command)** — `command name(params) { … }` defines an operation with typed parameters.
+- **[Execution order](https://manifest-b1e8623f.mintlify.app/language/commands#execution-order)** — Fixed pipeline: build context → policies → constraints → guards → actions → emit → return.
+- **[Actions: mutate / emit / compute / publish / persist / effect](https://manifest-b1e8623f.mintlify.app/language/commands#actions)** — The things a command body does: `mutate` sets a field, `emit` fires an event, `compute` returns a value, `publish`/`persist`/`effect` call adapters.
+- **[The `emits` keyword](https://manifest-b1e8623f.mintlify.app/language/commands#the-emits-keyword)** — Declare `emits EventName` outside the action body to advertise what a command fires.
+- **[Command constraints](https://manifest-b1e8623f.mintlify.app/language/commands#command-constraints-vnext)** — A command can carry its own constraint blocks, checked after policies but before guards.
+- **[Retry policies](https://manifest-b1e8623f.mintlify.app/language/commands#retry-policies)** — `retry { maxAttempts, backoff, initialDelay, maxDelay, jitter }` retries transient failures.
+- **[Retry configuration](https://manifest-b1e8623f.mintlify.app/language/commands#retry-configuration)** — Tunable fields: attempts, delays, jitter.
+- **[Backoff strategies](https://manifest-b1e8623f.mintlify.app/language/commands#backoff-strategies)** — `fixed`, `exponential`, or `linear` delay growth between retries.
+- **[Rate limiting](https://manifest-b1e8623f.mintlify.app/language/commands#rate-limiting)** — `rateLimit { … }` caps how often a command runs per user, tenant, or globally.
+- **[Rate limit configuration](https://manifest-b1e8623f.mintlify.app/language/commands#rate-limit-configuration)** — `window`, `maxRequests`, `scope` (`user.id`/`tenant.id`/`global`), `strategy` (`fixed`/`sliding`).
+
+## Async commands — [`async-commands`](https://manifest-b1e8623f.mintlify.app/language/async-commands)
+
+- **[Declaring an async command](https://manifest-b1e8623f.mintlify.app/language/async-commands#declaring-an-async-command)** — `async command` pushes work to a background job queue instead of running inline.
+- **[How async commands execute](https://manifest-b1e8623f.mintlify.app/language/async-commands#how-async-commands-execute)** — Queued, processed by a JobQueue adapter, with auto-synthesized lifecycle events.
+
+## Guards & policies — [`guards-policies`](https://manifest-b1e8623f.mintlify.app/language/guards-policies)
+
+- **[Guards](https://manifest-b1e8623f.mintlify.app/language/guards-policies#guards)** — Boolean expressions inside a command, checked in order; the first false one halts execution.
+- **[Available bindings in guards](https://manifest-b1e8623f.mintlify.app/language/guards-policies#available-bindings-in-guards)** — `self`/`this` (the instance), `user`, `context`, command params, and built-ins like `now`/`uuid`.
+- **[Operators in guard expressions](https://manifest-b1e8623f.mintlify.app/language/guards-policies#operators-in-guard-expressions)** — Arithmetic, comparison, logical, membership (`in`/`contains`), and ternary operators.
+- **[Policies](https://manifest-b1e8623f.mintlify.app/language/guards-policies#policies)** — Named boolean rules with a scope that control authorization.
+- **[Policy scopes](https://manifest-b1e8623f.mintlify.app/language/guards-policies#policy-scopes)** — `execute`, `read`, `write`, `all`, `override` — when the policy is enforced.
+- **[Binding a policy to an entity](https://manifest-b1e8623f.mintlify.app/language/guards-policies#binding-a-policy-to-an-entity)** — Apply a policy to every command on an entity.
+- **[Command-level policies](https://manifest-b1e8623f.mintlify.app/language/guards-policies#command-level-policies)** — Override the entity default by declaring a policy inside a command.
+- **[Default policies (vNext)](https://manifest-b1e8623f.mintlify.app/language/guards-policies#default-policies-vnext)** — `default policy` on an entity covers commands that don't declare their own.
+- **[Override policies (vNext)](https://manifest-b1e8623f.mintlify.app/language/guards-policies#override-policies-vnext)** — The `override` scope authorizes bypass of an `overrideable` constraint.
+
+## Events — [`events`](https://manifest-b1e8623f.mintlify.app/language/events)
+
+- **[Declaring an event](https://manifest-b1e8623f.mintlify.app/language/events#declaring-an-event)** — `event Name: "channel" { fields }` defines a typed publishable event.
+- **[Emitting events from commands](https://manifest-b1e8623f.mintlify.app/language/events#emitting-events-from-commands)** — `emit EventName` (optionally `emit EventName { field: expr }`) fires it after actions; multiple emits run in order.
+- **[Workflow metadata (vNext)](https://manifest-b1e8623f.mintlify.app/language/events#workflow-metadata-vnext)** — Pass `correlationId`/`causationId` to thread trace IDs across a chain.
+- **[Webhook inbound triggers](https://manifest-b1e8623f.mintlify.app/language/events#webhook-inbound-triggers)** — `webhook name "/path" run Entity.command` exposes an inbound HTTP endpoint that runs a command.
+- **[Webhook configuration](https://manifest-b1e8623f.mintlify.app/language/events#webhook-configuration)** — `method`, `idempotencyHeader`, `transform` block, and `signature` verification block.
+- **[Event sourcing store](https://manifest-b1e8623f.mintlify.app/language/events#event-sourcing-store)** — `store Entity in event-sourced` persists state as an append-only event log.
+
+## Reactions — [`reactions`](https://manifest-b1e8623f.mintlify.app/language/reactions)
+
+- **[Declaring a reaction](https://manifest-b1e8623f.mintlify.app/language/reactions#declaring-a-reaction)** — `on Event run Command` auto-dispatches a command whenever an event fires.
+- **[Resolve expressions](https://manifest-b1e8623f.mintlify.app/language/reactions#resolve-expressions)** — `resolve self.x == event.y` picks which instance receives the command.
+- **[Parameter mappings](https://manifest-b1e8623f.mintlify.app/language/reactions#parameter-mappings)** — `params { field: event.x }` maps event payload into command arguments.
+- **[Fan-out reactions (1:N cascades)](https://manifest-b1e8623f.mintlify.app/language/reactions#fan-out-reactions-1n-cascades)** — `on Event fanOut Target where field = self.id run cmd` runs a command on *every* matching row — the declarative replacement for "query children, loop, dispatch" middleware.
+- **[Aggregate count expressions](https://manifest-b1e8623f.mintlify.app/language/reactions#aggregate-count-expressions)** — `count(Entity where fk == value, …)` recomputes a parent's stored count after a child event — replaces "count children then patch parent" middleware.
+- **[Reaction scopes](https://manifest-b1e8623f.mintlify.app/language/reactions#reaction-scopes)** — Declare at program, module, or entity level.
+- **[Cascading reactions and depth limit](https://manifest-b1e8623f.mintlify.app/language/reactions#cascading-reactions-and-depth-limit)** — Reactions whose commands emit events trigger further reactions; capped at depth 10.
+- **[correlationId and causationId propagation](https://manifest-b1e8623f.mintlify.app/language/reactions#correlationid-and-causationid-propagation)** — Trace IDs carry through the chain for debugging.
+- **[Deterministic ordering](https://manifest-b1e8623f.mintlify.app/language/reactions#deterministic-ordering)** — Matching reactions fire in source order; same IR + context always yields the same result.
+
+## Approvals — [`approvals`](https://manifest-b1e8623f.mintlify.app/language/approvals)
+
+- **[Declaring an approval](https://manifest-b1e8623f.mintlify.app/language/approvals#declaring-an-approval)** — `approval` block gates a command behind staged sign-off.
+- **[Stage fields](https://manifest-b1e8623f.mintlify.app/language/approvals#stage-fields)** — Each stage has a `policy`, a `required` count, and an optional `when`.
+- **[Execution gate order](https://manifest-b1e8623f.mintlify.app/language/approvals#execution-gate-order)** — The approval check sits between guards and actions.
+- **[Conditional stages with `when`](https://manifest-b1e8623f.mintlify.app/language/approvals#conditional-stages-with-when)** — `when` makes a stage apply only if an expression holds.
+- **[Timeout behavior](https://manifest-b1e8623f.mintlify.app/language/approvals#timeout-behavior)** — `timeout` + `on_timeout` decide what happens when the window expires.
+- **[Lifecycle events](https://manifest-b1e8623f.mintlify.app/language/approvals#lifecycle-events)** — `emit` entries for `ApprovalRequested`, `ApprovalGranted`, etc.
+
+## Workflows (sagas & schedules) — [`workflows`](https://manifest-b1e8623f.mintlify.app/language/workflows)
+
+- **[Declaring a saga](https://manifest-b1e8623f.mintlify.app/language/workflows#declaring-a-saga)** — `saga` with `step`/`compensate`/`on_failure` defines a multi-step workflow with rollback.
+- **[Saga lifecycle events](https://manifest-b1e8623f.mintlify.app/language/workflows#saga-lifecycle-events)** — `emit` entries for saga start/step/complete/fail.
+- **[Declaring a scheduled command](https://manifest-b1e8623f.mintlify.app/language/workflows#declaring-a-scheduled-command)** — `schedule` inside an entity runs a command on a timer.
+- **[Inline parameters](https://manifest-b1e8623f.mintlify.app/language/workflows#inline-parameters)** — `run cmd(param: value)` passes static args to a scheduled command.
+- **[Combining sagas and schedules](https://manifest-b1e8623f.mintlify.app/language/workflows#combining-sagas-and-schedules)** — Use both in one program.
 
-Manifest supports multi-file projects through `use` declarations and `import` statements. The module resolver discovers all referenced files, detects cycles, sorts them topologically, and merges the compiled IR into a single deterministic output. This lets you split large programs into focused files without sacrificing whole-program validation.
+## Stores — [`stores`](https://manifest-b1e8623f.mintlify.app/language/stores)
 
-## Use declarations
+- **[Syntax](https://manifest-b1e8623f.mintlify.app/language/stores#syntax)** — `store Entity in <target>` declares where an entity's rows live.
+- **[`memory` target](https://manifest-b1e8623f.mintlify.app/language/stores#memory)** — In-process Map; lost on restart.
+- **[`durable` target](https://manifest-b1e8623f.mintlify.app/language/stores#durable)** — Backend-neutral; the actual adapter is supplied at runtime.
+- **[`postgres` target](https://manifest-b1e8623f.mintlify.app/language/stores#postgres)** — Persists via a Postgres adapter.
+- **[`supabase` target](https://manifest-b1e8623f.mintlify.app/language/stores#supabase)** — Persists via a Supabase adapter.
+- **[Store and `localStorage`](https://manifest-b1e8623f.mintlify.app/language/stores#store-and-localstorage)** — Browser-side persistence via an adapter.
+- **[Multiple entities, multiple stores](https://manifest-b1e8623f.mintlify.app/language/stores#multiple-entities-multiple-stores)** — Each entity can target a different store.
 
-The `use` keyword includes another `.manifest` file. Use declarations must appear at the top of the file, before any entity, event, or store declarations:
+## Computed properties — [`computed-properties`](https://manifest-b1e8623f.mintlify.app/language/computed-properties)
 
-```manifest
-// app.manifest
-use "./shared/types.manifest"
-use "./domains/order.manifest"
-use "./domains/product.manifest"
-```
+- **[Syntax](https://manifest-b1e8623f.mintlify.app/language/computed-properties#syntax)** — `computed name: type = expr` declares a derived, non-stored value.
+- **[Evaluation context](https://manifest-b1e8623f.mintlify.app/language/computed-properties#evaluation-context)** — Can read `self`/`this`, other properties, other computed fields, relationships, and built-ins.
+- **[Chaining computed properties](https://manifest-b1e8623f.mintlify.app/language/computed-properties#chaining-computed-properties)** — One computed can reference another; resolved in dependency order.
+- **[Using computed properties in guards and actions](https://manifest-b1e8623f.mintlify.app/language/computed-properties#using-computed-properties-in-guards-and-actions)** — Computeds are first-class values in guards, policies, and actions.
 
-The resolver walks `use` declarations recursively to discover the full file graph. A `use` path must be relative and end in `.manifest` — absolute paths and extensions other than `.manifest` produce a parse error.
+## Computed caching — [`computed-caching`](https://manifest-b1e8623f.mintlify.app/language/computed-caching)
 
-## Import statements
+- **[Syntax](https://manifest-b1e8623f.mintlify.app/language/computed-caching#syntax)** — `cache request` (one command), `cache session` (engine lifetime), or `cache ttl <seconds>` memoizes a computed.
+- **[Behavior](https://manifest-b1e8623f.mintlify.app/language/computed-caching#behavior)** — A cached computed is marked stale when a property it depends on is mutated.
 
-For selective imports, use the `import` syntax to bring specific symbols into scope:
+## Types — [`types`](https://manifest-b1e8623f.mintlify.app/language/types)
 
-```manifest
-import { Status, Priority } from "./shared/types.manifest"
+- **[Enums](https://manifest-b1e8623f.mintlify.app/language/types#enums)** — `enum` defines a closed value set; members can carry display labels and ordinals.
+- **[Decimal and money](https://manifest-b1e8623f.mintlify.app/language/types#decimal-and-money)** — `decimal(p,s)` / `money(p,s)` exact-precision numbers for currency; any type can be nullable with `?`.
+- **[Value objects](https://manifest-b1e8623f.mintlify.app/language/types#value-objects)** — `value Name { … }` is a reusable composite type embedded inline (no own table).
+- **[Datetime](https://manifest-b1e8623f.mintlify.app/language/types#datetime)** — `datetime` plus the `timestamps` modifier (auto `createdAt`/`updatedAt`) and UTC component built-ins (`year`, `month`, `day`, …).
+- **[Arrays](https://manifest-b1e8623f.mintlify.app/language/types#arrays)** — `T[]` / `array<T>` with `.length` and `.contains()`.
+- **[Maps / Records](https://manifest-b1e8623f.mintlify.app/language/types#maps--records)** — `map<K,V>` / `record<K,V>` dictionaries accessed by key.
 
-entity Article {
-  property required title: string
-  property status: Status = draft
-  property priority: Priority = medium
-}
-```
+## Constraints — [`constraints`](https://manifest-b1e8623f.mintlify.app/language/constraints)
 
-Import statements support aliasing:
+- **[Regex matching with `matches()`](https://manifest-b1e8623f.mintlify.app/language/constraints#regex-matching-with-matches)** — `matches(value, "pattern")` validates string formats like email/phone.
+- **[Range and boundary checks](https://manifest-b1e8623f.mintlify.app/language/constraints#range-and-boundary-checks)** — `between(v, lo, hi)`, `min(…)`, `max(…)`, `length(…)` for numeric/string bounds.
 
-```manifest
-import { User as Customer } from "./shared/user.manifest"
+## Expressions & built-in functions — [`expressions`](https://manifest-b1e8623f.mintlify.app/language/expressions)
 
-entity Order {
-  property required buyer: Customer
-}
-```
+- **[Scalar and string built-ins](https://manifest-b1e8623f.mintlify.app/language/expressions#scalar-and-string-built-ins)** — `trim`, `split`, `startsWith`, `endsWith`, `replace`, `toUpperCase`, `toLowerCase`, `substring`, `indexOf`, `count`, `abs`, `round`, `floor`, `ceil`.
+- **[Aggregate built-ins with lambdas](https://manifest-b1e8623f.mintlify.app/language/expressions#aggregate-built-ins-with-lambdas)** — `sum`, `avg`, `min_of`, `max_of`, `count_of`, each taking an optional mapper/predicate lambda.
+- **[Full-text search](https://manifest-b1e8623f.mintlify.app/language/expressions#full-text-search)** — `searchable` marks a string field for a full-text index; `search()` queries it.
+- **[Feature flags in expressions](https://manifest-b1e8623f.mintlify.app/language/expressions#feature-flags-in-expressions)** — `flag("name")` reads a feature flag at eval time.
 
-The resolver validates import specifiers against the source file's exported symbols (entities, enums, and value objects). Importing a symbol that does not exist, or importing a symbol of the wrong kind, produces a compile error diagnostic.
+## Roles & permissions — [`roles`](https://manifest-b1e8623f.mintlify.app/language/roles)
 
-## Compilation pipeline
+- **[Declaring a role](https://manifest-b1e8623f.mintlify.app/language/roles#declaring-a-role)** — `role Name extends Parent { allow … deny … }` defines a permission set.
+- **[Permission inheritance](https://manifest-b1e8623f.mintlify.app/language/roles#permission-inheritance)** — Roles inherit transitively from their parent chain.
+- **[Deny-is-absolute semantics](https://manifest-b1e8623f.mintlify.app/language/roles#deny-is-absolute-semantics)** — A `deny` always wins over any `allow`.
+- **[Using roles in policies](https://manifest-b1e8623f.mintlify.app/language/roles#using-roles-in-policies)** — Reference roles in `policy`/`default policy` expressions.
 
-<Steps>
-  <Step title="Resolution">
-    Walk all `use` and `import` declarations starting from the entry file. Build a complete dependency graph using BFS discovery.
-  </Step>
-  <Step title="Cycle detection">
-    Detect circular imports (A imports B imports A) using DFS with grey/black coloring. Circular dependencies produce a compile error diagnostic listing the cycle path.
-  </Step>
-  <Step title="Topological sort">
-    Kahn's algorithm determines the compilation order — dependencies compile before dependents. Ties are broken alphabetically for deterministic output.
-  </Step>
-  <Step title="Per-file compilation">
-    Each file is parsed and compiled to IR independently, producing one IR per file.
-  </Step>
-  <Step title="Cross-file validation">
-    The merged IR is validated for cross-file reference integrity: entity types referenced in properties must exist, enum members used as defaults must be declared, and event names referenced in `emit` must be defined somewhere in the project.
-  </Step>
-  <Step title="IR merging">
-    All per-file IRs are merged into a single output with sorted arrays for determinism. A `sources` array in the IR provenance tracks which files contributed to the merged output.
-  </Step>
-</Steps>
+## Feature flags — [`feature-flags`](https://manifest-b1e8623f.mintlify.app/language/feature-flags)
 
-## CLI flags
+- **[Syntax](https://manifest-b1e8623f.mintlify.app/language/feature-flags#syntax)** — `flag("name")` in guards/computed properties gates behavior on a flag value (the flag provider itself is wired in code, not `.manifest`).
 
-Use the `--merge` and `--entry` flags to compile multi-file projects:
+## Timestamps — [`timestamps`](https://manifest-b1e8623f.mintlify.app/language/timestamps)
 
-```bash
-# Compile a multi-file project with merging
-manifest compile --merge --entry src/app.manifest
+- **[Syntax](https://manifest-b1e8623f.mintlify.app/language/timestamps#syntax)** — The `timestamps` flag on an entity auto-injects `createdAt`/`updatedAt` and keeps them updated.
 
-# Compile with explicit output path
-manifest compile --merge --entry src/app.manifest --output ir/
+## Tenancy — [`tenancy`](https://manifest-b1e8623f.mintlify.app/language/tenancy)
 
-# Let the compiler auto-detect entry files (files not referenced by any other)
-manifest compile --merge src/
-```
-
-| Flag | Description |
-|------|-------------|
-| `--merge` | Enable multi-file compilation and merge all discovered files into a single IR output |
-| `--entry <path>` | Specify the entry point for module resolution. When omitted, the compiler auto-detects root files. |
-
-## Namespace isolation
-
-Each module's entities, events, and enums are namespaced by the module's file path. Two files can define entities with the same name without collision:
-
-```
-shared/types.manifest  ->  Status enum  ->  shared/types.Status
-domains/order.manifest ->  Order entity ->  domains/order.Order
-domains/product.manifest -> Order entity -> domains/product.Order
-```
-
-When using `import { X }` syntax, the imported symbol is available without the module prefix in the importing file. The `use` syntax makes all declarations available but with the module prefix for disambiguation.
-
-<Note>
-Cross-file validation catches ambiguous references when two modules export the same symbol name. Use the module prefix or an import alias to disambiguate.
-</Note>
-
-## Cross-file validation
-
-After merging, the compiler validates cross-file references and produces error diagnostics with file paths and line numbers:
-
-- Entity types referenced in properties must exist in the merged IR
-- Enum members used as default values must be declared in an imported or used file
-- Event names referenced in `emit` actions must be declared somewhere in the project
-- Store declarations must reference entities that exist in the merged IR
-
-Invalid cross-file references produce compile error diagnostics rather than runtime failures.
-
-## ResolverHost abstraction
-
-The module resolver uses a `ResolverHost` abstraction for file system access. In production, this reads from disk. In tests, you can provide an in-memory host to test resolution without touching the file system:
-
-```typescript
-import { ModuleResolver } from "@angriff36/manifest/module-resolver";
-
-const resolver = new ModuleResolver({
-  readFile(path) {
-    // Return file contents from an in-memory map
-    return mockFiles.get(path);
-  }
-});
-```
-
-This makes the resolver testable in isolation and allows the multi-compiler to work in environments without direct file system access.
-
-## Complete example
-
-A multi-file project with shared types, domain entities, and an entry point:
-
-```manifest
-// shared/types.manifest
-enum Status { draft, submitted, approved, rejected }
-enum Priority { low, medium, high }
-```
-
-```manifest
-// domains/order.manifest
-use "../shared/types.manifest"
-
-entity Order {
-  property required id: string
-  property status: Status = draft
-  property priority: Priority = medium
-  property amount: number = 0
-
-  command submit() {
-    guard self.status == draft
-    mutate status = submitted
-    emit OrderSubmitted
-  }
-}
-
-event OrderSubmitted: "order.submitted" {
-  orderId: string
-}
-
-store Order in memory
-```
-
-```manifest
-// app.manifest
-use "./domains/order.manifest"
-
-// Additional top-level declarations can go here
-```
-
-Compile the project:
-
-```bash
-manifest compile --merge --entry src/app.manifest --output project.ir.json
-```
-
-The resulting `project.ir.json` contains all entities, events, enums, and stores from every discovered file, merged into a single deterministic IR with provenance tracking.
-
-See [Entities](/language/entities) for entity declarations, [Events](/language/events) for event schemas, and [CLI overview](/cli/overview) for the full set of compile options.
-
----
-
-## 📄 Manifest doc — `language/tenancy` · Tenant isolation: scoping reads and writes to a tenant
-
-A top-level `tenant` declaration scopes entity reads and writes to a tenant value extracted from the runtime context. Tenant-scoped programs fail closed: a command invoked without a resolvable tenant value is rejected with `MISSING_TENANT_CONTEXT`.
-
-## Syntax
-
-The declaration is a single top-level construct — at most one per program. The parser rejects more than one tenant declaration:
-
-```manifest
-tenant tenantId : string from context.tenantId
-
-entity Invoice {
-  property required id: string
-  property required amount: number
-  property required description: string
-
-  command createInvoice(amount: number, description: string) {
-    mutate amount = amount
-    mutate description = description
-  }
-
-  store in memory
-}
-```
-
-The syntax is `tenant <property> : <type> from <context_path>`.
-
-## Behavior
-
-The compiler emits an `IRTenant` record with `property`, `type`, and `contextPath` fields onto `IR.tenant`. The field is only present when a `tenant` declaration exists, so programs without tenancy compile identically to before. The runtime engine reads `IR.tenant` and applies tenant scoping:
-
-- **`resolveTenantValue()`** walks the configured `contextPath` (for example `context.tenantId`) against the active runtime context and returns the tenant value, or `undefined` when the IR has no tenant declaration or the context lacks the value.
-- The **tenant gate** in `runCommand()` activates when **either** the `requireTenantContext` runtime option is set **or** the IR declares a `tenant`. When active and no tenant value resolves — any falsy value (`undefined`, empty string, `null`) counts as missing — the command fails with `MISSING_TENANT_CONTEXT: tenant-scoped command invoked without context.tenantId`, classified as outcome `missing_tenant_context`.
-- On create, the resolved tenant value is auto-written into the entity's tenant property.
-- **`getAllInstances()`** filters results to instances whose tenant property equals the active tenant value.
-- **`getInstance()`** returns `undefined` when an instance's tenant property does not match the active tenant value, preventing cross-tenant reads.
-
-The Prisma projection adds a tenant discriminator column and an index per model, and emits PostgreSQL row-level-security policy statements as comments for consumers to apply manually.
-
-## Reference
-
-- Source keyword: `tenant`; syntax `tenant <property> : <type> from <context_path>`.
-- IR field: `IR.tenant?: IRTenant` with `{ property, type, contextPath }`.
-- Runtime option: `requireTenantContext?: boolean` — independent of the IR-level declaration; can enforce tenant context without a `tenant` block.
-- Failure diagnostic: `MISSING_TENANT_CONTEXT`, classified as outcome `missing_tenant_context`.
-
-<Warning>
-Tenant filtering is enforced by the reference runtime engine's read paths (`getAllInstances`, `getInstance`); it is **not** enforced by the database unless the emitted RLS policies are applied. The Prisma RLS statements ship as comments, not executed migrations.
-</Warning>
-
-<Note>
-The runtime gate is fail-closed by design — a missing or empty tenant value is treated as an error rather than a permissive default. The `requireTenantContext` option and the IR `tenant` declaration are orthogonal; either activates the gate.
-</Note>
-
----
-
-## 📄 Manifest doc — `language/roles` · Roles: hierarchy and permission inheritance
-
-Roles define named permission sets with single-parent inheritance. A role that extends a parent inherits all its permissions transitively. Use roles with the [policy](/language/guards-policies) system to control command authorization based on the user's assigned role.
-
-## Declaring a role
-
-Use the `role` keyword at the program or module level with a block body of `allow` and `deny` declarations:
-
-```manifest
-role User {
-  allow read
-}
-
-role Manager extends User {
-  allow write
-  allow execute
-}
-
-role Admin extends Manager {
-  allow delete
-  allow override
-  deny impersonate
-}
-```
-
-Each `allow` or `deny` line names an action (or optionally a target) that the role permits or forbids. The `extends` keyword establishes a single-parent inheritance chain.
-
-## Permission inheritance
-
-Roles inherit permissions transitively through the `extends` chain. The compiler walks the chain from root to leaf, unioning all `allow` permissions along the way:
-
-| Role | Inherited from | Effective permissions |
-|------|----------------|----------------------|
-| `User` | (none) | read |
-| `Manager` (extends User) | User | read, write, execute |
-| `Admin` (extends Manager) | Manager, User | read, write, execute, delete, override |
-
-The `effectivePermissions` map is precomputed at compile time by the IR compiler's `resolveRoleGraph()` method. The runtime evaluates these directly via O(1) lookups — no chain traversal happens at execution time.
-
-### Compile-time validation
-
-The compiler validates the role graph and produces error diagnostics for:
-
-- **Duplicate role names**: Each role name must be unique within the program or module.
-- **Unknown parent**: A role that extends a name not declared as a role produces a compile error.
-- **Circular inheritance**: If the `extends` chain forms a cycle (A extends B extends A), the compiler detects it via DFS coloring and produces an error diagnostic listing the cycle path.
-
-## Deny-is-absolute semantics
-
-If any role in the inheritance chain denies an action, the denial takes precedence over all `allow` rules regardless of where they appear:
-
-```manifest
-role Support extends User {
-  allow write
-  allow execute
-  deny delete       // Support CANNOT delete, even if a parent allows it
-}
-```
-
-Deny rules are applied after the full inheritance union is computed. This means:
-
-1. Walk the inheritance chain and union all `allow` permissions.
-2. Walk the inheritance chain and subtract all `deny` permissions.
-3. The result is the `effectivePermissions` map.
-
-A `deny` at any level is absolute. There is no mechanism to override a deny with a subsequent allow. This is by design — it prevents privilege escalation through role chain manipulation.
-
-<Warning>
-Deny is not a suggestion; it is a hard rule. If `User` denies `impersonate`, then `Admin extends User` cannot re-allow `impersonate`. The deny from `User` will always win. Structure your role hierarchy so that denials only appear at the appropriate level.
-</Warning>
-
-## Unknown roles default to deny
-
-If a user's role does not match any declared role, the runtime returns `false` for all permission checks. There are no permissive defaults — an unrecognized role has no permissions. This is consistent with Manifest's default-deny posture. See [Guards and policies](/language/guards-policies) for the broader authorization model.
-
-## Using roles in policies
-
-Reference roles in policy expressions via the `user.role` binding and the built-in permission functions:
-
-```manifest
-entity Document {
-  default policy RequireAuth execute: user.id != null "Authentication required"
-
-  command approve() {
-    policy execute: roleAllows(user.role, "approve") or user.role == "admin"
-    mutate status = "approved"
-    emit DocumentApproved
-  }
-
-  command delete() {
-    policy execute: hasPermission(user, "delete")
-    mutate status = "deleted"
-    emit DocumentDeleted
-  }
-}
-```
-
-## Runtime builtins
-
-Two built-in functions are registered on the runtime engine when roles are present in the IR:
-
-| Function | Signature | Returns |
-|----------|-----------|---------|
-| `hasPermission` | `hasPermission(user, permission)` | `true` if the user's effective permissions include the named permission |
-| `roleAllows` | `roleAllows(roleName, action)` | `true` if the named role's effective permissions allow the action |
-
-Both functions perform O(1) lookups against the precomputed `effectivePermissions` map. The `roleIndex` is built at engine initialization time from the IR's `roles` array.
-
-### `hasPermission(user, permission)`
-
-Checks whether the given user object's role grants the specified permission. Returns `false` if the user has no role, or if the role is not declared in the IR.
-
-```typescript
-// Inside a guard or policy expression:
-guard hasPermission(user, "delete")
-```
-
-### `roleAllows(roleName, action)`
-
-Checks whether a named role allows a specific action, without requiring a user object. Useful for checking whether a role would permit something before assigning it to a user.
-
-```typescript
-// Inside a policy expression:
-policy execute: roleAllows(user.role, "execute") or user.role == "admin"
-```
-
-## Context-sensitive `role` keyword
-
-The `role` keyword is context-sensitive, not a globally reserved keyword. It is emitted as an identifier rather than a reserved token, so existing programs that use `role` as a property name continue to parse correctly:
-
-```manifest
-entity UserProfile {
-  property role: string = "user"           // property named "role"
-
-  command setRole(newRole: string) {
-    mutate role = newRole                   // mutate "role" property
-  }
-}
-```
-
-The parser only treats `role` as a declaration keyword at the top level of a program or module (when followed by an identifier and a block). Inside entity blocks, `role` is an ordinary identifier.
-
-<Note>
-The `role` keyword is only treated as a role declaration at the top level of a program or module. Inside entity blocks, `role` is an ordinary identifier. This prevents the keyword from breaking existing code that uses `role` as a property name.
-</Note>
-
-## IR representation
-
-Roles are stored in the IR as an optional `roles` array on the root `IR` object (and on `IRModule` for module-scoped roles). Each `IRRole` contains:
-
-```typescript
-interface IRRolePermission {
-  kind: "allow" | "deny";
-  action: string;
-  target?: string;
-}
-
-interface IRRole {
-  name: string;
-  extends?: string;
-  permissions: IRRolePermission[];
-  effectivePermissions: Record<string, boolean>;
-  module?: string;
-}
-```
-
-The `effectivePermissions` field is the precomputed result of inheritance resolution. The runtime reads this field directly and never re-computes it.
-
-## Complete example
-
-```manifest
-role User {
-  allow read
-}
-
-role Manager extends User {
-  allow write
-  allow execute
-}
-
-role Admin extends Manager {
-  allow delete
-  allow override
-  deny impersonate
-}
-
-entity Document {
-  property required id: string
-  property title: string = ""
-  property status: string = "draft"
-
-  default policy RequireAuth execute: user.id != null "Authentication required"
-
-  command view() {
-    policy execute: hasPermission(user, "read")
-    emit DocumentViewed
-  }
-
-  command edit(newTitle: string) {
-    policy execute: hasPermission(user, "write")
-    mutate title = newTitle
-    emit DocumentEdited
-  }
-
-  command approve() {
-    policy execute: roleAllows(user.role, "execute")
-    guard self.status == "draft"
-    mutate status = "approved"
-    emit DocumentApproved
-  }
-
-  command delete() {
-    policy execute: hasPermission(user, "delete")
-    mutate status = "deleted"
-    emit DocumentDeleted
-  }
-}
-```
-
-```typescript
-import { RuntimeEngine } from "@angriff36/manifest";
-import { ir } from "./compiled.ir.json";
-
-// Admin user
-const adminRuntime = new RuntimeEngine(ir, {
-  user: { id: "admin-1", role: "Admin" },
-});
-
-const result = await adminRuntime.runCommand("Document", "delete", {
-  instanceId: "doc-42",
-});
-console.log(result.success); // true
-
-// Manager user
-const mgrRuntime = new RuntimeEngine(ir, {
-  user: { id: "mgr-1", role: "Manager" },
-});
-
-const mgrResult = await mgrRuntime.runCommand("Document", "delete", {
-  instanceId: "doc-42",
-});
-console.log(mgrResult.success); // false (Manager has no "delete" permission)
-
-// Unknown role
-const unknownRuntime = new RuntimeEngine(ir, {
-  user: { id: "guest-1", role: "Guest" },
-});
-
-const unknownResult = await unknownRuntime.runCommand("Document", "view", {
-  instanceId: "doc-42",
-});
-console.log(unknownResult.success); // false (unknown role defaults to deny)
-```
-
-See [Guards and policies](/language/guards-policies) for the full policy system, [Commands](/language/commands) for the execution pipeline, and [Approvals](/language/approvals) for multi-stage approval workflows that integrate with role-based policies.
-
----
-
-## 📄 Manifest doc — `language/types` · Types: enums, decimal/money, value objects, datetime, arrays
-
-Beyond the four primitive types (`string`, `number`, `boolean`, `timestamp`), Manifest offers richer property types for closed value sets, high-precision numbers, reusable composite shapes, points in time, and collections. Type names in Manifest are open strings rather than a closed primitive set, so a custom type name (an enum or a value object) flows through the type system as a reference without a separate validation pass. This page documents what each type actually provides — and, just as importantly, what it does not.
-
-## Enums
-
-A first-class `enum` declaration defines a closed, named set of values that properties can reference. Each member may carry an optional display label and an optional numeric ordinal, giving entities a typed vocabulary for status fields, priorities, and other fixed value sets.
-
-Enums are top-level declarations:
-
-```manifest
-enum Status {
-  draft
-  published = "Published"
-  archived(2)
-}
-
-entity Article {
-  property required title: string
-  property status: Status = draft
-  property priority: Priority
-}
-
-enum Priority {
-  low = "Low Priority"
-  medium = "Medium Priority"
-  high = "High Priority"
-}
-
-store Article in memory
-```
-
-A member written as `name` is a plain value; `name = "Label"` attaches a display label; `name(ordinal)` attaches a numeric ordinal. The three forms can be mixed freely within one enum. An enum may be referenced as a property type before or after its own declaration in the file, and a property default such as `= draft` refers to a member by name.
-
-The IR carries the full enum definition — a `name`, optional `module`, and a `values` array where each value records its `name` and, only when present, a `label` and an `ordinal`. Absent metadata is omitted rather than defaulted, so the IR stays minimal. This representation is the input downstream projections use to emit database enum columns and TypeScript union types.
-
-<Warning>
-The IR carries only `name`, `label`, and `ordinal` per member. There is **no** enum-specific reference checker in the compiler and **no** transition-constraint machinery on enum members — both are aspirational, not present in the source. Because type names are not a closed set, referencing an undeclared enum name as a property type is not rejected at compile time by the enum machinery itself.
-</Warning>
-
-## Decimal and money
-
-The `decimal` and `money` types represent high-precision numbers with optional precision and scale parameters, intended for monetary amounts and other values where binary floating point is unacceptable.
-
-Both types accept an optional `(precision, scale)` parameter list and can otherwise be used like any scalar:
-
-```manifest
-entity Invoice {
-  property required description: string
-  property amount: decimal(10, 2) = 0
-  property tax: money(12, 4) = 0
-  property total: decimal = 0
-  property optionalFee: money?
-}
-
-store Invoice in memory
-```
-
-`decimal(10, 2)` declares 10 total digits with 2 fractional digits. `money(12, 4)` is the same shape with higher precision. Both types are valid without parameters (`decimal`, `total`), in which case no precision or scale is recorded. The `?` suffix makes the property nullable (`money?`).
-
-The parser special-cases a `(` immediately after the type name only when the name is `decimal` or `money` — any other type name followed by `(` is not treated as parameterized. When present, the precision and scale are stored as a `params` object on the emitted `IRType`; unparameterized types produce no `params`. This `params` object is the input a projection would consume to emit, for example, a Postgres `NUMERIC` column or a `Decimal.js` field.
-
-<Warning>
-`decimal` and `money` do **not** introduce runtime arithmetic or validation of their own. The runtime engine treats their values as ordinary numbers — there is no decimal arithmetic library wired into the evaluator, and precision/scale are metadata carried for projection use, **not enforced at runtime or at compile time**. Any high-precision guarantee depends on a downstream projection rather than the reference runtime.
-</Warning>
-
-## Value objects
-
-A `value` declaration defines a reusable composite type that embeds inline in entity properties rather than living in its own table. Value objects group related fields — money, addresses — into a single named shape that several entities can share.
-
-Value objects are top-level declarations containing only property declarations:
-
-```manifest
-value Money {
-  property amount: decimal
-  property currency: string
-}
-
-value Address {
-  property street: string
-  property city: string
-  property country: string
-}
-
-entity Product {
-  property required id: string
-  property name: string
-  property price: Money
-  property billingAddress: Address
-}
-
-entity Order {
-  property required id: string
-  property total: Money
-  property shippingAddress: Address
-}
-
-store Product in memory
-store Order in memory
-```
-
-An entity references a value object by using its name as a property type (`price: Money`). The same value object can be embedded in multiple entities.
-
-The `value` token is context-sensitive — it is emitted as an identifier rather than a reserved keyword, so `property value: number` and `mutate value = 1` continue to parse without reserved-word errors. Every compiled program carries a top-level `values` array (empty when none are declared), and a property whose type name matches a declared value object is identified by checking that name against `ir.values`. The code generator emits a TypeScript interface for each value object, and the Prisma projection emits a matching property as a `Json` (JSONB) column rather than a foreign-key relationship or a separate table.
-
-<Note>
-Value objects are described as "immutable by design," but that is a design statement, not a runtime-enforced property: the reference runtime does not freeze or reject mutation of embedded value data, and there is no immutability check in the compiler or engine. Value object bodies are restricted to properties — relationships, commands, and other members are rejected by the parser.
-</Note>
-
-## Datetime
-
-Manifest represents points in time with the `datetime` type and offers UTC-based date-component built-ins for extracting parts of a timestamp.
-
-There is **no** dedicated `date`, `time`, `duration`, or `interval` primitive type — those keywords are not in the lexer. The date type the runtime and projections work with is `datetime`, used like any scalar property type. The most common way `datetime` properties appear is via the `timestamps` modifier, which injects `createdAt` and `updatedAt`:
-
-```manifest
-entity Article {
-  property required title: string
-  timestamps
-}
-```
-
-Because type names are open strings, a property may also be declared `property scheduledFor: datetime` and will compile, but no date-specific parsing or validation is attached to such a declaration.
-
-Date components are read at runtime through expression built-ins operating on a numeric millisecond timestamp:
-
-```manifest
-entity DateUtils {
-  property required id: string
-  property baseTs: number = 0
-
-  computed extractedYear: number = year(self.baseTs)
-  computed extractedMonth: number = month(self.baseTs)
-  computed extractedDay: number = day(self.baseTs)
-  computed extractedHours: number = hours(self.baseTs)
-  computed extractedMinutes: number = minutes(self.baseTs)
-  computed extractedSeconds: number = seconds(self.baseTs)
-}
-```
-
-The date built-ins all operate on a number interpreted as milliseconds since the epoch and return a UTC component:
-
-- `year(ts)` returns `getUTCFullYear()`.
-- `month(ts)` returns `getUTCMonth() + 1` (so January is 1, not 0).
-- `day(ts)` returns `getUTCDate()`.
-- `hours(ts)`, `minutes(ts)`, `seconds(ts)` return the corresponding UTC components.
-
-Each returns the input unchanged when it is not a number. UTC methods are used deliberately so results are timezone-independent and deterministic.
-
-<Warning>
-This is the most significant area of overclaiming to avoid. There are **no** `Date`, `Time`, `Duration`, or `Interval` primitive types, no date column mappings for them, and no date arithmetic, comparison, or formatting built-ins beyond component extraction. What genuinely exists is the `datetime` type (notably via `timestamps`) and the six UTC date-component built-ins above.
-</Warning>
-
-## Arrays
-
-Array properties hold multiple scalar values in a single field, distinct from relationships (which model collections of entities). They are declared with either postfix `[]` sugar or explicit `array<T>` generic syntax.
-
-```manifest
-entity TaggedDocument {
-  property required id: string
-  property tags: string[] = []
-  property scores: array<number> = []
-
-  constraint noEmptyTags: self.tags.length > 0
-  constraint hasTags: self.tags.contains("published")
-}
-
-store TaggedDocument in memory
-```
-
-`string[]` and `array<string>` are equivalent. An empty array literal `[]` is a valid default. Constraints can reach into array values with member access such as `self.tags.length` and method-style calls like `self.tags.contains("published")`.
-
-Both forms normalize to an `array` type carrying a `generic` element type in the AST and IR. Array element types may themselves carry parameters — because the inner type goes through the same type parser, the generic element preserves details like decimal precision where applicable. The normalized `array` IR type is the structural input projections consume to emit PostgreSQL array/JSONB columns or Zod array schemas.
-
-<Note>
-The `.length` and `.contains(...)` helpers are expression-level operations rather than dedicated array constraint primitives. The two constraints above are independently evaluated rather than short-circuited, so both can register failures. Array properties are scalar-valued collections and are deliberately separate from `hasMany` relationships, which model entity collections.
-</Note>
-
-## Maps / Records
-
-The `map<K, V>` type declares a key-value dictionary property where all keys are of type `K` and all values are of type `V`. Use it for dynamic metadata, localization tables, or configuration objects.
-
-```manifest
-entity Product {
-  property required id: string
-  property name: string
-  property metadata: map<string, string> = {}
-  property translations: map<string, string> = {}
-  property featureFlags: map<string, boolean> = {}
-}
-
-store Product in memory
-```
-
-The `map<K, V>` syntax and the alternative `record<K, V>` syntax are equivalent — both normalize to the same IR type. Key types are restricted to `string` and `number`. Value types can be any scalar type.
-
-Access map values in expressions using member access:
-
-```manifest
-constraint hasEnglishName: self.translations["en"] != ""
-
-computed flagEnabled: self.featureFlags["beta-feature"] == true
-```
-
-<Note>
-Map properties are persisted as JSON objects in projections (e.g., Prisma `Json` column, Drizzle `jsonb`). The runtime does not enforce key or value types beyond what JavaScript provides — type safety is a projection concern.
-</Note>
-
----
-
-## 📄 Manifest doc — `language/advanced-entities` · Advanced entities: inheritance, mixins, and generics
-
-Manifest supports three patterns for structuring entity types beyond a flat declaration: single inheritance with `extends`, composition with `mixin`, and parameterized templates with generics. All three are compile-time features — the runtime sees a flattened entity with no inheritance metadata.
-
-## Entity inheritance (`extends`)
-
-An entity can inherit properties, computed properties, constraints, commands, and policies from a single parent entity using the `extends` keyword:
-
-```manifest
-entity BaseEntity {
-  property required id: string
-  timestamps
-}
-
-entity Product extends BaseEntity {
-  property required name: string
-  property price: number = 0
-
-  command updatePrice(newPrice: number) {
-    guard newPrice >= 0
-    mutate price = newPrice
-  }
-}
-
-store Product in memory
-```
-
-`Product` inherits the `id` property and `timestamps` from `BaseEntity`. The compiled IR contains a single flattened `Product` entity with all inherited members — there is no runtime polymorphism.
-
-### Overriding inherited members
-
-Child entities can override inherited properties and commands by redeclaring them with the same name. The child's declaration takes precedence.
-
-### Cycle detection
-
-The compiler detects circular inheritance chains (e.g., `A extends B` and `B extends A`) and emits an error diagnostic. Cycles are also caught transitively (A → B → C → A).
-
-<Note>
-Only single inheritance is supported. An entity can extend exactly one parent. For sharing behavior across multiple entities, use mixins or generic templates.
-</Note>
-
-## Mixin composition
-
-Mixins inject reusable property and constraint declarations into an entity without creating a parent-child relationship. Declare a mixin with the `mixin` keyword and apply it inside an entity block:
-
-```manifest
-mixin Auditable {
-  property required createdBy: string
-  property required updatedBy: string
-}
-
-mixin SoftDeletable {
-  property deletedAt: number = 0
-  constraint notDeleted: self.deletedAt == 0
-}
-
-entity Document {
-  mixin Auditable
-  mixin SoftDeletable
-
-  property required title: string
-  property content: string = ""
-}
-
-store Document in memory
-```
-
-`Document` receives all properties and constraints from both `Auditable` and `SoftDeletable`. Mixins can be applied to any number of entities.
-
-### Combining extends and mixins
-
-An entity can both extend a parent and apply mixins:
-
-```manifest
-entity ArchivedDocument extends BaseEntity {
-  mixin Auditable
-  mixin SoftDeletable
-
-  property required title: string
-}
-```
-
-Members are resolved in this order: entity's own declarations → applied mixins → inherited parent members. Conflicts (same name from multiple mixins) produce a compile error.
-
-## Generic / parameterized entities
-
-Generic entities define a template with type parameters that are instantiated at compile time. This lets you build reusable patterns like paginated collections, versioned records, or typed wrappers:
-
-```manifest
-entity Paginated<T> {
-  property required items: T[]
-  property total: number = 0
-  property page: number = 1
-  property pageSize: number = 20
-
-  computed hasNextPage: number = self.total > self.page * self.pageSize
-}
-```
-
-### Instantiation
-
-Generic entities are instantiated by providing concrete type arguments:
-
-```manifest
-entity ProductList : Paginated<Product> {
-  // additional members specific to product listings
-}
-```
-
-The compiler substitutes `T` with `Product` throughout the generic body, producing a concrete entity with fully resolved types.
-
-### Arity validation
-
-The compiler checks that the number of type arguments matches the generic's declaration. Providing too few or too many type arguments produces an error diagnostic.
-
-<Warning>
-Generic entity types are a compile-time-only feature. The IR contains the fully instantiated (monomorphized) entity — no type parameters survive into the runtime. This means you cannot create generic entity instances dynamically at runtime.
-</Warning>
-
-## IR representation
-
-All three features are resolved at compile time. The emitted IR contains:
-
-- **Inheritance**: A single flattened `IREntity` with all inherited members. The `extends` relationship is not preserved in the IR.
-- **Mixins**: Same as inheritance — members are inlined into the entity. Mixin names are not recorded.
-- **Generics**: The instantiated entity with concrete type substitutions. The generic template itself is not emitted to IR.
-
-This means downstream projections and the runtime engine see no inheritance, mixin, or generic metadata — they operate on flat, fully resolved entities only.
-
----
+- **[Syntax](https://manifest-b1e8623f.mintlify.app/language/tenancy#syntax)** — `tenant property: type from context.path` declares single-tenant isolation; reads/writes are auto-scoped to the tenant (max one per program).

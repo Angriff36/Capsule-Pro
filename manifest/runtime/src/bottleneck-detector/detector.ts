@@ -177,7 +177,6 @@ export class BottleneckDetector {
   private prisma: PrismaClient;
   private config: BottleneckDetectorConfig;
   private cache: Map<string, CacheEntry>;
-  private cacheTimestamp: number;
 
   constructor(
     prisma: PrismaClient,
@@ -186,7 +185,6 @@ export class BottleneckDetector {
     this.prisma = prisma;
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.cache = new Map();
-    this.cacheTimestamp = Date.now();
   }
 
   // ==========================================================================
@@ -781,8 +779,10 @@ export class BottleneckDetector {
     let sumX2 = 0;
 
     for (let i = 0; i < n; i++) {
+      const point = dataPoints[i];
+      if (!point) continue;
       const x = i;
-      const y = dataPoints[i].value;
+      const y = point.value;
       sumX += x;
       sumY += y;
       sumXY += x * y;
@@ -1158,7 +1158,10 @@ export class BottleneckDetector {
         critical: 50,
       }[b.severity];
 
-      byCategory[b.category] = Math.max(0, byCategory[b.category] - deduction);
+      byCategory[b.category] = Math.max(
+        0,
+        (byCategory[b.category] ?? 0) - deduction
+      );
     }
 
     // Calculate overall as average of all categories
@@ -1235,7 +1238,7 @@ export class BottleneckDetector {
       return date;
     }
 
-    const value = Number.parseInt(match[1], 10);
+    const value = Number.parseInt(match[1] ?? "0", 10);
     const unit = match[2];
 
     switch (unit) {
@@ -1258,7 +1261,6 @@ export class BottleneckDetector {
    */
   clearCache(): void {
     this.cache.clear();
-    this.cacheTimestamp = Date.now();
   }
 }
 

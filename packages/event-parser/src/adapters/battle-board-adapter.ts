@@ -386,8 +386,8 @@ function formatTo12Hour(time24: string): string {
     return time24;
   }
 
-  let hours = Number.parseInt(match[1], 10);
-  const minutes = match[2];
+  let hours = Number.parseInt(match[1]!, 10);
+  const minutes = match[2]!;
   const meridiem = hours >= 12 ? "PM" : "AM";
 
   if (hours === 0) {
@@ -407,8 +407,8 @@ function parseTimeToMinutes(timeStr: string): number {
   // Handle 12-hour format
   const match12 = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
   if (match12) {
-    let hours = Number.parseInt(match12[1], 10);
-    const minutes = Number.parseInt(match12[2], 10);
+    let hours = Number.parseInt(match12[1]!, 10);
+    const minutes = Number.parseInt(match12[2]!, 10);
     const meridiem = match12[3]?.toUpperCase();
 
     if (meridiem === "PM" && hours < 12) {

@@ -74,34 +74,6 @@ function validateEmail(email: string): boolean {
 }
 
 /**
- * Checks if a recipient has opted in to email notifications for a specific type
- */
-async function _checkOptInStatus(
-  database: PrismaClient,
-  tenantId: string,
-  employeeId: string | undefined,
-  notificationType: string
-): Promise<boolean> {
-  // Only check opt-in for employees (clients don't have notification preferences)
-  if (!employeeId) {
-    return true;
-  }
-
-  const preference = await database.notification_preferences.findFirst({
-    where: {
-      tenant_id: tenantId,
-      employee_id: employeeId,
-      notification_type: notificationType,
-      channel: "email",
-    },
-  });
-
-  // If no preference exists, default to opted-in
-  // If preference exists, respect the is_enabled value
-  return preference?.is_enabled ?? true;
-}
-
-/**
  * Creates a log entry for an email message
  */
 async function createEmailLog(

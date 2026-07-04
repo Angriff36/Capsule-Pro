@@ -16,7 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -42,6 +41,9 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+  OperationalPageShell,
+} from "../../../components/operational-page-shell";
 
 // ---------- Types ----------
 
@@ -313,27 +315,15 @@ export function ReceivingHistoryClient() {
   // ---------- Render ----------
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      {/* Page Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Link
-              className="flex items-center gap-1 text-sm transition-colors hover:text-foreground"
-              href="/warehouse/receiving"
-            >
+    <OperationalPageShell
+      actions={
+        <div className="flex gap-2">
+          <Button asChild className="gap-2" variant="outline">
+            <Link href="/warehouse/receiving">
               <ArrowLeft className="size-4" />
               Receiving
             </Link>
-          </div>
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Receiving History
-          </h1>
-          <p className="text-muted-foreground">
-            View all receiving records with details
-          </p>
-        </div>
-        <div className="flex gap-2">
+          </Button>
           <Button asChild className="gap-2" variant="outline">
             <Link href="/warehouse/receiving/reports">
               <FileText className="size-4" />
@@ -341,9 +331,11 @@ export function ReceivingHistoryClient() {
             </Link>
           </Button>
         </div>
-      </div>
-
-      <Separator />
+      }
+      description="View all receiving records with details."
+      eyebrow="Warehouse / Receiving"
+      title="Receiving history"
+    >
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/30 p-4">
@@ -526,6 +518,6 @@ export function ReceivingHistoryClient() {
           )}
         </>
       ) : undefined}
-    </div>
+    </OperationalPageShell>
   );
 }

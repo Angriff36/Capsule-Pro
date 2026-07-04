@@ -4,6 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { Header } from "../../../components/header";
+import { OperationalPageShell } from "../../../components/operational-page-shell";
 import { WorkflowDetailClient } from "./workflow-detail-client";
 
 export default async function ImportWorkflowDetailPage({
@@ -38,9 +39,13 @@ export default async function ImportWorkflowDetailPage({
           </Button>
         </div>
       </Header>
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+      <OperationalPageShell
+        description="Review import workflow progress and extracted event data."
+        eyebrow="Events / Import"
+        title="Import workflow"
+      >
         <WorkflowDetailClient workflowId={workflowId} />
-      </div>
+      </OperationalPageShell>
     </>
   );
 }

@@ -143,8 +143,9 @@ export async function getEligibleEmployeesForShift(
   suggestions.sort((a, b) => b.score - a.score);
 
   const bestMatch = suggestions[0] || null;
-  const canAutoAssign =
-    bestMatch && bestMatch.confidence === "high" && suggestions.length > 0;
+  const canAutoAssign = Boolean(
+    bestMatch && bestMatch.confidence === "high" && suggestions.length > 0
+  );
 
   const budgetResult = await checkLaborBudget(
     canAutoAssign,

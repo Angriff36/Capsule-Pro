@@ -250,7 +250,7 @@ export class PostgresAsyncReactionStore implements AsyncReactionStore {
       this.log.warn?.("markFailed: job not found", { jobId });
       return "retry";
     }
-    const row = claimed.rows[0];
+    const row = claimed.rows[0]!;
     const job = rowToJob(row);
     const exhausted = job.attempts >= job.maxAttempts;
 

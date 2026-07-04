@@ -36,6 +36,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 import { apiFetch } from "@/app/lib/api";
 import {
   formatCurrency,
@@ -347,15 +348,12 @@ export default function ApprovalsPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h1 className="font-semibold text-2xl tracking-tight">Approvals</h1>
-          <p className="text-muted-foreground">
-            Review and approve purchase orders before they're sent to vendors.
-          </p>
-        </div>
-      </div>
+    <>
+      <OperationalPageShell
+        description="Review and approve purchase orders before they're sent to vendors."
+        eyebrow="Procurement / Approvals"
+        title="Approvals"
+      >
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-3">
@@ -570,6 +568,8 @@ export default function ApprovalsPage() {
         </TabsContent>
       </Tabs>
 
+      </OperationalPageShell>
+
       {/* Detail Dialog */}
       <Dialog onOpenChange={setDetailOpen} open={detailOpen}>
         <DialogContent className="max-w-lg">
@@ -639,6 +639,6 @@ export default function ApprovalsPage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

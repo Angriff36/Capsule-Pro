@@ -14054,7 +14054,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
-        "optional": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false

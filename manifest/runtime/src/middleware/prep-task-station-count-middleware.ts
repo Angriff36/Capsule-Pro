@@ -144,14 +144,15 @@ export function createPrepTaskStationCountMiddleware(
       const triggers = ctx.emittedEvents.filter((event) =>
         TRIGGER_EVENTS.has(event.name)
       );
-      if (triggers.length === 0) {
+      const firstTrigger = triggers[0];
+      if (!firstTrigger) {
         return {};
       }
 
       // The recompute is over the WHOLE tenant, so it runs once per command no
       // matter how many trigger events fired.
       const tenantId =
-        asNonEmptyString((triggers[0].payload as EventPayload).tenantId) ??
+        asNonEmptyString((firstTrigger.payload as EventPayload).tenantId) ??
         asNonEmptyString(
           (ctx.runtimeContext.user as { tenantId?: unknown } | undefined)
             ?.tenantId
@@ -224,7 +225,7 @@ export function createPrepTaskStationCountMiddleware(
           {
             entityName: "Station",
             instanceId: stationId,
-            causationId: triggers[0].name,
+            causationId: firstTrigger.name,
             correlationId:
               asNonEmptyString(
                 (ctx as { correlationId?: unknown }).correlationId

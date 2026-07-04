@@ -92,7 +92,7 @@ vi.mock("@/app/lib/webhook-dispatch", () => ({
 }));
 vi.mock("@/app/lib/invariant", () => {
   class InvariantError extends Error {
-    name = "InvariantError" as const;
+    override name = "InvariantError" as const;
     constructor(m: string) {
       super(m);
       this.name = "InvariantError";
@@ -659,7 +659,6 @@ describe("Prep Lists API", () => {
 
   describe.each(COMMANDS)("POST PrepList.$name", ({
     name,
-    runtimeName,
     sampleBody,
   }) => {
     it(`returns 401 when unauthenticated [${name}]`, async () => {

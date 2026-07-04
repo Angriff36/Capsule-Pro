@@ -152,6 +152,13 @@ export async function GET(
     const toVersion =
       versionsResult.find((v) => v.id === toId) ?? versionsResult[1];
 
+    if (!(fromVersion && toVersion)) {
+      return NextResponse.json(
+        { error: "One or both versions not found" },
+        { status: 404 }
+      );
+    }
+
     // Fetch unit names
     const unitIds = [fromVersion.yield_unit_id, toVersion.yield_unit_id];
     const unitsResult = await database.$queryRaw<

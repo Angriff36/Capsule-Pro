@@ -39,7 +39,7 @@ export default function NewKitchenTaskPage() {
   const handleSubmit = async (formData: FormData) => {
     startTransition(async () => {
       try {
-        const _task = await createKitchenTask(formData);
+        await createKitchenTask(formData);
         router.push("/kitchen");
         router.refresh();
       } catch (error) {

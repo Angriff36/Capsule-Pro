@@ -6,6 +6,32 @@
 
 ---
 
+## 0b. Contract-package import gate (2026-06-25)
+
+Constitution §4a designates `@repo/manifest-runtime` (`manifest/runtime/`) as the single
+contract workspace package (§17: its `exports` field is the canonical adapter list). Before
+this change there was NO import-level enforcement: feature code could reach into generated
+artifacts by path, and in ~22 places did. Added `manifest/scripts/audit-contract-imports.mjs`
+(`pnpm manifest:contract:check`, `--strict`, `--self-test`; ripgrep-backed, near-instant) wired
+into `manifest:ci`. It flags QUOTED string literals in `apps/**`/`packages/**` feature code that
+reference forbidden generated paths (`manifest/ir/`, `manifest/api-docs/`, `manifest/generated/`,
+`manifest/runtime/src/generated/`, `manifest/runtime/{routes.manifest.json,routes.ts,command-source-map.json,commands.registry.json}`,
+`generated-schema.prisma`, `prisma-{store-,}options.generated.json`, `kitchen.ir.generated.json`,
+`*.generated.json`). Unquoted comment prose is ignored; `@repo/manifest-runtime/*` and
+`@angriff36/manifest` are never matched. Legitimate consumers are registered in
+`manifest/governance/contract-import-allowlist.json` (13 entries, tight — `--strict` fails on
+stale entries): build `outputFileTracingIncludes` (2 `next.config.ts`), the drift-gated IR embed
+(`apps/api/lib/manifest/frozen-ir.ts`), the OpenAPI-serving route (`apps/api/app/api-docs/openapi.json/route.ts`),
+the MCP introspection server (`packages/mcp-server/` pathPrefix — reading IR/openapi/routes is its
+purpose), and 8 IR-reading test fixtures. **Baseline scan = 23 violations; migration slice removed
+1** (`apps/app/app/lib/api.ts` now imports `ROUTES_MANIFEST_REL_PATH` from the new
+`@repo/manifest-runtime/routes-manifest` export instead of hardcoding the path; also wired `apps/app`
+→ `@repo/manifest-runtime` workspace dep); the remaining 22 are allowlisted. The in-app generated
+client (`apps/app/app/lib/manifest-client|hooks|types|field-hints`) is the ALLOWED client surface
+(excluded from the scan — `.generated.ts`, not in the forbidden list). apps/app typecheck: 0 errors
+from this change (21 pre-existing syntax errors in unrelated design-system/playground files,
+unchanged).
+
 ## 0a. Deploy failure 2026-06-19 (NOT Manifest drift — modern-lib + lib-version skew)
 The `workflow_dispatch` Deploy (dpl_7jmLvC5r9KMVvtFzpLfdZ1SM6aRU, commit `67706d0`) failed both
 `turbo build --filter=app|api`. The Sentry 403 in the log is non-fatal (errorHandler in
@@ -43,11 +69,11 @@ then surfaced **6 more errors** that are NOT staleness — they are generated-su
 > **RESOLVED 2026-05-30 (Phase 1) — see §10.** The producer now rewrites these accessors
 > automatically. The table below is the original diagnosis; corrections are inline.
 
-| Accessor used | Reality | Files | Resolution |
-|---|---|---|---|
-| `database.eventStaff` | model is `EventStaffAssignment` (`@@map("event_staff_assignments")`, schema.prisma:1394) → accessor `eventStaffAssignment`. | `apps/api/app/api/events/staff/{list,[id]}/route.ts` | REMAP via producer → `eventStaffAssignment` |
-| `database.eventImportWorkflow` | ~~no Prisma table exists at all~~ **WRONG.** Table **does** exist: `model EventImport` (`@@map("event_imports")`, schema.prisma:1437) → accessor `eventImport`. Confirmed by store header `prisma-stores/broken-read-batch08-event-guest-import.ts`. | `apps/api/app/api/events/import-workflows/{list,[id]}/route.ts` | REMAP via producer → `eventImport` (NOT delete) |
-| `database.tenantAuditLog` | **hand-written route** (NOT generated); model never existed; selected columns (`operationType`, `immutableHash`, `aiConfidence`, `correlationId`…) exist on no audit table. | `apps/api/app/api/audit/logs/route.ts` | **DELETED** (unreferenced by app code; rewriting would invent semantics) |
+| Accessor used                  | Reality                                                                                                                                                                                                                                              | Files                                                           | Resolution                                                               |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `database.eventStaff`          | model is `EventStaffAssignment` (`@@map("event_staff_assignments")`, schema.prisma:1394) → accessor `eventStaffAssignment`.                                                                                                                          | `apps/api/app/api/events/staff/{list,[id]}/route.ts`            | REMAP via producer → `eventStaffAssignment`                              |
+| `database.eventImportWorkflow` | ~~no Prisma table exists at all~~ **WRONG.** Table **does** exist: `model EventImport` (`@@map("event_imports")`, schema.prisma:1437) → accessor `eventImport`. Confirmed by store header `prisma-stores/broken-read-batch08-event-guest-import.ts`. | `apps/api/app/api/events/import-workflows/{list,[id]}/route.ts` | REMAP via producer → `eventImport` (NOT delete)                          |
+| `database.tenantAuditLog`      | **hand-written route** (NOT generated); model never existed; selected columns (`operationType`, `immutableHash`, `aiConfidence`, `correlationId`…) exist on no audit table.                                                                          | `apps/api/app/api/audit/logs/route.ts`                          | **DELETED** (unreferenced by app code; rewriting would invent semantics) |
 
 ~~A cross-check of all IR entity accessors vs. the 224 Prisma models found **~25 IR entities whose
 naive-camelCase accessor matches no Prisma model**…~~ **CORRECTED 2026-05-30.** The real
@@ -1687,7 +1713,7 @@ the local Manifest checkout via pnpm overrides in BOTH root package.json AND pnp
 (removing only one is a silent no-op — the workspace one also applies). This was never the
 user's workflow and broke deploys (Vercel has no ../Manifest). USER DIRECTIVE: never use file:
 overrides for @angriff36/manifest — the flow is fix in C:\Projects\Manifest → push → cut-release.yml
-workflow (gates build+typecheck+full suite, then tags/publishes to GitHub Packages) → bump the pin.
+workflow (gates build+typecheck+full suite, then tags/publishes to npm as `@angriff36/manifest`) → bump the pin.
 
 Resolution: the local checkout held the GenericPrismaStore requiresTenantConnect + snake_case
 tenant_id/deleted_at fix (uncommitted src) plus a stale-committed CLI dist (rebuild of committed

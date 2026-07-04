@@ -113,6 +113,10 @@ export function OnboardingWizard({
     setCurrentStep(startStep);
   }, [startStep, isOpen]);
 
+  if (!currentStepData) {
+    return null;
+  }
+
   return (
     <Dialog onOpenChange={(open) => !open && onClose()} open={isOpen}>
       <DialogContent
@@ -286,6 +290,10 @@ export function InlineWizard({ steps, className }: InlineWizardProps) {
   const currentStepData = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
   const isFirstStep = currentStep === 0;
+
+  if (!currentStepData) {
+    return null;
+  }
 
   const handleNext = () => {
     if (!isLastStep) {

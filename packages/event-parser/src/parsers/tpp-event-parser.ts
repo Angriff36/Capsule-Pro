@@ -140,8 +140,8 @@ function buildSections(lines: string[]): Section[] {
     // Check for section header with value on same line
     const sameLineMatch = line.match(/^(.+?):\s*(.+)$/);
     if (sameLineMatch) {
-      const label = normalizeLabel(sameLineMatch[1]);
-      const value = sameLineMatch[2].trim();
+      const label = normalizeLabel(sameLineMatch[1]!);
+      const value = sameLineMatch[2]!.trim();
       current = { label, lines: value ? [value] : [] };
       sections.push(current);
       continue;
@@ -299,9 +299,9 @@ function extractMenuItems(lines: string[]): MenuItem[] {
     index += 1;
     while (
       index < lines.length &&
-      isCategoryContinuation(lines[index], categoryParts)
+      isCategoryContinuation(lines[index]!, categoryParts)
     ) {
-      categoryParts.push(lines[index]);
+      categoryParts.push(lines[index]!);
       index += 1;
     }
 
@@ -346,8 +346,8 @@ function extractMenuItems(lines: string[]): MenuItem[] {
 
     // Parse quantities
     const quantityLines: string[] = [];
-    while (index < lines.length && /^P:\s*/i.test(lines[index])) {
-      quantityLines.push(lines[index]);
+    while (index < lines.length && /^P:\s*/i.test(lines[index]!)) {
+      quantityLines.push(lines[index]!);
       index += 1;
     }
 
@@ -462,7 +462,7 @@ function isCategoryContinuation(
 
   const lower = trimmed.toLowerCase();
   if (parts.length === 1) {
-    const first = normalizeWhitespace(parts[0]).toLowerCase();
+    const first = normalizeWhitespace(parts[0]!).toLowerCase();
     if (first.endsWith("-")) {
       return true;
     }
@@ -606,7 +606,7 @@ function parseQuantitySegments(
   }
 
   for (let idx = 0; idx < trailingLines.length; ) {
-    const current = normalizeWhitespace(trailingLines[idx]);
+    const current = normalizeWhitespace(trailingLines[idx]!);
     if (!current) {
       idx += 1;
       continue;
@@ -615,10 +615,10 @@ function parseQuantitySegments(
     const numeric = current.match(/^-?\d+(?:\.\d+)?$/);
     if (numeric) {
       const unitLineRaw = trailingLines[idx + 1]
-        ? normalizeWhitespace(trailingLines[idx + 1])
+        ? normalizeWhitespace(trailingLines[idx + 1]!)
         : "";
       const noteLineRaw = trailingLines[idx + 2]
-        ? normalizeWhitespace(trailingLines[idx + 2])
+        ? normalizeWhitespace(trailingLines[idx + 2]!)
         : "";
 
       if (unitLineRaw && isLikelyUnit(unitLineRaw)) {
@@ -664,12 +664,12 @@ function parsePortionLine(
     warnings.push(`Unrecognized quantity format: "${line}"`);
     return null;
   }
-  const value = Number.parseFloat(match[1].replace(/,/g, ""));
+  const value = Number.parseFloat(match[1]!.replace(/,/g, ""));
   if (Number.isNaN(value)) {
     warnings.push(`Unable to parse quantity number from "${line}"`);
     return null;
   }
-  const unit = normalizeWhitespace(match[2]) || "serving";
+  const unit = normalizeWhitespace(match[2]!) || "serving";
   return { value, unit, label: "Portion", raw: line };
 }
 
@@ -681,7 +681,7 @@ function selectPrimaryQuantity(details: MenuQuantityDetail[]): {
     return { value: 0, unit: "" };
   }
   const servingDetail = details.find((detail) => /serv/i.test(detail.unit));
-  const base = servingDetail ?? details[0];
+  const base = servingDetail ?? details[0]!;
   return {
     value: Number.isFinite(base.value) ? base.value : 0,
     unit: base.unit || "serving",
@@ -859,7 +859,7 @@ function deriveHeadcount(menuItems: MenuItem[], allLines: string[]): number {
   for (const line of allLines) {
     const match = line.match(/^P:\s*([\d.,]+)/i);
     if (match) {
-      const value = Number.parseFloat(match[1].replace(/,/g, ""));
+      const value = Number.parseFloat(match[1]!.replace(/,/g, ""));
       if (value > 0) {
         candidates.push(value);
       }
@@ -981,10 +981,10 @@ function parseTimelineLine(line: string): EventTimelineEntry | null {
   if (rangeMatch) {
     const [matchText, startRaw, startMeridiem, endRaw, endMeridiem] =
       rangeMatch;
-    const startMinutes = toMinutes(startRaw, startMeridiem);
-    const endMinutes = toMinutes(endRaw, endMeridiem || startMeridiem);
+    const startMinutes = toMinutes(startRaw!, startMeridiem);
+    const endMinutes = toMinutes(endRaw!, endMeridiem || startMeridiem);
     const beforeRaw = raw.slice(0, rangeMatch.index);
-    const afterRaw = raw.slice(rangeMatch.index + matchText.length);
+    const afterRaw = raw.slice(rangeMatch.index + matchText!.length);
     const before = cleanupTimelineLabel(beforeRaw);
     const after = cleanupTimelineLabel(afterRaw);
     const label =
@@ -1008,9 +1008,9 @@ function parseTimelineLine(line: string): EventTimelineEntry | null {
 
   if (singleMatch) {
     const [matchText, timeRaw, meridiem] = singleMatch;
-    const minutes = toMinutes(timeRaw, meridiem);
+    const minutes = toMinutes(timeRaw!, meridiem);
     const beforeRaw = raw.slice(0, singleMatch.index);
-    const afterRaw = raw.slice(singleMatch.index + matchText.length);
+    const afterRaw = raw.slice(singleMatch.index + matchText!.length);
     const before = cleanupTimelineLabel(beforeRaw);
     const after = cleanupTimelineLabel(afterRaw);
     const label =
@@ -1107,8 +1107,8 @@ function deriveTimes(
       );
       if (rangeMatch) {
         const [, start, startMeridiem, end, endMeridiem] = rangeMatch;
-        const startMinutes = toMinutes(start, startMeridiem);
-        const endMinutes = toMinutes(end, endMeridiem || startMeridiem);
+        const startMinutes = toMinutes(start!, startMeridiem);
+        const endMinutes = toMinutes(end!, endMeridiem || startMeridiem);
         if (startMinutes !== null) {
           minutes.push(startMinutes);
         }
@@ -1123,7 +1123,7 @@ function deriveTimes(
       );
       if (singleMatch) {
         const [, time, meridiem] = singleMatch;
-        const value = toMinutes(time, meridiem);
+        const value = toMinutes(time!, meridiem);
         if (value !== null) {
           minutes.push(value);
         }
@@ -1142,7 +1142,7 @@ function deriveTimes(
     return `${hours.toString().padStart(2, "0")}:${minutesPart.toString().padStart(2, "0")}`;
   };
 
-  const startTime = format(sorted[0]);
+  const startTime = format(sorted[0]!);
   const endTime = sorted.length > 1 ? format(sorted.at(-1) ?? 0) : "";
 
   return { startTime, endTime };
@@ -1159,8 +1159,8 @@ function toMinutes(time: string, meridiem?: string | null): number | null {
 
   if (normalized.includes(":")) {
     const [hoursStr, minutesStr] = normalized.split(":");
-    hours = Number.parseInt(hoursStr, 10);
-    mins = Number.parseInt(minutesStr, 10);
+    hours = Number.parseInt(hoursStr!, 10);
+    mins = Number.parseInt(minutesStr ?? "", 10);
   } else if (/^\d{3,4}$/.test(normalized)) {
     hours = Number.parseInt(normalized.slice(0, -2), 10);
     mins = Number.parseInt(normalized.slice(-2), 10);
@@ -1211,8 +1211,8 @@ function normalizeDate(input: string): string {
   const fallbackMatch = input.match(/(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})/);
   if (fallbackMatch) {
     const [, month, day, year] = fallbackMatch;
-    const normalizedYear = year.length === 2 ? `20${year}` : year;
-    return `${normalizedYear.padStart(4, "0")}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    const normalizedYear = year!.length === 2 ? `20${year}` : year!;
+    return `${normalizedYear.padStart(4, "0")}-${month!.padStart(2, "0")}-${day!.padStart(2, "0")}`;
   }
 
   return "";

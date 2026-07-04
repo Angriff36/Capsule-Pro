@@ -35,7 +35,7 @@ interface EventExportButtonProps {
  */
 export function EventExportButton({
   eventId,
-  eventName,
+  eventName: _eventName,
 }: EventExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [_exportFormat, setExportFormat] = useState<ExportFormat | null>(null);

@@ -1,16 +1,10 @@
 "use client";
 
-import {
-  ArrowLeft,
-  Clock,
-  Download,
-  MapPin,
-  Printer,
-  Users,
-} from "lucide-react";
+import { ArrowLeft, Clock, Download, MapPin, Users } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { PrintFooter, PrintViewButton } from "@/app/components/print-view";
 import { apiFetch } from "@/app/lib/api";
 
 interface RunSheetDish {
@@ -112,10 +106,6 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
   useEffect(() => {
     fetchRunSheet();
   }, [fetchRunSheet]);
-
-  const handlePrint = () => {
-    window.print();
-  };
 
   const handleExportCSV = () => {
     if (!data) {
@@ -269,13 +259,7 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
           >
             <Download className="h-3.5 w-3.5" /> CSV
           </button>
-          <button
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 font-medium text-primary-foreground text-sm hover:bg-primary/90"
-            onClick={handlePrint}
-            type="button"
-          >
-            <Printer className="h-3.5 w-3.5" /> Print
-          </button>
+          <PrintViewButton label="Print" />
         </div>
       </div>
 
@@ -532,6 +516,11 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
           )}
         </div>
       )}
+
+      <PrintFooter
+        caption={`${data.event.title} — Run Sheet`}
+        path={`/events/${eventId}/run-sheet`}
+      />
     </div>
   );
 }

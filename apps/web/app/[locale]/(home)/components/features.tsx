@@ -6,11 +6,40 @@ interface FeaturesProps {
 }
 
 export const Features = ({ dictionary }: FeaturesProps) => {
-  const featureImages = [
-    "/marketing/KitchenOverview.png",
-    "/marketing/ConsolidatedTasks.png",
-    "/marketing/EnterpriseDashboard.png",
-    "/marketing/RecipesMenus.webp",
+  const featureItems = dictionary.web.home.features.items;
+  const cards = [
+    {
+      image: "/marketing/KitchenOverview.png",
+      alt: "Unified operations overview",
+      sizes: "(min-width: 1024px) 40vw, 100vw",
+      aspect: "aspect-[16/9]",
+      wide: true,
+      item: featureItems[0],
+    },
+    {
+      image: "/marketing/ConsolidatedTasks.png",
+      alt: "Task coordination preview",
+      sizes: "(min-width: 1024px) 20vw, 100vw",
+      aspect: "aspect-[4/3]",
+      wide: false,
+      item: featureItems[1],
+    },
+    {
+      image: "/marketing/EnterpriseDashboard.png",
+      alt: "Realtime analytics preview",
+      sizes: "(min-width: 1024px) 20vw, 100vw",
+      aspect: "aspect-[4/3]",
+      wide: false,
+      item: featureItems[2],
+    },
+    {
+      image: "/marketing/RecipesMenus.webp",
+      alt: "Menu and recipe management",
+      sizes: "(min-width: 1024px) 40vw, 100vw",
+      aspect: "aspect-[16/9]",
+      wide: true,
+      item: featureItems[3],
+    },
   ];
 
   return (
@@ -28,83 +57,36 @@ export const Features = ({ dictionary }: FeaturesProps) => {
             </div>
           </div>
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="flex h-full flex-col justify-between gap-6 rounded-2xl border bg-muted p-6 lg:col-span-2">
-              <div className="relative aspect-[16/9] overflow-hidden rounded-xl">
-                <Image
-                  alt="Unified operations overview"
-                  fill
-                  sizes="(min-width: 1024px) 40vw, 100vw"
-                  src={featureImages[0]}
-                  style={{ objectFit: "cover" }}
-                />
+            {cards.map((card) => (
+              <div
+                className={`flex flex-col justify-between gap-6 rounded-2xl border bg-muted p-6${
+                  card.wide ? " h-full lg:col-span-2" : ""
+                }`}
+                key={card.image}
+              >
+                <div
+                  className={`relative ${card.aspect} overflow-hidden rounded-xl`}
+                >
+                  <Image
+                    alt={card.alt}
+                    fill
+                    sizes={card.sizes}
+                    src={card.image}
+                    style={{ objectFit: "cover" }}
+                  />
+                </div>
+                {card.item ? (
+                  <div className="flex flex-col">
+                    <h3 className="text-xl tracking-tight">
+                      {card.item.title}
+                    </h3>
+                    <p className="max-w-xs text-base text-muted-foreground">
+                      {card.item.description}
+                    </p>
+                  </div>
+                ) : null}
               </div>
-              <div className="flex flex-col">
-                <h3 className="text-xl tracking-tight">
-                  {dictionary.web.home.features.items[0].title}
-                </h3>
-                <p className="max-w-xs text-base text-muted-foreground">
-                  {dictionary.web.home.features.items[0].description}
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col justify-between gap-6 rounded-2xl border bg-muted p-6">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
-                <Image
-                  alt="Task coordination preview"
-                  fill
-                  sizes="(min-width: 1024px) 20vw, 100vw"
-                  src={featureImages[1]}
-                  style={{ objectFit: "cover" }}
-                />
-              </div>
-              <div className="flex flex-col">
-                <h3 className="text-xl tracking-tight">
-                  {dictionary.web.home.features.items[1].title}
-                </h3>
-                <p className="max-w-xs text-base text-muted-foreground">
-                  {dictionary.web.home.features.items[1].description}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col justify-between gap-6 rounded-2xl border bg-muted p-6">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
-                <Image
-                  alt="Realtime analytics preview"
-                  fill
-                  sizes="(min-width: 1024px) 20vw, 100vw"
-                  src={featureImages[2]}
-                  style={{ objectFit: "cover" }}
-                />
-              </div>
-              <div className="flex flex-col">
-                <h3 className="text-xl tracking-tight">
-                  {dictionary.web.home.features.items[2].title}
-                </h3>
-                <p className="max-w-xs text-base text-muted-foreground">
-                  {dictionary.web.home.features.items[2].description}
-                </p>
-              </div>
-            </div>
-            <div className="flex h-full flex-col justify-between gap-6 rounded-2xl border bg-muted p-6 lg:col-span-2">
-              <div className="relative aspect-[16/9] overflow-hidden rounded-xl">
-                <Image
-                  alt="Menu and recipe management"
-                  fill
-                  sizes="(min-width: 1024px) 40vw, 100vw"
-                  src={featureImages[3]}
-                  style={{ objectFit: "cover" }}
-                />
-              </div>
-              <div className="flex flex-col">
-                <h3 className="text-xl tracking-tight">
-                  {dictionary.web.home.features.items[3].title}
-                </h3>
-                <p className="max-w-xs text-base text-muted-foreground">
-                  {dictionary.web.home.features.items[3].description}
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>

@@ -10,14 +10,26 @@ export function parseCsv(content: string): CsvRow[] {
     return [];
   }
 
-  const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
+  const headerLine = lines[0];
+  if (!headerLine) {
+    return [];
+  }
+  const headers = headerLine.split(",").map((h) => h.trim().toLowerCase());
   const rows: CsvRow[] = [];
 
   for (let i = 1; i < lines.length; i++) {
-    const values = splitCsvLine(lines[i]);
+    const line = lines[i];
+    if (!line) {
+      continue;
+    }
+    const values = splitCsvLine(line);
     const row: CsvRow = {};
     for (let j = 0; j < headers.length; j++) {
-      row[headers[j]] = (values[j] ?? "").trim();
+      const header = headers[j];
+      if (header === undefined) {
+        continue;
+      }
+      row[header] = (values[j] ?? "").trim();
     }
     rows.push(row);
   }

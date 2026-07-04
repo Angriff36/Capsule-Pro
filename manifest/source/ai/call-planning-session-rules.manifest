@@ -54,16 +54,15 @@ entity CallPlanningSession mixin TenantScoped, SoftDeletable {
 
   // NOTE: `start` is retained for non-create flows (e.g. resuming a session
   // instance created elsewhere); new sessions should go through `create`.
-  command start(sourceType: string, userId: string) {
+  command start(sourceType: string) {
     guard sourceType in ["manual", "ringcentral", "upload"] "Invalid source type"
-    guard userId != null and userId != "" "User ID is required"
     guard (self.status == "active") "Can only start a fresh (active) session"
 
     // `status` is intentionally NOT mutated: the property default seeds the
     // initial "active" state and active -> active is a rejected no-op
     // self-transition under the rules above.
     mutate sourceType = sourceType
-    mutate userId = userId
+    mutate userId = user.id
     mutate startedAt = now()
 
     emit CallPlanningSessionStarted

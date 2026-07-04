@@ -35,7 +35,7 @@ export const formatDateRange = (start: Date, end: Date) =>
   `${start.toLocaleDateString()} to ${end.toLocaleDateString()}`;
 
 export const formatDateForInput = (date: Date) =>
-  date.toISOString().split("T")[0];
+  date.toISOString().split("T")[0] ?? "";
 
 export const parseInputDate = (value: string) => new Date(`${value}T00:00:00`);
 
@@ -195,9 +195,8 @@ export const buildWeeklySummary = (weekly: WeeklyMetrics): ReportSummary => {
       `Most common lost reason: ${topLost.label} (${formatNumber(topLost.value)})`
     );
   }
-  const pendingLabel = weekly.topPending.length
-    ? findRowLabel(weekly.topPending[0])
-    : null;
+  const firstPending = weekly.topPending[0];
+  const pendingLabel = firstPending ? findRowLabel(firstPending) : null;
   if (pendingLabel) {
     highlights.push(`Top pending item: ${pendingLabel}`);
   }
@@ -278,10 +277,10 @@ export const buildQuarterlySummary = (
       `Top venue partner: ${topVenue.label} (${formatCurrency(topVenue.value)})`
     );
   }
-  if (quarterly.segmentSummary.length) {
-    const topSegment = quarterly.segmentSummary
-      .slice()
-      .sort((a, b) => b.revenue - a.revenue)[0];
+  const topSegment = quarterly.segmentSummary
+    .slice()
+    .sort((a, b) => b.revenue - a.revenue)[0];
+  if (topSegment) {
     highlights.push(
       `Top segment: ${topSegment.event_type} / ${topSegment.size_bucket} / ${topSegment.budget_tier}`
     );

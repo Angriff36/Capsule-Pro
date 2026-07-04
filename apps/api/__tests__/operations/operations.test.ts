@@ -527,13 +527,6 @@ function mockUnauthed() {
   vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 }
 
-function _mockNoTenant() {
-  vi.mocked(auth).mockResolvedValue({
-    userId: TEST_USER_ID,
-    orgId: TEST_ORG_ID,
-  } as Awaited<ReturnType<typeof auth>>);
-  vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
-}
 
 /** Mock requireCurrentUser for authenticated dispatcher calls */
 function mockRequireCurrentUser() {
@@ -745,7 +738,7 @@ describe("Search API", () => {
     await searchGet(req);
 
     const findManyCall = vi.mocked(databaseFromLib.event.findMany).mock
-      .calls[0][0] as {
+      .calls[0]?.[0] as {
       where: { tenantId: string; deletedAt: unknown };
     };
     expect(findManyCall.where.tenantId).toBe(TEST_TENANT_ID);
@@ -763,7 +756,7 @@ describe("Search API", () => {
     await searchGet(req);
 
     const findManyCall = vi.mocked(databaseFromLib.event.findMany).mock
-      .calls[0][0] as {
+      .calls[0]?.[0] as {
       take: number;
     };
     expect(findManyCall.take).toBe(50);
@@ -1103,7 +1096,7 @@ describe("Document Versions - List", () => {
     await docVersionList(req);
 
     const findManyCall = vi.mocked(databaseFromLib.documentVersion.findMany)
-      .mock.calls[0][0] as { where: { tenantId: string } };
+      .mock.calls[0]?.[0] as { where: { tenantId: string } };
     expect(findManyCall.where.tenantId).toBe(TEST_TENANT_ID);
   });
 
@@ -1628,7 +1621,7 @@ describe("Tenant Isolation Across Operations", () => {
     );
     await searchGet(req);
 
-    const call = vi.mocked(databaseFromLib.event.findMany).mock.calls[0][0] as {
+    const call = vi.mocked(databaseFromLib.event.findMany).mock.calls[0]?.[0] as {
       where: { tenantId: string };
     };
     expect(call.where.tenantId).toBe(TEST_TENANT_ID);

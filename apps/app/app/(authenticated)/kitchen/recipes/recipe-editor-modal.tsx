@@ -199,8 +199,9 @@ export const RecipeEditorModal = ({
       URL.revokeObjectURL(removed.url);
     }
     const newImages = images.filter((img) => img.id !== id);
-    if (removed?.isMain && newImages.length > 0) {
-      newImages[0].isMain = true;
+    const firstImage = newImages[0];
+    if (removed?.isMain && firstImage) {
+      firstImage.isMain = true;
     }
     setImages(newImages);
   };

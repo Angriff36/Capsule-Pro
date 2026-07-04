@@ -27,6 +27,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { SampleDataImportButton } from "../../components/sample-data-import-button";
+import { BulkActionBar, useBulkSelection } from "@/app/components/bulk-actions";
 import {
   archiveLead,
   convertLeadToClient,
@@ -94,6 +95,18 @@ export function LeadsPageClient({ leads, summary }: LeadsPageClientProps) {
 
     return result;
   }, [leads, statusFilter, searchQuery]);
+
+  // Bulk selection — scoped to the currently-visible (filtered) rows so that
+  // "select all" only ever targets what the operator can see.
+  const {
+    selectedIds,
+    isSelected,
+    toggle,
+    toggleAll,
+    clear,
+    allSelected,
+    someSelected,
+  } = useBulkSelection(filteredLeads.map((lead) => lead.id));
 
   // Actions
   const handleConvertToClient = async (leadId: string, name: string) => {
@@ -205,7 +218,21 @@ export function LeadsPageClient({ leads, summary }: LeadsPageClientProps) {
       {/* Leads table */}
       <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
         {/* Table header */}
-        <div className="grid grid-cols-[1fr_120px_130px_100px_100px_44px] gap-2 border-hairline border-b px-4 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+        <div className="grid grid-cols-[36px_1fr_120px_130px_100px_100px_44px] gap-2 border-hairline border-b px-4 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+          <span className="flex items-center">
+            <input
+              aria-label="Select all leads"
+              checked={allSelected}
+              className="size-4 cursor-pointer accent-ink"
+              onChange={toggleAll}
+              ref={(el) => {
+                if (el) {
+                  el.indeterminate = someSelected;
+                }
+              }}
+              type="checkbox"
+            />
+          </span>
           <span>Lead</span>
           <span>Status</span>
           <span>Event date</span>
@@ -225,9 +252,20 @@ export function LeadsPageClient({ leads, summary }: LeadsPageClientProps) {
           <div className="divide-y divide-hairline">
             {filteredLeads.map((lead) => (
               <div
-                className="grid grid-cols-[1fr_120px_130px_100px_100px_44px] items-center gap-2 px-4 py-3 text-sm transition-colors hover:bg-soft-stone"
+                className="grid grid-cols-[36px_1fr_120px_130px_100px_100px_44px] items-center gap-2 px-4 py-3 text-sm transition-colors hover:bg-soft-stone"
                 key={lead.id}
               >
+                {/* Select */}
+                <span className="flex items-center">
+                  <input
+                    aria-label={`Select ${lead.contactName}`}
+                    checked={isSelected(lead.id)}
+                    className="size-4 cursor-pointer accent-ink"
+                    onChange={() => toggle(lead.id)}
+                    type="checkbox"
+                  />
+                </span>
+
                 {/* Lead info */}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
@@ -331,6 +369,26 @@ export function LeadsPageClient({ leads, summary }: LeadsPageClientProps) {
           </div>
         )}
       </div>
+
+      <BulkActionBar
+        actions={[
+          {
+            command: "archive",
+            label: "Archive",
+            variant: "secondary",
+          },
+          {
+            command: "disqualify",
+            confirm: "Disqualify {count} lead(s)? This marks them as lost.",
+            label: "Disqualify",
+            variant: "destructive",
+          },
+        ]}
+        entity="Lead"
+        onClear={clear}
+        onDone={() => router.refresh()}
+        selectedIds={selectedIds}
+      />
     </div>
   );
 }

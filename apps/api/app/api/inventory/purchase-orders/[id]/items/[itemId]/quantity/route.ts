@@ -141,7 +141,6 @@ export async function PUT(request: Request, context: RouteContext) {
 
         const currentQuantity = Number(inventoryItem.quantityOnHand);
         const newQuantity = currentQuantity + incrementalQuantity;
-        const _unitCost = Number(poItem.unitCost);
 
         // Update inventory item quantity on hand
         await tx.inventoryItem.update({

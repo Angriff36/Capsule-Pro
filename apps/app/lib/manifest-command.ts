@@ -53,6 +53,7 @@ export type RunManifestCommandFailureKind =
   | "guard_failed"
   | "constraint_blocked"
   | "command_failed"
+  | "invalid_params"
   | "runtime_error";
 
 /**
@@ -118,6 +119,7 @@ const KNOWN_FAILURE_KINDS: ReadonlySet<string> = new Set([
   "guard_failed",
   "constraint_blocked",
   "command_failed",
+  "invalid_params",
   "runtime_error",
 ]);
 

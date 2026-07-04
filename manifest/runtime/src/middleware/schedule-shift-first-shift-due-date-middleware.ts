@@ -55,9 +55,7 @@ import type {
   Store,
 } from "@angriff36/manifest";
 
-// Keep in lockstep with the SEL onboarding module in training-module-sel-rules.manifest
-// and the staff-member-created-training-assignment middleware.
-const SEL_MODULE_ID = "training-module-sel-event-staff-onboarding";
+import { SEL_ONBOARDING_MODULE_ID as SEL_MODULE_ID } from "../training/sel-onboarding-ids";
 
 // Assignment states from which applyFirstShiftDueDate is legal (mirrors the
 // command's `guard self.status in [...]`). Pinning a due date only makes sense

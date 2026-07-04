@@ -11,7 +11,6 @@ import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   createGoodshuffleClient,
   type GoodshuffleClient,
-  type GoodshuffleConflict,
   type GoodshuffleEvent,
   type GoodshuffleSyncResult,
 } from "./goodshuffle-client";
@@ -22,70 +21,6 @@ export interface EventSyncOptions {
   endDate: Date;
   startDate: Date;
   tenantId: string;
-}
-
-/**
- * Detect conflicts between Goodshuffle and Convoy event data
- */
-function _detectConflicts(
-  goodshuffleEvent: GoodshuffleEvent,
-  convoyEvent: {
-    title: string;
-    eventDate: Date;
-    guestCount: number | null;
-  }
-): GoodshuffleConflict[] {
-  const conflicts: GoodshuffleConflict[] = [];
-
-  // Check name conflict
-  if (
-    goodshuffleEvent.name &&
-    convoyEvent.title &&
-    goodshuffleEvent.name !== convoyEvent.title
-  ) {
-    conflicts.push({
-      goodshuffleEventId: goodshuffleEvent.id,
-      convoyEventId: "",
-      field: "title",
-      goodshuffleValue: goodshuffleEvent.name,
-      convoyValue: convoyEvent.title,
-      resolution: "pending",
-    });
-  }
-
-  // Check date conflict
-  if (goodshuffleEvent.event_date && convoyEvent.eventDate) {
-    const gsDate = new Date(goodshuffleEvent.event_date).toDateString();
-    const convoyDate = convoyEvent.eventDate.toDateString();
-    if (gsDate !== convoyDate) {
-      conflicts.push({
-        goodshuffleEventId: goodshuffleEvent.id,
-        convoyEventId: "",
-        field: "eventDate",
-        goodshuffleValue: goodshuffleEvent.event_date,
-        convoyValue: convoyEvent.eventDate.toISOString(),
-        resolution: "pending",
-      });
-    }
-  }
-
-  // Check guest count conflict
-  if (
-    goodshuffleEvent.guest_count &&
-    convoyEvent.guestCount &&
-    goodshuffleEvent.guest_count !== convoyEvent.guestCount
-  ) {
-    conflicts.push({
-      goodshuffleEventId: goodshuffleEvent.id,
-      convoyEventId: "",
-      field: "guestCount",
-      goodshuffleValue: goodshuffleEvent.guest_count,
-      convoyValue: convoyEvent.guestCount,
-      resolution: "pending",
-    });
-  }
-
-  return conflicts;
 }
 
 /**

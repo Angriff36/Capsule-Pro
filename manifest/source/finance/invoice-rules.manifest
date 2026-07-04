@@ -52,12 +52,31 @@ entity Invoice mixin TenantScoped, SoftDeletable {
   // Computed properties
   computed isPaidInFull: boolean = self.amountDue <= 0
   computed isOverdue: boolean = self.status in ["SENT", "VIEWED", "PARTIALLY_PAID"] and self.dueDate < now() cache request
+  // Payment rollups over the payments back-relation. Filter on COMPLETED only — cash
+  // actually collected against this invoice, not pending/failed/refunded attempts —
+  // matching the proven Client/Event.totalPaidAmount predicate. These reconcile the
+  // authoritative Payment records against the manually-maintained `amountPaid` field
+  // (which is bumped by applyPayment mutates and can drift). IR-only computeds (no
+  // stored column, no migration); request-cached like the isOverdue precedent above.
+  computed totalPaidAmount: money = sum(filter(self.payments, (p) => p.status == "COMPLETED"), (p) => p.amount) cache request
+  computed completedPaymentCount: int = count_of(filter(self.payments, (p) => p.status == "COMPLETED")) cache request
+  // Collections-recovery rollups over the collectionCases back-relation. Filter on
+  // RESOLVED only — the cohort of this invoice's collection cases that were actually
+  // worked to recovery, not still-open (ACTIVE/IN_PROGRESS/LEGAL/DISPUTED) or
+  // written-off/defaulted/cancelled cases. `collectedAmount` is the realized cash
+  // recovered on a resolved case, so the sum is true recovered-via-collections $.
+  // Complementary lens to Client.overdueBalanceTotal (open AR exposure): this is the
+  // recovered tail. IR-only computeds (no stored column, no migration); request-cached
+  // like the payment rollups above.
+  computed resolvedCollectionCaseCount: int = count_of(filter(self.collectionCases, (c) => c.status == "RESOLVED")) cache request
+  computed recoveredCollectionAmount: money = sum(filter(self.collectionCases, (c) => c.status == "RESOLVED"), (c) => c.collectedAmount) cache request
 
   relationship belongsTo linkedEvent: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
   relationship hasMany payments: Payment
   // Back-relations (U11): inverse hasMany for children that belongTo Invoice
   relationship hasMany collectionCases: CollectionCase
+  relationship hasMany revenueSchedules: RevenueRecognitionSchedule
   // Constraints
   constraint amount_non_negative: self.subtotal >= 0 and self.total >= 0 "Amounts cannot be negative"
 
@@ -164,12 +183,12 @@ entity Invoice mixin TenantScoped, SoftDeletable {
   // target was not an allowed transition, so the engine rejected every call).
   transition status from "DRAFT" to ["SENT", "VOID"]
   transition status from "SENT" to ["VIEWED", "OVERDUE", "PARTIALLY_PAID", "PAID", "VOID"]
-  transition status from "VIEWED" to ["OVERDUE", "PARTIALLY_PAID", "PAID", "VOID"]
+  transition status from "VIEWED" to ["OVERDUE", "PARTIALLY_PAID", "PAID", "VOID", "VIEWED"]
   transition status from "OVERDUE" to ["PARTIALLY_PAID", "PAID", "WRITE_OFF", "VOID"]
   // PARTIALLY_PAID carries a self-loop: a 2nd applyPayment and recordRefund both mutate
   // status -> PARTIALLY_PAID, and the runtime does NOT exempt no-op self-transitions
   // (notes §21) — without the self-entry those commands would fail the transition check.
-  transition status from "PARTIALLY_PAID" to ["PAID", "WRITE_OFF", "PARTIALLY_PAID"]
+  transition status from "PARTIALLY_PAID" to ["PAID", "WRITE_OFF", "PARTIALLY_PAID", "OVERDUE"]
   // PAID is no longer fully terminal: recordRefund reverses a fully-paid invoice back to
   // PARTIALLY_PAID (guarded refundAmount <= amountPaid), restoring a balance owed. Without
   // this, refunding a PAID invoice silently no-ops — the exact bug the refund middleware fixes.

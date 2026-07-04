@@ -73,6 +73,12 @@ export async function POST(request: Request) {
   }
 
   const assignment = assignments[0];
+  if (!assignment) {
+    return NextResponse.json(
+      { message: "Assignment not found" },
+      { status: 404 }
+    );
+  }
 
   // For non-assigned-to-all, verify user is the assigned employee — read per §10
   if (!assignment.assigned_to_all && assignment.employee_id) {
@@ -84,7 +90,7 @@ export async function POST(request: Request) {
       `
     );
 
-    if (employees.length === 0 || employees[0].id !== assignment.employee_id) {
+    if (employees.length === 0 || employees[0]?.id !== assignment.employee_id) {
       return NextResponse.json(
         { message: "You are not assigned to this training" },
         { status: 403 }
@@ -108,7 +114,7 @@ export async function POST(request: Request) {
         `
       );
 
-      if (existingCompletions.length > 0 && existingCompletions[0].started_at) {
+      if (existingCompletions.length > 0 && existingCompletions[0]?.started_at) {
         return NextResponse.json({
           completion: existingCompletions[0],
           message: "Training already started",
@@ -126,7 +132,7 @@ export async function POST(request: Request) {
 
       const employeeId =
         assignment.employee_id ??
-        (employees.length > 0 ? employees[0].id : null);
+        (employees.length > 0 ? (employees[0]?.id ?? null) : null);
 
       if (!employeeId) {
         return NextResponse.json(
@@ -207,7 +213,7 @@ export async function POST(request: Request) {
 
       const employeeId =
         assignment.employee_id ??
-        (employees.length > 0 ? employees[0].id : null);
+        (employees.length > 0 ? (employees[0]?.id ?? null) : null);
 
       if (!employeeId) {
         return NextResponse.json(

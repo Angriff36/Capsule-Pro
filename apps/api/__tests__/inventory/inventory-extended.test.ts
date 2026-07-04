@@ -109,7 +109,6 @@ const vendorCatalogUpdate = dispatch("VendorCatalog", "update");
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000040";
 const TEST_USER_ID = "user_inventory_ext_001";
-const _TEST_ORG_ID = "org_inventory_ext_001";
 const OTHER_TENANT_ID = "00000000-0000-0000-0000-000000000099";
 
 // --- Helpers ---

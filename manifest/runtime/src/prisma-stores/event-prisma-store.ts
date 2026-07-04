@@ -13,11 +13,12 @@ import {
 
 export class EventPrismaStore implements Store<EntityInstance> {
   private readonly inner: GenericPrismaStore;
+  private readonly prisma: PrismaClient;
+  private readonly tenantId: string;
 
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {
+  constructor(prisma: PrismaClient, tenantId: string) {
+    this.prisma = prisma;
+    this.tenantId = tenantId;
     // The package GenericPrismaStore.update builds a BROKEN optimistic-lock
     // WHERE for compound-key entities: it inserts the version field INTO the
     // `tenantId_id` selector (which Prisma rejects: "Unknown argument version")
@@ -29,10 +30,16 @@ export class EventPrismaStore implements Store<EntityInstance> {
     // inner store so updates use a plain, persisting write. `version` still
     // increments because the runtime supplies it in the update `data`.
     const eventMeta = PRISMA_MODEL_METADATA.Event;
-    const metadataWithoutBrokenOcc = {
-      ...PRISMA_MODEL_METADATA,
-      Event: { ...eventMeta, versionProperty: undefined },
-    };
+    const metadataWithoutBrokenOcc: typeof PRISMA_MODEL_METADATA = eventMeta
+      ? (() => {
+          const { versionProperty: _versionProperty, ...eventMetaWithoutOcc } =
+            eventMeta;
+          return {
+            ...PRISMA_MODEL_METADATA,
+            Event: eventMetaWithoutOcc,
+          };
+        })()
+      : PRISMA_MODEL_METADATA;
     this.inner = new GenericPrismaStore(
       prisma,
       "Event",

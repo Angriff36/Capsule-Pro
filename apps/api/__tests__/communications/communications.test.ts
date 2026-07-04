@@ -110,7 +110,7 @@ vi.mock("@/lib/pagination", () => ({
 }));
 vi.mock("@/app/lib/invariant", () => ({
   InvariantError: class extends Error {
-    name = "InvariantError";
+    override name = "InvariantError";
   },
 }));
 vi.mock("@/app/lib/webhook-dispatch", () => ({
@@ -150,16 +150,6 @@ const MOCK_CURRENT_USER = {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function _createMockUser(overrides: Record<string, unknown> = {}) {
-  return {
-    id: TEST_USER_ID,
-    tenantId: TEST_TENANT_ID,
-    role: "admin",
-    authUserId: "clerk-comm-123",
-    ...overrides,
-  };
-}
 
 function createMockEmailTemplate(overrides: Record<string, unknown> = {}) {
   return {

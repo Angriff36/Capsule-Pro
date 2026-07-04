@@ -3,6 +3,7 @@ import { database, Prisma } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { OperationalPageShell } from "../../../components/operational-page-shell";
 import { Header } from "../../../components/header";
 import { NewRecipeForm } from "../components/new-recipe-form-client";
 
@@ -69,9 +70,14 @@ const NewRecipePage = async () => {
           <Link href="/kitchen/recipes">Back to recipes</Link>
         </Button>
       </Header>
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+      <OperationalPageShell
+        description="Create a new recipe in your kitchen library."
+        eyebrow="Kitchen / Recipes"
+        title="New recipe"
+        withCanvas={false}
+      >
         <NewRecipeForm units={units} />
-      </div>
+      </OperationalPageShell>
     </>
   );
 };

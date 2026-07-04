@@ -1,7 +1,7 @@
 "use client";
 
 import { Printer } from "lucide-react";
-import { QRCodeSVG } from "qrcode.react";
+import { QRCodeSVG } from "qrcode.react"
 import { useEffect, useState } from "react";
 
 // Print View — the global `@media print` rules in app/styles.css strip the nav,

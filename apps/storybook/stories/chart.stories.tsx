@@ -261,6 +261,7 @@ export const DoughnutChart: Story = {
                     </text>
                   );
                 }
+                return null;
               }}
             />
           </Pie>

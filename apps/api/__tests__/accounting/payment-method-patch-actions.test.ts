@@ -250,9 +250,9 @@ describe("PATCH /api/accounting/payment-methods/[id] — action dispatcher", () 
       await PATCH(makeRequest({ action: "mark-as-default" }), { params });
 
       const coreOrder =
-        mocks.runManifestCommandCoreMock.mock.invocationCallOrder[0];
+        mocks.runManifestCommandCoreMock.mock.invocationCallOrder[0]!;
       const manifestOrder =
-        mocks.runManifestCommandMock.mock.invocationCallOrder[0];
+        mocks.runManifestCommandMock.mock.invocationCallOrder[0]!;
       expect(coreOrder).toBeLessThan(manifestOrder);
     });
   });

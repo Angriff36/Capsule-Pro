@@ -11,7 +11,6 @@
 "use client";
 
 import { SectionHeader } from "@repo/design-system/components/blocks/page-shell";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   DropdownMenu,
@@ -44,11 +43,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { StatusTransitionBadge } from "@/app/components/status-transition-badge";
 import {
   acceptProposal,
   formatCurrency,
   getClientName,
-  getStatusColor,
   getStatusLabel,
   type Proposal,
   type ProposalStatus,
@@ -229,8 +228,14 @@ export function ProposalsPageClient({
   // Status badge rendering
   // ---------------------------------------------------------------------------
 
-  const statusBadge = (status: ProposalStatus) => (
-    <Badge variant={getStatusColor(status)}>{getStatusLabel(status)}</Badge>
+  const statusBadge = (proposal: Proposal) => (
+    <StatusTransitionBadge
+      entity="Proposal"
+      id={proposal.id}
+      label={getStatusLabel(proposal.status as ProposalStatus)}
+      onChanged={() => router.refresh()}
+      status={proposal.status ?? "draft"}
+    />
   );
 
   // ---------------------------------------------------------------------------
@@ -398,7 +403,7 @@ export function ProposalsPageClient({
                 </div>
 
                 {/* Status */}
-                <div>{statusBadge(proposal.status as ProposalStatus)}</div>
+                <div>{statusBadge(proposal)}</div>
 
                 {/* Total */}
                 <div className="text-right font-medium text-ink">

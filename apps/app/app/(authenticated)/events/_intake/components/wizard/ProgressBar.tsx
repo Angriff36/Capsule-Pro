@@ -58,7 +58,7 @@ export default function ProgressBar({
           Step {currentStep + 1} of {steps.length}
         </span>
         <span className="font-medium text-stone-700 text-xs">
-          {steps[currentStep].title}
+          {steps[currentStep]?.title}
         </span>
       </div>
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-stone-100 md:hidden">

@@ -291,7 +291,7 @@ describe("Admin Extended API", () => {
         await getActivityFeedList(makeRequest("/api/activity-feed/list"));
 
         const whereArg = vi.mocked(database.activityFeed.findMany).mock
-          .calls[0][0] as Record<string, unknown>;
+          .calls[0]![0] as Record<string, unknown>;
         expect(whereArg.where).toEqual(
           expect.objectContaining({ tenantId: TEST_TENANT_ID })
         );
@@ -306,7 +306,7 @@ describe("Admin Extended API", () => {
         );
 
         const whereArg = vi.mocked(database.activityFeed.findMany).mock
-          .calls[0][0] as Record<string, unknown>;
+          .calls[0]![0] as Record<string, unknown>;
         const where = whereArg.where as Record<string, unknown>;
         expect(where.activityType).toBe("event_created");
       });
@@ -320,7 +320,7 @@ describe("Admin Extended API", () => {
         );
 
         const whereArg = vi.mocked(database.activityFeed.findMany).mock
-          .calls[0][0] as Record<string, unknown>;
+          .calls[0]![0] as Record<string, unknown>;
         const where = whereArg.where as Record<string, unknown>;
         expect(where.importance).toBe("high");
       });
@@ -334,7 +334,7 @@ describe("Admin Extended API", () => {
         );
 
         const whereArg = vi.mocked(database.activityFeed.findMany).mock
-          .calls[0][0] as Record<string, unknown>;
+          .calls[0]![0] as Record<string, unknown>;
         const where = whereArg.where as Record<string, unknown>;
         expect(where.entityType).toBe("Event");
       });
@@ -348,7 +348,7 @@ describe("Admin Extended API", () => {
         );
 
         const whereArg = vi.mocked(database.activityFeed.findMany).mock
-          .calls[0][0] as Record<string, unknown>;
+          .calls[0]![0] as Record<string, unknown>;
         const where = whereArg.where as Record<string, unknown>;
         expect(where.entityId).toBe("event-123");
       });
@@ -362,7 +362,7 @@ describe("Admin Extended API", () => {
         );
 
         const whereArg = vi.mocked(database.activityFeed.findMany).mock
-          .calls[0][0] as Record<string, unknown>;
+          .calls[0]![0] as Record<string, unknown>;
         const where = whereArg.where as Record<string, unknown>;
         expect(where.performedBy).toBe("user-123");
       });
@@ -376,7 +376,7 @@ describe("Admin Extended API", () => {
         );
 
         const whereArg = vi.mocked(database.activityFeed.findMany).mock
-          .calls[0][0] as Record<string, unknown>;
+          .calls[0]![0] as Record<string, unknown>;
         const where = whereArg.where as Record<string, unknown>;
         expect(where.sourceType).toBe("ai");
       });
@@ -390,7 +390,7 @@ describe("Admin Extended API", () => {
         );
 
         const whereArg = vi.mocked(database.activityFeed.findMany).mock
-          .calls[0][0] as Record<string, unknown>;
+          .calls[0]![0] as Record<string, unknown>;
         const where = whereArg.where as Record<string, unknown>;
         expect(where.correlationId).toBe("corr-123");
       });
@@ -406,7 +406,7 @@ describe("Admin Extended API", () => {
         );
 
         const whereArg = vi.mocked(database.activityFeed.findMany).mock
-          .calls[0][0] as Record<string, unknown>;
+          .calls[0]![0] as Record<string, unknown>;
         const where = whereArg.where as Record<string, unknown>;
         expect(where.createdAt).toBeDefined();
       });
@@ -476,7 +476,7 @@ describe("Admin Extended API", () => {
         await getActivityFeedList(makeRequest("/api/activity-feed/list"));
 
         const whereArg = vi.mocked(database.activityFeed.count).mock
-          .calls[0][0] as Record<string, unknown>;
+          .calls[0]![0] as Record<string, unknown>;
         expect(whereArg.where).toEqual(
           expect.objectContaining({ tenantId: TEST_TENANT_ID })
         );
@@ -503,14 +503,12 @@ describe("Admin Extended API", () => {
       });
 
       it("should return stats on success", async () => {
+        vi.mocked(database.activityFeed.count)
+          .mockResolvedValueOnce(100)
+          .mockResolvedValueOnce(5)
+          .mockResolvedValueOnce(25);
+
         vi.mocked(database.$queryRaw)
-          .mockResolvedValueOnce([
-            {
-              total_activities: BigInt(100),
-              today_count: BigInt(5),
-              week_count: BigInt(25),
-            },
-          ] as never)
           .mockResolvedValueOnce([
             { activity_type: "event_created", count: BigInt(50) },
             { activity_type: "task_completed", count: BigInt(30) },
@@ -538,7 +536,9 @@ describe("Admin Extended API", () => {
       });
 
       it("should return 500 on database error", async () => {
-        vi.mocked(database.$queryRaw).mockRejectedValue(new Error("DB error"));
+        vi.mocked(database.activityFeed.count).mockRejectedValue(
+          new Error("DB error")
+        );
 
         const response = await getActivityFeedStats(
           makeRequest("/api/activity-feed/stats")

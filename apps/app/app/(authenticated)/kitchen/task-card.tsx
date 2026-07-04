@@ -151,14 +151,14 @@ function getAvatarColor(name: string): string {
     "bg-muted/20 text-foreground",
   ];
   const index = name.charCodeAt(0) % colors.length;
-  return colors[index];
+  return colors[index] ?? "bg-muted/50 text-foreground";
 }
 
 function getAssignedUserLabel(
   assignedUsers: Array<{ user: UserSelect | null }>
 ): string {
   if (assignedUsers.length === 1) {
-    const user = assignedUsers[0].user;
+    const user = assignedUsers[0]?.user;
     return user ? `${user.firstName} ${user.lastName}` : "Unknown";
   }
   return `${assignedUsers.length} assigned`;
@@ -336,11 +336,11 @@ export function TaskCard({
         )}
         {assignedUsers.length > 0 && (
           <Avatar className="h-6 w-6">
-            <AvatarImage src={assignedUsers[0].user?.avatarUrl || undefined} />
+            <AvatarImage src={assignedUsers[0]?.user?.avatarUrl || undefined} />
             <AvatarFallback className="text-[10px]">
               {getInitials(
-                assignedUsers[0].user?.firstName,
-                assignedUsers[0].user?.lastName
+                assignedUsers[0]?.user?.firstName,
+                assignedUsers[0]?.user?.lastName
               )}
             </AvatarFallback>
           </Avatar>

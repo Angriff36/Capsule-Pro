@@ -11,6 +11,7 @@ import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 import { DeleteEventButton } from "../components/delete-event-button";
 import { EventBoardTab } from "./board/components/event-board-tab";
+import { EventPhaseBar } from "./components/event-phase-bar";
 import { EventExportButton } from "./components/export-button";
 import { EventDetailsClient } from "./event-details-client";
 import { fetchAllEventDetailsData } from "./event-details-data";
@@ -104,6 +105,29 @@ const EventDetailsPage = async ({
   const prepTasksForClient: Awaited<ReturnType<typeof serializePrepTasks>> =
     serializePrepTasks(prepTasks);
 
+  // Prep readiness summary for the EventPhaseBar — derived from the same prep
+  // tasks the page already fetched. Prep task status enum uses "completed" for
+  // done (see event-details-client/index.tsx). Overdue = past its dueByDate and
+  // not yet completed.
+  const nowMs = Date.now();
+  const prepSummary = normalizedPrepTasks.reduce(
+    (acc, task) => {
+      acc.total += 1;
+      const isDone = task.status === "completed";
+      if (isDone) {
+        acc.done += 1;
+      } else if (task.dueByDate.getTime() < nowMs) {
+        acc.overdue += 1;
+      }
+      return acc;
+    },
+    { done: 0, overdue: 0, total: 0 }
+  );
+
+  const eventDateMs = event.eventDate
+    ? new Date(event.eventDate).getTime()
+    : Number.NaN;
+
   // Determine the active tab from searchParams so we can skip the ~9-query
   // board loader when the user is on any other tab. Switching to "board"
   // triggers a navigation, delivering this component again with tab=board.
@@ -150,6 +174,16 @@ const EventDetailsPage = async ({
           />
         </div>
       </Header>
+      <EventPhaseBar
+        battleBoardHref={battleBoardHref}
+        dishCount={eventDishes.length}
+        eventDateMs={eventDateMs}
+        eventId={eventId}
+        guestCount={event.guestCount ?? null}
+        prep={prepSummary}
+        rsvpCount={rsvpCount}
+        staffCount={staffCount}
+      />
       <EventDetailsClient
         allEventData={data}
         battleBoardHref={battleBoardHref}

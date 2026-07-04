@@ -22,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -60,6 +59,10 @@ import {
   YAxis,
 } from "recharts";
 import { toast } from "sonner";
+import {
+  OperationalPageShell,
+  OperationalSection,
+} from "../../components/operational-page-shell";
 import {
   type DepletionForecast,
   type ForecastAlert,
@@ -227,23 +230,12 @@ export const ForecastsPageClient = () => {
       : 0;
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      {/* Page Header */}
-      <div className="space-y-0.5">
-        <h1 className="font-semibold text-2xl tracking-tight">
-          Depletion Estimates
-        </h1>
-        <p className="text-muted-foreground">
-          Estimate inventory depletion and generate reorder alerts
-        </p>
-      </div>
-      <Separator />
-
-      {/* Performance Overview Section */}
-      <section className="space-y-4">
-        <h2 className="font-medium text-muted-foreground text-sm">
-          Performance Overview
-        </h2>
+    <OperationalPageShell
+      description="Estimate inventory depletion and generate reorder alerts."
+      eyebrow="Inventory / Forecasts"
+      title="Depletion estimates"
+    >
+      <OperationalSection title="Performance overview">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card tone="soft-stone">
             <CardHeader>
@@ -287,7 +279,7 @@ export const ForecastsPageClient = () => {
             </CardContent>
           </Card>
         </div>
-      </section>
+      </OperationalSection>
 
       {/* Forecast Analysis Section */}
       <section className="space-y-4">
@@ -1062,6 +1054,6 @@ export const ForecastsPageClient = () => {
           </TabsContent>
         </Tabs>
       </section>
-    </div>
+    </OperationalPageShell>
   );
 };

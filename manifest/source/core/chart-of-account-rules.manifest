@@ -20,7 +20,10 @@ entity ChartOfAccount mixin TenantScoped {
   constraint requireAccountType: self.accountType != "" "Account type is required"
   constraint validAccountType: self.accountType in ["asset", "liability", "equity", "revenue", "expense", "cogs", "other"] "Invalid account type"
 
-  relationship belongsTo parent: ChartOfAccount with parentId
+  // Self-referential hierarchy via parentId only — no belongsTo parent: ChartOfAccount
+  // here. Domain-completeness (Manifest ≥2.18) treats create params that name+type-match
+  // a belongsTo parent as parent-context fields; a self-ref would falsely flag
+  // accountNumber/accountName/accountType as inherited from the parent row.
 
   default policy ChartOfAccountDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Chart of accounts"
   command create(accountNumber: string, accountName: string, accountType: string, parentId: string, description: string) {
