@@ -10,7 +10,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
-import { uploadFile } from "@repo/storage"
+import { uploadFile } from "@repo/storage";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -270,7 +270,7 @@ export async function POST(request: NextRequest) {
         budgets: {
           where: { deletedAt: null },
           include: {
-            budgetLineItems: true,
+            lineItems: true,
           },
         },
       },
@@ -298,7 +298,7 @@ export async function POST(request: NextRequest) {
           }
         : null,
       budgetItems: e.budgets.flatMap((b) =>
-        b.budgetLineItems.map((li) => ({
+        b.lineItems.map((li) => ({
           category: li.category,
           description: li.description,
           budgetedAmount: li.budgetedAmount ? Number(li.budgetedAmount) : null,

@@ -584,48 +584,6 @@ const importMenuToEvent = async (
 };
 
 /**
- * Helper function to generate and save battle board
- * Note: Event must be created before calling this function
- */
-async function _createBattleBoard(
-  mergedEvent: ParsedEvent,
-  tenantId: string,
-  eventId: string,
-  user: ManifestUser
-) {
-  const { buildBattleBoardFromEvent } = await getEventParser();
-  const battleBoardResult = buildBattleBoardFromEvent(mergedEvent);
-
-  // Save battle board to database — governed write via Manifest runtime
-  const boardName = mergedEvent.client || mergedEvent.number || eventId || "";
-
-  const saved = await execCommand(
-    "BattleBoard",
-    "create",
-    {
-      tenantId,
-      eventId,
-      boardName,
-      boardType: "event-specific",
-      description: "",
-      isTemplate: false,
-      notes: "",
-      tags: "imported",
-      // Extra fields passed through to store
-      schema_version: "mangia-battle-board@1",
-      boardData: battleBoardResult.battleBoard as object,
-      status: "draft",
-      is_template: false,
-      board_name: boardName,
-      board_type: "event-specific",
-    },
-    user
-  );
-
-  return { battleBoard: battleBoardResult, battleBoardId: saved.id as string };
-}
-
-/**
  * Helper function to validate file extensions
  */
 function validateFileExtensions(
@@ -684,7 +642,7 @@ async function createImportRecords(
   tenantId: string,
   eventId?: string
 ) {
-  return await Promise.all(
+  const records = await Promise.all(
     files.map(async (file, index) => {
       const doc = result.documents[index];
 
@@ -721,6 +679,13 @@ async function createImportRecords(
         document: doc,
       };
     })
+  );
+
+  // The parser can return fewer documents than files; keep only records whose
+  // document is present so downstream consumers get a defined ProcessedDocument.
+  return records.filter(
+    (record): record is { importId: string; document: ProcessedDocument } =>
+      record.document !== undefined
   );
 }
 
@@ -1012,15 +977,6 @@ async function processDocumentsAndGenerateResponse(
   log.debug("[processDocumentsAndGenerateResponse] Starting", {
     fileCount: files.length,
   });
-  // Initialize Manifest runtime via dynamic import (avoids require() of ESM on Vercel)
-  // Note: Event import functions are capsule-pro specific and not in @angriff36/manifest
-  // These need to be ported to kitchen-ops or a separate event-import module
-  const _engine = undefined;
-  const _processDoc = undefined;
-  const _createUpdateEvent = undefined;
-  const _generateBattleBoardFn = undefined;
-  const _generateChecklistFn = undefined;
-
   // Process files
   const fileContents = await Promise.all(
     files.map(async (file) => {
@@ -1227,52 +1183,6 @@ function buildResponse(
     mergedStaff: result.mergedStaff,
     imports: importRecords,
     errors: result.errors,
-  };
-}
-
-/**
- * Helper function to generate and save checklist
- * Note: Event must be created before calling this function
- */
-async function _createChecklist(
-  mergedEvent: ParsedEvent,
-  tenantId: string,
-  eventId: string,
-  user: ManifestUser
-) {
-  const { buildInitialChecklist } = await getEventParser();
-  const checklistResult = buildInitialChecklist(mergedEvent);
-  const reportName = deriveEventTitle(mergedEvent, []) || eventId;
-
-  // Governed write: EventReport.create via Manifest runtime
-  const savedReport = await execCommand(
-    "EventReport",
-    "create",
-    {
-      tenantId,
-      eventId,
-      name: reportName,
-      version: "1",
-      checklistData: JSON.stringify({
-        checklist: checklistResult.checklist,
-        warnings: checklistResult.warnings,
-      }),
-      reportConfig: "",
-      notes: "",
-      // Extra fields passed through to store
-      status: "draft",
-      completion: Math.round(
-        (checklistResult.autoFilledCount / checklistResult.totalQuestions) * 100
-      ),
-      autoFillScore: checklistResult.autoFilledCount,
-      parsedEventData: mergedEvent as unknown as Record<string, unknown>,
-    },
-    user
-  );
-
-  return {
-    checklist: checklistResult,
-    checklistId: savedReport.id as string,
   };
 }
 

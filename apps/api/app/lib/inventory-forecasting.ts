@@ -290,6 +290,9 @@ async function getHistoricalUsage(
   const dailyUsage = new Map<string, number>();
   for (const t of transactions) {
     const dateKey = t.transactionDate.toISOString().split("T")[0];
+    if (!dateKey) {
+      continue;
+    }
     const currentUsage = dailyUsage.get(dateKey) ?? 0;
     dailyUsage.set(dateKey, currentUsage + Math.abs(Number(t.quantity)));
   }
