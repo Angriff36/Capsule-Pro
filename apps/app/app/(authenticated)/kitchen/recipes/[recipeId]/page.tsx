@@ -1,30 +1,39 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
-import { ArrowLeft, ChefHat, Clock, Users } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { invariant } from "../../../../lib/invariant";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 import { Header } from "../../../components/header";
+import {
+  type CookbookStep,
+  RecipeCookbookView,
+} from "./components/recipe-cookbook-view";
 import { RecipeDetailEditButton } from "./components/recipe-detail-edit-button";
 import { RecipeDetailTabs } from "./components/recipe-detail-tabs";
 
 interface RecipeDetailRow {
+  bring_hot_notes: string | null;
   category: string | null;
+  cook_on_site_notes: string | null;
   cook_time_minutes: number | null;
   description: string | null;
+  difficulty_level: number | null;
+  drop_off_notes: string | null;
   id: string;
   image_url: string | null;
   instructions: string | null;
   is_active: boolean;
+  is_subrecipe: boolean;
   name: string;
   notes: string | null;
   prep_time_minutes: number | null;
   rest_time_minutes: number | null;
   tags: string[] | null;
+  version_number: number | null;
+  yield_description: string | null;
   yield_quantity: number | null;
   yield_unit: string | null;
 }
@@ -43,6 +52,9 @@ interface RecipeStepRow {
   equipment_needed: string[] | null;
   image_url: string | null;
   instruction: string;
+  linked_recipe_id: string | null;
+  linked_technique_id: string | null;
+  phase: string | null;
   step_number: number;
   temperature_unit: string | null;
   temperature_value: number | null;
@@ -50,8 +62,22 @@ interface RecipeStepRow {
   video_url: string | null;
 }
 
+interface DishSummaryRow {
+  allergens: string[] | null;
+  portion_size_description: string | null;
+  presentation_image_url: string | null;
+}
+
 const formatMinutes = (minutes?: number | null) =>
   minutes && minutes > 0 ? `${minutes}m` : "-";
+
+const DIFFICULTY_LABELS: Record<number, string> = {
+  1: "Beginner",
+  2: "Easy",
+  3: "Medium",
+  4: "Advanced",
+  5: "Expert",
+};
 
 const toDecimalNumber = (value: unknown, field: string): number => {
   if (typeof value === "number") {
@@ -87,6 +113,11 @@ const toDecimalNumberOrNull = (
   return toDecimalNumber(value, field);
 };
 
+const cleanString = (value: string | null | undefined) => {
+  const trimmed = value?.trim();
+  return trimmed && trimmed.length > 0 ? trimmed : null;
+};
+
 const RecipeDetailPage = async ({
   params,
 }: {
@@ -102,7 +133,7 @@ const RecipeDetailPage = async ({
   const tenantId = await getTenantIdForOrg(orgId);
   const recipeId = resolvedParams.recipeId;
 
-  // Fetch recipe details
+  // Fetch recipe details (recipe header + latest version)
   const recipes = await database.$queryRaw<RecipeDetailRow[]>(
     Prisma.sql`
       SELECT
@@ -112,13 +143,20 @@ const RecipeDetailPage = async ({
         r.category,
         r.tags,
         r.is_active,
+        r.is_subrecipe,
+        rv.version_number,
         rv.yield_quantity,
+        rv.yield_description,
         u.code AS yield_unit,
         rv.prep_time_minutes,
         rv.cook_time_minutes,
         rv.rest_time_minutes,
+        rv.difficulty_level,
         rv.instructions,
         rv.notes,
+        rv.drop_off_notes,
+        rv.bring_hot_notes,
+        rv.cook_on_site_notes,
         (
           SELECT image_url
           FROM tenant_kitchen.recipe_steps rs
@@ -146,17 +184,33 @@ const RecipeDetailPage = async ({
     `
   );
 
-  if (recipes.length === 0) {
+  const recipeRow = recipes[0];
+  if (!recipeRow) {
     return notFound();
   }
 
   const recipe = {
-    ...recipes[0],
+    ...recipeRow,
     yield_quantity: toDecimalNumberOrNull(
-      recipes[0].yield_quantity,
+      recipeRow.yield_quantity,
       "recipe.yield_quantity"
     ),
   };
+
+  // Dish presentation data (hero image, allergens, portion) — a recipe may back
+  // a plated dish; take the first one for display defaults.
+  const dishRows = await database.$queryRaw<DishSummaryRow[]>(
+    Prisma.sql`
+      SELECT presentation_image_url, allergens, portion_size_description
+      FROM tenant_kitchen.dishes
+      WHERE tenant_id = ${tenantId}
+        AND recipe_id = ${recipeId}
+        AND deleted_at IS NULL
+      ORDER BY created_at ASC
+      LIMIT 1
+    `
+  );
+  const dish = dishRows[0] ?? null;
 
   // Fetch ingredients
   const ingredientRows = await database.$queryRaw<IngredientRow[]>(
@@ -192,7 +246,7 @@ const RecipeDetailPage = async ({
     quantity: toDecimalNumber(ingredient.quantity, "ingredient.quantity"),
   }));
 
-  // Get the latest recipe version ID
+  // Get the latest recipe version ID (used by the costing/history tabs)
   const recipeVersion = await database.$queryRaw<{ version_id: string }[]>(
     Prisma.sql`
       SELECT rv.id AS version_id
@@ -204,15 +258,13 @@ const RecipeDetailPage = async ({
       LIMIT 1
     `
   );
-
-  const recipeVersionId =
-    recipeVersion.length > 0 ? recipeVersion[0].version_id : null;
+  const latestVersion = recipeVersion[0];
+  const recipeVersionId = latestVersion ? latestVersion.version_id : null;
 
   // Fetch recipe steps
-  const _steps: RecipeStepRow[] =
-    recipeVersion.length > 0
-      ? await database.$queryRaw<RecipeStepRow[]>(
-          Prisma.sql`
+  const stepRows: RecipeStepRow[] = latestVersion
+    ? await database.$queryRaw<RecipeStepRow[]>(
+        Prisma.sql`
           SELECT
             step_number,
             instruction,
@@ -222,15 +274,86 @@ const RecipeDetailPage = async ({
             equipment_needed,
             tips,
             video_url,
-            image_url
+            image_url,
+            phase,
+            linked_recipe_id,
+            linked_technique_id
           FROM tenant_kitchen.recipe_steps
           WHERE tenant_id = ${tenantId}
-            AND recipe_version_id = ${recipeVersion[0].version_id}
+            AND recipe_version_id = ${latestVersion.version_id}
             AND deleted_at IS NULL
           ORDER BY step_number ASC
         `
-        )
-      : [];
+      )
+    : [];
+
+  // Resolve names for any sub-recipes linked from steps.
+  const linkedRecipeIds = Array.from(
+    new Set(
+      stepRows.map((s) => cleanString(s.linked_recipe_id)).filter(Boolean)
+    )
+  ) as string[];
+  const linkedNames: Record<string, string> = {};
+  if (linkedRecipeIds.length > 0) {
+    const nameRows = await database.$queryRaw<{ id: string; name: string }[]>(
+      Prisma.sql`
+        SELECT id, name
+        FROM tenant_kitchen.recipes
+        WHERE tenant_id = ${tenantId}
+          AND id IN (${Prisma.join(linkedRecipeIds)})
+          AND deleted_at IS NULL
+      `
+    );
+    for (const row of nameRows) {
+      linkedNames[row.id] = row.name;
+    }
+  }
+
+  const validPhases = new Set(["prep", "method", "finish", "packaging"]);
+  const steps: CookbookStep[] = stepRows.map((s) => {
+    const linkedRecipeId = cleanString(s.linked_recipe_id);
+    return {
+      key: String(s.step_number),
+      stepNumber: s.step_number,
+      instruction: s.instruction,
+      phase: (validPhases.has(s.phase ?? "") ? s.phase : "method") as
+        | "prep"
+        | "method"
+        | "finish"
+        | "packaging",
+      durationMinutes: s.duration_minutes,
+      temperatureValue: toDecimalNumberOrNull(
+        s.temperature_value,
+        "step.temperature_value"
+      ),
+      temperatureUnit: cleanString(s.temperature_unit),
+      equipmentNeeded: s.equipment_needed ?? [],
+      tips: s.tips,
+      linkedRecipeId,
+      linkedRecipeName: linkedRecipeId
+        ? (linkedNames[linkedRecipeId] ?? null)
+        : null,
+      linkedTechniqueId: cleanString(s.linked_technique_id),
+    };
+  });
+
+  const equipment = Array.from(
+    new Set(stepRows.flatMap((s) => s.equipment_needed ?? []).filter(Boolean))
+  );
+
+  const heroImageUrl =
+    cleanString(dish?.presentation_image_url) ??
+    cleanString(recipe.image_url) ??
+    null;
+
+  const yieldLabel = recipe.yield_quantity
+    ? `${recipe.yield_quantity} ${recipe.yield_unit ?? ""}`.trim()
+    : (cleanString(recipe.yield_description) ?? "");
+
+  const totalMinutes =
+    (recipe.prep_time_minutes ?? 0) +
+    (recipe.cook_time_minutes ?? 0) +
+    (recipe.rest_time_minutes ?? 0);
 
   return (
     <>
@@ -241,86 +364,58 @@ const RecipeDetailPage = async ({
             Back to Recipes
           </Link>
         </Button>
+        <RecipeDetailEditButton recipeId={recipeId} recipeName={recipe.name} />
       </Header>
 
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        {/* Recipe Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-bold text-2xl">{recipe.name}</h1>
-              <Badge variant={recipe.is_active ? "default" : "secondary"}>
-                {recipe.is_active ? "Active" : "Inactive"}
-              </Badge>
-            </div>
-            {recipe.category && (
-              <Badge className="mt-1" variant="outline">
-                {recipe.category}
-              </Badge>
-            )}
-          </div>
-          <RecipeDetailEditButton
-            recipeId={recipeId}
-            recipeName={recipe.name}
-          />
-        </div>
+      <RecipeCookbookView
+        activePrep={formatMinutes(recipe.prep_time_minutes)}
+        allergens={dish?.allergens ?? []}
+        categoryLabel={
+          cleanString(recipe.category) ??
+          (recipe.is_subrecipe ? "Sub-Recipe" : "Dish")
+        }
+        cookTime={formatMinutes(recipe.cook_time_minutes)}
+        description={cleanString(recipe.description)}
+        difficulty={
+          recipe.difficulty_level
+            ? (DIFFICULTY_LABELS[recipe.difficulty_level] ??
+              `Level ${recipe.difficulty_level}`)
+            : ""
+        }
+        equipment={equipment}
+        heroImageUrl={heroImageUrl}
+        ingredients={ingredients.map((ingredient) => ({
+          amountDisplay:
+            `${ingredient.quantity} ${ingredient.unit_code}`.trim(),
+          id: ingredient.id,
+          name: ingredient.name,
+          note: cleanString(ingredient.notes),
+        }))}
+        isActive={recipe.is_active}
+        isSubrecipe={recipe.is_subrecipe}
+        name={recipe.name}
+        packaging={{
+          bringHot: recipe.bring_hot_notes ?? "",
+          cookOnSite: recipe.cook_on_site_notes ?? "",
+          dropOff: recipe.drop_off_notes ?? "",
+        }}
+        portion={cleanString(dish?.portion_size_description) ?? ""}
+        progressScope={recipeId}
+        restTime={formatMinutes(recipe.rest_time_minutes)}
+        steps={steps}
+        totalTime={formatMinutes(totalMinutes)}
+        versionLabel={recipe.version_number ? `v${recipe.version_number}` : ""}
+        yield={yieldLabel}
+      />
 
-        {recipe.description && (
-          <p className="text-muted-foreground">{recipe.description}</p>
-        )}
-
-        {/* Metadata Bar */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardContent className="flex items-center gap-3 pt-6">
-              <Clock className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <div className="text-muted-foreground text-sm">Prep Time</div>
-                <div className="font-semibold">
-                  {formatMinutes(recipe.prep_time_minutes)}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="flex items-center gap-3 pt-6">
-              <ChefHat className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <div className="text-muted-foreground text-sm">Cook Time</div>
-                <div className="font-semibold">
-                  {formatMinutes(recipe.cook_time_minutes)}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="flex items-center gap-3 pt-6">
-              <Users className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <div className="text-muted-foreground text-sm">Yield</div>
-                <div className="font-semibold">
-                  {recipe.yield_quantity ?? "-"} {recipe.yield_unit ?? ""}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="flex items-center gap-3 pt-6">
-              <Badge className="h-5 w-5" />
-              <div>
-                <div className="text-muted-foreground text-sm">Difficulty</div>
-                <div className="font-semibold">Medium</div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recipe Detail Tabs */}
+      {/* Power features preserved: costing, nutrition, version history */}
+      <div className="mx-auto w-full max-w-4xl px-4 pb-8 sm:px-6">
         <RecipeDetailTabs
           ingredients={ingredients}
           recipe={recipe}
           recipeVersionId={recipeVersionId}
-          steps={_steps}
+          steps={stepRows}
+          tabs={["nutrition", "costing", "history"]}
         />
       </div>
     </>

@@ -247,12 +247,32 @@ const CCP_TEMP_THRESHOLDS = {
   min: 135, // Minimum safe hot holding temp
 };
 
+type RecipeTabKey =
+  | "overview"
+  | "ingredients"
+  | "steps"
+  | "nutrition"
+  | "costing"
+  | "history";
+
 interface RecipeDetailTabsProps {
   ingredients: IngredientRow[];
   recipe: RecipeDetailRow;
   recipeVersionId: string | null;
   steps: RecipeStepDisplay[];
+  // Restrict which tabs render (e.g. only power features when the primary
+  // recipe content is shown elsewhere). Defaults to all.
+  tabs?: RecipeTabKey[];
 }
+
+const ALL_RECIPE_TABS: RecipeTabKey[] = [
+  "overview",
+  "ingredients",
+  "steps",
+  "nutrition",
+  "costing",
+  "history",
+];
 
 const formatMinutes = (minutes?: number | null) =>
   minutes && minutes > 0 ? `${minutes}m` : "-";
@@ -1200,7 +1220,9 @@ export function RecipeDetailTabs({
   ingredients,
   recipeVersionId,
   steps,
+  tabs = ALL_RECIPE_TABS,
 }: RecipeDetailTabsProps) {
+  const visibleTabs = tabs.length > 0 ? tabs : ALL_RECIPE_TABS;
   const [costData, setCostData] = useState<RecipeCostBreakdown | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -1230,15 +1252,28 @@ export function RecipeDetailTabs({
     costData && (costData.ingredients?.length ?? 0) > 0
   );
 
+  const TAB_LABELS: Record<RecipeTabKey, string> = {
+    overview: "Overview",
+    ingredients: "Ingredients",
+    steps: "Steps",
+    nutrition: "Nutrition",
+    costing: "Costing",
+    history: "History",
+  };
+
   return (
-    <Tabs className="w-full" defaultValue="overview">
-      <TabsList className="grid w-full grid-cols-6">
-        <TabsTrigger value="overview">Overview</TabsTrigger>
-        <TabsTrigger value="ingredients">Ingredients</TabsTrigger>
-        <TabsTrigger value="steps">Steps</TabsTrigger>
-        <TabsTrigger value="nutrition">Nutrition</TabsTrigger>
-        <TabsTrigger value="costing">Costing</TabsTrigger>
-        <TabsTrigger value="history">History</TabsTrigger>
+    <Tabs className="w-full" defaultValue={visibleTabs[0]}>
+      <TabsList
+        className="grid w-full"
+        style={{
+          gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))`,
+        }}
+      >
+        {visibleTabs.map((tab) => (
+          <TabsTrigger key={tab} value={tab}>
+            {TAB_LABELS[tab]}
+          </TabsTrigger>
+        ))}
       </TabsList>
 
       <TabsContent className="space-y-4" value="overview">
