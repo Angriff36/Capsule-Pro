@@ -357,6 +357,7 @@ export const modules: ModuleDefinition[] = [
         label: "Procurement",
         items: [
           { title: "Overview", href: "/procurement" },
+          { title: "Weekly Ordering", href: "/procurement/weekly-ordering" },
           { title: "Requisitions", href: "/procurement/requisitions" },
           { title: "Approvals", href: "/procurement/approvals" },
           { title: "Budget", href: "/procurement/budget" },
