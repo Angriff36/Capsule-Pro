@@ -30,7 +30,7 @@ async function getQuantityAvailable(
     );
     return typeof value === "number" ? value : undefined;
   } catch {
-    return undefined;
+    return;
   }
 }
 
@@ -227,6 +227,7 @@ export async function releaseInventoryReservation(
 export async function createInventoryItem(
   engine: RuntimeEngine,
   itemId: string,
+  itemNumber: string,
   name: string,
   itemType: string,
   category: string,
@@ -242,18 +243,24 @@ export async function createInventoryItem(
 ): Promise<InventoryCommandResult> {
   const result = await engine.runCommand(
     "create",
+    // InventoryItem.create params (item_number/unitOfMeasure/unitCost/
+    // reorder_level/fsa_allergen_info...) — guards read these names, not the
+    // helper's argument names. itemType/reorderQuantity/locationId are kept
+    // as property seeds.
     {
+      item_number: itemNumber,
       name,
       itemType,
       category,
-      baseUnit,
+      unitOfMeasure: baseUnit,
+      quantityOnHand: 0,
       parLevel,
-      reorderPoint,
+      reorder_level: reorderPoint,
       reorderQuantity,
-      costPerUnit,
+      unitCost: costPerUnit,
       supplierId,
       locationId,
-      allergens,
+      fsa_allergen_info: allergens,
     },
     {
       entityName: "InventoryItem",

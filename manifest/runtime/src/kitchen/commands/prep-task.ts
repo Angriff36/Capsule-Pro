@@ -86,7 +86,9 @@ export async function completePrepTask(
 ): Promise<PrepTaskCommandResult> {
   const result = await engine.runCommand(
     "complete",
-    { quantityCompleted, userId },
+    // completedAt is a declared param the mutate copies onto the instance —
+    // omitting it leaves the completion timestamp unset.
+    { quantityCompleted, userId, completedAt: Date.now() },
     {
       entityName: "PrepTask",
       instanceId: taskId,
@@ -230,6 +232,7 @@ export async function createPrepTask(
   taskId: string,
   name: string,
   eventId: string,
+  prepListId: string,
   taskType: string,
   priority: number,
   quantityTotal: number,
@@ -243,9 +246,12 @@ export async function createPrepTask(
 ): Promise<PrepTaskCommandResult> {
   const result = await engine.runCommand(
     "create",
+    // prepListId is a declared PrepTask.create param — omitting it leaves the
+    // task unlinked from its prep list.
     {
       name,
       eventId,
+      prepListId,
       taskType,
       priority,
       quantityTotal,

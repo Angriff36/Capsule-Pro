@@ -21,7 +21,9 @@ export async function updateDishPricing(
 ): Promise<DishCommandResult> {
   const result = await engine.runCommand(
     "updatePricing",
-    { newPrice, newCost },
+    // Dish.updatePricing declares params pricePerPerson/costPerPerson —
+    // guards read those names, not this helper's argument names.
+    { pricePerPerson: newPrice, costPerPerson: newCost },
     {
       entityName: "Dish",
       instanceId: dishId,
@@ -51,7 +53,8 @@ export async function updateDishLeadTime(
 ): Promise<DishCommandResult> {
   const result = await engine.runCommand(
     "updateLeadTime",
-    { minDays, maxDays },
+    // Dish.updateLeadTime declares params minPrepLeadDays/maxPrepLeadDays.
+    { minPrepLeadDays: minDays, maxPrepLeadDays: maxDays },
     {
       entityName: "Dish",
       instanceId: dishId,

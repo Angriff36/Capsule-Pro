@@ -87,6 +87,8 @@ export async function POST(
           description: sourceVersion.description || "",
           tags: sourceVersion.tags || [],
           versionNumber: newVersionNumber,
+          // Property seeds — the create pipeline copies matching entity
+          // columns from the input into the new row.
           yieldQuantity: Number(sourceVersion.yieldQuantity),
           yieldUnitId: sourceVersion.yieldUnitId,
           yieldDescription: sourceVersion.yieldDescription || "",
@@ -96,6 +98,17 @@ export async function POST(
           difficultyLevel: sourceVersion.difficultyLevel || 1,
           instructions: sourceVersion.instructions || "",
           notes: sourceVersion.notes || "",
+          // RecipeVersion.create command params (see
+          // manifest/source/kitchen/recipe-rules.manifest) — guards and
+          // mutates read THESE names, not the column names above.
+          yieldQty: Number(sourceVersion.yieldQuantity),
+          yieldUnit: sourceVersion.yieldUnitId,
+          prepTime: sourceVersion.prepTimeMinutes || 0,
+          cookTime: sourceVersion.cookTimeMinutes || 0,
+          restTime: sourceVersion.restTimeMinutes || 0,
+          difficulty: sourceVersion.difficultyLevel || 1,
+          instructionsText: sourceVersion.instructions || "",
+          notesText: sourceVersion.notes || "",
         },
         { entityName: "RecipeVersion" }
       );

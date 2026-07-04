@@ -81,5 +81,5 @@ so agents keep forking design languages. User verdict: recipe page + site look b
 - [x] Recipe.update SAME param bug (buildRecipeUpdatePayload sent name/... where command wants newName/...) — fixed; friendly 422 pipeline confirmed working in user's logs
 - [x] /kitchen crash "Value 'in-progress' not found in enum KitchenTaskStatus": 4 legacy TEXT rows normalized to in_progress (no live writer found; IR is underscore-only); list_kitchen_tasks AI tool description fixed + status filter normalized/validated
 - [x] MIDDLEWARE_PIPELINE_NAMES (62) out of sync with pipeline (63): event-staff-active-guard was wired but undeclared — added to names + MIDDLEWARE_REGISTRY (24/24 registry tests pass)
-- [ ] param-audit subagent sweeping ALL other runCommand call sites vs IR params (running)
+- [x] param-audit swept 145 literal runCommand call sites vs IR: 1 LIVE bug (restore-version RecipeVersion.create — same 8-key mismatch; version restore 500'd) + 5 latent in exported zero-caller helpers (updateDishPricing/updateDishLeadTime/createInventoryItem/completePrepTask/createPrepTask) — ALL FIXED; bug-class rule documented in manifest/notes.md. Not auditable: AdminTask*/BoardConfig/Payment.* (absent from kitchen.ir.json)
 - [ ] tool-registry.ts pre-existing debt: complexity 39/28, ~10 scoped regexes, ~20 strict TS errors (untouched legacy)

@@ -2246,3 +2246,30 @@ INTERIM SEAM (DELETE when upstream adds native guard messages):
 On deletion, remove: the script, the JSON artifact, the package.json chain entry, and the
 guardMessageFor section of friendly-error-mapper.ts (plus its test case).
 Search: guard message dropped, guard-messages.json, guardMessageFor, friendly error mapper, compiler guard message slot
+
+## 2026-07-04 — runCommand PARAM names ≠ entity PROPERTY names (recurring bug class, audited)
+
+Four live/latent instances of the same class in one day: hand-written `runCommand`
+callers passing entity COLUMN/property names where the command declares PARAMS
+(yieldQuantity→yieldQty, name→newName, newPrice→pricePerPerson, ...). Guard
+identifiers resolve from the input; missing names evaluate `undefined`, and `!=` is
+LOOSE (`undefined != null` → false) so `x != null` guards fail SILENTLY-plausibly
+("Yield quantity must be positive" with a filled-in form). Route tests that mock
+runCommand cannot catch it.
+
+A 145-call-site audit (2026-07-04) fixed: create-with-version + update-with-version +
+restore-version RecipeVersion.create/Recipe.update payloads (apps/api composite
+routes; dual-key pattern = param names for guards/mutates + column names as create
+property seeds), and the exported helpers updateDishPricing/updateDishLeadTime/
+createInventoryItem/completePrepTask/createPrepTask in manifest/runtime/src/kitchen/
+commands (zero live callers, fixed for API hygiene). Known-clean: mutate-only optional
+params may be omitted (field just stays unset); commands with zero guards can't fail
+this way. NOT auditable against kitchen.ir.json: AdminTask*/BoardConfig/Payment.*
+(entities not in that IR).
+
+RULE for new code: before writing a literal runCommand payload, check the command's
+`parameters` in manifest/ir/kitchen.ir.json (or the .manifest source signature) — the
+payload must use PARAM names; add column-name duplicates only as create-time property
+seeds. Consider an automated check (script comparing literal payload keys vs IR) if
+this recurs.
+Search: runCommand params, property vs param, yieldQty, newName, guard undefined loose inequality
