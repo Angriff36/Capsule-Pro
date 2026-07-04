@@ -351,10 +351,10 @@ describe("Generic Manifest read routes", () => {
       expect(body.message).toContain("composite PK");
     });
 
-    it("should use overridden accessor for BankAccount", async () => {
-      // BankAccount maps to employeeBankAccount
+    it("should use native accessor for BankAccount", async () => {
+      // BankAccount now owns the bank_accounts model; reads and writes use bankAccount.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (database as any).employeeBankAccount = {
+      (database as any).bankAccount = {
         findFirst: vi.fn().mockResolvedValue({
           id: "bank-1",
           tenantId: TEST_TENANT,

@@ -259,12 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 95% context — saved before compacting]
-Files (4):
-  apps/app/app/(authenticated)/kitchen/recipes/[recipeId]/components/recipe-cookbook-view.tsx (create)
-  apps/app/app/(authenticated)/kitchen/recipes/[recipeId]/components/recipe-cookbook-view.tsx (edit)
-  apps/app/app/(authenticated)/kitchen/recipes/[recipeId]/page.tsx (edit)
-  tasks/cookbook-integration.md (create)
+[Emergency bridge — running bridge was not updated]
+No changes or facts in this session.
 
 # === END COGNILAYER ===
 

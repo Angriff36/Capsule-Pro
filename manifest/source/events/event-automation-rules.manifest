@@ -103,7 +103,7 @@ entity EventTimelineItem mixin TenantScoped {
   property assignedTo: string = ""
   // Bug fix: lifecycle datetime — no default
   property dueDate: datetime
-  property completedAt: datetime
+  property completedAt: datetime?
   property sortOrder: int = 0
   timestamps
 

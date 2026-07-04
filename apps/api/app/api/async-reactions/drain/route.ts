@@ -167,9 +167,8 @@ export async function POST(request: Request): Promise<Response> {
  * GET /api/async-reactions/drain
  *
  * Dual purpose:
- * - Vercel Cron (sends GET with `x-vercel-cron: 1`, plus
- *   `Authorization: Bearer <CRON_SECRET>` when CRON_SECRET is set): runs one
- *   drain batch — crons cannot POST, matching the /outbox/publish pattern.
+ * - Vercel Cron with `Authorization: Bearer <CRON_SECRET>`: runs one drain
+ *   batch — crons cannot POST, matching the /outbox/publish pattern.
  * - Otherwise (dev without CRON_SECRET): queue depth snapshot by status.
  */
 export async function GET(request: Request): Promise<Response> {
@@ -179,9 +178,7 @@ export async function GET(request: Request): Promise<Response> {
       /^Bearer\s+/i,
       ""
     );
-    const isCron =
-      request.headers.get("x-vercel-cron") === "1" ||
-      (Boolean(cronSecret) && provided === cronSecret);
+    const isCron = Boolean(cronSecret) && provided === cronSecret;
     if (isCron) {
       return await runDrain(25);
     }

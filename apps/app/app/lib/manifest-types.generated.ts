@@ -1445,7 +1445,7 @@ export interface EventTimelineItem {
   status?: string;
   assignedTo?: string;
   dueDate: string;
-  completedAt: string;
+  completedAt?: string | null;
   sortOrder?: number;
   createdAt: string;
   updatedAt: string;

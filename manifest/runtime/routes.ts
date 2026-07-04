@@ -6116,6 +6116,11 @@ export function recipeDeactivatePath(): string {
   return "/api/manifest/Recipe/commands/deactivate";
 }
 
+/** POST /api/manifest/Recipe/commands/setSubrecipe */
+export function recipeSetSubrecipePath(): string {
+  return "/api/manifest/Recipe/commands/setSubrecipe";
+}
+
 /** POST /api/manifest/Recipe/commands/update */
 export function recipeUpdatePath(): string {
   return "/api/manifest/Recipe/commands/update";
@@ -6151,6 +6156,11 @@ export function recipeStepRemovePath(): string {
   return "/api/manifest/RecipeStep/commands/remove";
 }
 
+/** POST /api/manifest/RecipeStep/commands/setStepDetails */
+export function recipeStepSetStepDetailsPath(): string {
+  return "/api/manifest/RecipeStep/commands/setStepDetails";
+}
+
 /** POST /api/manifest/RecipeStep/commands/updateInstruction */
 export function recipeStepUpdateInstructionPath(): string {
   return "/api/manifest/RecipeStep/commands/updateInstruction";
@@ -6179,6 +6189,11 @@ export function recipeVersionRestorePath(): string {
 /** POST /api/manifest/RecipeVersion/commands/retract */
 export function recipeVersionRetractPath(): string {
   return "/api/manifest/RecipeVersion/commands/retract";
+}
+
+/** POST /api/manifest/RecipeVersion/commands/setPackaging */
+export function recipeVersionSetPackagingPath(): string {
+  return "/api/manifest/RecipeVersion/commands/setPackaging";
 }
 
 /** POST /api/manifest/RecipeVersion/commands/updateCosts */
@@ -8671,6 +8686,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "Recipe.activate", path: "/api/manifest/Recipe/commands/activate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Recipe.create", path: "/api/manifest/Recipe/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Recipe.deactivate", path: "/api/manifest/Recipe/commands/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Recipe.setSubrecipe", path: "/api/manifest/Recipe/commands/setSubrecipe", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Recipe.update", path: "/api/manifest/Recipe/commands/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeIngredient.create", path: "/api/manifest/RecipeIngredient/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeIngredient.remove", path: "/api/manifest/RecipeIngredient/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
@@ -8678,12 +8694,14 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "RecipeIngredient.updateWasteFactor", path: "/api/manifest/RecipeIngredient/commands/updateWasteFactor", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeStep.create", path: "/api/manifest/RecipeStep/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeStep.remove", path: "/api/manifest/RecipeStep/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RecipeStep.setStepDetails", path: "/api/manifest/RecipeStep/commands/setStepDetails", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeStep.updateInstruction", path: "/api/manifest/RecipeStep/commands/updateInstruction", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeVersion.approve", path: "/api/manifest/RecipeVersion/commands/approve", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeVersion.create", path: "/api/manifest/RecipeVersion/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeVersion.markPublished", path: "/api/manifest/RecipeVersion/commands/markPublished", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeVersion.restore", path: "/api/manifest/RecipeVersion/commands/restore", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeVersion.retract", path: "/api/manifest/RecipeVersion/commands/retract", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RecipeVersion.setPackaging", path: "/api/manifest/RecipeVersion/commands/setPackaging", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeVersion.updateCosts", path: "/api/manifest/RecipeVersion/commands/updateCosts", method: "POST", source: "command", auth: true, tenant: true },
   { id: "ReorderSuggestion.accept", path: "/api/manifest/ReorderSuggestion/commands/accept", method: "POST", source: "command", auth: true, tenant: true },
   { id: "ReorderSuggestion.autoAccept", path: "/api/manifest/ReorderSuggestion/commands/autoAccept", method: "POST", source: "command", auth: true, tenant: true },

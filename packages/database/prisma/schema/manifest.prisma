@@ -2419,7 +2419,7 @@ model EventTimelineItem {
   status String @default("pending")
   assignedTo String @map("assigned_to") @default("")
   dueDate DateTime @map("due_date")
-  completedAt DateTime @map("completed_at") @db.Timestamptz(6)
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
   sortOrder Int @map("sort_order") @db.SmallInt @default(0)
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt

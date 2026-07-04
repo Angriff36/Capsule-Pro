@@ -154,7 +154,7 @@ CREATE TABLE IF NOT EXISTS "tenant_events"."event_timeline_items" (
     "status" TEXT NOT NULL DEFAULT 'pending',
     "assigned_to" TEXT NOT NULL DEFAULT '',
     "due_date" TIMESTAMP(3) NOT NULL,
-    "completed_at" TIMESTAMPTZ(6) NOT NULL,
+    "completed_at" TIMESTAMPTZ(6),
     "sort_order" SMALLINT NOT NULL DEFAULT 0,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL,

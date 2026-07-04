@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-07-02T14:36:12.318Z",
+  "generatedAt": "2026-07-04T16:10:25.857Z",
   "basePath": "/api",
   "routes": [
     {
@@ -31232,6 +31232,27 @@
       "tenant": true
     },
     {
+      "id": "Recipe.setSubrecipe",
+      "path": "/api/manifest/Recipe/commands/set-subrecipe",
+      "method": "POST",
+      "params": [
+        {
+          "name": "isSubrecipe",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Recipe",
+        "command": "setSubrecipe",
+        "variant": "dispatcher"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "Recipe.update",
       "path": "/api/manifest/Recipe/commands/update",
       "method": "POST",
@@ -31466,6 +31487,24 @@
           "type": "string",
           "location": "body",
           "required": true
+        },
+        {
+          "name": "phase",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "linkedRecipeId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "linkedTechniqueId",
+          "type": "string",
+          "location": "body",
+          "required": true
         }
       ],
       "source": {
@@ -31493,6 +31532,39 @@
         "kind": "command",
         "entity": "RecipeStep",
         "command": "remove",
+        "variant": "dispatcher"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RecipeStep.setStepDetails",
+      "path": "/api/manifest/RecipeStep/commands/set-step-details",
+      "method": "POST",
+      "params": [
+        {
+          "name": "newPhase",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "newLinkedRecipeId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "newLinkedTechniqueId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RecipeStep",
+        "command": "setStepDetails",
         "variant": "dispatcher"
       },
       "auth": true,
@@ -31679,6 +31751,39 @@
         "kind": "command",
         "entity": "RecipeVersion",
         "command": "retract",
+        "variant": "dispatcher"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RecipeVersion.setPackaging",
+      "path": "/api/manifest/RecipeVersion/commands/set-packaging",
+      "method": "POST",
+      "params": [
+        {
+          "name": "dropOff",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "bringHot",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "cookOnSite",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RecipeVersion",
+        "command": "setPackaging",
         "variant": "dispatcher"
       },
       "auth": true,

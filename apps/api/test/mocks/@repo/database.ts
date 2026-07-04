@@ -154,6 +154,7 @@ export const database: Record<string, unknown> = {
   employeeBankAccount: createMockModel(),
   payrollApprovalHistory: createMockModel(),
   taxConfiguration: createMockModel(),
+  bankAccount: createMockModel(),
   // Communications models
   email_templates: createMockModel(),
   emailWorkflow: createMockModel(),
