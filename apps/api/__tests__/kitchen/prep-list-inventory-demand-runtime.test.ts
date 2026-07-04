@@ -14,7 +14,12 @@ import {
 
 const TEST_TENANT_ID = "tenant-prep-demand";
 
-async function buildRuntime() {
+async function buildRuntime(options?: {
+  resolveUnitConversion?: (
+    fromUnit: string,
+    toUnit: string
+  ) => Promise<number | undefined>;
+}) {
   const manifestFiles = [
     "kitchen/prep-list-rules.manifest",
     "inventory/inventory-rules.manifest",
@@ -66,9 +71,12 @@ async function buildRuntime() {
       middleware: [
         createPrepInventoryDemandMiddleware({
           storeProvider,
-          dispatchCommand: (commandName, input, options) =>
-            runtime.runCommand(commandName, input, options),
+          dispatchCommand: (commandName, input, opts) =>
+            runtime.runCommand(commandName, input, opts),
           onDiagnostic: (diag) => diagnostics.push(diag),
+          ...(options?.resolveUnitConversion
+            ? { resolveUnitConversion: options.resolveUnitConversion }
+            : {}),
         }),
       ],
     }
@@ -79,7 +87,7 @@ async function buildRuntime() {
 
 type Runtime = Awaited<ReturnType<typeof buildRuntime>>["runtime"];
 
-async function seedUsFoodsSupplierAndCatalog(runtime: Runtime) {
+async function seedSuppliersAndCatalogs(runtime: Runtime) {
   await runtime.createInstance("InventorySupplier", {
     id: "supplier-us-foods",
     tenantId: TEST_TENANT_ID,
@@ -89,47 +97,70 @@ async function seedUsFoodsSupplierAndCatalog(runtime: Runtime) {
     isActive: true,
     qualificationStatus: "approved",
   });
+  await runtime.createInstance("InventorySupplier", {
+    id: "supplier-baldor",
+    tenantId: TEST_TENANT_ID,
+    name: "Baldor",
+    supplierNumber: "BALDOR-001",
+    paymentTerms: "NET_30",
+    isActive: true,
+    qualificationStatus: "approved",
+  });
 
-  const catalogRows = [
-    {
-      id: "us-foods-flour-catalog",
-      itemNumber: "FLOUR-001",
-      itemName: "AP Flour",
-      baseUnitCost: 2.5,
-      supplierSku: "USF-FLOUR-001",
-    },
-    {
-      id: "us-foods-butter-catalog",
-      itemNumber: "BUTTER-001",
-      itemName: "Butter",
-      baseUnitCost: 5,
-      supplierSku: "USF-BUTTER-001",
-    },
-    {
-      id: "us-foods-sugar-catalog",
-      itemNumber: "SUGAR-001",
-      itemName: "Sugar",
-      baseUnitCost: 1.5,
-      supplierSku: "USF-SUGAR-001",
-    },
-  ];
-  for (const row of catalogRows) {
-    await runtime.createInstance("VendorCatalog", {
-      tenantId: TEST_TENANT_ID,
-      supplierId: "supplier-us-foods",
-      currency: "USD",
-      unitOfMeasure: "kg",
-      leadTimeDays: 2,
-      minimumOrderQuantity: 1,
-      orderMultiple: 1,
-      isActive: true,
-      tags: ["us-foods"],
-      ...row,
-    });
-  }
+  // US Foods: flour packs in multiples of 5kg; butter has a 4kg MOQ.
+  await runtime.createInstance("VendorCatalog", {
+    id: "us-foods-flour-catalog",
+    tenantId: TEST_TENANT_ID,
+    supplierId: "supplier-us-foods",
+    itemNumber: "FLOUR-001",
+    itemName: "AP Flour",
+    baseUnitCost: 2.5,
+    supplierSku: "USF-FLOUR-001",
+    currency: "USD",
+    unitOfMeasure: "kg",
+    leadTimeDays: 2,
+    minimumOrderQuantity: 0,
+    orderMultiple: 5,
+    isActive: true,
+    tags: ["us-foods"],
+  });
+  await runtime.createInstance("VendorCatalog", {
+    id: "us-foods-butter-catalog",
+    tenantId: TEST_TENANT_ID,
+    supplierId: "supplier-us-foods",
+    itemNumber: "BUTTER-001",
+    itemName: "Butter",
+    baseUnitCost: 5,
+    supplierSku: "USF-BUTTER-001",
+    currency: "USD",
+    unitOfMeasure: "kg",
+    leadTimeDays: 2,
+    minimumOrderQuantity: 4,
+    orderMultiple: 1,
+    isActive: true,
+    tags: ["us-foods"],
+  });
+  // Baldor: sugar by the kg, no pack constraints.
+  await runtime.createInstance("VendorCatalog", {
+    id: "baldor-sugar-catalog",
+    tenantId: TEST_TENANT_ID,
+    supplierId: "supplier-baldor",
+    itemNumber: "SUGAR-001",
+    itemName: "Sugar",
+    baseUnitCost: 1.5,
+    supplierSku: "BALDOR-SUGAR-001",
+    currency: "USD",
+    unitOfMeasure: "kg",
+    leadTimeDays: 1,
+    minimumOrderQuantity: 0,
+    orderMultiple: 0,
+    isActive: true,
+    tags: [],
+  });
 }
 
 async function seedInventory(runtime: Runtime) {
+  // flour: 2kg free -> most demand must be purchased.
   await runtime.createInstance("InventoryItem", {
     id: "inventory-flour",
     tenantId: TEST_TENANT_ID,
@@ -138,11 +169,13 @@ async function seedInventory(runtime: Runtime) {
     category: "dry-goods",
     unitOfMeasure: "kg",
     unitCost: 2,
-    quantityOnHand: 40,
+    quantityOnHand: 2,
     quantityReserved: 0,
     parLevel: 5,
     reorder_level: 3,
+    supplierId: "supplier-us-foods",
   });
+  // butter: 1 on hand but already reserved -> zero free stock.
   await runtime.createInstance("InventoryItem", {
     id: "inventory-butter",
     tenantId: TEST_TENANT_ID,
@@ -151,11 +184,13 @@ async function seedInventory(runtime: Runtime) {
     category: "dairy",
     unitOfMeasure: "kg",
     unitCost: 4,
-    quantityOnHand: 12,
+    quantityOnHand: 1,
     quantityReserved: 1,
     parLevel: 4,
     reorder_level: 2,
+    supplierId: "supplier-us-foods",
   });
+  // sugar: belongs to the SECOND supplier (Baldor), 1kg free.
   await runtime.createInstance("InventoryItem", {
     id: "inventory-sugar",
     tenantId: TEST_TENANT_ID,
@@ -164,10 +199,40 @@ async function seedInventory(runtime: Runtime) {
     category: "dry-goods",
     unitOfMeasure: "kg",
     unitCost: 1,
-    quantityOnHand: 30,
+    quantityOnHand: 1,
     quantityReserved: 0,
     parLevel: 5,
     reorder_level: 3,
+    supplierId: "supplier-baldor",
+  });
+  // salt: NO supplier mapping -> must surface as UNRESOLVED, never guessed.
+  await runtime.createInstance("InventoryItem", {
+    id: "inventory-salt",
+    tenantId: TEST_TENANT_ID,
+    item_number: "SALT-001",
+    name: "Salt",
+    category: "dry-goods",
+    unitOfMeasure: "kg",
+    unitCost: 0.5,
+    quantityOnHand: 0,
+    quantityReserved: 0,
+    parLevel: 1,
+    reorder_level: 1,
+  });
+  // rice: plenty of free stock -> demand fully covered, nothing purchased.
+  await runtime.createInstance("InventoryItem", {
+    id: "inventory-rice",
+    tenantId: TEST_TENANT_ID,
+    item_number: "RICE-001",
+    name: "Rice",
+    category: "dry-goods",
+    unitOfMeasure: "kg",
+    unitCost: 1.2,
+    quantityOnHand: 50,
+    quantityReserved: 0,
+    parLevel: 10,
+    reorder_level: 5,
+    supplierId: "supplier-us-foods",
   });
 }
 
@@ -180,6 +245,7 @@ async function seedPrepList(
     ingredientId: string;
     ingredientName: string;
     scaledQuantity: number;
+    scaledUnit?: string;
   }>
 ) {
   await runtime.createInstance("PrepList", {
@@ -203,9 +269,9 @@ async function seedPrepList(
       ingredientId: item.ingredientId,
       ingredientName: item.ingredientName,
       baseQuantity: item.scaledQuantity / 2,
-      baseUnit: "kg",
+      baseUnit: item.scaledUnit ?? "kg",
       scaledQuantity: item.scaledQuantity,
-      scaledUnit: "kg",
+      scaledUnit: item.scaledUnit ?? "kg",
       recipeVersionId: "recipe-version-cake",
       dishId: "dish-cake",
       dishName: "Cake",
@@ -214,13 +280,21 @@ async function seedPrepList(
   }
 }
 
+async function finalize(runtime: Runtime, prepListId: string) {
+  return await runtime.runCommand(
+    "finalize",
+    {},
+    { entityName: "PrepList", instanceId: prepListId }
+  );
+}
+
 describe("Prep list finalization derives inventory demand", () => {
-  it("consolidates demand from multiple prep lists into ONE open draft requisition that is never auto-submitted", async () => {
+  it("orders NET demand grouped per supplier with pack rounding, keeps unresolved lines separate, and never auto-submits", async () => {
     const { runtime, storeProvider, diagnostics } = await buildRuntime();
     await seedInventory(runtime);
-    await seedUsFoodsSupplierAndCatalog(runtime);
+    await seedSuppliersAndCatalogs(runtime);
 
-    // --- Prep list 1: flour 8kg + butter 3kg --------------------------------
+    // --- Prep list 1: flour 8kg, butter 3kg, salt 1kg, rice 4kg -------------
     await seedPrepList(runtime, "prep-list-demand-001", "event-demand-001", [
       {
         id: "prep-item-flour-1",
@@ -234,61 +308,82 @@ describe("Prep list finalization derives inventory demand", () => {
         ingredientName: "Butter",
         scaledQuantity: 3,
       },
+      {
+        id: "prep-item-salt-1",
+        ingredientId: "inventory-salt",
+        ingredientName: "Salt",
+        scaledQuantity: 1,
+      },
+      {
+        id: "prep-item-rice-1",
+        ingredientId: "inventory-rice",
+        ingredientName: "Rice",
+        scaledQuantity: 4,
+      },
     ]);
 
-    const finalize1 = await runtime.runCommand(
-      "finalize",
-      {},
-      { entityName: "PrepList", instanceId: "prep-list-demand-001" }
-    );
+    const finalize1 = await finalize(runtime, "prep-list-demand-001");
     expect(finalize1.success).toBe(true);
-    expect(finalize1.emittedEvents?.map((event) => event.name)).toEqual(
-      expect.arrayContaining([
-        "PrepListFinalized",
-        "InventoryReserved",
-        "InventoryReserved",
-      ])
-    );
 
+    // Reservations are GROSS demand (stock is held for prep regardless of
+    // what must be purchased).
     const inventoryStore = storeProvider("InventoryItem");
     await expect(
       inventoryStore.getById("inventory-flour")
-    ).resolves.toMatchObject({
-      quantityReserved: 8,
-    });
+    ).resolves.toMatchObject({ quantityReserved: 8 });
     await expect(
-      inventoryStore.getById("inventory-butter")
-    ).resolves.toMatchObject({
-      quantityReserved: 4,
-    });
+      inventoryStore.getById("inventory-rice")
+    ).resolves.toMatchObject({ quantityReserved: 4 });
 
     const requisitionStore = storeProvider("PurchaseRequisition");
     const requisitionItemStore = storeProvider("PurchaseRequisitionItem");
 
-    let requisitions = await requisitionStore.getAll();
-    expect(requisitions).toHaveLength(1);
-    // WHY: the system produces a reviewable DRAFT — auto-submitting an order
-    // without manager review is explicitly forbidden behavior.
-    expect(requisitions[0]).toMatchObject({
+    // WHY: purchasing must order what's MISSING, not what's needed — demand
+    // minus free stock — grouped by the supplier that actually sells each
+    // item, and pack-rounded so the order is actually purchasable:
+    //   flour: 8 needed - 2 free = 6 -> orderMultiple 5 -> 10kg @ 2.5
+    //   butter: 3 needed - 0 free = 3 -> MOQ 4 -> 4kg @ 5
+    //   rice: 4 needed, 50 free -> fully covered, NO line
+    //   salt: no supplier mapping -> UNRESOLVED draft, never guessed
+    let requisitions = (await requisitionStore.getAll()) as Record<
+      string,
+      unknown
+    >[];
+    expect(requisitions).toHaveLength(2);
+
+    const usFoodsDraft = requisitions.find(
+      (r) => r.supplierId === "supplier-us-foods"
+    );
+    expect(usFoodsDraft).toMatchObject({
       tenantId: TEST_TENANT_ID,
       requestedBy: "system:prep-demand",
-      department: "kitchen",
       itemCategory: "prep-list-demand",
+      sourceType: "prep_demand",
       status: "draft",
       itemCount: 2,
-      subtotal: 35,
-      estimatedTotal: 35,
+      subtotal: 45, // flour 10*2.5=25 + butter 4*5=20
+      estimatedTotal: 45,
     });
-    expect(String(requisitions[0]!.requisitionNumber)).toMatch(/^PREP-DRAFT-/);
-    expect(String(requisitions[0]!.justification)).toContain("US Foods");
-    expect(String(requisitions[0]!.notes)).toContain(
+    expect(String(usFoodsDraft?.requisitionNumber)).toMatch(/^PREP-DRAFT-/);
+    expect(String(usFoodsDraft?.notes)).toContain(
       "[prep:prep-list-demand-001]"
     );
 
-    // --- Prep list 2 (same week): flour 6kg more + sugar 2kg ----------------
-    // WHY: ten prep lists at the start of a busy week must grow ONE order
-    // draft (quantities merged per item), not create ten requisitions the
-    // manager has to combine by hand.
+    const unresolvedDraft = requisitions.find(
+      (r) => r.sourceType === "prep_demand_unresolved"
+    );
+    expect(unresolvedDraft).toMatchObject({
+      status: "draft",
+      itemCount: 1,
+    });
+    expect(String(unresolvedDraft?.requisitionNumber)).toMatch(
+      /^PREP-UNRESOLVED-/
+    );
+
+    // --- Prep list 2 (same week): flour 6kg more + sugar 2kg (Baldor) -------
+    // WHY: ten prep lists at the start of a busy week must grow the SAME
+    // per-supplier drafts (quantities merged, provenance accumulated), not
+    // create ten requisitions the manager has to combine by hand.
     await seedPrepList(runtime, "prep-list-demand-002", "event-demand-002", [
       {
         id: "prep-item-flour-2",
@@ -304,61 +399,75 @@ describe("Prep list finalization derives inventory demand", () => {
       },
     ]);
 
-    const finalize2 = await runtime.runCommand(
-      "finalize",
-      {},
-      { entityName: "PrepList", instanceId: "prep-list-demand-002" }
-    );
+    const finalize2 = await finalize(runtime, "prep-list-demand-002");
     expect(finalize2.success).toBe(true);
 
-    requisitions = await requisitionStore.getAll();
-    expect(requisitions).toHaveLength(1); // still ONE consolidated draft
-    expect(requisitions[0]).toMatchObject({
+    requisitions = (await requisitionStore.getAll()) as Record<
+      string,
+      unknown
+    >[];
+    // us-foods draft (grown) + NEW baldor draft + unresolved draft
+    expect(requisitions).toHaveLength(3);
+
+    const usFoodsDraft2 = requisitions.find(
+      (r) => r.supplierId === "supplier-us-foods"
+    );
+    // flour list 2: free stock now 0 (2 on hand, 8 reserved) -> net 6 ->
+    // pack multiple 5 -> 10 more; merged line 10+10=20kg @ 2.5 = 50.
+    expect(usFoodsDraft2).toMatchObject({
       status: "draft",
-      itemCount: 3,
-      // flour 14kg @ 2.5 = 35, butter 3kg @ 5 = 15, sugar 2kg @ 1.5 = 3
-      subtotal: 53,
-      estimatedTotal: 53,
+      itemCount: 2,
+      subtotal: 70, // flour 20*2.5=50 + butter 4*5=20
     });
-    expect(String(requisitions[0]!.notes)).toContain(
+    expect(String(usFoodsDraft2?.notes)).toContain(
       "[prep:prep-list-demand-001]"
     );
-    expect(String(requisitions[0]!.notes)).toContain(
+    expect(String(usFoodsDraft2?.notes)).toContain(
       "[prep:prep-list-demand-002]"
     );
 
-    const requisitionItems = await requisitionItemStore.getAll();
-    expect(requisitionItems).toHaveLength(3);
-    expect(requisitionItems).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          itemId: "inventory-flour",
-          quantityRequested: 14, // 8 + 6 merged
-          estimatedUnitCost: 2.5,
-          estimatedTotalCost: 35,
-        }),
-        expect.objectContaining({
-          itemId: "inventory-butter",
-          quantityRequested: 3,
-        }),
-        expect.objectContaining({
-          itemId: "inventory-sugar",
-          quantityRequested: 2,
-          estimatedUnitCost: 1.5,
-        }),
-      ])
+    const baldorDraft = requisitions.find(
+      (r) => r.supplierId === "supplier-baldor"
     );
+    // sugar: 2 needed - 1 free = 1kg @ 1.5
+    expect(baldorDraft).toMatchObject({
+      sourceType: "prep_demand",
+      itemCount: 1,
+      subtotal: 1.5,
+    });
+
+    const items = (await requisitionItemStore.getAll()) as Record<
+      string,
+      unknown
+    >[];
+    const flourLine = items.find((i) => i.itemId === "inventory-flour");
+    expect(flourLine).toMatchObject({
+      quantityRequested: 20,
+      estimatedUnitCost: 2.5,
+    });
+    // WHY: an order line must explain which prep lists caused it — the
+    // sourcePrepListIds provenance is the click-through path from a draft
+    // order back to the operational demand behind it.
+    expect(flourLine?.sourcePrepListIds).toEqual([
+      "prep-list-demand-001",
+      "prep-list-demand-002",
+    ]);
+    const saltLine = items.find((i) => i.itemId === "inventory-salt");
+    expect(saltLine).toMatchObject({ quantityRequested: 1 });
+    expect(String(saltLine?.notes)).toContain("UNRESOLVED");
+    expect(String(saltLine?.notes)).toContain("no supplier mapping");
 
     const doneDiags = diagnostics.filter((d) => d.stage === "done");
     expect(doneDiags).toHaveLength(2);
-    expect(doneDiags[1]!.reason).toContain("NOT submitted");
-    expect(doneDiags[1]!.reason).toContain("existing draft");
+    expect(doneDiags[1]?.reason).toContain("NOT submitted");
+    const stockDiags = diagnostics.filter((d) => d.stage === "stock");
+    expect(stockDiags.length).toBeGreaterThan(0); // rice covered by stock
   });
 
   it("re-finalizing an already-ingested prep list neither double-reserves nor double-orders", async () => {
     const { runtime, storeProvider, diagnostics } = await buildRuntime();
     await seedInventory(runtime);
-    await seedUsFoodsSupplierAndCatalog(runtime);
+    await seedSuppliersAndCatalogs(runtime);
     await seedPrepList(runtime, "prep-list-demand-001", "event-demand-001", [
       {
         id: "prep-item-flour-1",
@@ -368,19 +477,11 @@ describe("Prep list finalization derives inventory demand", () => {
       },
     ]);
 
-    const first = await runtime.runCommand(
-      "finalize",
-      {},
-      { entityName: "PrepList", instanceId: "prep-list-demand-001" }
-    );
+    const first = await finalize(runtime, "prep-list-demand-001");
     expect(first.success).toBe(true);
 
     // Direct re-finalize fails the draft-status guard before the middleware runs.
-    const guarded = await runtime.runCommand(
-      "finalize",
-      {},
-      { entityName: "PrepList", instanceId: "prep-list-demand-001" }
-    );
+    const guarded = await finalize(runtime, "prep-list-demand-001");
     expect(guarded.success).toBe(false);
 
     // Reopen -> finalize is a legal transition; the middleware's dedupe (which
@@ -391,16 +492,11 @@ describe("Prep list finalization derives inventory demand", () => {
       { entityName: "PrepList", instanceId: "prep-list-demand-001" }
     );
     expect(reopened.success).toBe(true);
-    const refinalized = await runtime.runCommand(
-      "finalize",
-      {},
-      { entityName: "PrepList", instanceId: "prep-list-demand-001" }
-    );
+    const refinalized = await finalize(runtime, "prep-list-demand-001");
     expect(refinalized.success).toBe(true);
 
-    const inventoryStore = storeProvider("InventoryItem");
     await expect(
-      inventoryStore.getById("inventory-flour")
+      storeProvider("InventoryItem").getById("inventory-flour")
     ).resolves.toMatchObject({
       quantityReserved: 8, // not 16
     });
@@ -408,15 +504,16 @@ describe("Prep list finalization derives inventory demand", () => {
       "PurchaseRequisitionItem"
     ).getAll();
     expect(requisitionItems).toHaveLength(1);
-    expect(requisitionItems[0]).toMatchObject({ quantityRequested: 8 }); // not 16
+    // net 6 -> pack multiple 5 -> 10 (not 20)
+    expect(requisitionItems[0]).toMatchObject({ quantityRequested: 10 });
 
     expect(diagnostics.some((d) => d.stage === "dedupe")).toBe(true);
   });
 
-  it("reports a loud diagnostic instead of silently skipping when no US Foods supplier exists", async () => {
+  it("puts every line on the UNRESOLVED draft (loudly) when no suppliers are configured", async () => {
     const { runtime, storeProvider, diagnostics } = await buildRuntime();
     await seedInventory(runtime);
-    // NOTE: no supplier / catalog seeded.
+    // NOTE: no suppliers / catalogs seeded.
     await seedPrepList(runtime, "prep-list-demand-001", "event-demand-001", [
       {
         id: "prep-item-flour-1",
@@ -426,22 +523,118 @@ describe("Prep list finalization derives inventory demand", () => {
       },
     ]);
 
-    const finalize = await runtime.runCommand(
-      "finalize",
-      {},
-      { entityName: "PrepList", instanceId: "prep-list-demand-001" }
-    );
-    expect(finalize.success).toBe(true);
+    const result = await finalize(runtime, "prep-list-demand-001");
+    expect(result.success).toBe(true);
 
     // Inventory is still reserved (reservation does not depend on the vendor)...
     await expect(
       storeProvider("InventoryItem").getById("inventory-flour")
     ).resolves.toMatchObject({ quantityReserved: 8 });
-    // ...but no order draft is produced, and the reason is visible.
-    await expect(
-      storeProvider("PurchaseRequisition").getAll()
-    ).resolves.toHaveLength(0);
-    const supplierDiag = diagnostics.find((d) => d.stage === "supplier");
-    expect(supplierDiag?.reason).toContain("no active US Foods supplier");
+    // ...and the un-orderable demand is SURFACED on the unresolved draft
+    // instead of silently dropped.
+    const requisitions = (await storeProvider(
+      "PurchaseRequisition"
+    ).getAll()) as Record<string, unknown>[];
+    expect(requisitions).toHaveLength(1);
+    expect(requisitions[0]).toMatchObject({
+      sourceType: "prep_demand_unresolved",
+      itemCount: 1,
+    });
+    const items = await storeProvider("PurchaseRequisitionItem").getAll();
+    expect(String((items[0] as Record<string, unknown>).notes)).toContain(
+      "supplier"
+    );
+    expect(diagnostics.some((d) => d.stage === "order")).toBe(true);
+  });
+
+  it("converts prep units to the catalog's ordering unit via the injected conversion — and surfaces missing conversions as UNRESOLVED", async () => {
+    // US Foods sells flour by the CASE; 1kg = 0.1 case. Butter's catalog is
+    // also in cases but NO conversion path exists for it.
+    const { runtime, storeProvider } = await buildRuntime({
+      resolveUnitConversion: (from, to) =>
+        Promise.resolve(from === "kg" && to === "case" ? 0.1 : undefined),
+    });
+    await seedInventory(runtime);
+    await runtime.createInstance("InventorySupplier", {
+      id: "supplier-us-foods",
+      tenantId: TEST_TENANT_ID,
+      name: "US Foods",
+      supplierNumber: "USF-ACCOUNT-001",
+      paymentTerms: "NET_30",
+      isActive: true,
+      qualificationStatus: "approved",
+    });
+    await runtime.createInstance("VendorCatalog", {
+      id: "us-foods-flour-case-catalog",
+      tenantId: TEST_TENANT_ID,
+      supplierId: "supplier-us-foods",
+      itemNumber: "FLOUR-001",
+      itemName: "AP Flour (25kg case)",
+      baseUnitCost: 60,
+      supplierSku: "USF-FLOUR-CASE",
+      currency: "USD",
+      unitOfMeasure: "case",
+      leadTimeDays: 2,
+      minimumOrderQuantity: 1,
+      orderMultiple: 1,
+      isActive: true,
+      tags: [],
+    });
+    await runtime.createInstance("VendorCatalog", {
+      id: "us-foods-butter-case-catalog",
+      tenantId: TEST_TENANT_ID,
+      supplierId: "supplier-us-foods",
+      itemNumber: "BUTTER-001",
+      itemName: "Butter (case)",
+      baseUnitCost: 90,
+      supplierSku: "USF-BUTTER-CASE",
+      currency: "USD",
+      unitOfMeasure: "cases",
+      leadTimeDays: 2,
+      minimumOrderQuantity: 1,
+      orderMultiple: 1,
+      isActive: true,
+      tags: [],
+    });
+
+    await seedPrepList(runtime, "prep-list-demand-001", "event-demand-001", [
+      {
+        id: "prep-item-flour-1",
+        ingredientId: "inventory-flour",
+        ingredientName: "AP Flour",
+        scaledQuantity: 8, // net 6kg -> 0.6 case -> MOQ 1 -> 1 case @ 60
+      },
+      {
+        id: "prep-item-butter-1",
+        ingredientId: "inventory-butter",
+        ingredientName: "Butter",
+        scaledQuantity: 3, // kg -> "cases": no conversion -> UNRESOLVED
+      },
+    ]);
+
+    const result = await finalize(runtime, "prep-list-demand-001");
+    expect(result.success).toBe(true);
+
+    const requisitions = (await storeProvider(
+      "PurchaseRequisition"
+    ).getAll()) as Record<string, unknown>[];
+    expect(requisitions).toHaveLength(2);
+
+    const usFoodsDraft = requisitions.find(
+      (r) => r.supplierId === "supplier-us-foods"
+    );
+    // WHY: quantities must be converted with REAL conversion data before pack
+    // rounding — a 6kg shortfall is 0.6 case, purchasable as 1 case.
+    expect(usFoodsDraft).toMatchObject({ itemCount: 1, subtotal: 60 });
+
+    const unresolvedDraft = requisitions.find(
+      (r) => r.sourceType === "prep_demand_unresolved"
+    );
+    expect(unresolvedDraft).toBeDefined();
+    const items = (await storeProvider(
+      "PurchaseRequisitionItem"
+    ).getAll()) as Record<string, unknown>[];
+    const butterLine = items.find((i) => i.itemId === "inventory-butter");
+    expect(String(butterLine?.notes)).toContain("no unit conversion");
   });
 });

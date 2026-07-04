@@ -2,7 +2,6 @@
 // Generated from Manifest IR - DO NOT EDIT
 
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
 import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
 

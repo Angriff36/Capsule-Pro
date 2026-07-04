@@ -977,6 +977,9 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      // Real conversions from core.unit_conversions (by unit code); a missing
+      // path returns undefined and the line lands on the UNRESOLVED draft.
+      resolveUnitConversion: createUnitConversionResolver(prismaForLookups),
     }),
     // Kitchen: PrepListCompleted -> InventoryItem.consume (per PrepListItem).
     // Closes the reservation leak left by prep-inventory-demand: that middleware
@@ -2059,3 +2062,62 @@ function assertAsyncHandlerMapMatchesRegistry(): void {
 
 // Re-export types that consumers may need.
 export type { RuntimeEngine } from "@angriff36/manifest";
+
+/**
+ * Unit-conversion resolver for the prep-demand middleware, backed by the real
+ * core.units + core.unit_conversions tables (never guesses). Loads the whole
+ * (small) conversion table once per prisma handle and resolves by unit CODE
+ * (lowercased), e.g. "lb" -> "case". Returns undefined when no direct
+ * conversion row exists — the caller surfaces the line as UNRESOLVED.
+ */
+const unitConversionCaches = new WeakMap<
+  object,
+  Promise<Map<string, number>>
+>();
+
+function createUnitConversionResolver(
+  prisma: unknown
+): (fromUnit: string, toUnit: string) => Promise<number | undefined> {
+  return async (fromUnit, toUnit) => {
+    const client = prisma as {
+      $queryRawUnsafe?: (
+        query: string
+      ) => Promise<
+        Array<{ from_code: string; multiplier: unknown; to_code: string }>
+      >;
+    } | null;
+    if (!client?.$queryRawUnsafe) {
+      return;
+    }
+    try {
+      let loaded = unitConversionCaches.get(client as object);
+      if (!loaded) {
+        loaded = client
+          .$queryRawUnsafe(
+            "SELECT uf.code AS from_code, ut.code AS to_code, uc.multiplier FROM core.unit_conversions uc JOIN core.units uf ON uf.id = uc.from_unit_id JOIN core.units ut ON ut.id = uc.to_unit_id"
+          )
+          .then(
+            (rows) =>
+              new Map(
+                rows.map((row) => [
+                  `${row.from_code.toLowerCase()}->${row.to_code.toLowerCase()}`,
+                  Number(row.multiplier),
+                ])
+              )
+          );
+        unitConversionCaches.set(client as object, loaded);
+      }
+      const conversions = await loaded;
+      const factor = conversions.get(
+        `${fromUnit.toLowerCase()}->${toUnit.toLowerCase()}`
+      );
+      return typeof factor === "number" && Number.isFinite(factor) && factor > 0
+        ? factor
+        : undefined;
+    } catch {
+      // Fail-unresolved: a lookup error must surface the line for review,
+      // never invent a conversion.
+      return;
+    }
+  };
+}

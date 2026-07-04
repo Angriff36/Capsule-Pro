@@ -20,16 +20,6 @@
     "allowPermanent": true
   },
   {
-    "path": "app/api/kitchen/prep-lists/autogenerate/process/route.ts",
-    "methods": [
-      "POST"
-    ],
-    "reason": "Cron outbox worker — infrastructure",
-    "category": "infrastructure",
-    "owner": "platform-team",
-    "allowPermanent": true
-  },
-  {
     "path": "app/api/integrations/goodshuffle/config/route.ts",
     "methods": [
       "POST",

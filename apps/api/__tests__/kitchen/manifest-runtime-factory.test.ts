@@ -330,7 +330,7 @@ describe("createManifestRuntime (shared factory)", () => {
       expect(prismaStoreConstructorSpy).not.toHaveBeenCalled();
     });
 
-    it("keeps JSON fallback for entities with no Prisma model at all (Sel* onboarding defs)", async () => {
+    it("routes Sel* onboarding defs to the TYPED store now that they have real Prisma models (2026-07-04)", async () => {
       const deps = makeDeps();
 
       const runtime = await createManifestRuntime(deps, {
@@ -343,13 +343,14 @@ describe("createManifestRuntime (shared factory)", () => {
       const engineOptions = (runtime as unknown as { options: unknown })
         .options as { storeProvider: (name: string) => unknown };
 
-      // SelOnboardingTrainingModuleDefinition has NO row in
-      // PRISMA_MODEL_METADATA (no real table), so it cannot be flipped and must
-      // remain on PrismaJsonStore. Documents the finding that the Sel* entities
-      // are unflippable until they get real Prisma models.
+      // SelOnboardingTrainingModuleDefinition gained a real Prisma model +
+      // table (2026-07-04: generated-metadata single-homing restored its
+      // PRISMA_MODEL_METADATA row and migration 20260704222148 created the
+      // table), so the old "unflippable, stays on PrismaJsonStore" finding is
+      // resolved — it must now get the typed store, NOT the JSON fallback.
       engineOptions.storeProvider("SelOnboardingTrainingModuleDefinition");
-      expect(prismaJsonStoreConstructorSpy).toHaveBeenCalledTimes(1);
-      expect(prismaStoreConstructorSpy).not.toHaveBeenCalled();
+      expect(prismaStoreConstructorSpy).toHaveBeenCalledTimes(1);
+      expect(prismaJsonStoreConstructorSpy).not.toHaveBeenCalled();
     });
 
     it("routes IR-name-mismatched entities to PrismaStore via ENTITY_TO_PRISMA_MODEL bridge", async () => {

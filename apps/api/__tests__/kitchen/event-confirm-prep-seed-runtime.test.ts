@@ -269,10 +269,13 @@ async function seedMenuFixtures(runtime: Runtime, eventId: string) {
     await runtime.createInstance("InventoryItem", {
       tenantId: TEST_TENANT_ID,
       unitOfMeasure: "kg",
-      quantityOnHand: 50,
+      // Zero free stock so the full prep demand must be purchased (net-demand
+      // ordering subtracts free stock), all mapped to the US Foods supplier.
+      quantityOnHand: 0,
       quantityReserved: 0,
       parLevel: 5,
       reorder_level: 3,
+      supplierId: "supplier-us-foods",
       ...item,
     });
   }
@@ -415,6 +418,8 @@ describe("Event confirmation auto-seeds the prep list and feeds the order draft"
     expect(requisitions[0]).toMatchObject({
       status: "draft", // reviewable — never auto-submitted
       itemCategory: "prep-list-demand",
+      sourceType: "prep_demand",
+      supplierId: "supplier-us-foods", // grouped per the items' own supplier
       itemCount: 3,
       // flour 8kg @ 2.5 + sugar 2kg @ 1.5 + lettuce 6kg @ 2 = 20 + 3 + 12
       subtotal: 35,
