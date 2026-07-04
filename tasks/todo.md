@@ -38,3 +38,14 @@ so agents keep forking design languages. User verdict: recipe page + site look b
 - Not done (documented as DESIGN.md §8 debt): chrome-stack collapse (4 nav
   layers), active-state startsWith bug, 136 ad-hoc heading files, raw palette
   sweep (71 files), intake wizard #faf8f5, kitchen-dashboard hex benchmark.
+
+---
+
+# Follow-up (same session): /kitchen/import fails
+
+- [x] Layer 1: apps/api (:2223) not running — started; AGENTS.md now documents both servers
+- [x] Layer 2: stale manifest/runtime/src/generated delegate map — generators dual-write now
+- [x] Layer 3: missing enum migration — 20260704094312_repair_drift applied (hand-stripped invalid uuid defaults + type changes)
+- [x] E2E verified: POMODORO SAUCE CSV imports clean, renders in redesigned detail page
+- [ ] UPSTREAM (Ryan): fix @angriff36/manifest Prisma projection — @db.Uuid @default("") (177 fields), TIMESTAMP(3) vs timestamptz(6), enum vs TEXT; then regenerate schema + one clean repair to zero drift
+- [ ] Importer is non-atomic (Recipe.create → RecipeVersion.create; mid-failure leaves orphan recipe)

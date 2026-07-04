@@ -66,14 +66,15 @@ if (errors.length > 0) {
 
 const schemaMetaPath = join(outDir, "prisma-model-metadata.generated.json");
 
+const METADATA_EXPORT_RE =
+  /export const PRISMA_MODEL_METADATA: PrismaModelMetadata = ([\s\S]+);\s*$/;
+
 function enrichWithSchemaFlags(code) {
   if (!existsSync(schemaMetaPath)) {
     return code;
   }
   const schemaMeta = JSON.parse(readFileSync(schemaMetaPath, "utf8"));
-  const match = code.match(
-    /export const PRISMA_MODEL_METADATA: PrismaModelMetadata = ([\s\S]+);\s*$/
-  );
+  const match = code.match(METADATA_EXPORT_RE);
   if (!match) {
     return code;
   }
@@ -89,15 +90,28 @@ function enrichWithSchemaFlags(code) {
   return `${header}export const PRISMA_MODEL_METADATA: PrismaModelMetadata = ${JSON.stringify(metadata, null, 2)};\n`;
 }
 
+// Dual-write: the runtime package imports its own copy under
+// manifest/runtime/src/generated (same pattern as generate-entity-accessor.mjs).
+// Writing only the canonical dir left the runtime copy stale after the
+// model-rename wave and broke every governed command at store creation.
+const runtimeSrcGenerated = join(root, "manifest/runtime/src/generated");
+mkdirSync(runtimeSrcGenerated, { recursive: true });
+const writeBoth = (fileName, contents) => {
+  for (const dir of [outDir, runtimeSrcGenerated]) {
+    const outPath = join(dir, fileName);
+    writeFileSync(outPath, contents);
+    console.log(`wrote ${outPath}`);
+  }
+};
+
 for (const artifact of metaResult.artifacts) {
-  const outPath = join(outDir, "manifest-prisma-store-metadata.generated.ts");
-  writeFileSync(outPath, enrichWithSchemaFlags(artifact.code));
-  console.log(`wrote ${outPath}`);
+  writeBoth(
+    "manifest-prisma-store-metadata.generated.ts",
+    enrichWithSchemaFlags(artifact.code)
+  );
 }
 for (const artifact of registryResult.artifacts) {
-  const outPath = join(outDir, "prisma-store-registry.generated.ts");
-  writeFileSync(outPath, artifact.code);
-  console.log(`wrote ${outPath}`);
+  writeBoth("prisma-store-registry.generated.ts", artifact.code);
 }
 
 const warnings = [

@@ -21,7 +21,7 @@ import {
   readFileSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { getAccessorConfig } from "./read-config.mjs";
 
 const { entityToPrismaModel: ENTITY_TO_PRISMA_MODEL } = getAccessorConfig();
@@ -102,8 +102,7 @@ const toIrName = (field) => {
 
 const models = {};
 const modelRe = /^model\s+(\w+)\s*\{([\s\S]*?)^\}/gm;
-let mm;
-while ((mm = modelRe.exec(schema)) !== null) {
+for (const mm of schema.matchAll(modelRe)) {
   const [, name, body] = mm;
   const dbName = (body.match(/@@map\("([^"]+)"\)/) || [])[1] ?? null;
   const pgSchema = (body.match(/@@schema\("([^"]+)"\)/) || [])[1] ?? null;
@@ -272,8 +271,23 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = ${JSON.str
 )};
 `;
 
-mkdirSync(dirname(outPath), { recursive: true });
-writeFileSync(outPath, `${header}\n${body}`);
+// Dual-write: manifest/generated/runtime is the canonical output; the runtime
+// package imports its own copy under manifest/runtime/src/generated (same
+// pattern as generate-entity-accessor.mjs). A single-path write left the
+// runtime copy stale after the model-rename wave — every governed command
+// failed with `Prisma client has no delegate "bulk_combine_rules"`.
+const runtimeSrcGenerated = resolve(root, "manifest/runtime/src/generated");
+const writeBoth = (canonicalPath, contents) => {
+  for (const p of [
+    canonicalPath,
+    join(runtimeSrcGenerated, basename(canonicalPath)),
+  ]) {
+    mkdirSync(dirname(p), { recursive: true });
+    writeFileSync(p, contents);
+  }
+};
+
+writeBoth(outPath, `${header}\n${body}`);
 
 // Also emit a lightweight JSON file for consumption by .mjs scripts
 // (generate.mjs, entity-domain-map.mjs) that cannot import .ts directly.
@@ -292,7 +306,7 @@ for (const [entityName, meta] of Object.entries(models)) {
     fields: meta.fields.map((f) => ({ name: f.name, irName: f.irName })),
   };
 }
-writeFileSync(jsonOutPath, `${JSON.stringify(lightweight, null, 2)}\n`);
+writeBoth(jsonOutPath, `${JSON.stringify(lightweight, null, 2)}\n`);
 
 // Runtime bridge map: IR entity name → Prisma model metadata key.
 // Consumed by manifest-runtime-factory (hasTypedStore) and GenericPrismaStore.
@@ -316,7 +330,7 @@ export function resolvePrismaModelKey(entityName: string): string {
   return ENTITY_TO_PRISMA_MODEL[entityName] ?? entityName;
 }
 `;
-writeFileSync(bridgeOutPath, `${bridgeHeader}\n${bridgeBody}`);
+writeBoth(bridgeOutPath, `${bridgeHeader}\n${bridgeBody}`);
 
 process.stdout.write(
   `wrote ${outPath}\nmodels: ${Object.keys(models).length}\njson: ${jsonOutPath}\nbridge: ${bridgeOutPath}\n`

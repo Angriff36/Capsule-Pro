@@ -101,16 +101,20 @@ pnpm manifest:mcp
 
 **Not** `npx @manifest/mcp-server` — that package was never published. Use `@angriff36/manifest` with the `manifest-mcp` bin.
 
-## Start Dev Server
+## Start Dev Servers (BOTH are required)
+
+The app (`:2221`) proxies every `/api/*` route (imports, manifest commands,
+search, realtime, …) to the **separate API server** (`:2223`) via Next.js
+rewrites. If only the app is running, all API-backed features fail (e.g.
+every `/kitchen/import` upload). Start both:
 
 ```bash
-cd /home/oc/projects/capsule-pro/apps/app
-pnpm dev
+pnpm --filter app dev        # web app on :2221
+pnpm --filter api run next   # API server on :2223 (or `--filter api dev` to also run the Stripe listener)
 ```
 
 Or with Infisical secrets (if keyring available):
 ```bash
-cd /home/oc/projects/capsule-pro
 source .env # for INFISICAL_TOKEN
 infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env=dev --path=/apps/capsule-pro/app -- pnpm --filter app dev
 ```

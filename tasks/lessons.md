@@ -187,3 +187,22 @@ marketing-only. (2) Never write hex colors or inline `style={{color}}` in app co
 token classes (`bg-deep-green`, `text-coral`, `border-hairline`, semantic shadcn vars).
 (3) When a "canonical" doc referenced by code is missing, check `.gitignore` before
 concluding it never existed.
+
+## Lesson 14: "Import fails" was three stacked failures — verify each layer before concluding
+
+**Date:** 2026-07-04
+**What happened:** Every /kitchen/import upload failed. Root causes, in order: (1) the
+separate API server (apps/api, :2223) was not running — the app proxies ALL /api/* there
+and AGENTS.md only documented starting the app; (2) manifest/runtime/src/generated/* was
+stale (generators wrote only manifest/generated/runtime; the runtime package imports its
+OWN copy) so every governed command died on a dead delegate mapping ("bulk_combine_rules");
+(3) the DB was missing a whole schema wave (15 enums incl. RecipeVersionStatus) — schema
+edited, no migration.
+**Rule:** For "X fails" reports on this repo: curl :2223 FIRST (000 = API server down —
+401 from :2221 only proves Clerk middleware, not the proxy). If a governed command errors,
+check manifest/runtime/src/generated vs manifest/generated/runtime for staleness (now
+dual-written by the generators, but verify). If Postgres errors name a missing type/column,
+run `pnpm db:check` — schema waves land without migrations on this branch.
+**Also:** the @angriff36/manifest Prisma projection emits `@db.Uuid @default("")` (invalid
+Postgres, 177 fields) and TIMESTAMP(3)/TEXT types that fight the DB's timestamptz/enum/RLS
+reality — deferred as residual drift (~620 lines); needs a compiler-side fix (Ryan owns it).

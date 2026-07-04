@@ -2199,3 +2199,28 @@ Do NOT wrap in `bash -c` inside `infisical run` — MSYS mangles the pnpm/corepa
 repointed in Infisical (dev, /apps/capsule-pro/app). Supersedes the "db:dev runs headless" optimism in
 [[dev-db-via-infisical]].
 Search: cookbook, recipe step phase, packaging notes, isSubrecipe, technique, SHADOW_DATABASE_URL dead, P1001 shadow
+
+## 2026-07-04 — governed-command delegate crash fixed (dual-write); Prisma projection emits invalid uuid defaults (UPSTREAM)
+
+Every governed command failed with `GenericPrismaStore: Prisma client has no delegate
+"bulk_combine_rules"` because `manifest/runtime/src/generated/*` was stale: the metadata
+generators wrote ONLY `manifest/generated/runtime/` while `manifest-runtime-factory.ts`
+imports the runtime package's own `src/generated/` copy (only generate-entity-accessor.mjs
+dual-wrote). FIXED: `generate-prisma-model-metadata.mjs` and
+`generate-prisma-store-projection.mjs` now dual-write both dirs. If the two dirs ever
+diverge again, the runtime copy is the one production code executes.
+
+UPSTREAM BUG (needs @angriff36/manifest fix — do NOT glue around it): the Prisma projection
+emits `@db.Uuid @default("")` on 177 required-string uuid columns (IR declares NO defaults —
+the projection synthesizes `""` for required strings and applies it to uuid columns too).
+`DEFAULT ''` is invalid for Postgres uuid → any diff/migration replay fails with
+`invalid input syntax for type uuid: ""`. It also emits `TIMESTAMP(3)` (DB reality:
+`TIMESTAMPTZ(6)`, and RLS policies depend on `deleted_at`/`tenant_id`, so type changes are
+blocked by `cannot alter type of a column used in a policy definition`) and TEXT where the
+DB has enums. Consequence: `pnpm db:check` carries ~620 lines of ACCEPTED residual drift
+(SET DATA TYPE ×208, uuid SET DEFAULT '' ×188, enum↔text DROP+ADD pairs sanitized to no-op
+ADD COLUMN ×28, dependent indexes ×17) until the projection emits `@db.Timestamptz(6)`,
+no uuid defaults, and DB-matching enum choices. The 20260704094312_repair_drift migration
+(applied) was hand-stripped of exactly those clauses — see
+packages/database/DATABASE_PRE_MIGRATION_CHECKLIST.md entry.
+Search: GenericPrismaStore delegate, dual-write, src/generated stale, uuid default projection, repair_drift 20260704

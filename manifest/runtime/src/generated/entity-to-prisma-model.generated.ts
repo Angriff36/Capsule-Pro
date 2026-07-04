@@ -5,20 +5,10 @@
 
 export const ENTITY_TO_PRISMA_MODEL: Readonly<Record<string, string>> = {
   "EventImportWorkflow": "EventImport",
-  "BankAccount": "EmployeeBankAccount",
   "LogisticsRoute": "DeliveryRoute",
-  "Document": "documents",
-  "SmsAutomationRule": "sms_automation_rules",
   "EventTimelineItem": "EventTimeline",
-  "StorageLocation": "storage_locations",
-  "BulkCombineRule": "bulk_combine_rules",
-  "MethodVideo": "method_videos",
-  "PrepListImport": "prep_list_imports",
   "QACorrectiveAction": "CorrectiveAction",
-  "QATemperatureLog": "TemperatureLog",
-  "TaskBundleItem": "task_bundle_items",
-  "TaskBundle": "task_bundles",
-  "OpenShift": "open_shifts"
+  "QATemperatureLog": "TemperatureLog"
 };
 
 /** Resolve Manifest IR entity name to Prisma model metadata key. */
