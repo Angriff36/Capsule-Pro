@@ -471,6 +471,7 @@ describe("Recipes API", () => {
         where: Record<string, unknown>;
       };
       expect(arg.where).toEqual({
+        deletedAt: null,
         id: TEST_RECIPE_ID,
         tenantId: TEST_TENANT_ID,
       });

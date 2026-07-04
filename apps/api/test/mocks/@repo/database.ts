@@ -70,6 +70,38 @@ export const Prisma: {
 // Re-export all Prisma types (you can add more as needed)
 export const PrismaClient: unknown = vi.fn();
 
+// Prisma enums used as VALUES by routes (Object.values(...) etc.). Keep in
+// sync with the enum blocks in packages/database/prisma/schema/*.prisma —
+// routes importing an enum missing here crash the whole route module in tests.
+export const KitchenTaskStatus = {
+  pending: "pending",
+  in_progress: "in_progress",
+  done: "done",
+  cancelled: "cancelled",
+} as const;
+
+export const EntityType = {
+  event: "event",
+  client: "client",
+  prep_task: "prep_task",
+  kitchen_task: "kitchen_task",
+  employee: "employee",
+  inventory_item: "inventory_item",
+  recipe: "recipe",
+  dish: "dish",
+  proposal: "proposal",
+  shipment: "shipment",
+  note: "note",
+  risk: "risk",
+  financial_projection: "financial_projection",
+} as const;
+
+export const webhook_event_type = {
+  created: "created",
+  updated: "updated",
+  deleted: "deleted",
+} as const;
+
 // Helper to create a mock Prisma model
 function createMockModel() {
   return {

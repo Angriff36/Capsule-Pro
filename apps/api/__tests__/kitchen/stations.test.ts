@@ -517,7 +517,7 @@ describe("Kitchen Stations API", () => {
 
       expect(mocks.stationFindFirst).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { id: otherId, tenantId: TEST_TENANT_ID },
+          where: { deletedAt: null, id: otherId, tenantId: TEST_TENANT_ID },
         })
       );
     });
