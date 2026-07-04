@@ -10,6 +10,7 @@ import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   ConstraintBlockedError,
+  GuardBlockedError,
   RecipeNotFoundError,
   type UpdateRecipeRequest,
   updateRecipeWithVersion,
@@ -60,6 +61,12 @@ export async function POST(
 
     if (error instanceof RecipeNotFoundError) {
       return manifestErrorResponse("Recipe not found", 404);
+    }
+
+    // Guard rejections are user-fixable validation failures, not system
+    // errors: answer 422 with the friendly message (no Sentry noise).
+    if (error instanceof GuardBlockedError) {
+      return manifestErrorResponse(error.message, 422);
     }
 
     log.error("[composite/update-with-version] Error:", error);

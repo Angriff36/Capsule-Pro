@@ -6,12 +6,17 @@
  * non-engineer can act on, including a suggested fix and a direct link to the
  * blocking entity when one is detectable.
  *
- * This module is PURE — no I/O, no DB. It accepts a structural view of the
- * failure (`FriendlyFailureInput`) so it stays unit-testable without the
- * Manifest runtime. Wired into the HTTP failure path by `execute-command.ts`.
+ * This module is PURE — no DB, no network. Its only I/O is one lazy, cached
+ * read of the generated `manifest/generated/guard-messages.json` artifact
+ * (tolerated missing). It accepts a structural view of the failure
+ * (`FriendlyFailureInput`) so it stays unit-testable without the Manifest
+ * runtime. Wired into the HTTP failure path by `execute-command.ts`.
  *
  * @packageDocumentation
  */
+
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -161,11 +166,81 @@ function asPolicyDenial(value: unknown): FriendlyPolicyDenialLike | undefined {
 
 function asConstraintOutcomes(
   value: unknown
-): ReadonlyArray<FriendlyConstraintOutcomeLike> | undefined {
+): readonly FriendlyConstraintOutcomeLike[] | undefined {
   if (!Array.isArray(value)) {
     return;
   }
-  return value as ReadonlyArray<FriendlyConstraintOutcomeLike>;
+  return value as readonly FriendlyConstraintOutcomeLike[];
+}
+
+// ---------------------------------------------------------------------------
+// Authored guard messages (generated artifact)
+//
+// The Manifest compiler currently DROPS the trailing message strings authored
+// on `guard` lines (upstream gap — the IR guard nodes have no message slot).
+// `manifest/scripts/generate-guard-messages.mjs` extracts them from the DSL
+// sources into `manifest/generated/guard-messages.json`, keyed
+// "Entity.command" with arrays index-aligned to the IR guard order. DELETE
+// this section when upstream adds native guard messages.
+// ---------------------------------------------------------------------------
+
+type GuardMessageTable = Readonly<Record<string, ReadonlyArray<string | null>>>;
+
+/** Cache: `null` = load attempted and failed (missing/malformed artifact). */
+let guardMessageTable: GuardMessageTable | null | undefined;
+
+function loadGuardMessageTable(): GuardMessageTable | undefined {
+  if (guardMessageTable !== undefined) {
+    return guardMessageTable ?? undefined;
+  }
+  guardMessageTable = null;
+  // Walk up from cwd so the artifact resolves from both the repo root and
+  // apps/api (dev server, vitest).
+  let dir = process.cwd();
+  for (let hops = 0; hops < 6; hops += 1) {
+    try {
+      const parsed: unknown = JSON.parse(
+        readFileSync(
+          join(dir, "manifest", "generated", "guard-messages.json"),
+          "utf8"
+        )
+      );
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        guardMessageTable = parsed as GuardMessageTable;
+        break;
+      }
+    } catch {
+      // Missing or malformed at this level — keep walking up.
+    }
+    const parent = dirname(dir);
+    if (parent === dir) {
+      break;
+    }
+    dir = parent;
+  }
+  return guardMessageTable ?? undefined;
+}
+
+/**
+ * Authored DSL message for the guard that failed, or undefined when the
+ * artifact is missing or the guard has no authored message.
+ *
+ * `index` is the runtime's `guardFailure.index`, which is 1-based; the
+ * generated arrays are 0-based.
+ */
+export function guardMessageFor(
+  entity: string,
+  command: string,
+  index: number
+): string | undefined {
+  if (!(Number.isInteger(index) && index >= 1)) {
+    return;
+  }
+  const messages = loadGuardMessageTable()?.[`${entity}.${command}`];
+  const authored = messages?.[index - 1];
+  return typeof authored === "string" && authored.length > 0
+    ? authored
+    : undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -296,12 +371,16 @@ function entityMeta(entityName: string): EntityMeta {
   );
 }
 
+const STARTS_WITH_VOWEL = /^[aeiou]/i;
+
 function articleFor(noun: string): string {
-  return /^[aeiou]/i.test(noun) ? "an" : "a";
+  return STARTS_WITH_VOWEL.test(noun) ? "an" : "a";
 }
 
 function capitalise(text: string): string {
-  return text.length === 0 ? text : text[0].toUpperCase() + text.slice(1);
+  return text.length === 0
+    ? text
+    : text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 // ---------------------------------------------------------------------------
@@ -316,6 +395,12 @@ interface ParsedStatusGuard {
   /** Required value(s) extracted from the expression RHS. */
   required: string[];
 }
+
+/** self.<path>.status == "X"  /  self.<path>.status != "X" */
+const SELF_STATUS_EQUALITY =
+  /^self\.([\w.]+)\s*(==|!=)\s*(?:"([^"]*)"|'([^']*)')$/;
+/** self.status in ["A", "B", "C"] */
+const SELF_STATUS_IN = /^self\.([\w.]+)\s+in\s+\[([^\]]*)\]$/;
 
 /**
  * Parse a guard expression of the form:
@@ -332,12 +417,9 @@ function parseStatusGuard(expression: unknown): ParsedStatusGuard | undefined {
   }
   const cleaned = expression.replace(/\s+/g, " ").trim();
 
-  // self.<path>.status == "X"  /  self.<path>.status != "X"
-  const equality = cleaned.match(
-    /^self\.([\w.]+)\s*(==|!=)\s*(?:"([^"]*)"|'([^']*)')$/
-  );
+  const equality = cleaned.match(SELF_STATUS_EQUALITY);
   if (equality) {
-    const field = equality[1];
+    const field = equality[1] ?? "";
     if (!field.endsWith("status") && field !== "status") {
       return;
     }
@@ -349,15 +431,14 @@ function parseStatusGuard(expression: unknown): ParsedStatusGuard | undefined {
     };
   }
 
-  // self.status in ["A", "B", "C"]
-  const inMatch = cleaned.match(/^self\.([\w.]+)\s+in\s+\[([^\]]*)\]$/);
+  const inMatch = cleaned.match(SELF_STATUS_IN);
   if (inMatch) {
-    const field = inMatch[1];
+    const field = inMatch[1] ?? "";
     if (!field.endsWith("status") && field !== "status") {
       return;
     }
-    const values = (inMatch[2].match(/"([^"]*)"|'([^']*)'/g) ?? []).map((v) =>
-      v.replace(/^["']|["']$/g, "")
+    const values = ((inMatch[2] ?? "").match(/"([^"]*)"|'([^']*)'/g) ?? []).map(
+      (v) => v.replace(/^["']|["']$/g, "")
     );
     return { field, operator: "in", required: values };
   }
@@ -391,13 +472,15 @@ function resolvedValueFor(
  *   "draft"          -> "draft"            (already lowercase)
  *   "Draft"          -> "Draft"            (already Title Case)
  */
+const HAS_UPPERCASE = /[A-Z]/;
+
 function humaniseStatus(value: unknown): string {
   if (value === undefined || value === null) {
     return "unset";
   }
   const raw = String(value);
   // SCREAMING_SNAKE_CASE or a single SCREAMING word → lowercase.
-  if (raw === raw.toUpperCase() && /[A-Z]/.test(raw)) {
+  if (raw === raw.toUpperCase() && HAS_UPPERCASE.test(raw)) {
     return raw.toLowerCase().replace(/_/g, " ");
   }
   return raw;
@@ -410,15 +493,16 @@ function listToProse(values: string[]): string {
     return "";
   }
   if (humanised.length === 1) {
-    return humanised[0];
+    return humanised[0] ?? "";
   }
   if (humanised.length === 2) {
     return `${humanised[0]} or ${humanised[1]}`;
   }
-  return `${humanised
-    .slice(0, -1)
-    .join(", ")}, or ${humanised[humanised.length - 1]}`;
+  return `${humanised.slice(0, -1).join(", ")}, or ${humanised.at(-1)}`;
 }
+
+const ENDS_WITH_E = /e$/;
+const TRAILING_DOT = /\.$/;
 
 /** Build a verb from the command name for prose, e.g. "send" → "sent". */
 function commandVerb(command: string): { action: string; past: string } {
@@ -463,7 +547,7 @@ function commandVerb(command: string): { action: string; past: string } {
     .replace(/([A-Z])/g, " $1")
     .toLowerCase()
     .trim();
-  const past = /e$/.test(lower) ? `${lower}d` : `${lower}ed`;
+  const past = ENDS_WITH_E.test(lower) ? `${lower}d` : `${lower}ed`;
   return { action: lower, past };
 }
 
@@ -592,7 +676,7 @@ function mapGuardFailure(
     : undefined;
 
   // ---- Cross-entity guard: e.g. self.linkedEvent.status == "confirmed" ----
-  if (parsed && parsed.field.includes(".")) {
+  if (parsed?.field.includes(".")) {
     const cross = resolveCrossEntityReference(parsed.field, params.body);
     if (cross) {
       const requiredPhrase = listToProse(parsed.required);
@@ -637,7 +721,13 @@ function mapGuardFailure(
   }
 
   // ---- Generic guard (no status detected) — surface the authored message ----
-  const detail = fallbackMessage.replace(/\.$/, "");
+  // Prefer the DSL-authored guard message (extracted into
+  // guard-messages.json) over the runtime's formatted expression; never show
+  // a raw expression when an authored message exists.
+  const authored = guard
+    ? guardMessageFor(entityName, failure.command, guard.index)
+    : undefined;
+  const detail = (authored ?? fallbackMessage).replace(TRAILING_DOT, "");
   return {
     title: `This ${meta.noun} can't be ${past}`,
     message: `This ${meta.noun} can't be ${past} right now. ${detail}.`,
@@ -665,7 +755,7 @@ function mapPolicyDenial(
 
   return {
     title: "You don't have permission to do this",
-    message: `Your account isn't allowed to ${commandVerb(failure.command).action} this ${meta.noun}. ${denialDetail.replace(/\.$/, "")}.`,
+    message: `Your account isn't allowed to ${commandVerb(failure.command).action} this ${meta.noun}. ${denialDetail.replace(TRAILING_DOT, "")}.`,
     suggestedFix:
       "Ask a manager or administrator to grant access, or switch to an account with the right role.",
     blockingEntity: resolveSelfBlockingEntity(failure.entity, params),
@@ -691,7 +781,7 @@ function mapConstraintBlocked(
 
   return {
     title: `This ${meta.noun} can't be saved as entered`,
-    message: `${capitalise(detail.replace(/\.$/, ""))}.`,
+    message: `${capitalise(detail.replace(TRAILING_DOT, ""))}.`,
     suggestedFix: `Update the highlighted fields on this ${meta.noun} and try again. If the rule shouldn't apply, an authorized user can override it.`,
     blockingEntity: resolveSelfBlockingEntity(failure.entity, params),
     category: "validation",
@@ -718,7 +808,7 @@ function mapCommandFailed(
   const meta = entityMeta(failure.entity);
   return {
     title: "We couldn't complete that",
-    message: `${failure.message.replace(/\.$/, "")}.`,
+    message: `${failure.message.replace(TRAILING_DOT, "")}.`,
     suggestedFix: `Check the details on this ${meta.noun} and try again. If it keeps failing, contact support.`,
     blockingEntity: resolveSelfBlockingEntity(failure.entity, params),
     category: "validation",
@@ -764,7 +854,6 @@ export function mapFailureToExplanation(
         return mapUnknownCommand(failure);
       case "runtime_error":
         return mapRuntimeError(failure);
-      case "command_failed":
       default:
         return mapCommandFailed(failure, params);
     }

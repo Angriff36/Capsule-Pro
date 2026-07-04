@@ -2224,3 +2224,25 @@ no uuid defaults, and DB-matching enum choices. The 20260704094312_repair_drift 
 (applied) was hand-stripped of exactly those clauses — see
 packages/database/DATABASE_PRE_MIGRATION_CHECKLIST.md entry.
 Search: GenericPrismaStore delegate, dual-write, src/generated stale, uuid default projection, repair_drift 20260704
+
+## 2026-07-04 — compiler drops guard message strings (UPSTREAM); guard-messages extraction seam
+
+UPSTREAM GAP (needs @angriff36/manifest fix by Ryan — do NOT patch the compiler here): the DSL
+authors human messages on guard lines (`guard yieldQty > 0 "Yield quantity must be positive"`,
+recipe-rules.manifest:181), but the compiler DROPS them — the parser re-parses the trailing
+string literal as an inert compute action, and the IR guard nodes have no message slot
+(verified: kitchen.ir.json RecipeVersion.create guards are bare expression ASTs). Runtime
+guard failures therefore surface only `guardFailure.formatted` (the raw expression).
+
+INTERIM SEAM (DELETE when upstream adds native guard messages):
+- `manifest/scripts/generate-guard-messages.mjs` scans manifest/source/**/*.manifest and emits
+  `manifest/generated/guard-messages.json` — { "Entity.command": [msg|null, ...] }, arrays
+  index-aligned with IR guard order (runtime guardFailure.index is 1-based; arrays 0-based;
+  verified 0 count mismatches across all 993 commands vs kitchen.ir.json).
+- Root scripts: `manifest:guard-messages`, chained onto `manifest:generate-metadata`.
+- Reader: `guardMessageFor()` in apps/api/lib/manifest/friendly-error-mapper.ts (lazy, cached,
+  tolerates missing artifact) — the generic guard-failure branch prefers the authored message
+  over the raw expression.
+On deletion, remove: the script, the JSON artifact, the package.json chain entry, and the
+guardMessageFor section of friendly-error-mapper.ts (plus its test case).
+Search: guard message dropped, guard-messages.json, guardMessageFor, friendly error mapper, compiler guard message slot

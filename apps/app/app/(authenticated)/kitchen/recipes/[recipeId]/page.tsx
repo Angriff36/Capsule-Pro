@@ -65,6 +65,10 @@ interface RecipeStepRow {
 
 interface DishSummaryRow {
   allergens: string[] | null;
+  container_name: string | null;
+  container_type: string | null;
+  default_container_id: string | null;
+  dish_id: string;
   portion_size_description: string | null;
   presentation_image_url: string | null;
 }
@@ -186,6 +190,17 @@ const deriveCategoryLabel = (recipe: RecipeDetailRow) =>
 const deriveDifficultyLabel = (level: number | null) =>
   level ? (DIFFICULTY_LABELS[level] ?? `Level ${level}`) : "";
 
+// Dish-level storage assignment for the rail (container may be soft-deleted,
+// in which case the join returns no name).
+const deriveStorageContainer = (dish: DishSummaryRow | null) =>
+  dish?.default_container_id
+    ? {
+        containerType: dish.container_type ?? "",
+        id: dish.default_container_id,
+        name: dish.container_name ?? "Unknown container",
+      }
+    : null;
+
 const RecipeDetailPage = async ({
   params,
 }: {
@@ -269,12 +284,23 @@ const RecipeDetailPage = async ({
   // a plated dish; take the first one for display defaults.
   const dishRows = await database.$queryRaw<DishSummaryRow[]>(
     Prisma.sql`
-      SELECT presentation_image_url, allergens, portion_size_description
-      FROM tenant_kitchen.dishes
-      WHERE tenant_id = ${tenantId}
-        AND recipe_id = ${recipeId}
-        AND deleted_at IS NULL
-      ORDER BY created_at ASC
+      SELECT
+        d.id AS dish_id,
+        d.presentation_image_url,
+        d.allergens,
+        d.portion_size_description,
+        d.default_container_id,
+        c.name AS container_name,
+        c.container_type
+      FROM tenant_kitchen.dishes d
+      LEFT JOIN tenant_kitchen.containers c
+        ON c.tenant_id = d.tenant_id
+        AND c.id = d.default_container_id
+        AND c.deleted_at IS NULL
+      WHERE d.tenant_id = ${tenantId}
+        AND d.recipe_id = ${recipeId}
+        AND d.deleted_at IS NULL
+      ORDER BY d.created_at ASC
       LIMIT 1
     `
   );
@@ -395,6 +421,7 @@ const RecipeDetailPage = async ({
         cookTime={formatMinutes(recipe.cook_time_minutes)}
         description={cleanString(recipe.description)}
         difficulty={deriveDifficultyLabel(recipe.difficulty_level)}
+        dishId={dish?.dish_id ?? null}
         equipment={equipment}
         heroImageUrl={heroImageUrl}
         ingredients={ingredients.map((ingredient) => ({
@@ -415,8 +442,10 @@ const RecipeDetailPage = async ({
         }}
         portion={cleanString(dish?.portion_size_description) ?? ""}
         progressScope={recipeId}
+        recipeVersionId={recipeVersionId}
         restTime={formatMinutes(recipe.rest_time_minutes)}
         steps={steps}
+        storageContainer={deriveStorageContainer(dish)}
         totalTime={formatMinutes(totalMinutes)}
         versionLabel={recipe.version_number ? `v${recipe.version_number}` : ""}
         yield={yieldLabel}

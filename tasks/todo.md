@@ -61,3 +61,15 @@ so agents keep forking design languages. User verdict: recipe page + site look b
 - [x] Versions/cost 500s root-caused: orphaned API dev server couldn't spawn compile workers (killed wrapper); restarted clean — version history works
 - [x] DESIGN.md updated: rule 11 (no tabs when content fits), detail-page light header pattern
 - [ ] Ingredient unit resolution: "5 POUNDS" imports as quantity 5 unit "g" with the real amount in notes — unit-resolver needs pounds/quarts/cups mapping
+
+---
+
+# Follow-up 3: editor presets, save pipeline, detail-page storage/media/steps (subagent wave)
+
+- [x] CRITICAL: composite save routes passed property names (yieldQuantity...) where RecipeVersion.create expects params (yieldQty...) — EVERY recipe save failed on the yield guard. Fixed both routes (params + property seeds).
+- [x] Guard messages: compiler drops DSL guard message strings (UPSTREAM @angriff36/manifest gap — noted in manifest/notes.md); added generate-guard-messages.mjs extraction (1772 msgs/993 cmds, index-aligned vs IR) + friendly-error-mapper wiring; composite routes now 422 with friendly text.
+- [x] Edit modal: inline error panel (no more page-level "Something went wrong"), yield unit -> real unit Select (submits yieldUnitId), yieldQuantity required + validated, ingredient qty type=number + unit Select, CCP banner restyled informational; list-page buildUpdatePayload wrong-keys data loss fixed (shared recipe-update-payload.ts).
+- [x] Allergen matrix API 500-on-every-call fixed (recipe_ingredients joins recipe_version_id via latest-version LATERAL; verified live against dev DB); getMenuById queries parallelized. "2-min menus load" = dev Turbopack compile on first visit (warm ~1-2s), not app code.
+- [x] Detail page: Storage container Select in rail (governed Dish.update/clearDefaultContainer), finished-product photo in rail (upload via @repo/storage + governed Dish.update presentationImageUrl, or URL paste), Convert-to-checkable-steps button (parse-flat-instructions + /api/manifest/batch; 9/9 tests).
+- [ ] BROWSER VERIFY (extension disconnected at the end): edit+save a recipe from list AND detail, storage select round-trip, photo upload, convert POMODORO text -> steps, /api/kitchen/allergens/matrix 200.
+- [ ] FORK (Ryan): recipe-level (vs dish-level) container + hero image needs RecipeVersion IR/schema additions; compiler guard-message support (delete extraction seam when it lands).

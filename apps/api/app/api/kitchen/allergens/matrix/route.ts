@@ -144,8 +144,17 @@ async function buildDishMatrix(
         i.allergens as ingredient_allergens
       FROM tenant_kitchen.dishes d
       LEFT JOIN tenant_kitchen.recipes r ON r.id = d.recipe_id AND r.tenant_id = d.tenant_id
-      LEFT JOIN tenant_kitchen.recipe_ingredients ri ON ri.recipe_id = r.id AND ri.tenant_id = r.tenant_id
-      LEFT JOIN tenant_kitchen.ingredients i ON i.id = ri.ingredient_id AND i.tenant_id = ri.tenant_id
+      LEFT JOIN LATERAL (
+        SELECT rv.*
+        FROM tenant_kitchen.recipe_versions rv
+        WHERE rv.tenant_id = r.tenant_id
+          AND rv.recipe_id = r.id
+          AND rv.deleted_at IS NULL
+        ORDER BY rv.version_number DESC
+        LIMIT 1
+      ) rv ON true
+      LEFT JOIN tenant_kitchen.recipe_ingredients ri ON ri.recipe_version_id = rv.id AND ri.tenant_id = rv.tenant_id AND ri.deleted_at IS NULL
+      LEFT JOIN tenant_kitchen.ingredients i ON i.id = ri.ingredient_id AND i.tenant_id = ri.tenant_id AND i.deleted_at IS NULL
       WHERE d.tenant_id = ${tenantId}
         AND d.deleted_at IS NULL
         ${dishFilter}
@@ -299,8 +308,17 @@ async function buildRecipeMatrix(
         i.name as ingredient_name,
         i.allergens as ingredient_allergens
       FROM tenant_kitchen.recipes r
-      LEFT JOIN tenant_kitchen.recipe_ingredients ri ON ri.recipe_id = r.id AND ri.tenant_id = r.tenant_id
-      LEFT JOIN tenant_kitchen.ingredients i ON i.id = ri.ingredient_id AND i.tenant_id = ri.tenant_id
+      LEFT JOIN LATERAL (
+        SELECT rv.*
+        FROM tenant_kitchen.recipe_versions rv
+        WHERE rv.tenant_id = r.tenant_id
+          AND rv.recipe_id = r.id
+          AND rv.deleted_at IS NULL
+        ORDER BY rv.version_number DESC
+        LIMIT 1
+      ) rv ON true
+      LEFT JOIN tenant_kitchen.recipe_ingredients ri ON ri.recipe_version_id = rv.id AND ri.tenant_id = rv.tenant_id AND ri.deleted_at IS NULL
+      LEFT JOIN tenant_kitchen.ingredients i ON i.id = ri.ingredient_id AND i.tenant_id = ri.tenant_id AND i.deleted_at IS NULL
       WHERE r.tenant_id = ${tenantId}
         AND r.deleted_at IS NULL
         ${recipeFilter}

@@ -6,6 +6,7 @@ import {
   resolveIngredients,
 } from "@repo/database";
 import { getBlockingConstraints } from "@repo/manifest-runtime/route-helpers";
+import { mapFailureToExplanation } from "@/lib/manifest/friendly-error-mapper";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 type TransactionClient = Prisma.TransactionClient;
@@ -80,9 +81,12 @@ export interface UpdateRecipeWithVersionResult {
 }
 
 export class ConstraintBlockedError extends Error {
-  constructor(public readonly constraintOutcomes: ConstraintOutcome[]) {
+  readonly constraintOutcomes: ConstraintOutcome[];
+
+  constructor(constraintOutcomes: ConstraintOutcome[]) {
     super("Recipe update blocked by constraints");
     this.name = "ConstraintBlockedError";
+    this.constraintOutcomes = constraintOutcomes;
   }
 }
 
@@ -91,6 +95,37 @@ export class RecipeNotFoundError extends Error {
     super("Recipe not found");
     this.name = "RecipeNotFoundError";
   }
+}
+
+/**
+ * Thrown when a Manifest guard rejects a command, so the route can answer
+ * 422 with a plain-language message instead of a 500 with the raw guard
+ * expression.
+ */
+export class GuardBlockedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "GuardBlockedError";
+  }
+}
+
+function guardBlockedError(
+  entity: string,
+  command: string,
+  result: { error?: string; guardFailure?: unknown },
+  body: object
+): GuardBlockedError {
+  const friendly = mapFailureToExplanation(
+    {
+      entity,
+      command,
+      kind: "guard_failed",
+      message: result.error ?? `${entity}.${command} was blocked`,
+      guardFailure: result.guardFailure,
+    },
+    { body: body as Record<string, unknown> }
+  );
+  return new GuardBlockedError(friendly.message);
 }
 
 function isResolvedIngredient(
@@ -109,7 +144,7 @@ function shouldUpdateRecipe(body: UpdateRecipeRequest): boolean {
   );
 }
 
-async function loadCurrentRecipe(
+function loadCurrentRecipe(
   tx: TransactionClient,
   tenantId: string,
   recipeId: string
@@ -130,7 +165,7 @@ async function loadCurrentRecipe(
   });
 }
 
-async function loadLatestVersion(
+function loadLatestVersion(
   tx: TransactionClient,
   tenantId: string,
   recipeId: string
@@ -185,6 +220,20 @@ function buildVersionCreatePayload(
   newVersionId: string,
   newVersionNumber: number
 ) {
+  const yieldQuantity =
+    body.yieldQuantity ?? Number(latestVersion.yieldQuantity);
+  const yieldUnitId = body.yieldUnitId ?? latestVersion.yieldUnitId;
+  const prepTimeMinutes =
+    body.prepTimeMinutes ?? latestVersion.prepTimeMinutes ?? 0;
+  const cookTimeMinutes =
+    body.cookTimeMinutes ?? latestVersion.cookTimeMinutes ?? 0;
+  const restTimeMinutes =
+    body.restTimeMinutes ?? latestVersion.restTimeMinutes ?? 0;
+  const difficultyLevel =
+    body.difficultyLevel ?? latestVersion.difficultyLevel ?? 1;
+  const instructions = body.instructions ?? latestVersion.instructions ?? "";
+  const notes = body.notes ?? latestVersion.notes ?? "";
+
   return {
     id: newVersionId,
     recipeId,
@@ -194,16 +243,29 @@ function buildVersionCreatePayload(
     description: body.description ?? latestVersion.description ?? "",
     tags: body.tags ?? latestVersion.tags ?? [],
     versionNumber: newVersionNumber,
-    yieldQuantity: body.yieldQuantity ?? Number(latestVersion.yieldQuantity),
-    yieldUnitId: body.yieldUnitId ?? latestVersion.yieldUnitId,
+    // Property seeds — the create pipeline copies matching entity columns
+    // from the input into the new row.
+    yieldQuantity,
+    yieldUnitId,
     yieldDescription:
       body.yieldDescription ?? latestVersion.yieldDescription ?? "",
-    prepTimeMinutes: body.prepTimeMinutes ?? latestVersion.prepTimeMinutes ?? 0,
-    cookTimeMinutes: body.cookTimeMinutes ?? latestVersion.cookTimeMinutes ?? 0,
-    restTimeMinutes: body.restTimeMinutes ?? latestVersion.restTimeMinutes ?? 0,
-    difficultyLevel: body.difficultyLevel ?? latestVersion.difficultyLevel ?? 1,
-    instructions: body.instructions ?? latestVersion.instructions ?? "",
-    notes: body.notes ?? latestVersion.notes ?? "",
+    prepTimeMinutes,
+    cookTimeMinutes,
+    restTimeMinutes,
+    difficultyLevel,
+    instructions,
+    notes,
+    // RecipeVersion.create command params (see
+    // manifest/source/kitchen/recipe-rules.manifest) — guards and mutates
+    // read THESE names, not the column names above.
+    yieldQty: yieldQuantity,
+    yieldUnit: yieldUnitId,
+    prepTime: prepTimeMinutes,
+    cookTime: cookTimeMinutes,
+    restTime: restTimeMinutes,
+    difficulty: difficultyLevel,
+    instructionsText: instructions,
+    notesText: notes,
   };
 }
 
@@ -347,9 +409,15 @@ async function createIngredients({
     );
 
     if (!(ingredientResult.success || hasOverride)) {
-      throw new Error(
-        `Failed to create ingredient: ${ingredientResult.guardFailure?.formatted || ingredientResult.error}`
-      );
+      if (ingredientResult.guardFailure) {
+        throw guardBlockedError(
+          "RecipeIngredient",
+          "create",
+          ingredientResult,
+          body
+        );
+      }
+      throw new Error(`Failed to create ingredient: ${ingredientResult.error}`);
     }
 
     if (ingredientResult.result) {
@@ -406,8 +474,11 @@ async function createSteps({
     );
 
     if (!(stepResult.success || hasOverride)) {
+      if (stepResult.guardFailure) {
+        throw guardBlockedError("RecipeStep", "create", stepResult, body);
+      }
       throw new Error(
-        `Failed to create step ${step.stepNumber}: ${stepResult.guardFailure?.formatted || stepResult.error}`
+        `Failed to create step ${step.stepNumber}: ${stepResult.error}`
       );
     }
 
@@ -469,6 +540,10 @@ export async function updateRecipeWithVersion({
         updateResult.constraintOutcomes
       );
       throwIfBlocked(updateResult, allConstraintOutcomes, hasOverride);
+
+      if (!(updateResult.success || hasOverride) && updateResult.guardFailure) {
+        throw guardBlockedError("Recipe", "update", updateResult, body);
+      }
     }
 
     const latestVersion = await loadLatestVersion(tx, tenantId, recipeId);
@@ -495,6 +570,9 @@ export async function updateRecipeWithVersion({
     throwIfBlocked(versionResult, allConstraintOutcomes, hasOverride);
 
     if (!(versionResult.success || hasOverride)) {
+      if (versionResult.guardFailure) {
+        throw guardBlockedError("RecipeVersion", "create", versionResult, body);
+      }
       throw new Error(
         commandFailureMessage(versionResult, "Failed to create new version")
       );

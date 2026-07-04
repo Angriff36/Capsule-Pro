@@ -1,0 +1,3918 @@
+{
+  "ActionMilestone.complete": [
+    "Only pending milestones can be completed"
+  ],
+  "ActionMilestone.create": [
+    "Disciplinary action ID is required",
+    "Milestone title is required",
+    "Due date is required"
+  ],
+  "ActionMilestone.miss": [
+    "Only pending milestones can be marked missed"
+  ],
+  "AdminChatMessage.create": [
+    "Chat thread ID is required",
+    "Author ID is required",
+    "Message text is required"
+  ],
+  "AdminChatMessage.remove": [
+    "Message is already removed"
+  ],
+  "AdminChatParticipant.create": [
+    "Thread ID is required"
+  ],
+  "AdminChatThread.create": [
+    "Thread type is required",
+    "Created by is required"
+  ],
+  "AdminChatThread.recordLastMessage": [
+    "Thread is removed"
+  ],
+  "AdminTask.cancel": [
+    "Cannot transition a deleted task",
+    "Cannot cancel a completed or already-cancelled task"
+  ],
+  "AdminTask.complete": [
+    "Cannot transition a deleted task",
+    "Can only complete from backlog, in_progress, or review"
+  ],
+  "AdminTask.create": [
+    "Title is required"
+  ],
+  "AdminTask.moveCard": [
+    "Cannot move a deleted task",
+    "Invalid target column",
+    "Task is already in this column; use reorder to change position"
+  ],
+  "AdminTask.moveToBacklog": [
+    "Cannot transition a deleted task",
+    "Task is already in backlog"
+  ],
+  "AdminTask.reorder": [
+    "Cannot reorder a deleted task"
+  ],
+  "AdminTask.softDelete": [
+    "Task is already deleted"
+  ],
+  "AdminTask.startProgress": [
+    "Cannot transition a deleted task",
+    "Can only start progress from backlog, review, or done"
+  ],
+  "AdminTask.submitForReview": [
+    "Cannot transition a deleted task",
+    "Can only submit for review from backlog, in_progress, or done"
+  ],
+  "AdminTask.update": [
+    "Cannot update a deleted task"
+  ],
+  "AdminTaskAttachment.create": [
+    "Task ID is required",
+    "File name is required",
+    "File URL is required"
+  ],
+  "AdminTaskAttachment.softDelete": [
+    "Attachment is already deleted"
+  ],
+  "AdminTaskComment.create": [
+    "Task ID is required",
+    "Comment text is required"
+  ],
+  "AdminTaskComment.softDelete": [
+    "Comment is already deleted"
+  ],
+  "AdminTaskComment.update": [
+    "Cannot update a deleted comment",
+    "Comment text is required"
+  ],
+  "AdminTaskDevMeta.create": [
+    "Task ID is required"
+  ],
+  "AdminTaskDevMeta.update": [
+    "Cannot update deleted dev metadata"
+  ],
+  "AdminTaskFileRef.create": [
+    "Task ID is required",
+    "Reference type is required",
+    "Reference ID is required"
+  ],
+  "AdminTaskFileRef.softDelete": [
+    "File reference is already deleted"
+  ],
+  "AiEventSetupSession.cancel": [
+    "Can only cancel pending or parsed sessions"
+  ],
+  "AiEventSetupSession.confirm": [
+    "Can only confirm parsed sessions"
+  ],
+  "AiEventSetupSession.markCreated": [
+    "Can only mark confirmed sessions as created",
+    "Event ID is required"
+  ],
+  "AiEventSetupSession.parse": [
+    "Original input is required"
+  ],
+  "AlertsConfig.create": [
+    "Alert channel is required",
+    "Alert destination is required"
+  ],
+  "AlertsConfig.remove": [
+    "Removal reason is required",
+    "Alert configuration is already removed"
+  ],
+  "AlertsConfig.update": [
+    "Alert channel is required",
+    "Alert destination is required"
+  ],
+  "AllergenWarning.acknowledge": [
+    "Warning is already acknowledged",
+    "Acknowledged by user is required"
+  ],
+  "AllergenWarning.applyOverride": [
+    "Override reason is required",
+    "Acknowledged by user is required"
+  ],
+  "AllergenWarning.create": [
+    "Event ID is required",
+    "Warning type is required",
+    "Allergens list is required",
+    "Severity must be info, warning, or critical"
+  ],
+  "AllergenWarning.escalate": [
+    "Only critical warnings can be escalated",
+    "Already-acknowledged warnings do not need escalation",
+    "Escalation target is required"
+  ],
+  "AllergenWarning.markResolved": [
+    "Warning is already resolved",
+    "Resolver ID is required",
+    "Warning must be acknowledged before resolving"
+  ],
+  "AllergenWarning.softDelete": [
+    "Warning is already deleted"
+  ],
+  "ApiKey.create": [
+    "API key name is required",
+    "Key prefix is required",
+    "Hashed key is required"
+  ],
+  "ApiKey.recordUsage": [
+    "Cannot record usage for a revoked API key",
+    "Cannot record usage for a deleted API key"
+  ],
+  "ApiKey.revoke": [
+    "API key is already revoked",
+    "Cannot revoke a deleted API key"
+  ],
+  "ApiKey.rotate": [
+    "Cannot rotate a deleted API key",
+    "Cannot rotate a revoked API key"
+  ],
+  "ApiKey.softDelete": [
+    "API key is already deleted"
+  ],
+  "ApiKey.update": [
+    "Cannot update a deleted API key",
+    "Cannot update a revoked API key"
+  ],
+  "AuditSchedule.activate": [
+    "Audit schedule is already active"
+  ],
+  "AuditSchedule.create": [
+    "Audit schedule name is required",
+    "Frequency is required",
+    "Audit time is required",
+    "Next run date is required",
+    "Creator is required"
+  ],
+  "AuditSchedule.deactivate": [
+    "Audit schedule is already deactivated"
+  ],
+  "AuditSchedule.recordRun": [
+    "Cannot record a run for an inactive schedule",
+    "Next run date is required"
+  ],
+  "AuditSchedule.update": [
+    "Cannot update a deactivated audit schedule",
+    "Audit schedule name is required",
+    "Frequency is required"
+  ],
+  "AutomatedFollowup.complete": [
+    "Only pending followups can be completed"
+  ],
+  "AutomatedFollowup.create": [
+    "Event ID is required",
+    "Invalid followup type"
+  ],
+  "AutomatedFollowup.fail": [
+    "Only pending followups can be failed",
+    "Error message is required"
+  ],
+  "AutomatedFollowup.generate": [
+    "Only pending followups can be generated"
+  ],
+  "AutomatedFollowup.retry": [
+    "Only failed followups can be retried"
+  ],
+  "AutomatedFollowup.skip": [
+    "Only pending followups can be skipped"
+  ],
+  "BankAccount.create": [
+    "Employee ID is required",
+    "Account holder name is required",
+    "Account number is required",
+    "Routing number is required"
+  ],
+  "BankAccount.markDefault": [
+    "Cannot set inactive account as default",
+    "Account must be verified before setting as default"
+  ],
+  "BankAccount.retryVerification": [
+    "Can only retry verification on a failed account"
+  ],
+  "BankAccount.verify": [
+    "Account is not pending verification"
+  ],
+  "BankAccount.verifyFailed": [
+    "Account is not pending verification",
+    "Failure reason is required"
+  ],
+  "BattleBoard.addDish": [
+    "Cannot add dishes to finalized board",
+    "Dish data is required"
+  ],
+  "BattleBoard.create": [
+    "Board name is required"
+  ],
+  "BattleBoard.finalize": [
+    "Can only finalize boards in voting status",
+    "Cannot finalize an already finalized battle board",
+    "Cannot finalize board with no data"
+  ],
+  "BattleBoard.open": [
+    "Can only open draft battle boards",
+    "Cannot open battle board with no dishes"
+  ],
+  "BattleBoard.removeDish": [
+    "Cannot remove dishes from finalized board",
+    "Cannot remove dishes during voting",
+    "Dish ID is required"
+  ],
+  "BattleBoard.startVoting": [
+    "Can only start voting on open battle boards"
+  ],
+  "BattleBoard.syncFromEvent": [
+    "Battle board must be linked to an event"
+  ],
+  "BattleBoard.vote": [
+    "Can only vote when board is in voting status",
+    "Cannot vote on finalized battle board",
+    "User ID is required",
+    "Vote data is required"
+  ],
+  "BoardAnnotation.create": [
+    "Board ID is required"
+  ],
+  "BoardConfig.create": [
+    "Board name is required"
+  ],
+  "BoardConfig.softDelete": [
+    "Config is already deleted"
+  ],
+  "BoardConfig.updateColumns": [
+    "Cannot update a deleted config",
+    "Columns are required"
+  ],
+  "BoardConfig.updateSettings": [
+    "Cannot update a deleted config",
+    "Settings are required"
+  ],
+  "BoardProjection.create": [
+    "Board ID is required",
+    "Entity type is required",
+    "Entity ID is required",
+    "Width must be positive",
+    "Height must be positive"
+  ],
+  "BoardProjection.resize": [
+    "Width must be positive",
+    "Height must be positive"
+  ],
+  "Budget.addLineItem": [
+    "Cannot add line items to a closed or archived budget",
+    "Line item name is required",
+    "Line item amount must be non-negative"
+  ],
+  "Budget.approve": [
+    "Only draft budgets can be approved",
+    "Approver ID is required"
+  ],
+  "Budget.create": [
+    "Budget name is required",
+    "Total amount must be positive"
+  ],
+  "Budget.lock": [
+    "Only active budgets can be locked",
+    "Locker ID is required"
+  ],
+  "Budget.recordVariance": [
+    "Can only record variance on active or closed budgets",
+    "Actual spent must be non-negative"
+  ],
+  "Budget.refresh": [
+    "Only active budgets can be refreshed"
+  ],
+  "Budget.remove": [
+    "Cannot delete an active budget"
+  ],
+  "Budget.update": [
+    "Budget name is required",
+    "Cannot reduce allocation below spent amount"
+  ],
+  "BudgetAlert.acknowledge": [
+    "Alert is already acknowledged"
+  ],
+  "BudgetAlert.create": [
+    "Budget ID is required",
+    "Alert type is required",
+    "Invalid alert type"
+  ],
+  "BudgetAlert.markResolved": [
+    "Alert is already resolved"
+  ],
+  "BudgetLineItem.create": [
+    "Budget ID is required",
+    "Category is required",
+    "Line item name is required",
+    "Budgeted amount must be non-negative"
+  ],
+  "BudgetLineItem.update": [
+    "Budgeted amount must be non-negative",
+    "Actual amount must be non-negative"
+  ],
+  "BulkCombineRule.create": [
+    "Bulk combine rule name is required",
+    "Match criteria is required"
+  ],
+  "BulkCombineRule.deactivate": [
+    "Bulk combine rule is already inactive"
+  ],
+  "BulkCombineRule.update": [
+    "Cannot update an inactive bulk combine rule",
+    "Bulk combine rule name is required",
+    "Match criteria is required"
+  ],
+  "BulkOrderRule.activate": [
+    "Cannot activate a deleted rule",
+    "Rule is already active"
+  ],
+  "BulkOrderRule.adjustPriority": [
+    "Cannot adjust priority of a deleted rule",
+    "Priority must be non-negative"
+  ],
+  "BulkOrderRule.create": [
+    "Rule name is required",
+    "Minimum quantity must be at least 1",
+    "Invalid rule type",
+    "Invalid action",
+    "Discount percent must be between 0 and 100"
+  ],
+  "BulkOrderRule.deactivate": [
+    "Cannot deactivate a deleted rule",
+    "Rule is already inactive"
+  ],
+  "BulkOrderRule.softDelete": [
+    "Rule is already deleted"
+  ],
+  "BulkOrderRule.update": [
+    "Cannot update a deleted rule",
+    "Rule name is required",
+    "Minimum quantity must be at least 1",
+    "Invalid rule type",
+    "Invalid action",
+    "Discount percent must be between 0 and 100"
+  ],
+  "CallPlanningSession.abandon": [
+    "Can only abandon active, finalizing, or review sessions"
+  ],
+  "CallPlanningSession.complete": [
+    "Can only complete active or finalizing sessions"
+  ],
+  "CallPlanningSession.create": [
+    "Invalid source type"
+  ],
+  "CallPlanningSession.finalize": [
+    "Can only finalize active sessions",
+    "Cannot finalize session without transcript"
+  ],
+  "CallPlanningSession.start": [
+    "Invalid source type",
+    "User ID is required",
+    "Can only start a fresh (active) session"
+  ],
+  "CallPlanningSession.updateTranscript": [
+    "Can only update transcript for active sessions"
+  ],
+  "CateringOrder.cancel": [
+    "Cannot cancel completed order",
+    "Order is already cancelled"
+  ],
+  "CateringOrder.confirm": [
+    "Can only confirm draft orders",
+    "Order number is required"
+  ],
+  "CateringOrder.create": [
+    "Order number is required",
+    "Customer ID is required"
+  ],
+  "CateringOrder.deliver": [
+    "Can only deliver orders that are in progress"
+  ],
+  "CateringOrder.markComplete": [
+    "Can only complete orders that have been delivered"
+  ],
+  "CateringOrder.recordDeposit": [
+    "Can only record deposit on draft or confirmed orders",
+    "Order does not require a deposit",
+    "Deposit has already been recorded",
+    "Payment reference is required"
+  ],
+  "CateringOrder.scheduleDelivery": [
+    "Can only schedule delivery for draft or confirmed orders",
+    "Delivery date is required"
+  ],
+  "CateringOrder.startPrep": [
+    "Can only start prep on confirmed orders"
+  ],
+  "CateringOrder.syncVenue": [
+    "Catering order must be linked to an event"
+  ],
+  "CateringOrder.update": [
+    "Cannot update completed order",
+    "Cannot update cancelled order"
+  ],
+  "ChartOfAccount.create": [
+    "Account number is required",
+    "Account name is required",
+    "Account type is required"
+  ],
+  "ChartOfAccount.deactivate": [
+    "Account is already inactive"
+  ],
+  "ChartOfAccount.update": [
+    "Cannot update an inactive account"
+  ],
+  "Client.archive": [
+    "Client is already archived"
+  ],
+  "Client.create": [
+    "Client type is required",
+    "Company clients require a company name",
+    "Individual clients require a first name"
+  ],
+  "Client.reactivate": [
+    "Client is not archived"
+  ],
+  "Client.update": [
+    "Cannot update an archived client"
+  ],
+  "ClientContact.create": [
+    "Client ID is required",
+    "First name is required",
+    "Last name is required"
+  ],
+  "ClientContact.remove": [
+    "Contact is already removed"
+  ],
+  "ClientContact.setPrimary": [
+    "Cannot set a removed contact as primary",
+    "Contact is already primary"
+  ],
+  "ClientContact.update": [
+    "Cannot update a removed contact"
+  ],
+  "ClientInteraction.complete": [
+    "Cannot complete a deleted interaction",
+    "Interaction follow-up is already completed"
+  ],
+  "ClientInteraction.create": [
+    "Subject is required",
+    "Employee ID is required",
+    "Interaction type is required"
+  ],
+  "ClientInteraction.escalate": [
+    "Cannot escalate a deleted interaction",
+    "Cannot escalate a completed interaction",
+    "Escalation target is required",
+    "Escalation reason is required"
+  ],
+  "ClientInteraction.markOverdue": [
+    "Cannot mark a deleted interaction overdue",
+    "Can only mark open or scheduled interactions overdue",
+    "Interaction has no follow-up date",
+    "Follow-up date has not yet passed"
+  ],
+  "ClientInteraction.schedule": [
+    "Cannot schedule a deleted interaction",
+    "Can only schedule open or overdue interactions",
+    "Follow-up date is required",
+    "Follow-up date must be in the future"
+  ],
+  "ClientInteraction.softDelete": [
+    "Interaction is already deleted"
+  ],
+  "ClientInteraction.update": [
+    "Cannot update a deleted interaction",
+    "Subject is required"
+  ],
+  "ClientPreference.create": [
+    "Client ID is required",
+    "Preference type is required",
+    "Preference key is required"
+  ],
+  "ClientPreference.remove": [
+    "Preference is already removed"
+  ],
+  "ClientPreference.update": [
+    "Cannot update a removed preference"
+  ],
+  "CollectionAction.complete": [
+    "Can only complete pending actions"
+  ],
+  "CollectionAction.fail": [
+    "Can only fail pending actions"
+  ],
+  "CollectionAction.reschedule": [
+    "Can only reschedule pending actions"
+  ],
+  "CollectionAction.skip": [
+    "Can only skip pending actions"
+  ],
+  "CollectionCase.assignTo": [
+    "Can only assign active cases"
+  ],
+  "CollectionCase.close": [
+    "Case already closed"
+  ],
+  "CollectionCase.create": [
+    "Invoice ID is required",
+    "Original amount must be positive"
+  ],
+  "CollectionCase.createPaymentPlan": [
+    "Payment plan already exists",
+    "Can only create plan for active cases"
+  ],
+  "CollectionCase.escalateDunning": [
+    "Can only escalate active cases",
+    "Maximum dunning stage reached"
+  ],
+  "CollectionCase.escalateToLegalWithDetails": [
+    "Already escalated to legal",
+    "Cannot escalate resolved cases"
+  ],
+  "CollectionCase.markDisputed": [
+    "Case already disputed"
+  ],
+  "CollectionCase.markResolved": [
+    "Outstanding amount must be near zero"
+  ],
+  "CollectionCase.recordPayment": [
+    "Payment amount must be positive",
+    "Payment cannot exceed outstanding amount"
+  ],
+  "CollectionCase.resetDunning": [
+    "Can only reset active/in-progress cases",
+    "Invalid dunning stage"
+  ],
+  "CollectionCase.resolveDispute": [
+    "Case is not disputed"
+  ],
+  "CollectionCase.writeOff": [
+    "Cannot write off resolved cases",
+    "Write-off amount cannot exceed outstanding"
+  ],
+  "CollectionPaymentPlan.cancel": [
+    "Can only cancel active plans"
+  ],
+  "CollectionPaymentPlan.markCompleted": [
+    "Can only complete active plans"
+  ],
+  "CollectionPaymentPlan.markDefaulted": [
+    "Can only default active plans"
+  ],
+  "CollectionPaymentPlan.modify": [
+    "Can only modify active plans"
+  ],
+  "CollectionPaymentPlan.recordInstallment": [
+    "Can only record payments for active plans",
+    "Payment must match installment amount"
+  ],
+  "CommandBoard.activate": [
+    "Can only activate draft boards"
+  ],
+  "CommandBoard.create": [
+    "Board name is required"
+  ],
+  "CommandBoard.deactivate": [
+    "Board is already archived"
+  ],
+  "CommandBoard.update": [
+    "Can only update draft boards",
+    "Board name is required"
+  ],
+  "CommandBoardCard.create": [
+    "Board ID is required",
+    "Card title is required"
+  ],
+  "CommandBoardCard.move": [
+    "Position X is required",
+    "Position Y is required"
+  ],
+  "CommandBoardCard.remove": [
+    "Card is already deleted"
+  ],
+  "CommandBoardCard.resize": [
+    "Width must be positive",
+    "Height must be positive"
+  ],
+  "CommandBoardCard.update": [
+    "Card title is required"
+  ],
+  "CommandBoardConnection.create": [
+    "Board ID is required",
+    "Source card ID is required",
+    "Target card ID is required",
+    "Cannot connect a card to itself"
+  ],
+  "CommandBoardConnection.remove": [
+    "Connection is already deleted"
+  ],
+  "CommandBoardGroup.create": [
+    "Board ID is required",
+    "Group name is required"
+  ],
+  "CommandBoardGroup.remove": [
+    "Group is already deleted"
+  ],
+  "CommandBoardGroup.update": [
+    "Group name is required"
+  ],
+  "CommandBoardLayout.create": [
+    "Board ID is required",
+    "Layout name is required"
+  ],
+  "CommandBoardLayout.remove": [
+    "Layout is already deleted"
+  ],
+  "CommandBoardLayout.update": [
+    "Layout name is required"
+  ],
+  "Container.create": [
+    "Container name is required",
+    "Container type is required",
+    "Volume capacity cannot be negative",
+    "Weight capacity cannot be negative",
+    "Portion capacity cannot be negative"
+  ],
+  "Container.deactivate": [
+    "Container is already deactivated"
+  ],
+  "Container.reactivate": [
+    "Container is already active"
+  ],
+  "Container.relocate": [
+    "Cannot relocate a deactivated container",
+    "New location ID is required",
+    "Container is already at this location"
+  ],
+  "Container.update": [
+    "Container name is required",
+    "Cannot update a deactivated container",
+    "Volume capacity cannot be negative",
+    "Weight capacity cannot be negative",
+    "Portion capacity cannot be negative"
+  ],
+  "ContractSignature.create": [
+    "Contract ID is required",
+    "Signature data is required",
+    "Signer name is required"
+  ],
+  "ContractSignature.invalidate": [
+    "Signature is already invalidated",
+    "Invalidation reason is required"
+  ],
+  "ContractSignature.verify": [
+    "Cannot verify an invalidated signature",
+    "Signature is already verified"
+  ],
+  "CorrectiveAction.assign": [
+    "Cannot assign a closed corrective action",
+    "Assignee employee ID is required"
+  ],
+  "CorrectiveAction.close": [
+    "Cannot close an already-closed corrective action",
+    "Resolver employee ID is required"
+  ],
+  "CorrectiveAction.create": [
+    "Action number is required",
+    "Title is required",
+    "Source type is required",
+    "Source ID is required",
+    "Description is required"
+  ],
+  "CorrectiveAction.startProgress": [
+    "Corrective action must be open to start progress"
+  ],
+  "CrmScoringRule.activate": [
+    "Cannot activate a deleted scoring rule",
+    "Scoring rule is already active"
+  ],
+  "CrmScoringRule.create": [
+    "Rule name is required",
+    "Field is required",
+    "Condition is required"
+  ],
+  "CrmScoringRule.deactivate": [
+    "Cannot deactivate a deleted scoring rule",
+    "Scoring rule is already inactive"
+  ],
+  "CrmScoringRule.softDelete": [
+    "Scoring rule is already deleted"
+  ],
+  "CrmScoringRule.update": [
+    "Cannot update a deleted scoring rule",
+    "Rule name is required",
+    "Field is required",
+    "Condition is required"
+  ],
+  "CycleCountRecord.create": [
+    "Session ID is required",
+    "Item ID is required",
+    "Counted quantity cannot be negative"
+  ],
+  "CycleCountRecord.remove": [
+    "Cannot remove verified records",
+    "Record is already removed"
+  ],
+  "CycleCountRecord.update": [
+    "Counted quantity cannot be negative",
+    "Cannot update a verified record"
+  ],
+  "CycleCountRecord.verify": [
+    "Record is already verified"
+  ],
+  "CycleCountSession.cancel": [
+    "Cannot cancel a completed session",
+    "Session is already cancelled",
+    "Cannot cancel a finalized session"
+  ],
+  "CycleCountSession.complete": [
+    "Can only complete in-progress sessions"
+  ],
+  "CycleCountSession.create": [
+    "Session name is required",
+    "Location is required"
+  ],
+  "CycleCountSession.finalize": [
+    "Can only finalize completed sessions"
+  ],
+  "CycleCountSession.reopen": [
+    "Can only reopen finalized sessions"
+  ],
+  "CycleCountSession.softDelete": [
+    "Session is already deleted",
+    "Cannot delete a finalized session"
+  ],
+  "CycleCountSession.start": [
+    "Can only start draft sessions"
+  ],
+  "CycleCountSession.update": [
+    "Can only edit draft or in-progress sessions"
+  ],
+  "Deal.abandon": [
+    "Only an open deal can be abandoned"
+  ],
+  "Deal.assign": [
+    "Cannot reassign a closed deal",
+    "Assignee is required"
+  ],
+  "Deal.close": [
+    "Status must be won or lost",
+    "Cannot close an already closed deal"
+  ],
+  "Deal.create": [
+    "Lead ID is required",
+    "Deal title is required",
+    "Deal value cannot be negative",
+    "Probability must be between 0 and 100"
+  ],
+  "Deal.reopen": [
+    "Only a lost or abandoned deal can be reopened"
+  ],
+  "Deal.updateProbability": [
+    "Cannot change probability of a closed deal",
+    "Probability must be between 0 and 100"
+  ],
+  "Deal.updateStage": [
+    "Invalid deal stage",
+    "Cannot update stage of a closed deal"
+  ],
+  "Deal.updateValue": [
+    "Cannot change value of a closed deal",
+    "Deal value cannot be negative"
+  ],
+  "DeliveryRoute.assignDriver": [
+    "Can only assign a driver to a planned route",
+    "Driver ID is required"
+  ],
+  "DeliveryRoute.complete": [
+    "Only in-progress routes can be completed"
+  ],
+  "DeliveryRoute.create": [
+    "Route name is required",
+    "Route number is required",
+    "Scheduled date is required"
+  ],
+  "DeliveryRoute.start": [
+    "Only planned routes can be started",
+    "A driver must be assigned before starting the route"
+  ],
+  "DisciplinaryAction.acknowledge": [
+    "Only open actions can be acknowledged"
+  ],
+  "DisciplinaryAction.close": [
+    "Only open, in-progress, or escalated actions can be closed"
+  ],
+  "DisciplinaryAction.create": [
+    "Employee ID is required",
+    "Action type is required",
+    "Reason is required",
+    "Invalid severity",
+    "Issuer ID is required"
+  ],
+  "DisciplinaryAction.escalate": [
+    "Only open or in-progress actions can be escalated",
+    "Escalation target is required",
+    "Escalation reason is required"
+  ],
+  "Dish.activate": [
+    "Dish is already active"
+  ],
+  "Dish.clearDefaultContainer": [
+    "Dish has no default container to clear"
+  ],
+  "Dish.create": [
+    "Dish name is required",
+    "Recipe ID is required",
+    "Price per person cannot be negative",
+    "Cost per person cannot be negative",
+    "Min prep lead days cannot be negative"
+  ],
+  "Dish.deactivate": [
+    "Dish is already deactivated"
+  ],
+  "Dish.eightySix": [
+    "Cannot 86 a deactivated dish",
+    "Dish is already 86'd",
+    "Reason is required when 86ing a dish"
+  ],
+  "Dish.markSeasonal": [
+    "Cannot mark a deactivated dish as seasonal",
+    "Season label is required",
+    "Season start month must be 1–12",
+    "Season end month must be 1–12"
+  ],
+  "Dish.reinstate": [
+    "Dish is not currently 86'd"
+  ],
+  "Dish.unmarkSeasonal": [
+    "Dish is not marked seasonal"
+  ],
+  "Dish.update": [
+    "Dish name is required",
+    "Cannot update a deactivated dish"
+  ],
+  "Dish.updateLeadTime": [
+    "Cannot update lead time on a deactivated dish",
+    "Min prep lead days cannot be negative",
+    "Max prep lead days cannot be negative",
+    "Max lead days must be >= min lead days"
+  ],
+  "Dish.updatePricing": [
+    "Cannot update pricing on a deactivated dish",
+    "Price per person cannot be negative",
+    "Cost per person cannot be negative"
+  ],
+  "Document.create": [
+    "Document name is required",
+    "File URL is required",
+    "File size must be non-negative"
+  ],
+  "Document.markFailed": [
+    "Cannot update a deleted document",
+    "Document must be in parsing status to mark as failed"
+  ],
+  "Document.markParsed": [
+    "Cannot update a deleted document",
+    "Document must be in parsing status to mark as parsed"
+  ],
+  "Document.remove": [
+    "Document is already removed"
+  ],
+  "DocumentVersion.approve": [
+    "Can only approve draft versions",
+    "Approver is required"
+  ],
+  "DocumentVersion.create": [
+    "Document ID is required",
+    "Content is required"
+  ],
+  "DocumentVersion.markPublished": [
+    "Can only publish approved versions",
+    "Publisher is required"
+  ],
+  "DocumentVersion.restore": [
+    "Cannot restore invalid version",
+    "Cannot restore a superseded version — create a new version instead"
+  ],
+  "DocumentVersion.supersede": [
+    "Can only supersede published or approved versions",
+    "New version ID is required"
+  ],
+  "DocumentVersion.updateContent": [
+    "Can only edit draft versions",
+    "Content is required"
+  ],
+  "Driver.create": [
+    "Name is required"
+  ],
+  "Driver.reactivate": [
+    "Only off-duty or inactive drivers can be reactivated"
+  ],
+  "Driver.remove": [
+    "Cannot remove a driver currently on route"
+  ],
+  "Driver.renewLicense": [
+    "License number is required",
+    "New expiry date is required"
+  ],
+  "Driver.setAvailable": [
+    "Only on-route drivers are freed by dispatch completion"
+  ],
+  "Driver.setOffDuty": [
+    "Only available or on-route drivers can be set off duty"
+  ],
+  "Driver.setOnRoute": [
+    "Only available drivers can be put on route"
+  ],
+  "Driver.update": [
+    "Name is required"
+  ],
+  "EmailTemplate.create": [
+    "Template name is required",
+    "Template subject is required"
+  ],
+  "EmailTemplate.softDelete": [
+    "Template is already deleted"
+  ],
+  "EmailTemplate.update": [
+    "Cannot update a deleted template",
+    "Template name is required",
+    "Template subject is required"
+  ],
+  "EmailWorkflow.create": [
+    "Workflow name is required"
+  ],
+  "EmailWorkflow.recordTriggered": [
+    "Cannot update a deleted workflow"
+  ],
+  "EmailWorkflow.setActive": [
+    "Cannot toggle a deleted workflow"
+  ],
+  "EmailWorkflow.softDelete": [
+    "Workflow is already deleted"
+  ],
+  "EmailWorkflow.update": [
+    "Cannot update a deleted workflow"
+  ],
+  "EmployeeAvailability.create": [
+    "Employee ID is required",
+    "Start time is required",
+    "End time is required",
+    "Day of week must be between 0 and 6"
+  ],
+  "EmployeeAvailability.reinstate": [
+    "Cannot reinstate a deleted availability record",
+    "Availability record is not suspended"
+  ],
+  "EmployeeAvailability.softDelete": [
+    "Availability record is already deleted"
+  ],
+  "EmployeeAvailability.suspend": [
+    "Cannot suspend a deleted availability record",
+    "Availability record is already suspended",
+    "Suspension reason is required"
+  ],
+  "EmployeeAvailability.update": [
+    "Cannot update a deleted availability record",
+    "Cannot update a suspended availability record — reinstate first"
+  ],
+  "EmployeeCertification.create": [
+    "Employee ID is required",
+    "Certification type is required",
+    "Certification name is required",
+    "Issued date is required"
+  ],
+  "EmployeeCertification.expire": [
+    "Only an active certification can expire"
+  ],
+  "EmployeeCertification.renew": [
+    "Cannot renew a deleted certification",
+    "Cannot renew a revoked certification",
+    "Issued date is required"
+  ],
+  "EmployeeCertification.revoke": [
+    "Certification is already revoked",
+    "Revocation reason is required"
+  ],
+  "EmployeeCertification.softDelete": [
+    "Certification is already deleted"
+  ],
+  "EmployeeCertification.update": [
+    "Cannot update a deleted certification"
+  ],
+  "EmployeeDeduction.create": [
+    "Employee ID is required",
+    "Deduction type is required",
+    "Deduction name is required",
+    "Deduction amount cannot be negative"
+  ],
+  "EmployeeDeduction.deactivate": [
+    "Deduction is already removed"
+  ],
+  "EmployeeDeduction.update": [
+    "Cannot update a removed deduction",
+    "Deduction amount cannot be negative"
+  ],
+  "EntityVersion.approve": [
+    "Approver ID is required",
+    "Version is already approved"
+  ],
+  "EntityVersion.create": [
+    "Versioned entity ID is required",
+    "Version number must be positive",
+    "Invalid change type",
+    "Snapshot data is required"
+  ],
+  "EntityVersion.reject": [
+    "Reviewer ID is required"
+  ],
+  "EntityVersion.restore": [
+    "New version number must be positive",
+    "Restorer user ID is required"
+  ],
+  "Equipment.create": [
+    "Equipment name is required",
+    "Location ID is required",
+    "Invalid equipment type",
+    "Maintenance interval must be positive",
+    "Max usage hours must be positive"
+  ],
+  "Equipment.recordMaintenance": [
+    "Maintenance date is required",
+    "Invalid maintenance type"
+  ],
+  "Equipment.recordUsage": [
+    "Usage hours must be positive"
+  ],
+  "Equipment.retire": [
+    "Equipment is already retired"
+  ],
+  "Equipment.scheduleMaintenance": [
+    "Cannot schedule maintenance for retired equipment",
+    "Scheduled date is required",
+    "Invalid maintenance type"
+  ],
+  "Equipment.updateCondition": [
+    "Invalid condition"
+  ],
+  "Equipment.updateStatus": [
+    "Invalid status",
+    "Status is already set to {newStatus}"
+  ],
+  "Event.archive": [
+    "Can only archive completed events"
+  ],
+  "Event.cancel": [
+    "Cannot cancel completed event",
+    "Cannot cancel archived event",
+    "Event is already cancelled"
+  ],
+  "Event.confirm": [
+    "Can only confirm draft events"
+  ],
+  "Event.finalize": [
+    "Can only finalize confirmed events"
+  ],
+  "Event.softDelete": [
+    "Event is already deleted"
+  ],
+  "Event.unfinalize": [
+    "Can only unfinalize completed events"
+  ],
+  "Event.update": [
+    "Cannot update archived event",
+    "Tenant ID is required",
+    "Client ID must be provided",
+    "Event number must be provided",
+    "Event title is required",
+    "Event type is required",
+    "Event date is required",
+    "Guest count must be positive",
+    "Status must be valid"
+  ],
+  "Event.updateBudget": [
+    "Cannot update cancelled event",
+    "Cannot update archived event",
+    "Budget value is required"
+  ],
+  "Event.updateDate": [
+    "Cannot update cancelled event",
+    "Cannot update archived event",
+    "Cannot update completed event",
+    "Event date is required"
+  ],
+  "Event.updateGuestCount": [
+    "Cannot update cancelled event",
+    "Cannot update archived event",
+    "Guest count must be positive",
+    "Guest count exceeds maximum (100,000)"
+  ],
+  "Event.updateLocation": [
+    "Cannot update cancelled event",
+    "Cannot update archived event",
+    "Cannot update completed event"
+  ],
+  "EventBudget.approve": [
+    "Can only approve draft budgets"
+  ],
+  "EventBudget.create": [
+    "Event ID is required",
+    "Budget amount must be non-negative"
+  ],
+  "EventBudget.finalize": [
+    "Can only finalize draft or approved budgets"
+  ],
+  "EventBudget.update": [
+    "Cannot update finalized budget",
+    "Budget amount must be non-negative"
+  ],
+  "EventContract.cancel": [
+    "Cannot cancel a signed contract",
+    "Contract is already cancelled"
+  ],
+  "EventContract.create": [
+    "Event ID is required",
+    "Client ID is required"
+  ],
+  "EventContract.expire": [
+    "Cannot expire a signed contract",
+    "Cannot expire a cancelled contract"
+  ],
+  "EventContract.markViewed": [
+    "Contract must be sent before it can be viewed"
+  ],
+  "EventContract.send": [
+    "Can only send a draft contract",
+    "Sender is required",
+    "Cannot send a contract without an attached document"
+  ],
+  "EventContract.sign": [
+    "Contract must be sent or viewed to be signed"
+  ],
+  "EventContract.update": [
+    "Cannot modify a signed contract"
+  ],
+  "EventDish.create": [
+    "Event ID is required",
+    "Dish ID is required",
+    "Quantity must be positive"
+  ],
+  "EventDish.remove": [
+    "Event dish is already removed"
+  ],
+  "EventDish.updateCourse": [
+    "Cannot re-course a removed event dish"
+  ],
+  "EventDish.updateNotes": [
+    "Cannot annotate a removed event dish"
+  ],
+  "EventDish.updateQuantity": [
+    "Cannot change quantity on a removed event dish",
+    "Quantity must be positive"
+  ],
+  "EventFollowup.cancel": [
+    "Can only cancel a pending followup"
+  ],
+  "EventFollowup.complete": [
+    "Can only complete a pending followup"
+  ],
+  "EventFollowup.create": [
+    "Event ID is required",
+    "Followup type is required"
+  ],
+  "EventFollowup.reschedule": [
+    "Can only reschedule a pending followup",
+    "New due date is required"
+  ],
+  "EventGuest.assignTable": [
+    "Cannot assign a table to a deleted guest",
+    "Table assignment is required"
+  ],
+  "EventGuest.checkIn": [
+    "Cannot check in a deleted guest",
+    "Guest declined and is not expected to attend",
+    "Guest has already checked in"
+  ],
+  "EventGuest.create": [
+    "Event ID is required",
+    "Guest name is required"
+  ],
+  "EventGuest.rsvpConfirm": [
+    "Cannot RSVP for a deleted guest",
+    "Guest has already declined; re-invite before confirming"
+  ],
+  "EventGuest.rsvpDecline": [
+    "Cannot RSVP for a deleted guest",
+    "Cannot decline after the guest has checked in"
+  ],
+  "EventGuest.softDelete": [
+    "Guest is already deleted"
+  ],
+  "EventGuest.update": [
+    "Guest name is required",
+    "Cannot update a deleted guest"
+  ],
+  "EventImport.complete": [
+    "Can only complete an import that is parsing",
+    "Imported rows cannot be negative"
+  ],
+  "EventImport.create": [
+    "Import file type is required",
+    "File name is required",
+    "Total rows cannot be negative"
+  ],
+  "EventImport.fail": [
+    "Can only fail an import that is parsing"
+  ],
+  "EventImport.retry": [
+    "Can only retry a failed import"
+  ],
+  "EventImport.startProcessing": [
+    "Can only start processing pending imports"
+  ],
+  "EventImportWorkflow.cancel": [
+    null
+  ],
+  "EventImportWorkflow.completeActivating": [
+    null
+  ],
+  "EventImportWorkflow.completeExtraction": [
+    null
+  ],
+  "EventImportWorkflow.completeParsing": [
+    null,
+    null
+  ],
+  "EventImportWorkflow.completeProposing": [
+    null
+  ],
+  "EventImportWorkflow.completeReserving": [
+    null
+  ],
+  "EventImportWorkflow.completeValidation": [
+    null
+  ],
+  "EventImportWorkflow.create": [
+    "Workflow already initialized",
+    "Idempotency key is required"
+  ],
+  "EventImportWorkflow.fail": [
+    null
+  ],
+  "EventImportWorkflow.pause": [
+    null
+  ],
+  "EventImportWorkflow.resume": [
+    null,
+    null
+  ],
+  "EventImportWorkflow.retry": [
+    null,
+    null
+  ],
+  "EventImportWorkflow.startActivating": [
+    null
+  ],
+  "EventImportWorkflow.startExtracting": [
+    null
+  ],
+  "EventImportWorkflow.startParsing": [
+    null
+  ],
+  "EventImportWorkflow.startProposing": [
+    null
+  ],
+  "EventImportWorkflow.startReserving": [
+    null
+  ],
+  "EventImportWorkflow.startValidating": [
+    null
+  ],
+  "EventPlanningDraft.confirmDetail": [
+    "Can only confirm details for active or review drafts"
+  ],
+  "EventPlanningDraft.convertToEvent": [
+    "Can only convert review drafts to events",
+    "Event ID is required"
+  ],
+  "EventPlanningDraft.create": [
+    "Session ID is required"
+  ],
+  "EventPlanningDraft.expire": [
+    "Can only expire active or review drafts"
+  ],
+  "EventPlanningDraft.markReview": [
+    "Can only mark active drafts for review"
+  ],
+  "EventPlanningDraft.updateBudget": [
+    "Can only update budget for active or review drafts"
+  ],
+  "EventPlanningDraft.updateField": [
+    "Can only update active or review drafts",
+    "Field name is required"
+  ],
+  "EventPlanningDraft.updateGuestCount": [
+    "Can only update guest count for active or review drafts"
+  ],
+  "EventPlanningDraft.updateMenuPreferences": [
+    "Can only update menu preferences for active or review drafts",
+    "Menu preferences are required"
+  ],
+  "EventPlanningDraft.updateVenue": [
+    "Can only update venue for active or review drafts"
+  ],
+  "EventProfitability.create": [
+    "Event ID is required"
+  ],
+  "EventReport.approve": [
+    "Can only approve completed reports",
+    "Reviewer user ID is required"
+  ],
+  "EventReport.complete": [
+    "Can only complete draft or in-progress reports",
+    "Cannot complete report with empty checklist data"
+  ],
+  "EventReport.create": [
+    "Event ID is required",
+    "Report name is required"
+  ],
+  "EventReport.reject": [
+    "Can only reject completed reports",
+    "Reviewer user ID is required",
+    "Rejection reason is required"
+  ],
+  "EventReport.submit": [
+    "Can only submit draft or in-progress reports",
+    "Cannot submit report with empty checklist data"
+  ],
+  "EventReport.updateProgress": [
+    "Can only update progress on draft or in-progress reports",
+    "Completion must be between 0 and 100"
+  ],
+  "EventStaff.assign": [
+    "Event ID is required",
+    "Staff member ID is required"
+  ],
+  "EventStaff.checkIn": [
+    "Staff member must be assigned or confirmed to check in"
+  ],
+  "EventStaff.checkOut": [
+    "Staff member must be checked in to check out"
+  ],
+  "EventStaff.confirm": [
+    "Only an assigned staff member can confirm"
+  ],
+  "EventStaff.create": [
+    "Event ID is required",
+    "Staff member ID is required"
+  ],
+  "EventStaff.markNoShow": [
+    "Can only mark a no-show for staff who never checked in"
+  ],
+  "EventStaff.unassign": [
+    "Cannot unassign a staff member who has already checked in"
+  ],
+  "EventStaff.updateRole": [
+    "Cannot change role for completed assignment",
+    "Role is required"
+  ],
+  "EventStaff.updateShift": [
+    "Cannot change shift after check-in",
+    "Shift end must be after shift start"
+  ],
+  "EventSummary.create": [
+    "Event ID is required"
+  ],
+  "EventTimeline.create": [
+    "Event ID is required",
+    "Description is required",
+    "Duration cannot be negative"
+  ],
+  "EventTimeline.reorder": [
+    "Sort order cannot be negative"
+  ],
+  "EventTimeline.update": [
+    "Description is required",
+    "Duration cannot be negative"
+  ],
+  "EventTimelineItem.blockItem": [
+    "Can only block an in-progress timeline item",
+    "Block reason is required"
+  ],
+  "EventTimelineItem.completeItem": [
+    "Can only complete a pending or in-progress timeline item"
+  ],
+  "EventTimelineItem.createItem": [
+    "Event ID is required",
+    "Title is required"
+  ],
+  "EventTimelineItem.reorderItem": [
+    "Sort order cannot be negative",
+    "Cannot reorder a completed item"
+  ],
+  "EventTimelineItem.startItem": [
+    "Can only start a pending timeline item"
+  ],
+  "EventTimelineItem.unblockItem": [
+    "Can only unblock a blocked timeline item"
+  ],
+  "EventTimelineItem.updateItem": [
+    "Title is required",
+    "Cannot update a completed timeline item"
+  ],
+  "EventWaitlistEntry.addGuest": [
+    "Event ID is required",
+    "Guest name is required",
+    "Party size must be at least 1"
+  ],
+  "EventWaitlistEntry.cancel": [
+    "Cannot cancel a seated guest",
+    "Guest is already cancelled"
+  ],
+  "EventWaitlistEntry.notify": [
+    "Can only notify guests who are waiting"
+  ],
+  "EventWaitlistEntry.promote": [
+    "Cannot promote a non-waiting guest"
+  ],
+  "EventWaitlistEntry.seat": [
+    "Guest must be confirmed before seating"
+  ],
+  "EventWaitlistEntry.updateRsvp": [
+    "Invalid RSVP status"
+  ],
+  "Facility.create": [
+    "Facility name is required",
+    "Invalid facility type"
+  ],
+  "Facility.edit": [
+    "Facility name is required"
+  ],
+  "Facility.remove": [
+    "Cannot delete an active facility"
+  ],
+  "Facility.restoreFromMaintenance": [
+    "Facility is not in maintenance"
+  ],
+  "Facility.sendToMaintenance": [
+    "Only an active facility can be sent to maintenance",
+    "Reason is required"
+  ],
+  "FacilityArea.closeForMaintenance": [
+    "Only an active area can be closed for maintenance",
+    "Reason is required"
+  ],
+  "FacilityArea.create": [
+    "Area name is required"
+  ],
+  "FacilityArea.edit": [
+    "Area name is required"
+  ],
+  "FacilityArea.reopen": [
+    "Area is not in maintenance"
+  ],
+  "FacilityAsset.create": [
+    "Asset name is required"
+  ],
+  "FacilityAsset.retire": [
+    "Asset is already retired",
+    "Asset has already been sold"
+  ],
+  "FacilityAsset.returnFromMaintenance": [
+    "Asset is not in maintenance"
+  ],
+  "FacilityAsset.sendToMaintenance": [
+    "Only an operational asset can be sent to maintenance",
+    "Reason is required"
+  ],
+  "FacilitySchedule.cancel": [
+    "Cannot cancel a completed schedule",
+    "Cancellation reason is required"
+  ],
+  "FacilitySchedule.complete": [
+    "Only an in-progress schedule can be completed"
+  ],
+  "FacilitySchedule.create": [
+    "Schedule title is required",
+    "Facility ID is required"
+  ],
+  "FacilitySchedule.edit": [
+    "Schedule title is required",
+    "Can only edit a scheduled (not yet started) schedule"
+  ],
+  "FacilitySchedule.start": [
+    "Can only start a scheduled item",
+    "User ID is required"
+  ],
+  "FacilityWorkOrder.assign": [
+    "Assignee is required",
+    "Work order must be open to assign"
+  ],
+  "FacilityWorkOrder.cancel": [
+    "Cannot cancel a completed or already cancelled work order",
+    "Cancellation reason is required"
+  ],
+  "FacilityWorkOrder.complete": [
+    "Work order must be in progress to complete",
+    "Actual cost cannot be negative"
+  ],
+  "FacilityWorkOrder.create": [
+    "Work order title is required"
+  ],
+  "FacilityWorkOrder.start": [
+    "Work order must be open or assigned to start",
+    "User ID is required"
+  ],
+  "FeatureFlag.create": [
+    "Flag key is required",
+    "Rollout percent must be between 0 and 100"
+  ],
+  "FeatureFlag.disable": [
+    "Cannot modify a deleted feature flag"
+  ],
+  "FeatureFlag.enable": [
+    "Cannot modify a deleted feature flag"
+  ],
+  "FeatureFlag.setRollout": [
+    "Cannot modify a deleted feature flag",
+    "Rollout percent must be between 0 and 100"
+  ],
+  "FeatureFlag.softDelete": [
+    "Feature flag is already deleted"
+  ],
+  "ForecastInput.create": [
+    "Inventory item ID is required",
+    "Input date is required",
+    "Actual usage cannot be negative",
+    "Data source is required"
+  ],
+  "Ingredient.clearRecall": [
+    "Ingredient is not currently recalled",
+    "Clearance note is required"
+  ],
+  "Ingredient.create": [
+    "Ingredient name is required",
+    "Default unit ID is required"
+  ],
+  "Ingredient.deactivate": [
+    "Ingredient is already deactivated"
+  ],
+  "Ingredient.flagRecall": [
+    "Recall reason is required",
+    "Ingredient is already recalled"
+  ],
+  "Ingredient.linkInventoryItem": [
+    "Cannot link inventory item on a deactivated ingredient",
+    "Inventory item ID is required"
+  ],
+  "Ingredient.reactivate": [
+    "Ingredient is already active",
+    "Cannot reactivate a recalled ingredient — clear recall first"
+  ],
+  "Ingredient.recordLot": [
+    "Cannot record a lot for a deactivated ingredient",
+    "Lot number is required"
+  ],
+  "Ingredient.unlinkInventoryItem": [
+    "Ingredient is not linked to an inventory item",
+    "Reason is required"
+  ],
+  "Ingredient.update": [
+    "Ingredient name is required",
+    "Cannot update a deactivated ingredient"
+  ],
+  "Ingredient.updateAllergens": [
+    "Cannot update allergens on a deactivated ingredient"
+  ],
+  "Ingredient.updateShelfLife": [
+    "Cannot update shelf life on a deactivated ingredient",
+    "Shelf life days cannot be negative"
+  ],
+  "InteractionAttachment.create": [
+    "Client interaction ID is required",
+    "File name is required",
+    "File URL is required",
+    "File size must be non-negative"
+  ],
+  "InteractionAttachment.remove": [
+    "Attachment is already removed"
+  ],
+  "InventoryAlert.acknowledge": [
+    "Can only acknowledge active alerts",
+    "Acknowledging user is required"
+  ],
+  "InventoryAlert.create": [
+    "Inventory item ID is required",
+    "Alert type is required",
+    "Severity is required",
+    "Threshold value is required",
+    "Alert message is required"
+  ],
+  "InventoryAlert.escalate": [
+    "Can only escalate active or acknowledged alerts",
+    "Invalid severity",
+    "Escalating user is required"
+  ],
+  "InventoryAlert.markResolved": [
+    "Alert is already resolved",
+    "Resolving user is required"
+  ],
+  "InventoryForecast.approve": [
+    "Only published forecasts can be approved",
+    "Approver is required"
+  ],
+  "InventoryForecast.create": [
+    "Inventory item ID is required",
+    "Forecast date is required",
+    "Projected quantity cannot be negative",
+    "Confidence must be between 0 and 1"
+  ],
+  "InventoryForecast.markPublished": [
+    "Only draft forecasts can be published"
+  ],
+  "InventoryForecast.update": [
+    "Can only update draft forecasts",
+    "Projected quantity cannot be negative",
+    "Confidence must be between 0 and 1"
+  ],
+  "InventoryItem.adjust": [
+    null
+  ],
+  "InventoryItem.consume": [
+    null
+  ],
+  "InventoryItem.create": [
+    "Item number/SKU is required",
+    "Item name is required",
+    "Category is required",
+    "Unit cost must be non-negative",
+    "Quantity on hand cannot be negative",
+    "Par level must be non-negative",
+    "Reorder level must be non-negative"
+  ],
+  "InventoryItem.releaseReservation": [
+    null,
+    null
+  ],
+  "InventoryItem.reserve": [
+    null,
+    null
+  ],
+  "InventoryItem.restock": [
+    null,
+    null
+  ],
+  "InventoryItem.softDelete": [
+    "Inventory item is already deleted"
+  ],
+  "InventoryItem.update": [
+    "Cannot update a deleted inventory item"
+  ],
+  "InventoryItem.waste": [
+    null,
+    null
+  ],
+  "InventoryStock.adjust": [
+    "Adjustment reason is required"
+  ],
+  "InventoryStock.create": [
+    "Inventory item ID is required",
+    "Storage location ID is required",
+    "Initial quantity cannot be negative",
+    "Unit ID is required"
+  ],
+  "InventoryStock.recount": [
+    "Recounted quantity cannot be negative",
+    "Counter ID is required"
+  ],
+  "InventorySupplier.approve": [
+    "Only pending suppliers can be approved",
+    "Approving user is required"
+  ],
+  "InventorySupplier.blacklist": [
+    "Supplier is already blacklisted",
+    "Blacklist reason is required"
+  ],
+  "InventorySupplier.create": [
+    "Supplier name is required"
+  ],
+  "InventorySupplier.deactivate": [
+    "Supplier is already inactive"
+  ],
+  "InventorySupplier.reinstate": [
+    "Only suspended suppliers can be reinstated",
+    "Reinstating user is required"
+  ],
+  "InventorySupplier.suspend": [
+    "Only approved suppliers can be suspended",
+    "Suspension reason is required"
+  ],
+  "InventorySupplier.update": [
+    "Supplier name is required"
+  ],
+  "InventoryTransaction.adjustCost": [
+    "Cannot adjust a reversed transaction",
+    "Unit cost cannot be negative",
+    "Adjustment reason is required"
+  ],
+  "InventoryTransaction.create": [
+    "Item ID is required",
+    "Transaction type is required",
+    "Quantity must not be zero"
+  ],
+  "InventoryTransaction.reverse": [
+    "Transaction has already been reversed",
+    "Reversing user is required",
+    "Reversal reason is required"
+  ],
+  "InventoryTransfer.approve": [
+    "Transfer must be pending approval"
+  ],
+  "InventoryTransfer.cancel": [
+    "Cannot cancel a transfer already in progress"
+  ],
+  "InventoryTransfer.create": [
+    "Source location is required",
+    "Destination location is required",
+    "Source and destination must be different"
+  ],
+  "InventoryTransfer.flagDiscrepancy": [
+    "Can only flag discrepancies on in-transit or received transfers",
+    "Reporting user is required",
+    "Discrepancy notes are required"
+  ],
+  "InventoryTransfer.partialReceive": [
+    "Transfer must be in transit to record a partial receipt",
+    "Receiving user is required"
+  ],
+  "InventoryTransfer.receive": [
+    "Transfer must be in transit before receiving"
+  ],
+  "InventoryTransfer.ship": [
+    "Transfer must be approved before shipping"
+  ],
+  "InventoryTransferItem.addItem": [
+    "Transfer ID is required",
+    "Inventory item ID is required",
+    "Quantity must be positive",
+    "Unit ID is required"
+  ],
+  "InventoryTransferItem.removeItem": [
+    "Removing user is required"
+  ],
+  "InventoryTransferItem.updateQuantity": [
+    "Quantity must be positive"
+  ],
+  "Invoice.applyPayment": [
+    "Cannot apply payment to invoice in current status",
+    "Payment amount must be positive",
+    "Payment amount cannot exceed amount due"
+  ],
+  "Invoice.markOverdue": [
+    "Invoice must be sent to be marked overdue",
+    "Invoice must be past due date",
+    "Invoice already marked as overdue"
+  ],
+  "Invoice.markViewed": [
+    "Invoice must be sent to be viewed"
+  ],
+  "Invoice.recordRefund": [
+    "Refund amount must be positive",
+    "Refund amount cannot exceed amount paid"
+  ],
+  "Invoice.send": [
+    "Can only send draft invoices",
+    "Cannot send invoices with zero balance"
+  ],
+  "Invoice.sendReminder": [
+    "Cannot send reminder for invoice in current status",
+    "Cannot send reminder for paid invoices"
+  ],
+  "Invoice.update": [
+    "Can only update draft invoices"
+  ],
+  "Invoice.updateLineItems": [
+    "Can only modify line items in draft invoices"
+  ],
+  "Invoice.voidInvoice": [
+    "Cannot void invoices that are paid or partially paid",
+    "Cannot void invoices with payments"
+  ],
+  "Invoice.writeOff": [
+    "Can only write off overdue or partially paid invoices",
+    "Write off amount must not exceed amount due"
+  ],
+  "IoTAlert.acknowledge": [
+    "Only active alerts can be acknowledged",
+    "Acknowledger employee ID is required"
+  ],
+  "IoTAlert.create": [
+    "Probe ID is required",
+    "Invalid severity level",
+    "Alert message is required"
+  ],
+  "IoTAlert.markResolved": [
+    "Only active or acknowledged alerts can be resolved",
+    "Resolver employee ID is required"
+  ],
+  "IotAlertRule.create": [
+    "Equipment ID is required",
+    "Invalid severity level"
+  ],
+  "IotAlertRule.deactivate": [
+    "Alert rule is already inactive"
+  ],
+  "IotAlertRule.update": [
+    "Cannot update an inactive alert rule",
+    "Invalid severity level"
+  ],
+  "KitchenTask.addTag": [
+    null,
+    "Tag already exists"
+  ],
+  "KitchenTask.cancel": [
+    null
+  ],
+  "KitchenTask.claim": [
+    null,
+    null
+  ],
+  "KitchenTask.complete": [
+    null,
+    null
+  ],
+  "KitchenTask.create": [
+    "Task title is required",
+    "Task summary is required",
+    "Priority must be between 1 and 5",
+    "Complexity must be between 1 and 5"
+  ],
+  "KitchenTask.reassign": [
+    null,
+    null,
+    null
+  ],
+  "KitchenTask.release": [
+    null,
+    null
+  ],
+  "KitchenTask.removeTag": [
+    null,
+    "Tag not found"
+  ],
+  "KitchenTask.start": [
+    null,
+    null
+  ],
+  "KitchenTask.updateComplexity": [
+    null
+  ],
+  "KitchenTask.updatePriority": [
+    null
+  ],
+  "KitchenTask.updateSummary": [
+    "Task summary is required"
+  ],
+  "KitchenTask.updateTitle": [
+    "Task title is required"
+  ],
+  "KitchenTaskClaim.claim": [
+    "Kitchen task ID is required",
+    "Employee ID is required"
+  ],
+  "KitchenTaskClaim.release": [
+    "Only an active claim can be released",
+    "Releaser employee ID is required"
+  ],
+  "KitchenTaskProgress.create": [
+    "Kitchen task ID is required",
+    "Employee ID is required",
+    "Progress type is required",
+    "Status is required",
+    "Progress percentage must be between 0 and 100"
+  ],
+  "KnowledgeBaseEntry.create": [
+    "Title is required",
+    "Author ID is required"
+  ],
+  "KnowledgeBaseEntry.publishEntry": [
+    "Only draft entries can be published",
+    "Cannot publish an entry with an empty title",
+    "Cannot publish an entry with empty content"
+  ],
+  "KnowledgeBaseEntry.recordView": [
+    "Only published entries accrue views"
+  ],
+  "KnowledgeBaseEntry.unpublish": [
+    "Only a published entry can be unpublished"
+  ],
+  "KnowledgeBaseEntry.update": [
+    "Title is required"
+  ],
+  "LaborBudget.approve": [
+    "Only draft labor budgets can be approved",
+    "Cannot approve a deleted budget",
+    "Approver ID is required"
+  ],
+  "LaborBudget.close": [
+    "Only approved budgets can be closed",
+    "Cannot close a deleted budget"
+  ],
+  "LaborBudget.create": [
+    "Budget amount must be positive"
+  ],
+  "LaborBudget.recordActual": [
+    "Can only record actuals on approved budgets",
+    "Cannot update a deleted budget",
+    "Actual amount must be non-negative"
+  ],
+  "LaborBudget.softDelete": [
+    "Budget is already deleted",
+    "Cannot delete an approved budget; close it first"
+  ],
+  "LaborBudget.update": [
+    "Cannot update a deleted budget"
+  ],
+  "Lead.archive": [
+    "Lead is already archived"
+  ],
+  "Lead.convertToClient": [
+    "Cannot convert an archived lead",
+    "Client ID is required"
+  ],
+  "Lead.create": [
+    "Contact name is required",
+    "Lead source must be one of: website, manual, import"
+  ],
+  "Lead.disqualify": [
+    "Cannot disqualify an archived lead",
+    "Cannot disqualify a converted lead"
+  ],
+  "Lead.update": [
+    "Cannot update an archived lead",
+    "Cannot update a converted lead",
+    "Contact name is required"
+  ],
+  "LogisticsDispatch.assign": [
+    "Route ID is required",
+    "Driver ID is required",
+    "Vehicle ID is required"
+  ],
+  "LogisticsDispatch.deliver": [
+    "Dispatch must be in transit to mark delivered"
+  ],
+  "LogisticsDispatch.depart": [
+    "Dispatch must be assigned before departing"
+  ],
+  "LogisticsDispatch.fail": [
+    "Dispatch must be in transit to mark as failed",
+    "Failure reason is required"
+  ],
+  "LogisticsDispatch.reassign": [
+    "Can only reassign a pending, assigned, or failed dispatch",
+    "Driver ID is required",
+    "Vehicle ID is required"
+  ],
+  "LogisticsRoute.cancel": [
+    "Cannot cancel a completed route",
+    "Cancellation reason is required"
+  ],
+  "LogisticsRoute.complete": [
+    "Only an in-progress route can be completed"
+  ],
+  "LogisticsRoute.completeStop": [
+    "Route must be in progress to complete a stop"
+  ],
+  "LogisticsRoute.create": [
+    "Route name is required"
+  ],
+  "LogisticsRoute.optimize": [
+    "Only planned routes can be optimized"
+  ],
+  "LogisticsRoute.recordDelay": [
+    "Route must be in progress to record a delay",
+    "Delay must be a positive number of minutes"
+  ],
+  "LogisticsRoute.remove": [
+    "Cannot delete a route in progress"
+  ],
+  "LogisticsRoute.start": [
+    "Only a planned route can be started"
+  ],
+  "LogisticsRoute.update": [
+    "Route name is required",
+    "Can only update a planned route"
+  ],
+  "MaintenanceWorkOrder.assign": [
+    "Assignee is required",
+    "Can only assign open work orders"
+  ],
+  "MaintenanceWorkOrder.completeWork": [
+    "Work order must be in progress to complete"
+  ],
+  "MaintenanceWorkOrder.create": [
+    "Work order title is required",
+    "Invalid work order type",
+    "Invalid priority"
+  ],
+  "MaintenanceWorkOrder.startWork": [
+    "Work order must be assigned or open to start"
+  ],
+  "MaintenanceWorkOrder.updateStatus": [
+    "Invalid status",
+    "Status is already set to {newStatus}"
+  ],
+  "Menu.archive": [
+    "Menu must be draft or published to archive"
+  ],
+  "Menu.create": [
+    "Menu name is required",
+    "Base price must be non-negative",
+    "Price per person must be non-negative",
+    "Minimum guests must be non-negative",
+    "Maximum guests must be >= minimum"
+  ],
+  "Menu.markPublished": [
+    "Only a draft menu can be published",
+    "Menu must have pricing before publishing"
+  ],
+  "Menu.markSeasonal": [
+    "Cannot update an archived menu",
+    "Season label is required",
+    "Season year must be a valid year"
+  ],
+  "Menu.restore": [
+    "Only an archived menu can be restored"
+  ],
+  "Menu.unpublish": [
+    "Only a published menu can be unpublished"
+  ],
+  "Menu.update": [
+    "Menu name is required",
+    "Cannot update an archived menu"
+  ],
+  "Menu.updatePricing": [
+    "Cannot update pricing on an archived menu",
+    "Base price must be non-negative",
+    "Price per person must be non-negative"
+  ],
+  "MenuDish.create": [
+    "Menu ID is required",
+    "Dish ID is required"
+  ],
+  "MenuDish.setPriceOverride": [
+    "Cannot update a removed menu dish",
+    "Price override cannot be negative"
+  ],
+  "MenuDish.updateCourse": [
+    "Cannot update a removed menu dish"
+  ],
+  "MethodVideo.create": [
+    "Prep method ID is required",
+    "Video title is required",
+    "Video URL is required",
+    "Duration cannot be negative"
+  ],
+  "MethodVideo.remove": [
+    "Remover employee ID is required"
+  ],
+  "MethodVideo.update": [
+    "Video title is required",
+    "Video URL is required",
+    "Duration cannot be negative"
+  ],
+  "Note.create": [
+    "Note title is required"
+  ],
+  "Note.update": [
+    "Note title is required"
+  ],
+  "Notification.create": [
+    "Recipient employee ID is required",
+    "Notification title is required",
+    "Notification type is required"
+  ],
+  "Notification.markDismissed": [
+    "User ID is required"
+  ],
+  "Notification.markRead": [
+    "Notification is already read"
+  ],
+  "Notification.remove": [
+    "User ID is required",
+    "Notification is already removed"
+  ],
+  "OnboardingCompletion.create": [
+    "Employee ID is required",
+    "Onboarding task ID is required"
+  ],
+  "OnboardingTask.create": [
+    "Title is required"
+  ],
+  "OnboardingTask.update": [
+    "Title is required"
+  ],
+  "OpenShift.cancel": [
+    "Only open shifts can be cancelled"
+  ],
+  "OpenShift.claim": [
+    "Only open shifts can be claimed",
+    "Employee ID is required to claim shift"
+  ],
+  "OpenShift.create": [
+    "Schedule ID is required",
+    "Role is required",
+    "Shift start is required",
+    "Shift end must be after shift start"
+  ],
+  "OverrideAudit.authorize": [
+    "Authorized by user is required",
+    "Override has already been authorized"
+  ],
+  "OverrideAudit.create": [
+    "Entity type is required",
+    "Entity ID is required",
+    "Constraint ID is required",
+    "Overridden by user is required",
+    "Override reason is required"
+  ],
+  "Payment.markAcceptedNotApplied": [
+    "Can only mark processing or completed payments"
+  ],
+  "Payment.markChargeback": [
+    "Can only chargeback completed payments"
+  ],
+  "Payment.markFraudFailed": [
+    "Payment must be in manual review"
+  ],
+  "Payment.markFraudPassed": [
+    "Payment must be in manual review"
+  ],
+  "Payment.markFraudReviewed": [
+    "Payment must be in manual review"
+  ],
+  "Payment.partialRefund": [
+    "Payment must be completed to be refunded",
+    "Refund amount cannot exceed payment amount",
+    "Already fully refunded"
+  ],
+  "Payment.process": [
+    "Can only process pending or processing payments"
+  ],
+  "Payment.processFailed": [
+    "Can only process pending or processing payments"
+  ],
+  "Payment.refund": [
+    "Payment must be completed to be refunded",
+    "Refund amount cannot exceed payment amount",
+    "Already fully refunded"
+  ],
+  "Payment.updateFraudStatus": [
+    "Fraud status already checked"
+  ],
+  "PaymentMethod.create": [
+    "Client ID is required",
+    "Invalid payment method type"
+  ],
+  "PaymentMethod.flagForFraud": [
+    "Already flagged for fraud"
+  ],
+  "PaymentMethod.markAsDefault": [
+    "Payment method must be usable to be set as default"
+  ],
+  "PaymentMethod.markExpired": [
+    "Only cards can expire",
+    "Can only expire an active payment method"
+  ],
+  "PaymentMethod.markInvalid": [
+    "Cannot invalidate a fraudulent payment method"
+  ],
+  "PaymentMethod.markVerificationFailed": [
+    "Can only fail verification on an active payment method"
+  ],
+  "PaymentMethod.remove": [
+    "Cannot remove a fraudulent payment method"
+  ],
+  "PaymentMethod.update": [
+    "Cannot update a fraudulent payment method"
+  ],
+  "PaymentMethod.updateToken": [
+    "Can only update active payment methods",
+    "New token is required"
+  ],
+  "PaymentMethod.verify": [
+    "Can only verify active payment methods",
+    "Cannot verify a fraud-flagged payment method"
+  ],
+  "PaymentRefundAttempt.create": [
+    "Payment ID is required",
+    "Refund amount must be positive",
+    "Refund reason is required"
+  ],
+  "PayrollApprovalHistory.create": [
+    "Payroll run ID is required"
+  ],
+  "PayrollLineItem.create": [
+    "Payroll run ID is required",
+    "Employee ID is required",
+    "Gross pay cannot be negative",
+    "Net pay cannot be negative",
+    "Hours worked cannot be negative"
+  ],
+  "PayrollLineItem.update": [
+    "Cannot update a deleted line item",
+    "Gross pay cannot be negative",
+    "Net pay cannot be negative",
+    "Hours worked cannot be negative"
+  ],
+  "PayrollPeriod.close": [
+    "Only an open period can be closed"
+  ],
+  "PayrollPeriod.create": [
+    "Period start date is required",
+    "Period end date is required"
+  ],
+  "PayrollPeriod.lock": [
+    "A period must be closed before locking"
+  ],
+  "PayrollPeriod.reopen": [
+    "Only a closed (not locked) period can be reopened"
+  ],
+  "PayrollRun.approve": [
+    "Only a processed run can be approved",
+    "Approver is required"
+  ],
+  "PayrollRun.create": [
+    "Payroll period ID is required"
+  ],
+  "PayrollRun.markPaid": [
+    "Only an approved run can be marked paid"
+  ],
+  "PayrollRun.process": [
+    "Payroll processing is temporarily disabled for maintenance",
+    "Only a pending run can be processed",
+    "Cannot process a deleted payroll run"
+  ],
+  "PayrollRun.reject": [
+    "Only a pending or processing run can be rejected",
+    "Rejection reason is required"
+  ],
+  "PerformancePrediction.create": [
+    "Employee ID is required",
+    "Prediction type is required",
+    "Prediction score must be 0-100"
+  ],
+  "PerformanceReview.acknowledge": [
+    "Only submitted reviews can be acknowledged"
+  ],
+  "PerformanceReview.create": [
+    "Employee ID is required",
+    "Reviewer ID is required",
+    "Review type is required",
+    "Scheduled date is required"
+  ],
+  "PerformanceReview.signOff": [
+    "Only submitted reviews can be signed off"
+  ],
+  "PerformanceReview.submit": [
+    "Only draft reviews can be submitted",
+    "Rating must be between 0 and 5"
+  ],
+  "PrepComment.create": [
+    "Task ID is required",
+    "Employee ID is required",
+    "Comment text is required"
+  ],
+  "PrepComment.edit": [
+    "User ID is required",
+    "Comment text cannot be empty",
+    "Cannot edit a deleted comment",
+    "Cannot edit a resolved comment"
+  ],
+  "PrepComment.markResolved": [
+    "Resolver ID is required",
+    "Cannot resolve a deleted comment"
+  ],
+  "PrepComment.softDelete": [
+    "User ID is required",
+    "Comment is already deleted"
+  ],
+  "PrepComment.unresolve": [
+    "User ID is required",
+    "Comment is not resolved",
+    "Cannot unresolve a deleted comment"
+  ],
+  "PrepList.activate": [
+    "Prep list is already active"
+  ],
+  "PrepList.cancel": [
+    "Cannot cancel completed prep lists"
+  ],
+  "PrepList.create": [
+    "Prep list name is required",
+    "Event ID is required",
+    "Batch multiplier must be positive"
+  ],
+  "PrepList.createFromSeed": [
+    "Tenant ID is required",
+    "Event ID is required",
+    "Prep list name is required",
+    "Prep list name must be normalized",
+    "Batch multiplier must be positive",
+    "menuGroups payload is required",
+    "At least one instruction line is required",
+    "At least one valid instruction line is required",
+    "Empty instruction lines are not allowed"
+  ],
+  "PrepList.deactivate": [
+    "Prep list is already inactive"
+  ],
+  "PrepList.finalize": [
+    "Can only finalize draft prep lists",
+    "Cannot finalize prep list with no items"
+  ],
+  "PrepList.markCompleted": [
+    "Can only mark finalized prep lists as completed"
+  ],
+  "PrepList.reopen": [
+    "Can only reopen finalized or completed prep lists"
+  ],
+  "PrepList.update": [
+    "Can only update draft prep lists",
+    "Prep list name is required"
+  ],
+  "PrepList.updateBatchMultiplier": [
+    "Can only update draft prep lists",
+    "Batch multiplier must be positive"
+  ],
+  "PrepListImport.complete": [
+    "Import must be pending to complete"
+  ],
+  "PrepListImport.create": [
+    "Import source is required",
+    "File name is required"
+  ],
+  "PrepListImport.fail": [
+    "Import must be pending to fail",
+    "Error message is required"
+  ],
+  "PrepListItem.create": [
+    "Prep list ID is required",
+    "Ingredient ID is required",
+    "Ingredient name is required"
+  ],
+  "PrepListItem.markCompleted": [
+    "Item is already completed",
+    "User ID is required"
+  ],
+  "PrepListItem.markUncompleted": [
+    "Item is not completed"
+  ],
+  "PrepListItem.remove": [
+    "Prep list item is already removed"
+  ],
+  "PrepListItem.updateQuantity": [
+    "Base quantity must be non-negative",
+    "Scaled quantity must be non-negative"
+  ],
+  "PrepListItem.updateStation": [
+    "Station ID is required",
+    "Station name is required"
+  ],
+  "PrepMethod.create": [
+    "Prep method name is required",
+    "Estimated duration cannot be negative"
+  ],
+  "PrepMethod.deactivate": [
+    "Prep method is already deactivated"
+  ],
+  "PrepMethod.reactivate": [
+    "Prep method is already active"
+  ],
+  "PrepMethod.update": [
+    "Prep method name is required",
+    "Cannot update a deactivated prep method",
+    "Estimated duration cannot be negative"
+  ],
+  "PrepTask.cancel": [
+    null
+  ],
+  "PrepTask.claim": [
+    "User ID is required",
+    "Task is not claimable",
+    "Task is already claimed"
+  ],
+  "PrepTask.complete": [
+    "Completed quantity must be non-negative",
+    "Can only complete in-progress tasks",
+    "Only claimer can complete task",
+    "Completed quantity cannot exceed total quantity"
+  ],
+  "PrepTask.create": [
+    "Task name is required",
+    "Event ID is required",
+    "Priority must be between 1 and 5"
+  ],
+  "PrepTask.reassign": [
+    null,
+    null,
+    null
+  ],
+  "PrepTask.release": [
+    null,
+    null
+  ],
+  "PrepTask.start": [
+    null,
+    null,
+    null
+  ],
+  "PrepTask.unclaim": [
+    "User ID is required",
+    "Can only unclaim in-progress tasks",
+    "Task is not currently claimed",
+    "Only claimer or manager can unclaim"
+  ],
+  "PrepTask.updatePriority": [
+    "Priority must be between 1 and 5"
+  ],
+  "PrepTask.updateQuantity": [
+    null,
+    null,
+    null
+  ],
+  "PrepTask.updateStatus": [
+    "Invalid status"
+  ],
+  "PrepTaskPlanWorkflow.approvePlan": [
+    null,
+    "No tasks to approve"
+  ],
+  "PrepTaskPlanWorkflow.cancel": [
+    null
+  ],
+  "PrepTaskPlanWorkflow.completeGeneration": [
+    null
+  ],
+  "PrepTaskPlanWorkflow.completeInstantiation": [
+    null
+  ],
+  "PrepTaskPlanWorkflow.completeReview": [
+    null
+  ],
+  "PrepTaskPlanWorkflow.completeScheduling": [
+    null
+  ],
+  "PrepTaskPlanWorkflow.create": [
+    "Workflow already initialized",
+    "Event ID is required",
+    "Idempotency key is required"
+  ],
+  "PrepTaskPlanWorkflow.fail": [
+    null
+  ],
+  "PrepTaskPlanWorkflow.quickApprove": [
+    null,
+    "No tasks to approve"
+  ],
+  "PrepTaskPlanWorkflow.rejectPlan": [
+    null
+  ],
+  "PrepTaskPlanWorkflow.retry": [
+    null,
+    null
+  ],
+  "PrepTaskPlanWorkflow.startApproving": [
+    null,
+    "No tasks approved for instantiation"
+  ],
+  "PrepTaskPlanWorkflow.startGenerating": [
+    null
+  ],
+  "PrepTaskPlanWorkflow.startInstantiating": [
+    null
+  ],
+  "PrepTaskPlanWorkflow.startReviewing": [
+    null,
+    "No tasks to review"
+  ],
+  "PrepTaskPlanWorkflow.startScheduling": [
+    null
+  ],
+  "PreventiveMaintenanceSchedule.complete": [
+    "Cannot complete an inactive maintenance schedule",
+    "Next due date is required for recurrence"
+  ],
+  "PreventiveMaintenanceSchedule.create": [
+    "Schedule title is required",
+    "Frequency is required",
+    "Next due date is required"
+  ],
+  "PreventiveMaintenanceSchedule.deactivate": [
+    "Schedule is already inactive"
+  ],
+  "PreventiveMaintenanceSchedule.update": [
+    "Cannot update an inactive maintenance schedule",
+    "Schedule title is required",
+    "Frequency is required",
+    "Next due date is required"
+  ],
+  "PricingTier.activate": [
+    "Cannot activate a deleted pricing tier",
+    "Pricing tier is already active"
+  ],
+  "PricingTier.create": [
+    "Tier name is required",
+    "Minimum quantity must be at least 1",
+    "Unit cost must be non-negative",
+    "Discount percent must be between 0 and 100"
+  ],
+  "PricingTier.deactivate": [
+    "Cannot deactivate a deleted pricing tier",
+    "Pricing tier is already inactive"
+  ],
+  "PricingTier.softDelete": [
+    "Pricing tier is already deleted"
+  ],
+  "PricingTier.update": [
+    "Cannot update a deleted pricing tier",
+    "Tier name is required",
+    "Minimum quantity must be at least 1",
+    "Unit cost must be non-negative",
+    "Discount percent must be between 0 and 100"
+  ],
+  "ProcurementBudget.close": [
+    "Budget is already closed",
+    "Closing user is required"
+  ],
+  "ProcurementBudget.create": [
+    "Procurement budget management is not enabled",
+    "Budget name is required",
+    "Fiscal year is required",
+    "Period start date is required",
+    "Period end must be after period start",
+    "Budget amount must be positive"
+  ],
+  "ProcurementBudget.recordSpend": [
+    "Cannot record spend against a closed budget",
+    "Spend amount must be positive"
+  ],
+  "ProcurementBudget.update": [
+    "Cannot update a closed budget",
+    "Budget name is required",
+    "Budget amount must be positive"
+  ],
+  "ProcurementBudgetAlert.acknowledge": [
+    "Alert is already acknowledged",
+    "Acknowledging user is required"
+  ],
+  "ProcurementBudgetAlert.create": [
+    "Budget ID is required",
+    "Utilization percentage must be positive",
+    "Alert type is required",
+    "Alert message is required"
+  ],
+  "Proposal.accept": [
+    "Cannot accept a deleted proposal",
+    "Can only accept sent or viewed proposals"
+  ],
+  "Proposal.create": [
+    "Proposal title is required"
+  ],
+  "Proposal.generatePublicLink": [
+    "Cannot generate link for a deleted proposal",
+    "Public link already generated"
+  ],
+  "Proposal.markViewed": [
+    "Can only mark sent proposals as viewed"
+  ],
+  "Proposal.reject": [
+    "Cannot reject a deleted proposal",
+    "Can only reject sent or viewed proposals"
+  ],
+  "Proposal.remove": [
+    "Proposal is already removed"
+  ],
+  "Proposal.send": [
+    "Cannot send a deleted proposal",
+    "Can only send proposals in draft status"
+  ],
+  "Proposal.update": [
+    "Cannot update a deleted proposal",
+    "Can only update proposals in draft status",
+    "Proposal title is required"
+  ],
+  "Proposal.withdraw": [
+    "Cannot withdraw a deleted proposal"
+  ],
+  "ProposalDraft.approve": [
+    "Can only approve sent, viewed, or change_requested proposals"
+  ],
+  "ProposalDraft.create": [
+    "Draft ID is required",
+    "Proposal title is required",
+    "Client name is required"
+  ],
+  "ProposalDraft.generateHtml": [
+    "Can only generate HTML for draft proposals"
+  ],
+  "ProposalDraft.markConverted": [
+    "Can only mark approved proposals as converted"
+  ],
+  "ProposalDraft.markExpired": [
+    "Can only mark sent or viewed proposals as expired"
+  ],
+  "ProposalDraft.recordView": [
+    "Can only record views for sent or viewed proposals"
+  ],
+  "ProposalDraft.refreshToken": [
+    "Can only refresh token for draft or sent proposals"
+  ],
+  "ProposalDraft.requestChanges": [
+    "Can only request changes for sent or viewed proposals",
+    "Change request message is required"
+  ],
+  "ProposalDraft.send": [
+    "Can only send draft proposals",
+    "Invalid delivery method",
+    "Expiration must be between 1 and 90 days"
+  ],
+  "ProposalDraft.update": [
+    "Can only update draft proposals",
+    "Proposal title is required",
+    "Client name is required"
+  ],
+  "ProposalLineItem.create": [
+    "Proposal ID is required",
+    "Description is required",
+    "Quantity must be positive",
+    "Unit price must be non-negative"
+  ],
+  "ProposalLineItem.remove": [
+    "Line item is already removed"
+  ],
+  "ProposalLineItem.update": [
+    "Cannot update a removed line item",
+    "Description is required",
+    "Quantity must be positive",
+    "Unit price must be non-negative"
+  ],
+  "ProposalTemplate.activate": [
+    "Cannot activate a deleted template",
+    "Template is already active"
+  ],
+  "ProposalTemplate.create": [
+    "Template name is required"
+  ],
+  "ProposalTemplate.deactivate": [
+    "Cannot deactivate a deleted template",
+    "Template is already inactive"
+  ],
+  "ProposalTemplate.softDelete": [
+    "Template is already deleted"
+  ],
+  "ProposalTemplate.update": [
+    "Cannot update a deleted template",
+    "Template name is required"
+  ],
+  "PurchaseOrder.approve": [
+    "Can only approve submitted orders"
+  ],
+  "PurchaseOrder.cancel": [
+    "Cannot cancel a received order",
+    "Order is already cancelled"
+  ],
+  "PurchaseOrder.create": [
+    "PO number is required",
+    "Vendor is required",
+    "Location is required"
+  ],
+  "PurchaseOrder.markOrdered": [
+    "Can only mark approved orders as ordered"
+  ],
+  "PurchaseOrder.markReceived": [
+    "Can only receive ordered or partially received orders"
+  ],
+  "PurchaseOrder.reject": [
+    "Can only reject submitted orders",
+    "Rejection reason is required"
+  ],
+  "PurchaseOrder.submit": [
+    "Can only submit draft orders"
+  ],
+  "PurchaseOrder.updateTotals": [
+    "Can only update totals on draft orders"
+  ],
+  "PurchaseOrderItem.create": [
+    "Purchase order ID is required",
+    "Item ID is required",
+    "Quantity must be positive",
+    "Unit cost cannot be negative"
+  ],
+  "PurchaseOrderItem.remove": [
+    "Cannot remove item that has been partially received"
+  ],
+  "PurchaseOrderItem.update": [
+    "Quantity must be positive",
+    "Unit cost cannot be negative"
+  ],
+  "PurchaseRequisition.approveFinance": [
+    "Can only approve requisitions pending finance approval"
+  ],
+  "PurchaseRequisition.approveManager": [
+    "Can only approve requisitions pending manager approval"
+  ],
+  "PurchaseRequisition.cancel": [
+    "Cannot cancel processed requisitions"
+  ],
+  "PurchaseRequisition.completeDraftFromPrepDemand": [
+    "Can only complete draft requisitions",
+    "At least one line item is required",
+    "Subtotal cannot be negative",
+    "Estimated total cannot be negative"
+  ],
+  "PurchaseRequisition.convertToPo": [
+    "Can only convert approved requisitions",
+    "Purchase order ID is required"
+  ],
+  "PurchaseRequisition.create": [
+    "Requisition number is required",
+    "Requester is required",
+    "Required by date is required"
+  ],
+  "PurchaseRequisition.reject": [
+    "Can only reject pending requisitions",
+    "Rejection reason is required"
+  ],
+  "PurchaseRequisition.submit": [
+    "Can only submit draft requisitions"
+  ],
+  "PurchaseRequisition.update": [
+    "Can only update draft requisitions"
+  ],
+  "PurchaseRequisitionItem.create": [
+    "Requisition ID is required",
+    "Item ID is required",
+    "Quantity must be positive",
+    "Unit cost cannot be negative"
+  ],
+  "PurchaseRequisitionItem.update": [
+    "Quantity must be positive",
+    "Unit cost cannot be negative"
+  ],
+  "QACheck.complete": [
+    "Check must be pending or awaiting reinspection",
+    "Use the fail command to record a failing check"
+  ],
+  "QACheck.create": [
+    "Invalid check type"
+  ],
+  "QACheck.fail": [
+    "Check must be pending or awaiting reinspection",
+    "Inspector is required"
+  ],
+  "QACheck.reinspect": [
+    "Check must be in reinspection_required state",
+    "Invalid reinspection result",
+    "Inspector is required"
+  ],
+  "QACheck.requireReinspection": [
+    "Only a completed check can be flagged for reinspection",
+    "Reason for reinspection is required"
+  ],
+  "QACorrectiveAction.assign": [
+    "Can only assign an open or escalated action",
+    "Assignee is required"
+  ],
+  "QACorrectiveAction.create": [
+    "Description is required",
+    "Invalid severity"
+  ],
+  "QACorrectiveAction.dismiss": [
+    "Only open or in-progress actions can be dismissed",
+    "Dismissal reason is required"
+  ],
+  "QACorrectiveAction.escalate": [
+    "Only open or in-progress actions can be escalated",
+    "Escalation target is required",
+    "Escalation reason is required"
+  ],
+  "QACorrectiveAction.markResolved": [
+    "Only open or active actions can be resolved",
+    "Resolution notes are required"
+  ],
+  "QATemperatureLog.log": [
+    "Log type is required",
+    "Invalid log type",
+    "Temperature is required"
+  ],
+  "QualityCheck.create": [
+    "Check number is required",
+    "Title is required",
+    "Check type is required",
+    "Performer employee ID is required"
+  ],
+  "QualityCheck.fail": [
+    "Quality check must be pending to fail",
+    "Failure notes are required"
+  ],
+  "QualityCheck.pass": [
+    "Quality check must be pending to pass"
+  ],
+  "QualityCheck.reinspect": [
+    "Only a completed quality check can be re-inspected",
+    "Requester employee ID is required"
+  ],
+  "QualityCheckItem.create": [
+    "Quality check ID is required",
+    "Item name is required",
+    "Criterion description is required",
+    "Sort order cannot be negative"
+  ],
+  "QualityCheckItem.recordResult": [
+    "Recorder employee ID is required"
+  ],
+  "RateLimitConfig.create": [
+    "Rate limit name is required",
+    "Endpoint pattern is required",
+    "Window duration must be positive",
+    "Maximum requests must be positive",
+    "Burst allowance cannot be negative",
+    "Priority must be between 0 and 100"
+  ],
+  "RateLimitConfig.softDelete": [
+    "Cannot modify deleted rate limit configuration"
+  ],
+  "RateLimitConfig.turnOff": [
+    "Cannot modify deleted rate limit configuration"
+  ],
+  "RateLimitConfig.turnOn": [
+    "Cannot modify deleted rate limit configuration"
+  ],
+  "RateLimitConfig.update": [
+    "Cannot update deleted rate limit configuration"
+  ],
+  "Recipe.activate": [
+    "Recipe is already active"
+  ],
+  "Recipe.create": [
+    "Recipe name is required"
+  ],
+  "Recipe.deactivate": [
+    "Recipe is already inactive"
+  ],
+  "Recipe.update": [
+    "Recipe name is required"
+  ],
+  "RecipeIngredient.create": [
+    "Recipe version ID is required",
+    "Ingredient ID is required",
+    "Quantity must be positive",
+    "Unit is required"
+  ],
+  "RecipeIngredient.updateQuantity": [
+    "Quantity must be positive"
+  ],
+  "RecipeIngredient.updateWasteFactor": [
+    "Waste factor must be greater than 0"
+  ],
+  "RecipeStep.create": [
+    "Recipe version ID is required",
+    "Step number must be positive",
+    "Instruction is required"
+  ],
+  "RecipeStep.updateInstruction": [
+    "Instruction is required"
+  ],
+  "RecipeVersion.approve": [
+    "Only a published version can be approved",
+    "Approver ID is required",
+    "Version is already approved"
+  ],
+  "RecipeVersion.create": [
+    "Yield quantity must be positive",
+    "Yield unit is required",
+    "Difficulty must be between 1 (easy) and 5 (expert)"
+  ],
+  "RecipeVersion.markPublished": [
+    "Only a draft version can be published"
+  ],
+  "RecipeVersion.restore": [
+    "Source version ID is required",
+    "Version number must be positive"
+  ],
+  "RecipeVersion.retract": [
+    "Only a published version can be retracted"
+  ],
+  "RecipeVersion.updateCosts": [
+    "Total cost cannot be negative"
+  ],
+  "ReorderSuggestion.accept": [
+    "Can only accept pending suggestions",
+    "Accepting user is required"
+  ],
+  "ReorderSuggestion.autoAccept": [
+    "Can only auto-accept pending suggestions",
+    "Trigger source is required"
+  ],
+  "ReorderSuggestion.create": [
+    "Inventory item ID is required",
+    "Suggested quantity must be positive",
+    "Reason is required"
+  ],
+  "ReorderSuggestion.dismiss": [
+    "Can only dismiss pending suggestions",
+    "Dismissing user is required"
+  ],
+  "Report.create": [
+    "Report name is required",
+    "Report type is required"
+  ],
+  "Report.remove": [
+    "Report is already removed"
+  ],
+  "Report.share": [
+    "Cannot share a deleted report",
+    "Report is already shared"
+  ],
+  "Report.update": [
+    "Cannot update a deleted report",
+    "Report name is required",
+    "Report type is required"
+  ],
+  "RevenueRecognitionLine.cancel": [
+    "Can only cancel pending lines"
+  ],
+  "RevenueRecognitionLine.create": [
+    "Schedule ID is required",
+    "Line amount must be positive",
+    "Sequence must be non-negative"
+  ],
+  "RevenueRecognitionLine.recognize": [
+    "Can only recognize pending lines",
+    "Recognition amount must be positive",
+    "Cannot recognize more than line amount"
+  ],
+  "RevenueRecognitionLine.reverse": [
+    "Can only reverse recognized lines"
+  ],
+  "RevenueRecognitionLine.skip": [
+    "Can only skip pending lines"
+  ],
+  "RevenueRecognitionSchedule.adjustSchedule": [
+    "Cannot adjust completed recognition",
+    "New end date must be in the future"
+  ],
+  "RevenueRecognitionSchedule.cancel": [
+    "Cannot cancel completed recognition"
+  ],
+  "RevenueRecognitionSchedule.completeIfAllMilestones": [
+    "Can only complete milestone-based schedules",
+    "Can only complete in-progress recognition",
+    "Not all milestones completed"
+  ],
+  "RevenueRecognitionSchedule.completeIfFullyRecognized": [
+    "Can only complete in-progress recognition",
+    "Not fully recognized yet"
+  ],
+  "RevenueRecognitionSchedule.completeIfPercentageFull": [
+    "Only for percentage-based methods",
+    "Can only complete in-progress recognition",
+    "Not fully recognized yet"
+  ],
+  "RevenueRecognitionSchedule.create": [
+    "Invoice ID is required",
+    "Contract ID is required",
+    "Total amount must be positive",
+    "End date must be after start date"
+  ],
+  "RevenueRecognitionSchedule.pause": [
+    "Can only pause in-progress recognition"
+  ],
+  "RevenueRecognitionSchedule.recognizeAmount": [
+    "Recognition must be in progress",
+    "Recognition amount must be positive",
+    "Cannot recognize more than remaining amount"
+  ],
+  "RevenueRecognitionSchedule.recognizeMilestone": [
+    "Can only recognize milestones for milestone-based schedules",
+    "Recognition must be in progress",
+    "All milestones already completed"
+  ],
+  "RevenueRecognitionSchedule.recognizePercentage": [
+    "Percentage recognition only for percentage-based methods",
+    "Percentage must be between 0 and 100",
+    "Recognition must be in progress",
+    "Target percentage already reached"
+  ],
+  "RevenueRecognitionSchedule.resume": [
+    "Can only resume paused recognition"
+  ],
+  "RevenueRecognitionSchedule.reverseRecognition": [
+    "Can only reverse active or completed recognition",
+    "Recognized amount must be non-negative",
+    "Remaining amount must be non-negative"
+  ],
+  "RevenueRecognitionSchedule.startRecognition": [
+    "Can only start pending recognition",
+    "Cannot start before start date"
+  ],
+  "RolePolicy.create": [
+    "Role ID is required"
+  ],
+  "RolePolicy.grant": [
+    "Cannot grant permissions on a deleted role policy",
+    "Permission is required"
+  ],
+  "RolePolicy.revoke": [
+    "Cannot revoke permissions on a deleted role policy",
+    "Permission is required"
+  ],
+  "RolePolicy.update": [
+    "Cannot update a deleted role policy"
+  ],
+  "RouteStop.complete": [
+    "Stop must be in arrived state before completing"
+  ],
+  "RouteStop.create": [
+    "Delivery route ID is required",
+    "Stop name is required",
+    "Scheduled arrival time is required"
+  ],
+  "RouteStop.markArrived": [
+    "Only pending stops can be marked arrived"
+  ],
+  "RouteStop.reorder": [
+    "Only pending stops can be reordered",
+    "Stop number must be non-negative"
+  ],
+  "SampleData.clear": [
+    "User ID is required",
+    "No sample data to clear"
+  ],
+  "SampleData.reseed": [
+    "User ID is required"
+  ],
+  "SampleData.seed": [
+    "User ID is required",
+    "Sample data already exists for this tenant"
+  ],
+  "Schedule.approve": [
+    "Only draft schedules can be approved",
+    "Cannot approve a schedule with no shifts",
+    "Approver ID is required"
+  ],
+  "Schedule.close": [
+    "Can only close published schedules"
+  ],
+  "Schedule.create": [
+    "Schedule date is required"
+  ],
+  "Schedule.release": [
+    "Can only publish draft or approved schedules"
+  ],
+  "Schedule.reopen": [
+    "Only an approved schedule can be reopened",
+    "Reason for reopening is required"
+  ],
+  "Schedule.syncShiftCount": [
+    "Shift count must be non-negative"
+  ],
+  "Schedule.update": [
+    "Can only update draft or approved schedules"
+  ],
+  "ScheduleShift.acceptSwap": [
+    "No pending swap offer to accept",
+    "Accepting employee ID is required"
+  ],
+  "ScheduleShift.cancelSwap": [
+    "No pending swap offer to cancel"
+  ],
+  "ScheduleShift.create": [
+    "Schedule ID is required",
+    "Employee ID is required",
+    "Shift start time is required",
+    "Shift end must be after shift start"
+  ],
+  "ScheduleShift.declineSwap": [
+    "No pending swap offer to decline"
+  ],
+  "ScheduleShift.offerSwap": [
+    "Cannot offer swap on a removed shift",
+    "Shift already has a pending swap offer",
+    "Target employee ID is required",
+    "Cannot offer a swap to yourself"
+  ],
+  "ScheduleShift.update": [
+    "Shift end must be after shift start",
+    "Cannot update a removed shift"
+  ],
+  "Shipment.cancel": [
+    "Only managers and logistics staff can cancel shipments",
+    "Cannot cancel a delivered shipment",
+    "Shipment is already cancelled",
+    "Cancellation reason is required"
+  ],
+  "Shipment.create": [
+    "Scheduled date is required"
+  ],
+  "Shipment.markDelivered": [
+    "Can only deliver in-transit or scheduled shipments"
+  ],
+  "Shipment.schedule": [
+    "Can only schedule draft shipments"
+  ],
+  "Shipment.ship": [
+    "Can only ship shipments that are being prepared"
+  ],
+  "Shipment.startPreparing": [
+    "Can only start preparing scheduled shipments"
+  ],
+  "Shipment.update": [
+    "Cannot update a delivered shipment",
+    "Cannot update a cancelled shipment"
+  ],
+  "ShipmentItem.create": [
+    "Shipment ID is required",
+    "Item ID is required",
+    "Quantity shipped must be positive"
+  ],
+  "ShipmentItem.softDelete": [
+    "Item is already deleted"
+  ],
+  "ShipmentItem.update": [
+    "Quantity shipped must be positive"
+  ],
+  "ShipmentItem.updateReceived": [
+    "Quantity received cannot be negative"
+  ],
+  "SmsAutomationRule.activate": [
+    "Cannot activate a deleted rule",
+    "Rule is already active"
+  ],
+  "SmsAutomationRule.create": [
+    "Rule name is required",
+    "Trigger type is required",
+    "Either template or custom message is required"
+  ],
+  "SmsAutomationRule.deactivate": [
+    "Cannot deactivate a deleted rule",
+    "Rule is already inactive"
+  ],
+  "SmsAutomationRule.softDelete": [
+    "Rule is already deleted"
+  ],
+  "SmsAutomationRule.update": [
+    "Cannot update a deleted rule",
+    "Rule name is required",
+    "Either template or custom message is required"
+  ],
+  "StaffMember.changeRole": [
+    "Cannot change the role of an inactive staff member",
+    "Role is required"
+  ],
+  "StaffMember.create": [
+    "Display name is required"
+  ],
+  "StaffMember.deactivate": [
+    "Staff member is already inactive"
+  ],
+  "StaffMember.reactivate": [
+    "Staff member is already active"
+  ],
+  "StaffMember.updateProfile": [
+    "Cannot update an inactive staff member"
+  ],
+  "StaffPerformance.acknowledge": [
+    "Only a completed review can be acknowledged"
+  ],
+  "StaffPerformance.complete": [
+    "Review must be draft or in_review to complete",
+    "Rating must be between 0 and 5"
+  ],
+  "StaffPerformance.create": [
+    "Employee ID is required",
+    "Invalid review type"
+  ],
+  "StaffPerformance.remove": [
+    "Only draft reviews can be removed"
+  ],
+  "StaffPerformance.sendBackToDraft": [
+    "Only in-review reviews can be sent back to draft",
+    "Reason for sending back is required"
+  ],
+  "StaffPerformance.submitForReview": [
+    "Only draft reviews can be submitted for review",
+    "A reviewer must be assigned before submission"
+  ],
+  "StaffPerformance.update": [
+    "Cannot update a completed review",
+    "Invalid review type"
+  ],
+  "StaffTrainingSignal.recordSchedulabilityGranted": [
+    null,
+    null,
+    null
+  ],
+  "StaffTrainingSignal.recordWaiverLogged": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "Station.activate": [
+    "Station is already active"
+  ],
+  "Station.assignTask": [
+    "Task ID is required",
+    "Task name is required",
+    "Cannot assign tasks to an inactive station",
+    "Cannot assign tasks to a station in maintenance"
+  ],
+  "Station.create": [
+    "Station name is required",
+    "Location ID is required",
+    "Capacity must be positive"
+  ],
+  "Station.deactivate": [
+    "Station is already inactive"
+  ],
+  "Station.endMaintenance": [
+    "Station is not in maintenance"
+  ],
+  "Station.removeTask": [
+    "Task ID is required"
+  ],
+  "Station.startMaintenance": [
+    "Cannot put an inactive station into maintenance",
+    "Station is already in maintenance",
+    "Maintenance reason is required"
+  ],
+  "Station.syncTaskCount": [
+    "Task count must be non-negative"
+  ],
+  "Station.updateCapacity": [
+    "Capacity must be positive"
+  ],
+  "Station.updateEquipment": [
+    "Equipment list cannot be null"
+  ],
+  "StorageLocation.create": [
+    "Location ID is required",
+    "Storage location name is required",
+    "Storage type is required"
+  ],
+  "StorageLocation.deactivate": [
+    "Storage location is already deactivated"
+  ],
+  "StorageLocation.update": [
+    "Cannot update a deactivated storage location",
+    "Storage location name is required",
+    "Storage type is required"
+  ],
+  "TaskBundle.archive": [
+    "Task bundle is already archived"
+  ],
+  "TaskBundle.create": [
+    "Task bundle name is required"
+  ],
+  "TaskBundle.update": [
+    "Cannot update an archived task bundle",
+    "Task bundle name is required"
+  ],
+  "TaskBundleItem.addItem": [
+    "Task bundle ID is required",
+    "Kitchen task ID is required",
+    "Sort order cannot be negative"
+  ],
+  "TaskBundleItem.removeItem": [
+    "Remover employee ID is required"
+  ],
+  "TemperatureLog.create": [
+    "Equipment ID is required",
+    "Log number is required",
+    "Log type is required",
+    "Recorder employee ID is required"
+  ],
+  "TemperatureProbe.calibrate": [
+    "Cannot calibrate an inactive probe",
+    "Calibrator ID is required"
+  ],
+  "TemperatureProbe.create": [
+    "Probe name is required",
+    "Probe hardware ID is required",
+    "minTemp must be less than maxTemp"
+  ],
+  "TemperatureProbe.deactivate": [
+    "Probe is already inactive"
+  ],
+  "TemperatureProbe.updateThresholds": [
+    "Cannot update thresholds on an inactive probe",
+    "minTemp must be less than maxTemp"
+  ],
+  "TemperatureReading.create": [
+    "Probe ID is required"
+  ],
+  "TimeEntry.addEntry": [
+    "Employee ID is required",
+    "Clock-in time is required",
+    "Clock-out must be after clock-in"
+  ],
+  "TimeEntry.applyEdit": [
+    "Cannot edit a deleted time entry"
+  ],
+  "TimeEntry.clockIn": [
+    "Employee ID is required"
+  ],
+  "TimeEntry.clockOut": [
+    "Must be clocked in to clock out"
+  ],
+  "TimeEntry.softDelete": [
+    "Time entry is already deleted"
+  ],
+  "TimeOffRequest.approve": [
+    "Cannot approve a deleted request",
+    "Can only approve pending requests",
+    "Processor ID is required"
+  ],
+  "TimeOffRequest.attachBalance": [
+    "Can only attach balance to a pending request",
+    "Balance snapshot cannot be negative",
+    "Balance unit is required (e.g. hours, days)"
+  ],
+  "TimeOffRequest.cancel": [
+    "Cannot cancel a deleted request",
+    "Can only cancel pending or approved requests"
+  ],
+  "TimeOffRequest.create": [
+    "Employee ID is required",
+    "Start date is required",
+    "End date is required",
+    "Request type is required"
+  ],
+  "TimeOffRequest.reconsider": [
+    "Cannot reconsider a deleted request",
+    "Can only reconsider rejected requests",
+    "Reason for reconsideration is required"
+  ],
+  "TimeOffRequest.reject": [
+    "Cannot reject a deleted request",
+    "Can only reject pending requests",
+    "Processor ID is required",
+    "Rejection reason is required"
+  ],
+  "TimeOffRequest.softDelete": [
+    "Request is already deleted",
+    "Can only delete pending or cancelled requests"
+  ],
+  "TimecardApproval.approve": [
+    "Only pending approvals can be approved",
+    "Approver ID is required"
+  ],
+  "TimecardApproval.bulkApprove": [
+    "Only pending timecards can be bulk-approved",
+    "Approver ID is required"
+  ],
+  "TimecardApproval.create": [
+    "Employee ID is required",
+    "Payroll run ID is required",
+    "Submitter ID is required"
+  ],
+  "TimecardApproval.reject": [
+    "Only pending approvals can be rejected",
+    "Reviewer ID is required",
+    "Rejection reason is required"
+  ],
+  "TimecardEditRequest.approve": [
+    "Can only approve pending requests"
+  ],
+  "TimecardEditRequest.create": [
+    "Time entry ID is required",
+    "Employee ID is required",
+    "Reason is required"
+  ],
+  "TimecardEditRequest.reject": [
+    "Can only reject pending requests"
+  ],
+  "TimelineTask.blockTask": [
+    "Can only block in-progress tasks",
+    "Block reason is required"
+  ],
+  "TimelineTask.complete": [
+    "Can only complete in-progress tasks"
+  ],
+  "TimelineTask.create": [
+    "Event ID is required",
+    "Task title is required"
+  ],
+  "TimelineTask.reassign": [
+    "Cannot reassign a completed task",
+    "Assignee is required"
+  ],
+  "TimelineTask.remove": [
+    "Cannot remove a task that is in progress"
+  ],
+  "TimelineTask.reorder": [
+    "Sort order cannot be negative",
+    "Cannot reorder a completed task"
+  ],
+  "TimelineTask.start": [
+    "Can only start pending tasks"
+  ],
+  "TimelineTask.unblockTask": [
+    "Can only unblock blocked tasks"
+  ],
+  "TipPool.allocate": [
+    "Only open tip pools can be allocated",
+    "Total tips cannot be negative"
+  ],
+  "TipPool.close": [
+    "Only allocated or distributed tip pools can be closed"
+  ],
+  "TipPool.create": [
+    "Payroll period ID is required",
+    "Total tips cannot be negative"
+  ],
+  "TipPool.distribute": [
+    "Only allocated tip pools can be distributed",
+    "Employee ID is required",
+    "Distribution amount must be positive",
+    "Distribution amount cannot exceed undistributed balance",
+    "Distributor ID is required"
+  ],
+  "TipPool.finalizeDistribution": [
+    "Only allocated tip pools can be finalized",
+    "Distributor ID is required"
+  ],
+  "TrainingAssignment.applyFirstShiftDueDate": [
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  "TrainingAssignment.create": [
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  "TrainingAssignment.markOverdue": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  "TrainingAssignment.start": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "TrainingAssignment.submitFailedAttempt": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  "TrainingAssignment.submitFinalFailedAttempt": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  "TrainingAssignment.submitPassingAttempt": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  "TrainingAssignment.waive": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  "TrainingAttempt.create": [
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  "TrainingCompletion.create": [
+    "Employee ID is required",
+    "Assignment ID is required",
+    "Training module ID is required",
+    "Score must be between 0 and 100"
+  ],
+  "TrainingModule.archive": [
+    null,
+    null,
+    null
+  ],
+  "TrainingModule.create": [
+    null,
+    null
+  ],
+  "TrainingModule.createVersion": [
+    null,
+    null,
+    null
+  ],
+  "TrainingModule.markPublished": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "TrainingModule.softDelete": [
+    null,
+    null
+  ],
+  "TrainingModule.unarchive": [
+    null,
+    null
+  ],
+  "TrainingModule.update": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "TrainingQuestion.create": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "TrainingQuestion.deactivate": [
+    null
+  ],
+  "User.create": [
+    "Email is required",
+    "First name is required",
+    "Last name is required"
+  ],
+  "User.deactivate": [
+    "User is already inactive"
+  ],
+  "User.reactivate": [
+    "User is already active",
+    "Cannot reactivate a deleted user"
+  ],
+  "User.softDelete": [
+    "User is already deleted"
+  ],
+  "User.terminate": [
+    "User is already inactive"
+  ],
+  "User.update": [
+    "Cannot update an inactive user"
+  ],
+  "User.updateRole": [
+    "Cannot update role for an inactive user",
+    "Role is required"
+  ],
+  "VarianceReport.approve": [
+    "Can only approve reviewed reports"
+  ],
+  "VarianceReport.create": [
+    "Session ID is required",
+    "Item ID is required"
+  ],
+  "VarianceReport.reject": [
+    "Can only reject pending or reviewed reports",
+    "Rejection reason is required"
+  ],
+  "VarianceReport.review": [
+    "Can only review pending reports"
+  ],
+  "VarianceReport.updateDiscrepancy": [
+    "Cannot update discrepancy with status outside pending/reviewed"
+  ],
+  "Vehicle.create": [
+    "Make is required",
+    "Model is required"
+  ],
+  "Vehicle.decommission": [
+    "Vehicle is already out of service",
+    "Cannot decommission a vehicle currently in use"
+  ],
+  "Vehicle.remove": [
+    "Vehicle is already removed",
+    "Only out-of-service vehicles can be deleted"
+  ],
+  "Vehicle.returnFromMaintenance": [
+    "Vehicle is not in maintenance"
+  ],
+  "Vehicle.sendToMaintenance": [
+    "Vehicle must be available or out of service to send to maintenance",
+    "Reason is required"
+  ],
+  "Vehicle.setAvailable": [
+    "Only in-use vehicles are freed by dispatch completion"
+  ],
+  "Vehicle.setInUse": [
+    "Only available vehicles can be put in use"
+  ],
+  "Vehicle.update": [
+    "Make is required",
+    "Model is required"
+  ],
+  "Vendor.addContact": [
+    "Contact name is required",
+    "Cannot add contacts to a blacklisted vendor"
+  ],
+  "Vendor.approve": [
+    "Blacklisted vendors cannot be approved",
+    "Approving user is required"
+  ],
+  "Vendor.blacklist": [
+    "Vendor is already blacklisted",
+    "Blacklist reason is required"
+  ],
+  "Vendor.create": [
+    "Vendor name is required"
+  ],
+  "Vendor.rate": [
+    "Rating must be between 1 and 5"
+  ],
+  "Vendor.remove": [
+    "Cannot deactivate a blacklisted vendor through this command",
+    "Reason is required"
+  ],
+  "Vendor.suspend": [
+    "Only active vendors can be suspended",
+    "Suspension reason is required"
+  ],
+  "Vendor.update": [
+    "Vendor name is required"
+  ],
+  "VendorCatalog.create": [
+    "Item number is required",
+    "Item name is required",
+    "Invalid unit of measure",
+    "Unit cost must be non-negative"
+  ],
+  "VendorCatalog.deactivate": [
+    "Catalog entry is already inactive",
+    "Catalog entry is deleted"
+  ],
+  "VendorCatalog.reactivate": [
+    "Catalog entry is already active",
+    "Cannot reactivate a deleted catalog entry",
+    "Reactivating user is required"
+  ],
+  "VendorCatalog.softDelete": [
+    "Catalog entry is already deleted"
+  ],
+  "VendorCatalog.update": [
+    "Cannot update a deleted catalog entry"
+  ],
+  "VendorCatalog.updatePrice": [
+    "Cannot update price on a deleted catalog entry",
+    "Cannot update price on an inactive catalog entry",
+    "Unit cost must be non-negative"
+  ],
+  "VendorContact.create": [
+    "Supplier ID is required",
+    "Contact name is required"
+  ],
+  "VendorContact.remove": [
+    "Removing user is required"
+  ],
+  "VendorContact.update": [
+    "Contact name is required"
+  ],
+  "VendorContract.activate": [
+    "Contract is ready or already active",
+    "Cannot activate before start date"
+  ],
+  "VendorContract.approve": [
+    "Can only approve contracts pending approval"
+  ],
+  "VendorContract.create": [
+    "Contract number is required",
+    "Vendor is required",
+    "Start date is required"
+  ],
+  "VendorContract.recordSlaBreach": [
+    "Can only record breaches for active contracts"
+  ],
+  "VendorContract.reject": [
+    "Can only reject contracts pending approval",
+    "Rejection reason is required"
+  ],
+  "VendorContract.renew": [
+    "Can only renew active contracts",
+    "Contract must have auto-renewal enabled"
+  ],
+  "VendorContract.submit": [
+    "Can only submit draft contracts"
+  ],
+  "VendorContract.terminate": [
+    "Can only terminate active contracts",
+    "Termination reason is required"
+  ],
+  "VendorContract.update": [
+    "Can only update draft contracts"
+  ],
+  "VendorContract.updateCompliance": [
+    "Can only update compliance for active contracts",
+    "Compliance score must be between 0 and 100",
+    "Delivery rate must be between 0 and 100",
+    "Quality rating must be between 0 and 5"
+  ],
+  "VendorRating.create": [
+    "Supplier ID is required",
+    "Rating category is required",
+    "Score must be between 0 and 5"
+  ],
+  "VendorRating.update": [
+    "Score must be between 0 and 5"
+  ],
+  "Venue.activate": [
+    "Venue is already active"
+  ],
+  "Venue.create": [
+    "Venue name is required",
+    "Capacity cannot be negative"
+  ],
+  "Venue.deactivate": [
+    "Venue is already deactivated"
+  ],
+  "Venue.softDelete": [
+    "Venue is already deleted"
+  ],
+  "Venue.update": [
+    "Cannot update a deleted venue",
+    "Venue name is required",
+    "Capacity cannot be negative"
+  ],
+  "Venue.updateCapacity": [
+    "Cannot update capacity of a deactivated venue",
+    "Capacity cannot be negative"
+  ],
+  "VersionApproval.approve": [
+    "Can only approve pending requests"
+  ],
+  "VersionApproval.cancel": [
+    "Can only cancel pending requests"
+  ],
+  "VersionApproval.create": [
+    "Entity version ID is required",
+    "Approver ID is required"
+  ],
+  "VersionApproval.reject": [
+    "Can only reject pending requests"
+  ],
+  "VersionedEntity.lock": [
+    "Entity is already locked"
+  ],
+  "VersionedEntity.register": [
+    "Entity type is required",
+    "Entity ID is required",
+    "Entity name is required"
+  ],
+  "VersionedEntity.unlock": [
+    "Entity is not locked"
+  ],
+  "VersionedEntity.updateName": [
+    "New name is required",
+    "Cannot update name while entity is locked"
+  ],
+  "WasteEntry.approve": [
+    "Can only approve logged waste entries",
+    "Cannot approve a deleted waste entry",
+    "Approving user is required"
+  ],
+  "WasteEntry.create": [
+    "Inventory item is required",
+    "Waste reason is required",
+    "Quantity must be positive",
+    "Unit cost cannot be negative"
+  ],
+  "WasteEntry.softDelete": [
+    "Waste entry is already deleted"
+  ],
+  "WasteEntry.update": [
+    "Cannot update a deleted waste entry",
+    "Quantity must be positive",
+    "Unit cost cannot be negative"
+  ],
+  "WasteEntry.voidEntry": [
+    "Can only void logged or approved entries",
+    "Entry is already deleted",
+    "Voiding user is required",
+    "Void reason is required"
+  ],
+  "WorkOrder.assign": [
+    "Assignee is required",
+    "Work order must be open to assign"
+  ],
+  "WorkOrder.cancel": [
+    "Cannot cancel a completed or already cancelled work order",
+    "Cancellation reason is required"
+  ],
+  "WorkOrder.complete": [
+    "User ID is required",
+    "Work order must be in progress to complete"
+  ],
+  "WorkOrder.create": [
+    "Title is required",
+    "Equipment ID is required",
+    "Invalid work order type",
+    "Invalid priority level"
+  ],
+  "WorkOrder.reschedule": [
+    "Scheduled date must be valid",
+    "Cannot reschedule a closed work order"
+  ],
+  "WorkOrder.start": [
+    "User ID is required",
+    "Work order must be open or assigned to start"
+  ],
+  "WorkOrder.updatePriority": [
+    "Invalid priority level",
+    "Cannot reprioritize a closed work order"
+  ],
+  "Workflow.activate": [
+    "Workflow is already active"
+  ],
+  "Workflow.create": [
+    "Workflow name is required",
+    "Trigger type is required"
+  ],
+  "Workflow.deactivate": [
+    "Workflow is already inactive"
+  ],
+  "Workflow.update": [
+    "Workflow name is required",
+    "Cannot update an active workflow - deactivate first"
+  ],
+  "WorkforceOptimization.complete": [
+    "Can only complete in-progress optimizations"
+  ],
+  "WorkforceOptimization.create": [
+    "Location ID is required",
+    "Optimization type is required"
+  ],
+  "WorkforceOptimization.start": [
+    "Can only start pending optimizations"
+  ]
+}

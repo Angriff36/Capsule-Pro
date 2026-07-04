@@ -20,14 +20,9 @@ import {
   SheetTitle,
 } from "@repo/design-system/components/ui/sheet";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import {
-  AlertTriangle,
-  Clock,
-  Lightbulb,
-  Thermometer,
-  Wrench,
-} from "lucide-react";
-import { useState } from "react";
+import { Clock, Info, Lightbulb, Thermometer, Wrench } from "lucide-react";
+import { useEffect, useState } from "react";
+import { getUnitOptions, type UnitOption } from "./units-action";
 
 interface Ingredient {
   id?: string;
@@ -109,9 +104,20 @@ const COMMON_EQUIPMENT = [
   "Charbroiler",
 ];
 
+/**
+ * Result contract for onSave: `ok: false` keeps the modal open;
+ * a `message` is rendered inline near the footer. `ok: false` without
+ * a message keeps the modal open silently (e.g. constraint-override
+ * dialogs handled by the caller).
+ */
+export interface RecipeSaveResult {
+  message?: string;
+  ok: boolean;
+}
+
 interface RecipeEditModalProps {
   onOpenChange: (open: boolean) => void;
-  onSave?: (data: FormData) => Promise<void>;
+  onSave?: (data: FormData) => Promise<RecipeSaveResult>;
   open: boolean;
   recipe?: {
     id?: string;
@@ -214,6 +220,7 @@ function EquipmentChip({
 function IngredientRow({
   ingredient,
   index,
+  units,
   onUpdate,
   onRemove,
   onMoveUp,
@@ -221,6 +228,7 @@ function IngredientRow({
 }: {
   ingredient: Ingredient;
   index: number;
+  units: UnitOption[];
   onUpdate: (index: number, field: keyof Ingredient, value: string) => void;
   onRemove: (index: number) => void;
   onMoveUp: (index: number) => void;
@@ -252,16 +260,35 @@ function IngredientRow({
       <div className="grid flex-1 grid-cols-12 gap-2">
         <Input
           className="col-span-3"
+          inputMode="decimal"
+          min="0"
           onChange={(e) => onUpdate(index, "quantity", e.target.value)}
           placeholder="Qty"
+          step="any"
+          type="number"
           value={ingredient.quantity}
         />
-        <Input
-          className="col-span-3"
-          onChange={(e) => onUpdate(index, "unit", e.target.value)}
-          placeholder="Unit"
+        <Select
+          onValueChange={(value) => onUpdate(index, "unit", value)}
           value={ingredient.unit}
-        />
+        >
+          <SelectTrigger aria-label="Unit" className="col-span-3">
+            <SelectValue placeholder="Unit" />
+          </SelectTrigger>
+          <SelectContent>
+            {ingredient.unit &&
+              !units.some((u) => u.code === ingredient.unit) && (
+                <SelectItem value={ingredient.unit}>
+                  {ingredient.unit}
+                </SelectItem>
+              )}
+            {units.map((u) => (
+              <SelectItem key={u.id} value={u.code}>
+                {u.code} - {u.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Input
           className="col-span-5"
           onChange={(e) => onUpdate(index, "name", e.target.value)}
@@ -358,8 +385,7 @@ function StepRow({
         <div className="flex items-center gap-2">
           <Label className="font-medium text-sm">Step {index + 1}</Label>
           {isCCP && (
-            <Badge className="gap-1 bg-amber-500" variant="default">
-              <AlertTriangle className="h-3 w-3" />
+            <Badge className="border-coral-soft text-coral" variant="outline">
               CCP
             </Badge>
           )}
@@ -528,16 +554,16 @@ function StepRow({
           )}
         </div>
 
-        {/* CCP checkbox for temperature verification */}
-        {step.temperature_value !== null &&
-          step.temperature_value !== undefined && (
-            <div className="flex items-center gap-2 rounded-md border border-amber-900/20 bg-amber-900/10 p-2">
-              <AlertTriangle className="h-4 w-4 text-amber-700" />
-              <span className="text-amber-900 text-sm">
-                Critical Control Point: Temperature verification required
-              </span>
-            </div>
-          )}
+        {/* Informational food-safety checkpoint notice */}
+        {isCCP && (
+          <div className="flex items-start gap-2 rounded-md border border-hairline bg-pale-blue/50 p-2">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-action-blue" />
+            <span className="text-ink text-sm">
+              Food-safety checkpoint (≥135°F): temperature will require
+              verification during cooking.
+            </span>
+          </div>
+        )}
 
         {/* Remove step button */}
         <Button
@@ -603,6 +629,43 @@ export const RecipeEditModal = ({
     Record<number, string>
   >({});
   const [showTipsMap, setShowTipsMap] = useState<Record<number, boolean>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [yieldQtyError, setYieldQtyError] = useState<string | null>(null);
+  const [units, setUnits] = useState<UnitOption[]>([]);
+  const [yieldUnitId, setYieldUnitId] = useState("");
+
+  const recipeYieldUnit = recipe?.yieldUnit;
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    let cancelled = false;
+    getUnitOptions()
+      .then((loaded) => {
+        if (cancelled) {
+          return;
+        }
+        setUnits(loaded);
+        const currentCode = recipeYieldUnit?.toLowerCase();
+        const selected =
+          (currentCode
+            ? loaded.find((u) => u.code.toLowerCase() === currentCode)
+            : undefined) ??
+          loaded.find((u) => u.code.toLowerCase() === "servings") ??
+          loaded.find((u) => u.code.toLowerCase() === "each") ??
+          loaded[0];
+        if (selected) {
+          setYieldUnitId(String(selected.id));
+        }
+      })
+      .catch(() => {
+        // Units stay empty; yieldUnitId is simply omitted from the payload.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, recipeYieldUnit]);
 
   const handleAddTag = () => {
     const trimmed = tagInput.trim();
@@ -630,7 +693,11 @@ export const RecipeEditModal = ({
     value: string
   ) => {
     const updated = [...ingredients];
-    updated[index] = { ...updated[index], [field]: value };
+    const current = updated[index];
+    if (!current) {
+      return;
+    }
+    updated[index] = { ...current, [field]: value };
     setIngredients(updated);
   };
 
@@ -644,7 +711,13 @@ export const RecipeEditModal = ({
       return;
     }
     const updated = [...ingredients];
-    [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
+    const moved = updated[index];
+    const swapped = updated[newIndex];
+    if (!(moved && swapped)) {
+      return;
+    }
+    updated[index] = swapped;
+    updated[newIndex] = moved;
     setIngredients(updated);
   };
   const handleAddStep = () => {
@@ -688,20 +761,29 @@ export const RecipeEditModal = ({
     value: string | number | boolean | null
   ) => {
     const updated = [...steps];
-    updated[index] = { ...updated[index], [field]: value };
+    const current = updated[index];
+    if (!current) {
+      return;
+    }
+    const next = { ...current, [field]: value };
     // Auto-set CCP flag when temperature is set above threshold
     if (field === "temperature_value" && typeof value === "number") {
-      updated[index].is_ccp = value >= CCP_TEMP_THRESHOLDS.min;
+      next.is_ccp = value >= CCP_TEMP_THRESHOLDS.min;
     }
+    updated[index] = next;
     setSteps(updated);
   };
 
   const handleAddEquipment = (index: number, equipment: string) => {
     const updated = [...steps];
-    const currentEquipment = updated[index].equipment_needed ?? [];
+    const current = updated[index];
+    if (!current) {
+      return;
+    }
+    const currentEquipment = current.equipment_needed ?? [];
     if (!currentEquipment.includes(equipment)) {
       updated[index] = {
-        ...updated[index],
+        ...current,
         equipment_needed: [...currentEquipment, equipment],
       };
       setSteps(updated);
@@ -710,9 +792,13 @@ export const RecipeEditModal = ({
 
   const handleRemoveEquipment = (index: number, equipment: string) => {
     const updated = [...steps];
-    const currentEquipment = updated[index].equipment_needed ?? [];
+    const current = updated[index];
+    if (!current) {
+      return;
+    }
+    const currentEquipment = current.equipment_needed ?? [];
     updated[index] = {
-      ...updated[index],
+      ...current,
       equipment_needed: currentEquipment.filter((eq) => eq !== equipment),
     };
     setSteps(updated);
@@ -728,7 +814,13 @@ export const RecipeEditModal = ({
       return;
     }
     const updated = [...steps];
-    [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
+    const moved = updated[index];
+    const swapped = updated[newIndex];
+    if (!(moved && swapped)) {
+      return;
+    }
+    updated[index] = swapped;
+    updated[newIndex] = moved;
     setSteps(updated);
   };
 
@@ -736,13 +828,32 @@ export const RecipeEditModal = ({
     if (!onSave) {
       return;
     }
+    const yieldQtyRaw = String(formData.get("yieldQuantity") ?? "").trim();
+    const yieldQty = Number.parseInt(yieldQtyRaw, 10);
+    if (!yieldQtyRaw || Number.isNaN(yieldQty) || yieldQty <= 0) {
+      setYieldQtyError("Yield quantity must be greater than 0");
+      return;
+    }
+    setYieldQtyError(null);
+    setSubmitError(null);
     setIsSubmitting(true);
     try {
       formData.set("tags", tags.join(","));
       formData.set("ingredients", JSON.stringify(ingredients));
       formData.set("steps", JSON.stringify(steps));
-      await onSave(formData);
+      if (yieldUnitId) {
+        formData.set("yieldUnitId", yieldUnitId);
+      }
+      const result = await onSave(formData);
+      if (result && !result.ok) {
+        if (result.message) {
+          setSubmitError(result.message);
+        }
+        return;
+      }
       onOpenChange(false);
+    } catch {
+      setSubmitError("Something went wrong while saving. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -867,6 +978,7 @@ export const RecipeEditModal = ({
                     onMoveUp={(index) => handleMoveIngredient(index, "up")}
                     onRemove={handleRemoveIngredient}
                     onUpdate={handleUpdateIngredient}
+                    units={units}
                   />
                 ))}
               </div>
@@ -931,24 +1043,44 @@ export const RecipeEditModal = ({
             <Label className="font-medium text-base">Yield</Label>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="yieldQuantity">Quantity</Label>
+                <Label htmlFor="yieldQuantity">
+                  Quantity <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   defaultValue={recipe?.yieldQuantity ?? ""}
                   id="yieldQuantity"
                   min="1"
                   name="yieldQuantity"
+                  onChange={(e) => {
+                    const value = Number.parseInt(e.target.value, 10);
+                    if (Number.isNaN(value) || value <= 0) {
+                      setYieldQtyError("Yield quantity must be greater than 0");
+                    } else {
+                      setYieldQtyError(null);
+                    }
+                  }}
                   placeholder="e.g., 4"
+                  required
                   type="number"
                 />
+                {yieldQtyError && (
+                  <p className="text-destructive text-xs">{yieldQtyError}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="yieldUnit">Unit</Label>
-                <Input
-                  defaultValue={recipe?.yieldUnit ?? ""}
-                  id="yieldUnit"
-                  name="yieldUnit"
-                  placeholder="e.g., servings"
-                />
+                <Select onValueChange={setYieldUnitId} value={yieldUnitId}>
+                  <SelectTrigger id="yieldUnit">
+                    <SelectValue placeholder="Select unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {units.map((unit) => (
+                      <SelectItem key={unit.id} value={String(unit.id)}>
+                        {unit.code} - {unit.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="space-y-2">
@@ -1006,6 +1138,15 @@ export const RecipeEditModal = ({
               </SelectContent>
             </Select>
           </div>
+
+          {submitError && (
+            <div
+              className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-destructive text-sm"
+              role="alert"
+            >
+              {submitError}
+            </div>
+          )}
 
           <SheetFooter className="mt-auto pt-4">
             <Button

@@ -15,9 +15,41 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { mapFailureToExplanation } from "@/lib/manifest/friendly-error-mapper";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export const runtime = "nodejs";
+
+/**
+ * Thrown inside the transaction when a Manifest guard rejects a command, so
+ * the route can answer 422 with a plain-language message instead of a 500
+ * with the raw guard expression.
+ */
+class GuardBlockedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "GuardBlockedError";
+  }
+}
+
+function guardBlockedError(
+  entity: string,
+  command: string,
+  result: { error?: string; guardFailure?: unknown },
+  body: object
+): GuardBlockedError {
+  const friendly = mapFailureToExplanation(
+    {
+      entity,
+      command,
+      kind: "guard_failed",
+      message: result.error ?? `${entity}.${command} was blocked`,
+      guardFailure: result.guardFailure,
+    },
+    { body: body as Record<string, unknown> }
+  );
+  return new GuardBlockedError(friendly.message);
+}
 
 /**
  * Ingredient in resolved format (with pre-resolved IDs).
@@ -176,9 +208,11 @@ export async function POST(request: NextRequest) {
       }
 
       if (!(recipeResult.success || hasOverride)) {
+        if (recipeResult.guardFailure) {
+          throw guardBlockedError("Recipe", "create", recipeResult, body);
+        }
         throw new Error(
-          recipeResult.guardFailure?.formatted ||
-            recipeResult.policyDenial?.policyName ||
+          recipeResult.policyDenial?.policyName ||
             recipeResult.error ||
             "Failed to create recipe"
         );
@@ -196,6 +230,8 @@ export async function POST(request: NextRequest) {
           description: body.description || "",
           tags: body.tags || [],
           versionNumber: 1,
+          // Property seeds — the create pipeline copies matching entity
+          // columns from the input into the new row.
           yieldQuantity: body.yieldQuantity,
           yieldUnitId: body.yieldUnitId,
           yieldDescription: body.yieldDescription || "",
@@ -205,6 +241,17 @@ export async function POST(request: NextRequest) {
           difficultyLevel: body.difficultyLevel || 1,
           instructions: body.instructions || "",
           notes: body.notes || "",
+          // RecipeVersion.create command params (see
+          // manifest/source/kitchen/recipe-rules.manifest) — guards and
+          // mutates read THESE names, not the column names above.
+          yieldQty: body.yieldQuantity,
+          yieldUnit: body.yieldUnitId,
+          prepTime: body.prepTimeMinutes || 0,
+          cookTime: body.cookTimeMinutes || 0,
+          restTime: body.restTimeMinutes || 0,
+          difficulty: body.difficultyLevel || 1,
+          instructionsText: body.instructions || "",
+          notesText: body.notes || "",
         },
         { entityName: "RecipeVersion" }
       );
@@ -228,9 +275,16 @@ export async function POST(request: NextRequest) {
       }
 
       if (!(versionResult.success || hasOverride)) {
+        if (versionResult.guardFailure) {
+          throw guardBlockedError(
+            "RecipeVersion",
+            "create",
+            versionResult,
+            body
+          );
+        }
         throw new Error(
-          versionResult.guardFailure?.formatted ||
-            versionResult.policyDenial?.policyName ||
+          versionResult.policyDenial?.policyName ||
             versionResult.error ||
             "Failed to create recipe version"
         );
@@ -309,8 +363,16 @@ export async function POST(request: NextRequest) {
           }
 
           if (!(ingredientResult.success || hasOverride)) {
+            if (ingredientResult.guardFailure) {
+              throw guardBlockedError(
+                "RecipeIngredient",
+                "create",
+                ingredientResult,
+                body
+              );
+            }
             throw new Error(
-              `Failed to create ingredient: ${ingredientResult.guardFailure?.formatted || ingredientResult.error}`
+              `Failed to create ingredient: ${ingredientResult.error}`
             );
           }
           if (ingredientResult.result) {
@@ -355,8 +417,11 @@ export async function POST(request: NextRequest) {
           }
 
           if (!(stepResult.success || hasOverride)) {
+            if (stepResult.guardFailure) {
+              throw guardBlockedError("RecipeStep", "create", stepResult, body);
+            }
             throw new Error(
-              `Failed to create step ${step.stepNumber}: ${stepResult.guardFailure?.formatted || stepResult.error}`
+              `Failed to create step ${step.stepNumber}: ${stepResult.error}`
             );
           }
           if (stepResult.result) {
@@ -398,6 +463,12 @@ export async function POST(request: NextRequest) {
         (error as { constraintOutcomes: unknown[] }).constraintOutcomes,
         "Recipe creation blocked by constraints"
       );
+    }
+
+    // Guard rejections are user-fixable validation failures, not system
+    // errors: answer 422 with the friendly message (no Sentry noise).
+    if (error instanceof GuardBlockedError) {
+      return manifestErrorResponse(error.message, 422);
     }
 
     // Check if this is a transaction aborted error

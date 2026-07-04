@@ -12,7 +12,11 @@ import {
   kitchenRecipeCompositeUpdate,
 } from "@/app/lib/routes";
 import { getRecipeForEdit, type RecipeForEdit } from "./actions-manifest-v2";
-import { RecipeEditModal } from "./components/recipe-edit-modal";
+import {
+  RecipeEditModal,
+  type RecipeSaveResult,
+} from "./components/recipe-edit-modal";
+import { buildUpdatePayload } from "./components/recipe-update-payload";
 import { RecipeEditorModal } from "./recipe-editor-modal";
 
 interface CompositeRouteResponse {
@@ -79,54 +83,6 @@ const buildCreatePayload = (formData: FormData) => {
     yieldUnitId: formData.get("yieldUnitId")
       ? Number.parseInt(formData.get("yieldUnitId") as string, 10) || 1
       : 1,
-    prepTimeMinutes: formData.get("prepTime")
-      ? Number.parseInt(formData.get("prepTime") as string, 10) || undefined
-      : undefined,
-    cookTimeMinutes: formData.get("cookTime")
-      ? Number.parseInt(formData.get("cookTime") as string, 10) || undefined
-      : undefined,
-    difficultyLevel: formData.get("difficulty")
-      ? difficultyToLevel(formData.get("difficulty") as string)
-      : undefined,
-    ingredients,
-    steps,
-  };
-};
-
-/** Build JSON payload from RecipeEditModal FormData for update route */
-const buildUpdatePayload = (formData: FormData) => {
-  const tagsRaw = formData.get("tags") as string;
-  let tags: string[] | undefined;
-  try {
-    const parsed = tagsRaw ? JSON.parse(tagsRaw) : [];
-    tags = parsed.length > 0 ? parsed : undefined;
-  } catch {
-    // Ignore parse errors
-  }
-
-  const ingredients = parseJsonField<
-    Array<{
-      name: string;
-      quantity: number;
-      unit: string | null;
-      sortOrder: number;
-    }>
-  >(formData, "ingredients");
-
-  const steps = parseJsonField<
-    Array<{ stepNumber: number; instruction: string }>
-  >(formData, "steps");
-
-  return {
-    name: (formData.get("name") as string) || undefined,
-    description: (formData.get("description") as string) || undefined,
-    tags,
-    yieldQuantity: formData.get("servings")
-      ? Number.parseInt(formData.get("servings") as string, 10) || undefined
-      : undefined,
-    yieldUnitId: formData.get("yieldUnitId")
-      ? Number.parseInt(formData.get("yieldUnitId") as string, 10) || undefined
-      : undefined,
     prepTimeMinutes: formData.get("prepTime")
       ? Number.parseInt(formData.get("prepTime") as string, 10) || undefined
       : undefined,
@@ -226,9 +182,11 @@ export const RecipesPageClient = () => {
     }
   };
 
-  const handleUpdateRecipe = async (formData: FormData) => {
+  const handleUpdateRecipe = async (
+    formData: FormData
+  ): Promise<RecipeSaveResult> => {
     if (!editRecipeId) {
-      return;
+      return { ok: false, message: "No recipe selected." };
     }
 
     const payload = buildUpdatePayload(formData);
@@ -248,25 +206,25 @@ export const RecipesPageClient = () => {
       if (result.success) {
         toast.success("Recipe updated successfully");
         router.refresh();
-      } else if (result.constraintOutcomes?.some((c) => c.blocked)) {
+        return { ok: true };
+      }
+      if (result.constraintOutcomes?.some((c) => c.blocked)) {
         const messages = result.constraintOutcomes
           .filter((c) => c.blocked)
           .map((c) => c.message)
           .join("; ");
-        toast.error(`Blocked by constraints: ${messages}`);
-        throw new Error(`Blocked by constraints: ${messages}`);
-      } else {
-        toast.error(result.message || "Failed to update recipe");
-        throw new Error(result.message || "Failed to update recipe");
+        return { ok: false, message: `Blocked by constraints: ${messages}` };
       }
+      return {
+        ok: false,
+        message: result.message || "Failed to update recipe.",
+      };
     } catch (error) {
       captureException(error);
-      if (error instanceof Error && error.message.includes("constraints")) {
-        // Already handled above
-      } else {
-        toast.error("Failed to update recipe. Please try again.");
-      }
-      throw error;
+      return {
+        ok: false,
+        message: "Failed to update recipe. Please try again.",
+      };
     }
   };
 

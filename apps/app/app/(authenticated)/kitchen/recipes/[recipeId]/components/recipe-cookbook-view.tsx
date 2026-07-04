@@ -28,6 +28,9 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ConvertInstructionsButton } from "./convert-instructions-button";
+import { StorageContainerSelect } from "./storage-container-select";
+import { UpdatePhotoControl } from "./update-photo-control";
 
 // Recipe detail per DESIGN.md: light editorial header (mono eyebrow, Playfair
 // headline, compact hairline time strip — no dark hero band; too heavy on
@@ -98,6 +101,8 @@ export interface RecipeCookbookViewProps {
   cookTime: string;
   description: string | null;
   difficulty: string;
+  // Dish backing this recipe (storage + presentation photo live on the dish).
+  dishId: string | null;
   equipment: string[];
   heroImageUrl: string | null;
   ingredients: CookbookIngredient[];
@@ -110,8 +115,15 @@ export interface RecipeCookbookViewProps {
   packaging: { dropOff: string; bringHot: string; cookOnSite: string };
   portion: string;
   progressScope: string;
+  // Latest version id — target for flat-text → RecipeStep conversion.
+  recipeVersionId: string | null;
   restTime: string;
   steps: CookbookStep[];
+  storageContainer: {
+    containerType: string;
+    id: string;
+    name: string;
+  } | null;
   totalTime: string;
   versionLabel: string;
   yield: string;
@@ -221,20 +233,14 @@ export function RecipeCookbookView(recipe: RecipeCookbookViewProps) {
         </dl>
       </header>
 
-      {recipe.heroImageUrl && (
-        <div className="relative aspect-[21/9] w-full overflow-hidden rounded-media border border-hairline">
-          <Image
-            alt={recipe.name}
-            className="object-cover"
-            fill
-            sizes="(max-width: 1024px) 100vw, 1280px"
-            src={recipe.heroImageUrl}
-          />
-        </div>
-      )}
-
       <PageBody variant="rail">
         <FilterRail>
+          <RailPhoto
+            dishId={recipe.dishId}
+            heroImageUrl={recipe.heroImageUrl}
+            name={recipe.name}
+          />
+
           {ingredients.length > 0 && (
             <FilterRailGroup>
               <FilterRailLabel>
@@ -300,6 +306,11 @@ export function RecipeCookbookView(recipe: RecipeCookbookViewProps) {
               </dl>
             </FilterRailGroup>
           )}
+
+          <RailStorage
+            dishId={recipe.dishId}
+            storageContainer={recipe.storageContainer}
+          />
 
           {recipe.allergens.length === 0 && (
             <FilterRailGroup>
@@ -389,28 +400,11 @@ export function RecipeCookbookView(recipe: RecipeCookbookViewProps) {
                   )}
                 </div>
               </>
-            ) : recipe.instructionsText ? (
-              <div className="space-y-3">
-                <div className="rounded-card border border-hairline bg-canvas p-6">
-                  <p className="whitespace-pre-wrap text-[15px] text-ink leading-relaxed">
-                    {recipe.instructionsText}
-                  </p>
-                </div>
-                <p className="text-[13px] text-muted-foreground">
-                  Imported as flat text — edit the recipe to convert these into
-                  checkable, phase-grouped steps.
-                </p>
-              </div>
             ) : (
-              <div className="flex flex-col items-center gap-2 rounded-card border border-hairline bg-soft-stone px-6 py-14 text-center">
-                <p className="font-medium text-[16px] text-ink">
-                  No method steps yet
-                </p>
-                <p className="max-w-md text-[14px] text-muted-foreground">
-                  Edit this recipe to add phase-grouped steps — prep, method,
-                  finish at event, and packaging.
-                </p>
-              </div>
+              <FlatInstructionsFallback
+                instructionsText={recipe.instructionsText}
+                recipeVersionId={recipe.recipeVersionId}
+              />
             )}
           </section>
 
@@ -443,6 +437,117 @@ export function RecipeCookbookView(recipe: RecipeCookbookViewProps) {
         </OperationalColumn>
       </PageBody>
     </>
+  );
+}
+
+// Rail: finished-product photo (dish presentation image, falling back to the
+// first step image). The update affordance writes to the dish, so it only
+// renders when a dish is linked; with neither image nor dish, render nothing.
+function RailPhoto({
+  dishId,
+  heroImageUrl,
+  name,
+}: {
+  dishId: string | null;
+  heroImageUrl: string | null;
+  name: string;
+}) {
+  if (!(heroImageUrl || dishId)) {
+    return null;
+  }
+  return (
+    <FilterRailGroup>
+      <FilterRailLabel>Finished Product</FilterRailLabel>
+      {heroImageUrl ? (
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-media border border-hairline">
+          <Image
+            alt={name}
+            className="object-cover"
+            fill
+            sizes="(max-width: 1024px) 100vw, 360px"
+            src={heroImageUrl}
+          />
+        </div>
+      ) : (
+        <div className="flex aspect-[4/3] w-full items-center justify-center rounded-media border border-hairline border-dashed bg-soft-stone">
+          <p className="text-[13px] text-muted-foreground">No photo yet</p>
+        </div>
+      )}
+      {dishId && (
+        <div className="mt-2">
+          <UpdatePhotoControl dishId={dishId} hasImage={!!heroImageUrl} />
+        </div>
+      )}
+    </FilterRailGroup>
+  );
+}
+
+// Rail: dish-level storage container (governed Dish commands via the select).
+function RailStorage({
+  dishId,
+  storageContainer,
+}: {
+  dishId: string | null;
+  storageContainer: RecipeCookbookViewProps["storageContainer"];
+}) {
+  return (
+    <FilterRailGroup>
+      <FilterRailLabel>Storage</FilterRailLabel>
+      {dishId ? (
+        <StorageContainerSelect
+          currentContainerId={storageContainer?.id ?? null}
+          currentContainerName={storageContainer?.name ?? null}
+          dishId={dishId}
+        />
+      ) : (
+        <p className="text-[13px] text-muted-foreground">
+          No dish linked yet — storage is set on the dish.
+        </p>
+      )}
+    </FilterRailGroup>
+  );
+}
+
+// Flat-text method fallback with one-click conversion into governed
+// RecipeStep rows; empty state when the version has no instructions at all.
+function FlatInstructionsFallback({
+  instructionsText,
+  recipeVersionId,
+}: {
+  instructionsText: string | null;
+  recipeVersionId: string | null;
+}) {
+  if (!instructionsText) {
+    return (
+      <div className="flex flex-col items-center gap-2 rounded-card border border-hairline bg-soft-stone px-6 py-14 text-center">
+        <p className="font-medium text-[16px] text-ink">No method steps yet</p>
+        <p className="max-w-md text-[14px] text-muted-foreground">
+          Edit this recipe to add phase-grouped steps — prep, method, finish at
+          event, and packaging.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-3">
+      <div className="rounded-card border border-hairline bg-canvas p-6">
+        <p className="whitespace-pre-wrap text-[15px] text-ink leading-relaxed">
+          {instructionsText}
+        </p>
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        {recipeVersionId && (
+          <ConvertInstructionsButton
+            instructionsText={instructionsText}
+            recipeVersionId={recipeVersionId}
+          />
+        )}
+        <p className="text-[13px] text-muted-foreground">
+          Imported as flat text — convert it into checkable, phase-grouped
+          steps, then refine them in the editor.
+        </p>
+      </div>
+    </div>
   );
 }
 

@@ -175,6 +175,31 @@ describe("mapFailureToExplanation", () => {
     });
   });
 
+  describe("guard_failed — authored DSL guard message (guard-messages.json)", () => {
+    it("prefers the authored RecipeVersion.create yieldQty message over the raw expression", () => {
+      // Mirrors the real runtime payload: the compiler drops the authored
+      // message string, so guardFailure only carries the raw expression, and
+      // guardFailure.index is 1-based (yieldQty is the first guard).
+      const result = mapFailureToExplanation(
+        guardFailure({
+          entity: "RecipeVersion",
+          command: "create",
+          message: "Guard condition failed for command 'create'",
+          guardFailure: {
+            index: 1,
+            expression: "yieldQty != null and yieldQty > 0",
+            formatted: "yieldQty != null and yieldQty > 0",
+            resolved: [{ expression: "yieldQty", value: undefined }],
+          },
+        })
+      );
+
+      expect(result.category).toBe("validation");
+      expect(result.message).toContain("Yield quantity must be positive");
+      expect(result.message).not.toContain("!=");
+    });
+  });
+
   describe("policy_denied", () => {
     it("explains a permission denial with the policy name", () => {
       const result = mapFailureToExplanation({

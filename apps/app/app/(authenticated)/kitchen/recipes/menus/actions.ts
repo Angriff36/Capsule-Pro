@@ -249,87 +249,87 @@ export const getMenuById = async (
     return null;
   }
 
-  // Fetch menu
-  const [menu] = await database.$queryRaw<
-    {
-      id: string;
-      name: string;
-      description: string | null;
-      category: string | null;
-      is_active: boolean;
-      is_template: boolean;
-      base_price: string | null;
-      price_per_person: string | null;
-      min_guests: number | null;
-      max_guests: number | null;
-      created_at: Date;
-      updated_at: Date;
-    }[]
-  >(
-    Prisma.sql`
-      SELECT
-        id,
-        name,
-        description,
-        category,
-        is_active,
-        is_template,
-        base_price,
-        price_per_person,
-        min_guests,
-        max_guests,
-        created_at,
-        updated_at
-      FROM tenant_kitchen.menus
-      WHERE id = ${menuId}
-        AND tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-      LIMIT 1
-    `
-  );
+  // Fetch menu row and menu dishes in parallel — they are independent
+  const [[menu], dishes] = await Promise.all([
+    database.$queryRaw<
+      {
+        id: string;
+        name: string;
+        description: string | null;
+        category: string | null;
+        is_active: boolean;
+        is_template: boolean;
+        base_price: string | null;
+        price_per_person: string | null;
+        min_guests: number | null;
+        max_guests: number | null;
+        created_at: Date;
+        updated_at: Date;
+      }[]
+    >(
+      Prisma.sql`
+        SELECT
+          id,
+          name,
+          description,
+          category,
+          is_active,
+          is_template,
+          base_price,
+          price_per_person,
+          min_guests,
+          max_guests,
+          created_at,
+          updated_at
+        FROM tenant_kitchen.menus
+        WHERE id = ${menuId}
+          AND tenant_id = ${tenantId}
+          AND deleted_at IS NULL
+        LIMIT 1
+      `
+    ),
+    database.$queryRaw<
+      {
+        id: string;
+        dish_id: string;
+        dish_name: string;
+        course: string | null;
+        sort_order: number;
+        is_optional: boolean;
+        dietary_tags: string[] | null;
+        allergens: string[] | null;
+        price_per_person: string | null;
+        cost_per_person: string | null;
+      }[]
+    >(
+      Prisma.sql`
+        SELECT
+          md.id,
+          md.dish_id,
+          d.name AS dish_name,
+          md.course,
+          md.sort_order,
+          md.is_optional,
+          d.dietary_tags,
+          d.allergens,
+          d.price_per_person,
+          d.cost_per_person
+        FROM tenant_kitchen.menu_dishes md
+        JOIN tenant_kitchen.dishes d
+          ON md.tenant_id = d.tenant_id
+          AND md.dish_id = d.id
+          AND d.deleted_at IS NULL
+        WHERE md.menu_id = ${menuId}
+          AND md.tenant_id = ${tenantId}
+          AND md.deleted_at IS NULL
+        ORDER BY md.sort_order ASC, d.name ASC
+      `
+    ),
+  ]);
 
   if (!menu) {
     return null;
   }
-
-  // Fetch menu dishes with dish names and cost data
-  const dishes = await database.$queryRaw<
-    {
-      id: string;
-      dish_id: string;
-      dish_name: string;
-      course: string | null;
-      sort_order: number;
-      is_optional: boolean;
-      dietary_tags: string[] | null;
-      allergens: string[] | null;
-      price_per_person: string | null;
-      cost_per_person: string | null;
-    }[]
-  >(
-    Prisma.sql`
-      SELECT
-        md.id,
-        md.dish_id,
-        d.name AS dish_name,
-        md.course,
-        md.sort_order,
-        md.is_optional,
-        d.dietary_tags,
-        d.allergens,
-        d.price_per_person,
-        d.cost_per_person
-      FROM tenant_kitchen.menu_dishes md
-      JOIN tenant_kitchen.dishes d
-        ON md.tenant_id = d.tenant_id
-        AND md.dish_id = d.id
-        AND d.deleted_at IS NULL
-      WHERE md.menu_id = ${menuId}
-        AND md.tenant_id = ${tenantId}
-        AND md.deleted_at IS NULL
-      ORDER BY md.sort_order ASC, d.name ASC
-    `
-  );
 
   return {
     id: menu.id,
@@ -555,7 +555,13 @@ export const reorderMenuDishes = async (menuId: string, dishIds: string[]) => {
 
   // Verify all dishes are in the menu and belong to tenant
   const menuDishes = await database.$queryRaw<
-    { id: string; dish_id: string; course: string | null; sort_order: number; is_optional: boolean }[]
+    {
+      id: string;
+      dish_id: string;
+      course: string | null;
+      sort_order: number;
+      is_optional: boolean;
+    }[]
   >(
     Prisma.sql`
       SELECT id, dish_id, course, sort_order, is_optional
@@ -577,8 +583,11 @@ export const reorderMenuDishes = async (menuId: string, dishIds: string[]) => {
   const menuDishByDishId = new Map(menuDishes.map((md) => [md.dish_id, md]));
 
   for (let i = 0; i < dishIds.length; i++) {
-    const md = menuDishByDishId.get(dishIds[i]);
-    if (!md) continue;
+    const dishId = dishIds[i];
+    const md = dishId ? menuDishByDishId.get(dishId) : undefined;
+    if (!md) {
+      continue;
+    }
 
     const result = await runManifestCommand({
       entity: "MenuDish",

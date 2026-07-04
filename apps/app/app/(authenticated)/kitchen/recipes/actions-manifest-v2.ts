@@ -210,6 +210,62 @@ export const createDishWithOverride = async (
   return initialResult;
 };
 
+/**
+ * Update a dish's finished-product photo: uploads the file to blob storage,
+ * then writes presentationImageUrl via the governed Dish.update command on
+ * the apps/api canonical dispatcher (no direct DB write).
+ */
+export const updateDishPresentationImage = async (
+  dishId: string,
+  formData: FormData
+): Promise<ManifestActionResult> => {
+  const tenantId = await requireTenantId();
+  if (!dishId) {
+    return { success: false, error: "Dish id is required." };
+  }
+
+  try {
+    const imageFile = readImageFile(formData, "imageFile");
+    if (!imageFile) {
+      return { success: false, error: "Choose an image file to upload." };
+    }
+
+    const imageUrl = await uploadImage(
+      tenantId,
+      `dishes/${dishId}/presentation`,
+      imageFile
+    );
+
+    const response = await apiPostJsonServer(
+      "/api/manifest/Dish/commands/update",
+      { id: dishId, presentationImageUrl: imageUrl }
+    );
+    const result = (await response.json().catch(() => null)) as {
+      error?: string;
+      message?: string;
+      success?: boolean;
+    } | null;
+
+    if (!(response.ok && result?.success)) {
+      return {
+        success: false,
+        error:
+          result?.error ??
+          result?.message ??
+          `Failed to update dish photo (${response.status})`,
+      };
+    }
+
+    return { success: true, dishId };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to update dish photo",
+    };
+  }
+};
+
 // ============ Re-export other actions from original ============
 
 // Note: In "use server" files, we must import and re-export individually
