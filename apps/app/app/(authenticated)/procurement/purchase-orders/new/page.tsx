@@ -18,8 +18,7 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { ArrowLeft, Loader2, Package, Plus, Search } from "lucide-react";
 import Link from "next/link";
-import { OperationalPageShell } from "../../../components/operational-page-shell";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -28,6 +27,7 @@ import {
   listStorageLocations,
   listVendors,
 } from "@/app/lib/manifest-client.generated";
+import { OperationalPageShell } from "../../../components/operational-page-shell";
 import { createPurchaseOrder } from "../../actions";
 import type { Location, POFormData, Vendor } from "../../components/po-form";
 import { POForm } from "../../components/po-form";
@@ -49,6 +49,7 @@ interface InventoryItem {
 export default function NewPOPage() {
   const posthog = usePostHog();
   const _router = useRouter();
+  const searchParams = useSearchParams();
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
@@ -78,9 +79,40 @@ export default function NewPOPage() {
         listInventoryItems({ limit: 200 }),
         listStorageLocations({ isActive: "true" }),
       ]);
+      const items = itemsResult.data as unknown as InventoryItem[];
       setVendors(vendorsResult.data as unknown as Vendor[]);
-      setInventoryItems(itemsResult.data as unknown as InventoryItem[]);
+      setInventoryItems(items);
       setLocations(locationsResult.data as unknown as Location[]);
+
+      // Prefill from reorder handoffs (?item=<id|item_number>&qty=<n>) —
+      // low-stock alerts and reorder suggestions link here with a payload
+      // that was previously ignored.
+      const itemParam = searchParams?.get("item");
+      if (itemParam) {
+        const match = items.find(
+          (item) => item.id === itemParam || item.item_number === itemParam
+        );
+        if (match) {
+          const qty = Number(searchParams?.get("qty"));
+          setLineItems((prev) =>
+            prev.some((li) => li.itemId === match.id)
+              ? prev
+              : [
+                  ...prev,
+                  {
+                    itemId: match.id,
+                    itemName: match.name,
+                    itemNumber: match.item_number,
+                    unitOfMeasure: match.unit_of_measure,
+                    quantityOrdered: Number.isFinite(qty) && qty > 0 ? qty : 1,
+                    unitCost: Number(match.unit_cost),
+                  },
+                ]
+          );
+        } else {
+          toast.error(`Item "${itemParam}" not found in inventory`);
+        }
+      }
     } catch (error) {
       console.error("Failed to load data:", error);
     } finally {
@@ -183,138 +215,142 @@ export default function NewPOPage() {
   return (
     <>
       <OperationalPageShell
-      actions={
-        <Link href="/procurement/purchase-orders">
-          <Button size="icon" variant="ghost">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
-      }
-      description="Create a new purchase order for your vendor."
-      eyebrow="Procurement / Purchase orders"
-      title="New purchase order"
-    >
-      <form onSubmit={handleCreate}>
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-          {/* Main form */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Details</CardTitle>
-                <CardDescription>
-                  Vendor and delivery information.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <POForm
-                  form={form}
-                  locations={locations}
-                  onChange={(
-                    update: Partial<
-                      import("../../components/po-form").POFormData
-                    >
-                  ) =>
-                    setForm(
-                      (
-                        prev: import("../../components/po-form").POFormData
-                      ) => ({ ...prev, ...update })
-                    )
-                  }
-                  vendors={vendors}
-                />
-              </CardContent>
-            </Card>
-
-            {/* Line Items */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Line Items ({lineItems.length})</CardTitle>
+        actions={
+          <Link href="/procurement/purchase-orders">
+            <Button size="icon" variant="ghost">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+        }
+        description="Create a new purchase order for your vendor."
+        eyebrow="Procurement / Purchase orders"
+        title="New purchase order"
+      >
+        <form onSubmit={handleCreate}>
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+            {/* Main form */}
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Order Details</CardTitle>
                   <CardDescription>
-                    Add items to this purchase order.
+                    Vendor and delivery information.
                   </CardDescription>
-                </div>
-                <Button
-                  onClick={() => setShowItemDialog(true)}
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Item
-                </Button>
-              </CardHeader>
-              <CardContent className="p-0">
-                {lineItems.length === 0 ? (
-                  <div className="py-12 text-center text-muted-foreground">
-                    <Package className="mx-auto mb-4 h-12 w-12 opacity-50" />
-                    <p>No items added yet.</p>
-                    <p className="text-sm">
-                      Click &quot;Add Item&quot; to search and add inventory
-                      items.
-                    </p>
-                  </div>
-                ) : (
-                  <POLineItemsEditable
-                    items={lineItems}
-                    onRemove={removeLineItem}
-                    onUpdate={updateLineItem}
+                </CardHeader>
+                <CardContent>
+                  <POForm
+                    form={form}
+                    locations={locations}
+                    onChange={(
+                      update: Partial<
+                        import("../../components/po-form").POFormData
+                      >
+                    ) =>
+                      setForm(
+                        (
+                          prev: import("../../components/po-form").POFormData
+                        ) => ({ ...prev, ...update })
+                      )
+                    }
+                    vendors={vendors}
                   />
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <Card className="h-fit">
-              <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Items</span>
-                  <span>{lineItems.length}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span>{formatCurrency(subtotal)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Tax</span>
-                  <span>{formatCurrency(0)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Shipping</span>
-                  <span>{formatCurrency(0)}</span>
-                </div>
-                <div className="border-t pt-3">
-                  <div className="flex justify-between font-semibold">
-                    <span>Total</span>
+              {/* Line Items */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Line Items ({lineItems.length})</CardTitle>
+                    <CardDescription>
+                      Add items to this purchase order.
+                    </CardDescription>
+                  </div>
+                  <Button
+                    onClick={() => setShowItemDialog(true)}
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Item
+                  </Button>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {lineItems.length === 0 ? (
+                    <div className="py-12 text-center text-muted-foreground">
+                      <Package className="mx-auto mb-4 h-12 w-12 opacity-50" />
+                      <p>No items added yet.</p>
+                      <p className="text-sm">
+                        Click &quot;Add Item&quot; to search and add inventory
+                        items.
+                      </p>
+                    </div>
+                  ) : (
+                    <POLineItemsEditable
+                      items={lineItems}
+                      onRemove={removeLineItem}
+                      onUpdate={updateLineItem}
+                    />
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              <Card className="h-fit">
+                <CardHeader>
+                  <CardTitle>Order Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Items</span>
+                    <span>{lineItems.length}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Subtotal</span>
                     <span>{formatCurrency(subtotal)}</span>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Tax</span>
+                    <span>{formatCurrency(0)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Shipping</span>
+                    <span>{formatCurrency(0)}</span>
+                  </div>
+                  <div className="border-t pt-3">
+                    <div className="flex justify-between font-semibold">
+                      <span>Total</span>
+                      <span>{formatCurrency(subtotal)}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-            <div className="flex gap-2">
-              <Link className="flex-1" href="/procurement/purchase-orders">
-                <Button className="w-full" type="button" variant="outline">
-                  Cancel
+              <div className="flex gap-2">
+                <Link className="flex-1" href="/procurement/purchase-orders">
+                  <Button className="w-full" type="button" variant="outline">
+                    Cancel
+                  </Button>
+                </Link>
+                <Button
+                  className="flex-1"
+                  disabled={
+                    !form.vendorId || lineItems.length === 0 || creating
+                  }
+                  type="submit"
+                >
+                  {creating && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  Create PO
                 </Button>
-              </Link>
-              <Button
-                className="flex-1"
-                disabled={!form.vendorId || lineItems.length === 0 || creating}
-                type="submit"
-              >
-                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create PO
-              </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </form>
+        </form>
       </OperationalPageShell>
 
       {/* Add Item Dialog */}

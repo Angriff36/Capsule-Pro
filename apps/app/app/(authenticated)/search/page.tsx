@@ -87,7 +87,7 @@ const GROUP_CONFIG: Record<
   clients: {
     label: "Clients",
     icon: <Users className="size-4" />,
-    href: (item) => `/clients/${item.id}`,
+    href: (item) => `/crm/clients/${item.id}`,
     title: (item) =>
       (item.company_name as string) ||
       [item.first_name, item.last_name].filter(Boolean).join(" ") ||
@@ -102,7 +102,7 @@ const GROUP_CONFIG: Record<
   contacts: {
     label: "Contacts",
     icon: <User className="size-4" />,
-    href: (item) => `/clients/${item.clientId}`,
+    href: (item) => `/crm/clients/${item.clientId}`,
     title: (item) =>
       [item.first_name, item.last_name].filter(Boolean).join(" ") ||
       "Unknown Contact",
@@ -116,7 +116,7 @@ const GROUP_CONFIG: Record<
   venues: {
     label: "Venues",
     icon: <MapPin className="size-4" />,
-    href: (item) => `/venues/${item.id}`,
+    href: (item) => `/crm/venues/${item.id}`,
     title: (item) => (item.name as string) || "Unknown Venue",
     description: (item) => (
       <p className="text-muted-foreground text-sm">
@@ -128,7 +128,7 @@ const GROUP_CONFIG: Record<
   inventory: {
     label: "Inventory",
     icon: <Package className="size-4" />,
-    href: (item) => `/inventory/${item.id}`,
+    href: (item) => `/inventory/items/${item.id}`,
     title: (item) =>
       `${item.name}${item.item_number ? ` (${item.item_number})` : ""}`,
     description: (item) => (
@@ -180,7 +180,7 @@ const GROUP_CONFIG: Record<
   dishes: {
     label: "Dishes",
     icon: <UtensilsCrossed className="size-4" />,
-    href: (item) => `/kitchen/dishes/${item.id}`,
+    href: (item) => `/kitchen/recipes/dishes/${item.id}`,
     title: (item) => (item.name as string) || "Untitled Dish",
     description: (item) => (
       <p className="text-muted-foreground text-sm">
@@ -192,7 +192,7 @@ const GROUP_CONFIG: Record<
   equipment: {
     label: "Equipment",
     icon: <Wrench className="size-4" />,
-    href: (item) => `/kitchen/equipment/${item.id}`,
+    href: (_item) => "/kitchen/equipment",
     title: (item) => (item.name as string) || "Unknown Equipment",
     description: (item) => (
       <p className="text-muted-foreground text-sm">
@@ -204,7 +204,7 @@ const GROUP_CONFIG: Record<
   ingredients: {
     label: "Ingredients",
     icon: <Leaf className="size-4" />,
-    href: (item) => `/kitchen/ingredients/${item.id}`,
+    href: (_item) => "/kitchen/recipes?tab=ingredients",
     title: (item) => (item.name as string) || "Unknown Ingredient",
     description: (item) => (
       <p className="text-muted-foreground text-sm">
@@ -215,7 +215,7 @@ const GROUP_CONFIG: Record<
   menus: {
     label: "Menus",
     icon: <BookOpen className="size-4" />,
-    href: (item) => `/kitchen/menus/${item.id}`,
+    href: (item) => `/kitchen/recipes/menus/${item.id}`,
     title: (item) => (item.name as string) || "Untitled Menu",
     description: (item) => (
       <p className="text-muted-foreground text-sm">
@@ -226,7 +226,7 @@ const GROUP_CONFIG: Record<
   leads: {
     label: "Leads",
     icon: <Target className="size-4" />,
-    href: (item) => `/crm/leads/${item.id}`,
+    href: (item) => `/marketing/leads/${item.id}`,
     title: (item) =>
       (item.companyName as string) ||
       (item.contactName as string) ||

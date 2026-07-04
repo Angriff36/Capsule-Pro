@@ -47,12 +47,12 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { OperationalPageShell } from "../../../components/operational-page-shell";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   getVendor,
+  listInventorySuppliers,
   listVendorCatalogs,
   listVendorContacts,
   listVendorRatings,
@@ -60,6 +60,7 @@ import {
   vendorRate,
   vendorUpdate,
 } from "@/app/lib/manifest-client.generated";
+import { OperationalPageShell } from "../../../components/operational-page-shell";
 import { formatDate } from "../../components/po-shared";
 import {
   formatPaymentTerms,
@@ -131,25 +132,45 @@ export default function VendorDetailPage() {
   const loadVendor = async () => {
     setLoading(true);
     try {
-      const [vendorResult, contactsResult, ratingsResult, catalogResult] =
-        await Promise.all([
-          getVendor(vendorId),
-          listVendorContacts(),
-          listVendorRatings(),
-          listVendorCatalogs(),
-        ]);
+      const [
+        vendorResult,
+        contactsResult,
+        ratingsResult,
+        catalogResult,
+        suppliersResult,
+      ] = await Promise.all([
+        getVendor(vendorId),
+        listVendorContacts(),
+        listVendorRatings(),
+        listVendorCatalogs(),
+        listInventorySuppliers(),
+      ]);
       const v = vendorResult as unknown as Vendor;
+      // Contacts/ratings/catalogs belong to InventorySupplier (supplierId) —
+      // NOT to the procurement Vendor. Resolve through the
+      // InventorySupplier.vendorId bridge: this vendor's suppliers first, then
+      // their children. (The old filter compared a nonexistent `vendorId`
+      // field on the children, so these tabs were always empty.)
+      const bridgedSupplierIds = new Set(
+        (suppliersResult.data as unknown as Record<string, unknown>[])
+          .filter((s) => s.vendorId === vendorId)
+          .map((s) => s.id as string)
+      );
       const allContacts = contactsResult.data as unknown as VendorContact[];
       const allRatings = ratingsResult.data as unknown as VendorRating[];
-      const vendorContacts = allContacts.filter(
-        (c) => (c as unknown as Record<string, unknown>).vendorId === vendorId
+      const vendorContacts = allContacts.filter((c) =>
+        bridgedSupplierIds.has(
+          (c as unknown as Record<string, unknown>).supplierId as string
+        )
       );
-      const vendorRatings = allRatings.filter(
-        (r) => (r as unknown as Record<string, unknown>).vendorId === vendorId
+      const vendorRatings = allRatings.filter((r) =>
+        bridgedSupplierIds.has(
+          (r as unknown as Record<string, unknown>).supplierId as string
+        )
       );
       const vendorCatalogItems = (
         catalogResult.data as unknown as Record<string, unknown>[]
-      ).filter((c) => c.vendorId === vendorId);
+      ).filter((c) => bridgedSupplierIds.has(c.supplierId as string));
       setVendor(v);
       setContacts(vendorContacts);
       setRatings(vendorRatings);
@@ -290,7 +311,6 @@ export default function VendorDetailPage() {
         </span>
       }
     >
-
       <Tabs defaultValue="details">
         <TabsList className="rounded-[16px] border border-hairline bg-canvas p-1">
           <TabsTrigger
