@@ -112,7 +112,7 @@
     "commands": 1062,
     "events": 1037,
     "sagas": 2,
-    "reactions": 5
+    "reactions": 7
   },
   "warnings": [
     "[C:\\Projects\\capsule-pro\\manifest\\source\\_base.manifest] Entity 'TenantScoped' is declared but unused: no store, no entity-scoped commands, and not referenced by any relationship. Remove it or wire it into the domain.",
@@ -123,8 +123,6 @@
     "[C:\\Projects\\capsule-pro\\manifest\\source\\events\\command-board-rules.manifest] Command 'CommandBoardCard.create' takes 'boardId', which is also owned by parent 'CommandBoardGroup' — consider populating it via parent-context propagation (create from the parent) instead of re-entering it.",
     "[C:\\Projects\\capsule-pro\\manifest\\source\\events\\command-board-rules.manifest] Command 'CommandBoardConnection.create' takes 'boardId', which is also owned by parent 'CommandBoardCard' — consider populating it via parent-context propagation (create from the parent) instead of re-entering it.",
     "[C:\\Projects\\capsule-pro\\manifest\\source\\events\\command-board-rules.manifest] Command 'CommandBoardConnection.create' takes 'boardId', which is also owned by parent 'CommandBoardCard' — consider populating it via parent-context propagation (create from the parent) instead of re-entering it.",
-    "[C:\\Projects\\capsule-pro\\manifest\\source\\events\\event-rules.manifest] Command 'EventProfitability.create' takes a manual 'eventId' with no nested create on 'Event' (e.g. addMilestone) and no event reaction that supplies it. Consider a parent command that sets the FK from self.id, or an on Event reaction with params { eventId: ... }.",
-    "[C:\\Projects\\capsule-pro\\manifest\\source\\events\\event-rules.manifest] Command 'EventSummary.create' takes a manual 'eventId' with no nested create on 'Event' (e.g. addMilestone) and no event reaction that supplies it. Consider a parent command that sets the FK from self.id, or an on Event reaction with params { eventId: ... }.",
     "[C:\\Projects\\capsule-pro\\manifest\\source\\finance\\collections-rules.manifest] Entity 'CollectionAction' belongsTo 'CollectionCase' but 'CollectionCase' has no hasMany/hasOne back to 'CollectionAction'. Add 'hasMany collectionActions: CollectionAction' on the parent, or a nested create command on the parent so the child FK is implicit.",
     "[C:\\Projects\\capsule-pro\\manifest\\source\\finance\\collections-rules.manifest] Entity 'CollectionPaymentPlan' belongsTo 'CollectionCase' but 'CollectionCase' has no hasMany/hasOne back to 'CollectionPaymentPlan'. Add 'hasMany collectionPaymentPlans: CollectionPaymentPlan' on the parent, or a nested create command on the parent so the child FK is implicit.",
     "[C:\\Projects\\capsule-pro\\manifest\\source\\integrations\\version-control-rules.manifest] Entity 'EntityVersion' belongsTo 'VersionedEntity' but 'VersionedEntity' has no hasMany/hasOne back to 'EntityVersion'. Add 'hasMany entityVersions: EntityVersion' on the parent, or a nested create command on the parent so the child FK is implicit.",

@@ -2339,3 +2339,11 @@ payload must use PARAM names; add column-name duplicates only as create-time pro
 seeds. Consider an automated check (script comparing literal payload keys vs IR) if
 this recurs.
 Search: runCommand params, property vs param, yieldQty, newName, guard undefined loose inequality
+
+## 2026-07-04 — Restored reactions lost in merge 9009b20ae (mission Phase 0)
+The merge of main into feat/manifest-3.0-native dropped the tail of event-rules.manifest added by
+cc9d03c75: `on EventCreated run BattleBoard.create`, `on EventConfirmed run PrepList.create`
+(the shell that prep-list-seed-middleware expands), and `optional eventId` on
+EventProfitability.create / EventSummary.create (saga steps rely on it). Restored + recompiled;
+event-confirm-prep-seed-runtime.test.ts 2/2 GREEN again. verify-invariants D9 now derives the
+expected reaction count from source `on` declarations instead of a hardcoded floor.
