@@ -2228,7 +2228,6 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "InventorySupplier.linkVendor": z.object({
   vendorId: z.string(),
-  userId: z.string(),
 }),
   "InventorySupplier.reinstate": z.object({
   reinstatedBy: z.string(),
@@ -4652,7 +4651,6 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "VendorCatalog.linkInventoryItem": z.object({
   inventoryItemId: z.string(),
-  userId: z.string(),
 }),
   "VendorCatalog.reactivate": z.object({
   reactivatedBy: z.string(),

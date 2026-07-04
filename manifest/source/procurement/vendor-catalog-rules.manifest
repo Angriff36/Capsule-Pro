@@ -172,7 +172,7 @@ entity VendorCatalog mixin TenantScoped, SoftDeletable {
   relationship belongsTo supplier: InventorySupplier fields [supplierId, tenantId] references [id, tenantId]
   relationship belongsTo inventoryItem: InventoryItem fields [inventoryItemId, tenantId] references [id, tenantId]
 
-  command linkInventoryItem(inventoryItemId: string, userId: string) {
+  command linkInventoryItem(inventoryItemId: string) {
     guard self.isActive "Cannot link inventory item on an inactive catalog entry"
     guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
 
@@ -190,7 +190,6 @@ event VendorCatalogInventoryItemLinked: "inventory.vendor-catalog.inventory-item
   supplierId: string
   itemNumber: string
   inventoryItemId: string
-  userId: string
   updatedAt: datetime
 }
 

@@ -179,7 +179,7 @@ entity InventorySupplier mixin TenantScoped, SoftDeletable {
   }
 
   // Link this inventory supplier to its procurement-side Vendor identity.
-  command linkVendor(vendorId: string, userId: string) {
+  command linkVendor(vendorId: string) {
     guard vendorId != null and vendorId != "" "Vendor ID is required"
 
     mutate vendorId = vendorId
@@ -208,7 +208,6 @@ event InventorySupplierVendorLinked: "inventory.supplier.vendor.linked" {
   tenantId: string
   name: string
   vendorId: string
-  userId: string
   updatedAt: datetime
 }
 
