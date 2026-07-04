@@ -11871,6 +11871,860 @@
       }
     ]
   },
+  "SelOnboardingTrainingModuleDefinition": {
+    "accessor": "selOnboardingTrainingModuleDefinition",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId"
+      },
+      {
+        "name": "code",
+        "irName": "code"
+      },
+      {
+        "name": "title",
+        "irName": "title"
+      },
+      {
+        "name": "description",
+        "irName": "description"
+      },
+      {
+        "name": "contentType",
+        "irName": "contentType"
+      },
+      {
+        "name": "contentUrl",
+        "irName": "contentUrl"
+      },
+      {
+        "name": "durationMinutes",
+        "irName": "durationMinutes"
+      },
+      {
+        "name": "category",
+        "irName": "category"
+      },
+      {
+        "name": "isRequired",
+        "irName": "isRequired"
+      },
+      {
+        "name": "passThresholdPercent",
+        "irName": "passThresholdPercent"
+      },
+      {
+        "name": "maxAttempts",
+        "irName": "maxAttempts"
+      },
+      {
+        "name": "requiredRole",
+        "irName": "requiredRole"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion01Definition": {
+    "accessor": "selOnboardingTrainingQuestion01Definition",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId"
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId"
+      },
+      {
+        "name": "code",
+        "irName": "code"
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle"
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder"
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt"
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA"
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB"
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC"
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD"
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey"
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation"
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion02Definition": {
+    "accessor": "selOnboardingTrainingQuestion02Definition",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId"
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId"
+      },
+      {
+        "name": "code",
+        "irName": "code"
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle"
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder"
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt"
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA"
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB"
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC"
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD"
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey"
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation"
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion03Definition": {
+    "accessor": "selOnboardingTrainingQuestion03Definition",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId"
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId"
+      },
+      {
+        "name": "code",
+        "irName": "code"
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle"
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder"
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt"
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA"
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB"
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC"
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD"
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey"
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation"
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion04Definition": {
+    "accessor": "selOnboardingTrainingQuestion04Definition",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId"
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId"
+      },
+      {
+        "name": "code",
+        "irName": "code"
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle"
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder"
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt"
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA"
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB"
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC"
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD"
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey"
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation"
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion05Definition": {
+    "accessor": "selOnboardingTrainingQuestion05Definition",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId"
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId"
+      },
+      {
+        "name": "code",
+        "irName": "code"
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle"
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder"
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt"
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA"
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB"
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC"
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD"
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey"
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation"
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion06Definition": {
+    "accessor": "selOnboardingTrainingQuestion06Definition",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId"
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId"
+      },
+      {
+        "name": "code",
+        "irName": "code"
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle"
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder"
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt"
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA"
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB"
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC"
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD"
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey"
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation"
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion07Definition": {
+    "accessor": "selOnboardingTrainingQuestion07Definition",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId"
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId"
+      },
+      {
+        "name": "code",
+        "irName": "code"
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle"
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder"
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt"
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA"
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB"
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC"
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD"
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey"
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation"
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion08Definition": {
+    "accessor": "selOnboardingTrainingQuestion08Definition",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId"
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId"
+      },
+      {
+        "name": "code",
+        "irName": "code"
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle"
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder"
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt"
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA"
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB"
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC"
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD"
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey"
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation"
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion09Definition": {
+    "accessor": "selOnboardingTrainingQuestion09Definition",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId"
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId"
+      },
+      {
+        "name": "code",
+        "irName": "code"
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle"
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder"
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt"
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA"
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB"
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC"
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD"
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey"
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation"
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion10Definition": {
+    "accessor": "selOnboardingTrainingQuestion10Definition",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId"
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId"
+      },
+      {
+        "name": "code",
+        "irName": "code"
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle"
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder"
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt"
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA"
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB"
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC"
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD"
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey"
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation"
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      }
+    ]
+  },
   "Shipment": {
     "accessor": "shipment",
     "hasDeletedAt": true,

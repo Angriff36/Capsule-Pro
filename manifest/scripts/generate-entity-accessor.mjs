@@ -14,7 +14,6 @@ const root = resolve(process.cwd());
 const irPath = join(root, "manifest/ir/kitchen.ir.json");
 const outPaths = [
   join(root, "manifest/runtime/src/generated/entity-accessor.generated.ts"),
-  join(root, "manifest/generated/runtime/entity-accessor.generated.ts"),
 ];
 
 if (!existsSync(irPath)) {

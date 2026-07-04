@@ -2,34 +2,28 @@
  * POST /api/kitchen/prep-lists/commands/create
  *
  * Custom orchestration route (allowlisted): creates a prep list from the prep
- * list builder. This is more than a single Manifest command — it runs the
- * governed PrepList.create for constraint checking (with optional override
- * requests), then atomically persists the prep list, its flat item rows, and
- * an outbox event.
- *
- * Migrated from apps/app/(authenticated)/kitchen/prep-lists/actions-manifest.ts
- * per docs/manifest-architecture-contract.md (apps/app must not execute
- * Manifest runtime).
+ * list builder — the governed PrepList.create (with optional override
+ * requests) plus one governed PrepListItem.create per builder row, all inside
+ * a single transaction-bound Manifest runtime so the writes commit or roll
+ * back together (same pattern as runManifestBatch). The previous raw-SQL
+ * inserts + hand-written outbox row were removed 2026-07-04 when the legacy
+ * kitchen runtime layer was deleted.
  */
 
-import { randomUUID } from "node:crypto";
 import type {
   ConstraintOutcome,
   OverrideRequest,
 } from "@angriff36/manifest/ir";
 import { database, Prisma } from "@repo/database";
 import {
-  createPrepList,
-  createPrepListRuntime,
-  type KitchenOpsContext,
-} from "@repo/manifest-runtime";
-import { createPrismaStoreProvider } from "@repo/manifest-runtime/prisma-store";
-// biome-ignore lint/performance/noNamespaceImport: Sentry.logger requires namespace import
-import * as Sentry from "@sentry/nextjs";
+  type RunManifestCommandCoreFailure,
+  runManifestCommandCore,
+} from "@repo/manifest-runtime/run-manifest-command-core";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export const runtime = "nodejs";
 
@@ -80,10 +74,25 @@ function json(body: PrepListCreateResponseBody, status = 200) {
   return NextResponse.json(body, { status });
 }
 
+/** Thrown inside the transaction to abort it and surface the core failure. */
+class GovernedCreateError extends Error {
+  readonly failure: RunManifestCommandCoreFailure;
+  constructor(failure: RunManifestCommandCoreFailure) {
+    super(failure.message);
+    this.name = "GovernedCreateError";
+    this.failure = failure;
+  }
+}
+
 export async function POST(request: NextRequest): Promise<Response> {
   try {
     const currentUser = await requireCurrentUser();
     const tenantId = currentUser.tenantId;
+    const user = {
+      id: currentUser.id,
+      tenantId,
+      role: currentUser.role,
+    };
 
     const { input, overrideRequests } =
       (await request.json()) as CreatePrepListRequestBody;
@@ -91,7 +100,6 @@ export async function POST(request: NextRequest): Promise<Response> {
     if (!input?.eventId) {
       return json({ success: false, error: "Event ID is required." }, 400);
     }
-
     const name = input.name?.trim();
     if (!name) {
       return json(
@@ -101,11 +109,9 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
 
     // Verify event exists (read path, constitution §10)
-    const [event] = await database.$queryRaw<
-      Array<{ id: string; title: string; event_date: Date }>
-    >(
+    const [event] = await database.$queryRaw<Array<{ id: string }>>(
       Prisma.sql`
-        SELECT id, title, event_date
+        SELECT id
         FROM tenant_events.events
         WHERE tenant_id = ${tenantId}
           AND id = ${input.eventId}
@@ -113,178 +119,112 @@ export async function POST(request: NextRequest): Promise<Response> {
         LIMIT 1
       `
     );
-
     if (!event) {
       return json({ success: false, error: "Event not found." }, 404);
     }
 
-    const prepListId = randomUUID();
-    const dietaryRestrictions = input.dietaryRestrictions?.join(",") ?? "";
+    const items = Array.isArray(input.items) ? input.items : [];
     const totalEstimatedTimeMinutes = Math.round(input.totalEstimatedTime * 60);
 
-    // Governed write: PrepList.create via Manifest runtime (constraint check)
-    const runtimeContext: KitchenOpsContext = {
-      tenantId,
-      userId: currentUser.id,
-      userRole: currentUser.role,
-      storeProvider: createPrismaStoreProvider(database, tenantId),
-    };
-    const manifestRuntime = await createPrepListRuntime(runtimeContext);
+    const { prepListId, constraintOutcomes } = await database.$transaction(
+      async (tx) => {
+        const txRuntime = await createManifestRuntime({
+          user,
+          prismaOverride: tx,
+        });
+        const deps = { createRuntime: () => Promise.resolve(txRuntime) };
 
-    const createResult = await createPrepList(
-      manifestRuntime,
-      prepListId,
-      input.eventId,
-      name,
-      input.batchMultiplier ?? 1,
-      dietaryRestrictions,
-      input.totalItems ?? 0,
-      totalEstimatedTimeMinutes,
-      input.notes ?? "",
-      overrideRequests
-    );
-
-    const blockingConstraints = createResult.constraintOutcomes?.filter(
-      (o) => !o.passed && o.severity === "block" && !o.overridden
-    );
-
-    if (blockingConstraints && blockingConstraints.length > 0) {
-      return json(
-        {
-          success: false,
-          constraintOutcomes: createResult.constraintOutcomes,
-        },
-        422
-      );
-    }
-
-    const warningConstraints = createResult.constraintOutcomes?.filter(
-      (o) => !o.passed && o.severity === "warn"
-    );
-    if (warningConstraints && warningConstraints.length > 0) {
-      const { logger } = Sentry;
-      logger.warn(
-        logger.fmt`[Manifest] PrepList creation warnings: ${warningConstraints.map((c) => `${c.code}: ${c.formatted}`).join(", ")}`
-      );
-    }
-
-    // Persist to Prisma database + outbox atomically
-    await database.$transaction(async (tx) => {
-      await tx.$executeRaw(
-        Prisma.sql`
-          INSERT INTO tenant_kitchen.prep_lists (
-            tenant_id,
-            event_id,
-            id,
+        const created = await runManifestCommandCore(deps, {
+          entity: "PrepList",
+          command: "create",
+          body: {
+            eventId: input.eventId,
             name,
-            batch_multiplier,
-            dietary_restrictions,
-            status,
-            total_items,
-            total_estimated_time,
-            notes,
-            generated_at
-          )
-          VALUES (
-            ${tenantId},
-            ${input.eventId},
-            ${prepListId},
-            ${name},
-            ${input.batchMultiplier ?? 1},
-            ${input.dietaryRestrictions?.length > 0 ? input.dietaryRestrictions : null},
-            'draft',
-            ${input.totalItems ?? 0},
-            ${totalEstimatedTimeMinutes},
-            ${input.notes ?? null},
-            NOW()
-          )
-        `
-      );
+            batchMultiplier: input.batchMultiplier ?? 1,
+            dietaryRestrictions: input.dietaryRestrictions?.join(",") ?? "",
+            totalItems: input.totalItems ?? items.length,
+            totalEstimatedTime: totalEstimatedTimeMinutes,
+            notes: input.notes ?? "",
+            ...(overrideRequests ? { overrideRequests } : {}),
+          },
+          user,
+        });
+        if (!created.ok) {
+          throw new GovernedCreateError(created);
+        }
+        const listId = (created.result as { id?: string } | null)?.id;
+        if (!listId) {
+          throw new Error("PrepList.create returned no instance id");
+        }
 
-      if (input.items && Array.isArray(input.items)) {
-        for (let i = 0; i < input.items.length; i++) {
-          const item = input.items[i];
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
           if (!item) {
             continue;
           }
-          const itemId = randomUUID();
-
-          await tx.$executeRaw(
-            Prisma.sql`
-              INSERT INTO tenant_kitchen.prep_list_items (
-                tenant_id,
-                prep_list_id,
-                id,
-                station_id,
-                station_name,
-                ingredient_id,
-                ingredient_name,
-                category,
-                base_quantity,
-                base_unit,
-                scaled_quantity,
-                scaled_unit,
-                is_optional,
-                preparation_notes,
-                allergens,
-                dietary_substitutions,
-                dish_id,
-                dish_name,
-                recipe_version_id,
-                sort_order
-              )
-              VALUES (
-                ${tenantId},
-                ${prepListId},
-                ${itemId},
-                ${item.stationId},
-                ${item.stationName},
-                ${item.ingredientId},
-                ${item.ingredientName},
-                ${item.category ?? null},
-                ${item.baseQuantity},
-                ${item.baseUnit},
-                ${item.scaledQuantity},
-                ${item.scaledUnit},
-                ${item.isOptional},
-                ${item.preparationNotes ?? null},
-                ${item.allergens ?? []},
-                ${item.dietarySubstitutions ?? []},
-                ${item.dishId ?? null},
-                ${item.dishName ?? null},
-                ${item.recipeVersionId ?? null},
-                ${i}
-              )
-            `
-          );
+          const itemResult = await runManifestCommandCore(deps, {
+            entity: "PrepListItem",
+            command: "create",
+            body: {
+              prepListId: listId,
+              stationId: item.stationId,
+              stationName: item.stationName,
+              ingredientId: item.ingredientId,
+              ingredientName: item.ingredientName,
+              category: item.category ?? "",
+              baseQuantity: item.baseQuantity,
+              baseUnit: item.baseUnit,
+              scaledQuantity: item.scaledQuantity,
+              scaledUnit: item.scaledUnit,
+              isOptional: item.isOptional,
+              preparationNotes: item.preparationNotes ?? "",
+              allergens: item.allergens ?? [],
+              dietarySubstitutions: item.dietarySubstitutions ?? [],
+              dishId: item.dishId ?? "",
+              dishName: item.dishName ?? "",
+              recipeVersionId: item.recipeVersionId ?? "",
+              sortOrder: i,
+            },
+            user,
+          });
+          if (!itemResult.ok) {
+            throw new GovernedCreateError(itemResult);
+          }
         }
-      }
 
-      await tx.outboxEvent.create({
-        data: {
-          tenantId,
-          aggregateType: "PrepList",
-          aggregateId: prepListId,
-          eventType: "kitchen.preplist.created",
-          payload: {
-            prepListId,
-            eventId: input.eventId,
-            name,
-            totalItems: input.totalItems ?? 0,
-            batchMultiplier: input.batchMultiplier ?? 1,
-          },
-          status: "pending" as const,
-        },
-      });
-    });
+        return {
+          prepListId: listId,
+          constraintOutcomes: created.constraintOutcomes,
+        };
+      },
+      {
+        timeout: Math.min(items.length * 2000 + 5000, 120_000),
+        maxWait: 10_000,
+      }
+    );
 
     return json({
       success: true,
-      constraintOutcomes: createResult.constraintOutcomes,
+      constraintOutcomes,
       redirectUrl: `/kitchen/prep-lists/${prepListId}`,
       prepListId,
     });
   } catch (error) {
+    if (error instanceof GovernedCreateError) {
+      if (error.failure.kind === "constraint_blocked") {
+        return json(
+          {
+            success: false,
+            constraintOutcomes: error.failure.constraintOutcomes,
+          },
+          422
+        );
+      }
+      return json(
+        { success: false, error: error.failure.message },
+        error.failure.httpStatus
+      );
+    }
     if (error instanceof Error && error.name === "InvariantError") {
       return json({ success: false, error: error.message }, 401);
     }

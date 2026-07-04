@@ -103,7 +103,7 @@ const PATHS = {
   // generate-prisma-model-metadata.mjs). Carries ENTITY_TO_PRISMA_MODEL aliases.
   modelMetadata: resolve(
     PROJECT_ROOT,
-    "manifest/generated/runtime/prisma-model-metadata.generated.json"
+    "manifest/runtime/src/generated/prisma-model-metadata.generated.json"
   ),
   baseline: resolve(
     PROJECT_ROOT,

@@ -24,7 +24,7 @@ const { entityToPrismaModel, accessorNames, naming } = getAccessorConfig();
 
 const metadataPath = join(
   repoRoot,
-  "manifest/generated/runtime/prisma-model-metadata.generated.json"
+  "manifest/runtime/src/generated/prisma-model-metadata.generated.json"
 );
 
 function fail(msg) {

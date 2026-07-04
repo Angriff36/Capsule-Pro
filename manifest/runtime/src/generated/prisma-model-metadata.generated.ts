@@ -30357,6 +30357,2195 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       }
     ]
   },
+  "SelOnboardingTrainingModuleDefinition": {
+    "accessor": "selOnboardingTrainingModuleDefinition",
+    "dbName": "sel_onboarding_training_module_definitions",
+    "pgSchema": "public",
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "whereAccessor": "tenantId_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "code",
+        "irName": "code",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "title",
+        "irName": "title",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "contentType",
+        "irName": "contentType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "contentUrl",
+        "irName": "contentUrl",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "durationMinutes",
+        "irName": "durationMinutes",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "category",
+        "irName": "category",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "isRequired",
+        "irName": "isRequired",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "passThresholdPercent",
+        "irName": "passThresholdPercent",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "maxAttempts",
+        "irName": "maxAttempts",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "requiredRole",
+        "irName": "requiredRole",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion01Definition": {
+    "accessor": "selOnboardingTrainingQuestion01Definition",
+    "dbName": "sel_onboarding_training_question01_definitions",
+    "pgSchema": "public",
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "whereAccessor": "tenantId_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "code",
+        "irName": "code",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion02Definition": {
+    "accessor": "selOnboardingTrainingQuestion02Definition",
+    "dbName": "sel_onboarding_training_question02_definitions",
+    "pgSchema": "public",
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "whereAccessor": "tenantId_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "code",
+        "irName": "code",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion03Definition": {
+    "accessor": "selOnboardingTrainingQuestion03Definition",
+    "dbName": "sel_onboarding_training_question03_definitions",
+    "pgSchema": "public",
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "whereAccessor": "tenantId_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "code",
+        "irName": "code",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion04Definition": {
+    "accessor": "selOnboardingTrainingQuestion04Definition",
+    "dbName": "sel_onboarding_training_question04_definitions",
+    "pgSchema": "public",
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "whereAccessor": "tenantId_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "code",
+        "irName": "code",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion05Definition": {
+    "accessor": "selOnboardingTrainingQuestion05Definition",
+    "dbName": "sel_onboarding_training_question05_definitions",
+    "pgSchema": "public",
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "whereAccessor": "tenantId_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "code",
+        "irName": "code",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion06Definition": {
+    "accessor": "selOnboardingTrainingQuestion06Definition",
+    "dbName": "sel_onboarding_training_question06_definitions",
+    "pgSchema": "public",
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "whereAccessor": "tenantId_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "code",
+        "irName": "code",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion07Definition": {
+    "accessor": "selOnboardingTrainingQuestion07Definition",
+    "dbName": "sel_onboarding_training_question07_definitions",
+    "pgSchema": "public",
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "whereAccessor": "tenantId_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "code",
+        "irName": "code",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion08Definition": {
+    "accessor": "selOnboardingTrainingQuestion08Definition",
+    "dbName": "sel_onboarding_training_question08_definitions",
+    "pgSchema": "public",
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "whereAccessor": "tenantId_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "code",
+        "irName": "code",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion09Definition": {
+    "accessor": "selOnboardingTrainingQuestion09Definition",
+    "dbName": "sel_onboarding_training_question09_definitions",
+    "pgSchema": "public",
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "whereAccessor": "tenantId_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "code",
+        "irName": "code",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
+  "SelOnboardingTrainingQuestion10Definition": {
+    "accessor": "selOnboardingTrainingQuestion10Definition",
+    "dbName": "sel_onboarding_training_question10_definitions",
+    "pgSchema": "public",
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "whereAccessor": "tenantId_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "questionId",
+        "irName": "questionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "code",
+        "irName": "code",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
   "Shipment": {
     "accessor": "shipment",
     "dbName": "shipments",

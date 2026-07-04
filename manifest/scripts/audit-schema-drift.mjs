@@ -55,7 +55,7 @@ const PATHS = {
   // Prisma-field-name bridge including ENTITY_TO_PRISMA_MODEL aliases.
   modelMetadata: path.join(
     ROOT,
-    "manifest/generated/runtime/prisma-model-metadata.generated.json"
+    "manifest/runtime/src/generated/prisma-model-metadata.generated.json"
   ),
   outDir: path.join(ROOT, "manifest/reports/schema-drift"),
 };

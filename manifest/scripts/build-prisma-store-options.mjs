@@ -17,7 +17,7 @@ const root = resolve(here, "../..");
 const prismaOptionsPath = join(here, "prisma-options.generated.json");
 const metadataJsonPath = join(
   root,
-  "manifest/generated/runtime/prisma-model-metadata.generated.json"
+  "manifest/runtime/src/generated/prisma-model-metadata.generated.json"
 );
 const outPath = join(here, "prisma-store-options.generated.json");
 

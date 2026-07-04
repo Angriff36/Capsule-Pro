@@ -8,7 +8,6 @@
   "exports": {
     ".": "./src/index.ts",
     "./prisma-store": "./src/prisma-store.ts",
-    "./api-response": "./src/api-response.ts",
     "./route-helpers": "./src/route-helpers.ts",
     "./ir-contract": "./src/ir-contract.ts",
     "./runtime-engine": "./src/runtime-engine.ts",
@@ -28,7 +27,6 @@
     "./run-manifest-saga-core": "./src/run-manifest-saga-core.ts",
     "./bottleneck-detector": "./src/bottleneck-detector/index.ts",
     "./entity-accessor": "./src/generated/entity-accessor.generated.ts",
-    "./prep-list-autogeneration": "./src/prep-list-autogeneration.ts",
     "./flag-provider": "./src/flag-provider.ts"
   },
   "dependencies": {

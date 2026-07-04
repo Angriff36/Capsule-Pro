@@ -21,7 +21,7 @@ import {
   readFileSync,
   writeFileSync,
 } from "node:fs";
-import { basename, dirname, join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { getAccessorConfig } from "./read-config.mjs";
 
 const { entityToPrismaModel: ENTITY_TO_PRISMA_MODEL } = getAccessorConfig();
@@ -32,7 +32,7 @@ const schemaPath = resolve(
 );
 const outPath = resolve(
   root,
-  "manifest/generated/runtime/prisma-model-metadata.generated.ts"
+  "manifest/runtime/src/generated/prisma-model-metadata.generated.ts"
 );
 
 /**
@@ -271,20 +271,11 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = ${JSON.str
 )};
 `;
 
-// Dual-write: manifest/generated/runtime is the canonical output; the runtime
-// package imports its own copy under manifest/runtime/src/generated (same
-// pattern as generate-entity-accessor.mjs). A single-path write left the
-// runtime copy stale after the model-rename wave — every governed command
-// failed with `Prisma client has no delegate "bulk_combine_rules"`.
-const runtimeSrcGenerated = resolve(root, "manifest/runtime/src/generated");
+// Single home: manifest/runtime/src/generated (the old manifest/generated/runtime
+// dual-write twin was removed 2026-07-04 — one path, no staleness class).
 const writeBoth = (canonicalPath, contents) => {
-  for (const p of [
-    canonicalPath,
-    join(runtimeSrcGenerated, basename(canonicalPath)),
-  ]) {
-    mkdirSync(dirname(p), { recursive: true });
-    writeFileSync(p, contents);
-  }
+  mkdirSync(dirname(canonicalPath), { recursive: true });
+  writeFileSync(canonicalPath, contents);
 };
 
 writeBoth(outPath, `${header}\n${body}`);
@@ -294,7 +285,7 @@ writeBoth(outPath, `${header}\n${body}`);
 // Contains only the accessor + field-name metadata needed for route generation.
 const jsonOutPath = resolve(
   root,
-  "manifest/generated/runtime/prisma-model-metadata.generated.json"
+  "manifest/runtime/src/generated/prisma-model-metadata.generated.json"
 );
 const lightweight = {};
 for (const [entityName, meta] of Object.entries(models)) {
@@ -312,7 +303,7 @@ writeBoth(jsonOutPath, `${JSON.stringify(lightweight, null, 2)}\n`);
 // Consumed by manifest-runtime-factory (hasTypedStore) and GenericPrismaStore.
 const bridgeOutPath = resolve(
   root,
-  "manifest/generated/runtime/entity-to-prisma-model.generated.ts"
+  "manifest/runtime/src/generated/entity-to-prisma-model.generated.ts"
 );
 const bridgeHeader = `// Generated from manifest.config.yaml — DO NOT EDIT
 // Produced by manifest/scripts/generate-prisma-model-metadata.mjs

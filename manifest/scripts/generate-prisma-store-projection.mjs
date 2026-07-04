@@ -6,8 +6,8 @@
  * manifest/prisma-store-options.generated.json (built by build-prisma-store-options.mjs).
  *
  * Output (separate from schema-derived prisma-model-metadata.generated.ts):
- *   manifest/generated/runtime/manifest-prisma-store-metadata.generated.ts
- *   manifest/generated/runtime/prisma-store-registry.generated.ts
+ *   manifest/runtime/src/generated/manifest-prisma-store-metadata.generated.ts
+ *   manifest/runtime/src/generated/prisma-store-registry.generated.ts
  *
  * Runtime authority: manifest-prisma-store-metadata.generated.ts (IR projection).
  * Schema-derived prisma-model-metadata is merged for requiresTenantConnect only.
@@ -21,7 +21,7 @@ const optionsPath = join(
   root,
   "manifest/scripts/prisma-store-options.generated.json"
 );
-const outDir = join(root, "manifest/generated/runtime");
+const outDir = join(root, "manifest/runtime/src/generated");
 
 if (!existsSync(irPath)) {
   console.error(`IR not found: ${irPath}. Run pnpm manifest:compile first.`);
@@ -90,18 +90,12 @@ function enrichWithSchemaFlags(code) {
   return `${header}export const PRISMA_MODEL_METADATA: PrismaModelMetadata = ${JSON.stringify(metadata, null, 2)};\n`;
 }
 
-// Dual-write: the runtime package imports its own copy under
-// manifest/runtime/src/generated (same pattern as generate-entity-accessor.mjs).
-// Writing only the canonical dir left the runtime copy stale after the
-// model-rename wave and broke every governed command at store creation.
-const runtimeSrcGenerated = join(root, "manifest/runtime/src/generated");
-mkdirSync(runtimeSrcGenerated, { recursive: true });
+// Single home: manifest/runtime/src/generated (the old manifest/generated/runtime
+// dual-write twin was removed 2026-07-04 — one path, no staleness class).
 const writeBoth = (fileName, contents) => {
-  for (const dir of [outDir, runtimeSrcGenerated]) {
-    const outPath = join(dir, fileName);
-    writeFileSync(outPath, contents);
-    console.log(`wrote ${outPath}`);
-  }
+  const outPath = join(outDir, fileName);
+  writeFileSync(outPath, contents);
+  console.log(`wrote ${outPath}`);
 };
 
 for (const artifact of metaResult.artifacts) {

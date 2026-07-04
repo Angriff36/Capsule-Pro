@@ -92,6 +92,7 @@ export interface FriendlyFailureInput {
     | "guard_failed"
     | "constraint_blocked"
     | "command_failed"
+    | "invalid_params"
     | "runtime_error";
   message: string;
   /**

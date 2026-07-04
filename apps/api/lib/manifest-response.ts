@@ -7,7 +7,7 @@
  * stays as a thin executor (Q003); if not, delete it when `emitCompanions: true` flips on.
  * Decision tracked at canonical/manifest/runtime-native-ownership/ Q003.
  *
- * Wraps the kitchen-ops api-response utilities into the simple
+ * Provides the simple
  * `manifestSuccessResponse` / `manifestErrorResponse` interface
  * that the generated handlers call.
  */
