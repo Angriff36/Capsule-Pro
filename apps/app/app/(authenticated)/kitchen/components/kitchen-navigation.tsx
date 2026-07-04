@@ -42,7 +42,7 @@ const navigationItems = [
   },
   {
     title: "Inventory",
-    href: "/kitchen/inventory",
+    href: "/inventory/items",
     icon: Package,
   },
   {
@@ -62,12 +62,12 @@ const navigationItems = [
   },
   {
     title: "Team",
-    href: "/kitchen/team",
+    href: "/staff/team",
     icon: Users,
   },
   {
     title: "Schedule",
-    href: "/kitchen/schedule",
+    href: "/staffing",
     icon: Calendar,
   },
   {

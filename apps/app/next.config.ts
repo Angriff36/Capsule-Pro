@@ -124,6 +124,10 @@ const rewrites: NextConfig["rewrites"] = async () => {
       destination: `${apiBaseUrl}/api/logistics/:path*`,
     },
     {
+      source: "/api/warehouse/:path*",
+      destination: `${apiBaseUrl}/api/warehouse/:path*`,
+    },
+    {
       source: "/api/manifest/:path*",
       destination: `${apiBaseUrl}/api/manifest/:path*`,
     },
@@ -271,7 +275,7 @@ const baseConfig: NextConfig = withToolbar(
       // That fails the build, `next dev` exits 1, and turbo restarts the
       // persistent dev task on a loop — leaking a node process tree each cycle
       // (Windows doesn't reap orphaned children). Setting root stops the loop.
-      root: path.join(__dirname, "..", ".."),
+      root: path.join(import.meta.dirname, "..", ".."),
       resolveAlias: {
         // canvas is a Node-only module used by some PDF libs; stub it out for browser bundles
         // Turbopack requires a string path, not a boolean — use empty module
@@ -325,12 +329,12 @@ const baseConfig: NextConfig = withToolbar(
       },
       {
         source: "/calendar/schedule-shift",
-        destination: "/scheduling/shifts/new",
+        destination: "/scheduling/shifts",
         permanent: false,
       },
       {
         source: "/calendar/webhooks",
-        destination: "/webhooks",
+        destination: "/settings/webhooks",
         permanent: false,
       },
       // Events module orphans
@@ -346,7 +350,7 @@ const baseConfig: NextConfig = withToolbar(
       },
       {
         source: "/events/webhooks",
-        destination: "/webhooks",
+        destination: "/settings/webhooks",
         permanent: false,
       },
       // Orphan routes — sidebar links but no page.tsx

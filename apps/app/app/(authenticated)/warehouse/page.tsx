@@ -56,7 +56,7 @@ const WarehousePage = () => (
         title: "Inventory",
         description:
           "Browse warehouse inventory, stock levels, reorder points, and item details.",
-        href: "/warehouse/inventory",
+        href: "/inventory/levels",
         actionLabel: "Browse items",
         icon: BoxesIcon,
       },

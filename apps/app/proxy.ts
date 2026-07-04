@@ -5,7 +5,6 @@ import { NextResponse } from "next/server";
 const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
-  "/plasmic(.*)",
   "/view/proposal(.*)",
   "/sign/contract(.*)",
 ]);
@@ -95,7 +94,7 @@ export const config = {
      * the same public allowlist as the route matchers above for clarity and
      * direct helper tests.
      */
-    "/((?!(?:sign-in|sign-up|plasmic|view/proposal|sign/contract)(?:/|$)|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|manifest.webmanifest|site.webmanifest|.*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/((?!(?:sign-in|sign-up|view/proposal|sign/contract)(?:/|$)|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|manifest.webmanifest|site.webmanifest|.*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     // Always run for Clerk-specific frontend API routes
     "/__clerk/(.*)",
   ],

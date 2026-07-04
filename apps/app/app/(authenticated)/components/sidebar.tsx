@@ -80,7 +80,7 @@ const data = {
     },
     {
       title: "Webhooks",
-      url: "/webhooks",
+      url: "/settings/webhooks",
       icon: AnchorIcon,
     },
     {

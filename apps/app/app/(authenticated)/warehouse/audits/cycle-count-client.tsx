@@ -54,13 +54,6 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import {
-  OperationalPageShell,
-} from "../../components/operational-page-shell";
-import type {
-  CycleCountSessionStatus,
-  CycleCountSessionType,
-} from "@/app/(authenticated)/cycle-counting/types";
 import { formatCurrency } from "@/app/lib/format";
 import {
   cycleCountSessionCancel,
@@ -73,6 +66,8 @@ import {
 import type { CycleCountSession as GeneratedCycleCountSession } from "@/app/lib/manifest-types.generated";
 import type { StorageLocation } from "@/app/lib/stock-levels";
 import { listLocations } from "@/app/lib/stock-levels";
+import { OperationalPageShell } from "../../components/operational-page-shell";
+import type { CycleCountSessionStatus, CycleCountSessionType } from "./types";
 
 // Use generated type for API responses (camelCase strings from JSON)
 type CycleCountSession = GeneratedCycleCountSession;
@@ -311,329 +306,333 @@ export const CycleCountClient = () => {
         eyebrow="Warehouse / Audits"
         title="Cycle counts"
       >
+        {/* Summary Cards */}
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card tone="canvas">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="font-medium text-sm">
+                Total Sessions
+              </CardTitle>
+              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-bold text-2xl">{totalCount}</div>
+              <p className="text-muted-foreground text-xs">
+                All time cycle count sessions
+              </p>
+            </CardContent>
+          </Card>
+          <Card tone="canvas">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="font-medium text-sm">Draft</CardTitle>
+              <CheckCircleIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-bold text-2xl">{draftSessions}</div>
+              <p className="text-muted-foreground text-xs">
+                Sessions awaiting start
+              </p>
+            </CardContent>
+          </Card>
+          <Card tone="canvas">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="font-medium text-sm">In Progress</CardTitle>
+              <PlayIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-bold text-2xl">{inProgressSessions}</div>
+              <p className="text-muted-foreground text-xs">
+                Active counting sessions
+              </p>
+            </CardContent>
+          </Card>
+          <Card tone="canvas">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="font-medium text-sm">
+                Total Variance
+              </CardTitle>
+              <AlertTriangleIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-bold text-2xl">
+                {formatCurrency(totalVariance)}
+              </div>
+              <p className="text-muted-foreground text-xs">
+                Across all sessions
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+        {/* Filters */}
         <Card tone="canvas">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">
-              Total Sessions
-            </CardTitle>
-            <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+          <CardHeader>
+            <CardTitle>Filters</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="font-bold text-2xl">{totalCount}</div>
-            <p className="text-muted-foreground text-xs">
-              All time cycle count sessions
-            </p>
-          </CardContent>
-        </Card>
-        <Card tone="canvas">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">Draft</CardTitle>
-            <CheckCircleIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">{draftSessions}</div>
-            <p className="text-muted-foreground text-xs">
-              Sessions awaiting start
-            </p>
-          </CardContent>
-        </Card>
-        <Card tone="canvas">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">In Progress</CardTitle>
-            <PlayIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">{inProgressSessions}</div>
-            <p className="text-muted-foreground text-xs">
-              Active counting sessions
-            </p>
-          </CardContent>
-        </Card>
-        <Card tone="canvas">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">
-              Total Variance
-            </CardTitle>
-            <AlertTriangleIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">
-              {formatCurrency(totalVariance)}
+            <div className="flex flex-col gap-4 md:flex-row md:items-center">
+              <Input
+                className="max-w-sm"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search sessions..."
+                value={searchQuery}
+              />
+              <Select
+                onValueChange={(value) =>
+                  setStatusFilter(value as CycleCountSessionStatus | "all")
+                }
+                value={statusFilter}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="finalized">Finalized</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                onValueChange={(value) =>
+                  setTypeFilter(value as CycleCountSessionType | "all")
+                }
+                value={typeFilter}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="ad_hoc">Ad Hoc</SelectItem>
+                  <SelectItem value="scheduled_daily">Daily</SelectItem>
+                  <SelectItem value="scheduled_weekly">Weekly</SelectItem>
+                  <SelectItem value="scheduled_monthly">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <p className="text-muted-foreground text-xs">Across all sessions</p>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Filters */}
-      <Card tone="canvas">
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-4 md:flex-row md:items-center">
-            <Input
-              className="max-w-sm"
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search sessions..."
-              value={searchQuery}
-            />
-            <Select
-              onValueChange={(value) =>
-                setStatusFilter(value as CycleCountSessionStatus | "all")
-              }
-              value={statusFilter}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="finalized">Finalized</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              onValueChange={(value) =>
-                setTypeFilter(value as CycleCountSessionType | "all")
-              }
-              value={typeFilter}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="ad_hoc">Ad Hoc</SelectItem>
-                <SelectItem value="scheduled_daily">Daily</SelectItem>
-                <SelectItem value="scheduled_weekly">Weekly</SelectItem>
-                <SelectItem value="scheduled_monthly">Monthly</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Sessions Table */}
-      <Card tone="canvas">
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Session Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Progress</TableHead>
-                <TableHead className="text-right">Variance</TableHead>
-                <TableHead>Scheduled</TableHead>
-                <TableHead />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
+        {/* Sessions Table */}
+        <Card tone="canvas">
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell className="py-8 text-center" colSpan={7}>
-                    Loading sessions...
-                  </TableCell>
+                  <TableHead>Session Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Progress</TableHead>
+                  <TableHead className="text-right">Variance</TableHead>
+                  <TableHead>Scheduled</TableHead>
+                  <TableHead />
                 </TableRow>
-              ) : filteredSessions.length === 0 ? (
-                <TableRow>
-                  <TableCell className="py-8 text-center" colSpan={7}>
-                    No sessions found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredSessions.map((session) => (
-                  <TableRow key={session.id}>
-                    <TableCell className="font-medium">
-                      <div>
-                        <div className="font-medium">{session.sessionName}</div>
-                        {session.notes && (
-                          <div className="max-w-md truncate text-muted-foreground text-sm">
-                            {session.notes}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {countTypeLabel[
-                          session.countType as CycleCountSessionType
-                        ] ?? session.countType}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          statusVariant[
-                            session.status as CycleCountSessionStatus
-                          ] ?? "secondary"
-                        }
-                      >
-                        {statusLabel[
-                          session.status as CycleCountSessionStatus
-                        ] ?? session.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <span>
-                        {session.countedItems ?? 0} / {session.totalItems ?? 0}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <span
-                        className={
-                          (session.totalVariance ?? 0) === 0
-                            ? ""
-                            : (session.totalVariance ?? 0) > 0
-                              ? "text-green-600"
-                              : "text-red-600"
-                        }
-                      >
-                        {formatCurrency(Math.abs(session.totalVariance ?? 0))}
-                        {(session.totalVariance ?? 0) !== 0 && (
-                          <span className="text-xs">
-                            {" "}
-                            ({(session.totalVariance ?? 0) > 0 ? "+" : ""}
-                            {(session.variancePercentage ?? 0).toFixed(1)}%)
-                          </span>
-                        )}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {session.scheduledDate
-                        ? new Date(session.scheduledDate).toLocaleDateString()
-                        : "-"}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button size="sm" variant="ghost">
-                            <MoreHorizontalIcon className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {session.status === "draft" && (
-                            <>
-                              <DropdownMenuItem
-                                onClick={() => handleStartSession(session.id)}
-                              >
-                                <PlayIcon className="mr-2 h-4 w-4" />
-                                Start Session
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  (window.location.href = `/warehouse/audits/${session.id}`)
-                                }
-                              >
-                                View Details
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                          {session.status === "in_progress" && (
-                            <>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  (window.location.href = `/warehouse/audits/${session.id}`)
-                                }
-                              >
-                                <PlayIcon className="mr-2 h-4 w-4" />
-                                Continue Counting
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleCompleteSession(session.id)
-                                }
-                              >
-                                <CheckCircleIcon className="mr-2 h-4 w-4" />
-                                Complete Session
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                          {session.status === "completed" && (
-                            <>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  (window.location.href = `/warehouse/audits/${session.id}`)
-                                }
-                              >
-                                View Details
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleFinalizeSession(session.id)
-                                }
-                              >
-                                <CheckCircleIcon className="mr-2 h-4 w-4" />
-                                Finalize Session
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                          {session.status === "finalized" && (
-                            <DropdownMenuItem
-                              onClick={() =>
-                                (window.location.href = `/warehouse/audits/${session.id}`)
-                              }
-                            >
-                              View Report
-                            </DropdownMenuItem>
-                          )}
-                          {(session.status === "draft" ||
-                            session.status === "in_progress") && (
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => handleCancelSession(session.id)}
-                            >
-                              Cancel Session
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell className="py-8 text-center" colSpan={7}>
+                      Loading sessions...
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                ) : filteredSessions.length === 0 ? (
+                  <TableRow>
+                    <TableCell className="py-8 text-center" colSpan={7}>
+                      No sessions found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredSessions.map((session) => (
+                    <TableRow key={session.id}>
+                      <TableCell className="font-medium">
+                        <div>
+                          <div className="font-medium">
+                            {session.sessionName}
+                          </div>
+                          {session.notes && (
+                            <div className="max-w-md truncate text-muted-foreground text-sm">
+                              {session.notes}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {countTypeLabel[
+                            session.countType as CycleCountSessionType
+                          ] ?? session.countType}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            statusVariant[
+                              session.status as CycleCountSessionStatus
+                            ] ?? "secondary"
+                          }
+                        >
+                          {statusLabel[
+                            session.status as CycleCountSessionStatus
+                          ] ?? session.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <span>
+                          {session.countedItems ?? 0} /{" "}
+                          {session.totalItems ?? 0}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <span
+                          className={
+                            (session.totalVariance ?? 0) === 0
+                              ? ""
+                              : (session.totalVariance ?? 0) > 0
+                                ? "text-green-600"
+                                : "text-red-600"
+                          }
+                        >
+                          {formatCurrency(Math.abs(session.totalVariance ?? 0))}
+                          {(session.totalVariance ?? 0) !== 0 && (
+                            <span className="text-xs">
+                              {" "}
+                              ({(session.totalVariance ?? 0) > 0 ? "+" : ""}
+                              {(session.variancePercentage ?? 0).toFixed(1)}%)
+                            </span>
+                          )}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {session.scheduledDate
+                          ? new Date(session.scheduledDate).toLocaleDateString()
+                          : "-"}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button size="sm" variant="ghost">
+                              <MoreHorizontalIcon className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {session.status === "draft" && (
+                              <>
+                                <DropdownMenuItem
+                                  onClick={() => handleStartSession(session.id)}
+                                >
+                                  <PlayIcon className="mr-2 h-4 w-4" />
+                                  Start Session
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    (window.location.href = `/warehouse/audits/${session.id}`)
+                                  }
+                                >
+                                  View Details
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            {session.status === "in_progress" && (
+                              <>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    (window.location.href = `/warehouse/audits/${session.id}`)
+                                  }
+                                >
+                                  <PlayIcon className="mr-2 h-4 w-4" />
+                                  Continue Counting
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    handleCompleteSession(session.id)
+                                  }
+                                >
+                                  <CheckCircleIcon className="mr-2 h-4 w-4" />
+                                  Complete Session
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            {session.status === "completed" && (
+                              <>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    (window.location.href = `/warehouse/audits/${session.id}`)
+                                  }
+                                >
+                                  View Details
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    handleFinalizeSession(session.id)
+                                  }
+                                >
+                                  <CheckCircleIcon className="mr-2 h-4 w-4" />
+                                  Finalize Session
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            {session.status === "finalized" && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  (window.location.href = `/warehouse/audits/${session.id}`)
+                                }
+                              >
+                                View Report
+                              </DropdownMenuItem>
+                            )}
+                            {(session.status === "draft" ||
+                              session.status === "in_progress") && (
+                              <DropdownMenuItem
+                                className="text-red-600"
+                                onClick={() => handleCancelSession(session.id)}
+                              >
+                                Cancel Session
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="text-muted-foreground text-sm">
-          Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, totalCount)} of{" "}
-          {totalCount} sessions
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            disabled={page === 1}
-            onClick={() => setPage(page - 1)}
-            size="sm"
-            variant="outline"
-          >
-            <ChevronLeftIcon className="h-4 w-4" />
-            Previous
-          </Button>
-          <div className="text-sm">
-            Page {page} of {totalPages}
+        {/* Pagination */}
+        <div className="flex items-center justify-between">
+          <div className="text-muted-foreground text-sm">
+            Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, totalCount)}{" "}
+            of {totalCount} sessions
           </div>
-          <Button
-            disabled={page === totalPages}
-            onClick={() => setPage(page + 1)}
-            size="sm"
-            variant="outline"
-          >
-            Next
-            <ChevronRightIcon className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+              size="sm"
+              variant="outline"
+            >
+              <ChevronLeftIcon className="h-4 w-4" />
+              Previous
+            </Button>
+            <div className="text-sm">
+              Page {page} of {totalPages}
+            </div>
+            <Button
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+              size="sm"
+              variant="outline"
+            >
+              Next
+              <ChevronRightIcon className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-      </div>
       </OperationalPageShell>
 
       {/* Create Session Dialog */}

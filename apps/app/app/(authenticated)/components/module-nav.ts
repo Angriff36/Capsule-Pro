@@ -49,7 +49,7 @@ export const modules: ModuleDefinition[] = [
           { title: "Calendar View", href: "/calendar" },
           { title: "Calendar Sync", href: "/calendar/sync" },
           { title: "Add Event", href: "/events/new" },
-          { title: "Schedule Shift", href: "/scheduling/shifts/new" },
+          { title: "Schedule Shift", href: "/scheduling/shifts" },
         ],
       },
     ],
@@ -64,7 +64,6 @@ export const modules: ModuleDefinition[] = [
         items: [
           { title: "All Events", href: "/events" },
           { title: "Calendar", href: "/calendar" },
-          { title: "Kitchen Dashboard", href: "/events/kitchen-dashboard" },
           { title: "Catering", href: "/events/catering" },
         ],
       },
@@ -80,8 +79,6 @@ export const modules: ModuleDefinition[] = [
         label: "Management",
         items: [
           { title: "Contracts", href: "/events/contracts" },
-          { title: "Event Intake", href: "/events/intake" },
-          { title: "Menu Builder", href: "/events/menu-builder" },
           { title: "Reports", href: "/events/reports" },
           { title: "Imports", href: "/events/import" },
         ],
@@ -95,16 +92,15 @@ export const modules: ModuleDefinition[] = [
     sidebar: [
       {
         label: "Main",
-        items: [{ title: "Dashboard", href: "/kitchen" }, { title: "Inbox" }],
+        items: [{ title: "Dashboard", href: "/kitchen" }],
       },
       {
         label: "Kitchen",
         items: [
-          { title: "Events" },
           { title: "Production", href: "/kitchen" },
           { title: "Recipes", href: "/kitchen/recipes" },
           { title: "Prep Lists", href: "/kitchen/prep-lists" },
-          { title: "Inventory", href: "/kitchen/inventory" },
+          { title: "Inventory", href: "/inventory/items" },
           { title: "Waste Tracking", href: "/kitchen/waste" },
           { title: "Mobile Waste", href: "/kitchen/waste/mobile" },
           { title: "Allergens", href: "/kitchen/allergens" },
@@ -129,8 +125,8 @@ export const modules: ModuleDefinition[] = [
       {
         label: "Staff",
         items: [
-          { title: "Team", href: "/kitchen/team" },
-          { title: "Schedule", href: "/kitchen/schedule" },
+          { title: "Team", href: "/staff/team" },
+          { title: "Schedule", href: "/staffing" },
         ],
       },
     ],
@@ -144,14 +140,14 @@ export const modules: ModuleDefinition[] = [
         label: "Warehouse",
         items: [
           { title: "Overview", href: "/warehouse" },
-          { title: "Inventory", href: "/warehouse/inventory" },
+          { title: "Inventory", href: "/inventory/items" },
           { title: "Receiving", href: "/warehouse/receiving" },
           { title: "Receiving History", href: "/warehouse/receiving/history" },
+          { title: "Receiving Reports", href: "/warehouse/receiving/reports" },
           { title: "Putaway", href: "/warehouse/putaway" },
           { title: "Pick & Pack", href: "/warehouse/pick-pack" },
           { title: "Shipments", href: "/warehouse/shipments" },
           { title: "Audits", href: "/warehouse/audits" },
-          { title: "Cycle Counting", href: "/cycle-counting" },
         ],
       },
     ],
@@ -173,19 +169,6 @@ export const modules: ModuleDefinition[] = [
           { title: "Optimization", href: "/scheduling/optimization" },
           { title: "Leaderboard", href: "/scheduling/leaderboard" },
           { title: "Notifications", href: "/scheduling/notifications" },
-        ],
-      },
-      {
-        label: "Settings",
-        items: [
-          {
-            title: "Rules Explorer",
-            href: "/scheduling/settings/manifest-editor",
-          },
-          {
-            title: "Rules Playground",
-            href: "/scheduling/settings/manifest-playground",
-          },
         ],
       },
     ],
@@ -221,7 +204,6 @@ export const modules: ModuleDefinition[] = [
         items: [
           { title: "Overview", href: "/staffing" },
           { title: "AI Recommendations", href: "/staffing/recommendations" },
-          { title: "Coverage", href: "/staffing/coverage" },
           { title: "Shifts", href: "/staffing/shifts" },
           { title: "Availability", href: "/staffing/availability" },
         ],
@@ -237,7 +219,6 @@ export const modules: ModuleDefinition[] = [
         label: "Payroll",
         items: [
           { title: "Overview", href: "/payroll" },
-          { title: "Payroll Overview", href: "/payroll/overview" },
           { title: "Timecards", href: "/payroll/timecards" },
           { title: "Payouts", href: "/payroll/payouts" },
           { title: "Pay Runs", href: "/payroll/runs" },
@@ -265,6 +246,7 @@ export const modules: ModuleDefinition[] = [
             title: "Overview Boards",
             href: "/administrative/overview-boards",
           },
+          { title: "Trash", href: "/administrative/trash" },
         ],
       },
       {
@@ -457,7 +439,7 @@ export const modules: ModuleDefinition[] = [
         label: "Marketing",
         items: [
           { title: "Overview", href: "/marketing" },
-          { title: "Campaigns", href: "/marketing/campaigns" },
+          { title: "Leads", href: "/marketing/leads" },
         ],
       },
     ],
@@ -500,12 +482,6 @@ export const getModuleKeyFromPathname = (pathname: string): ModuleKey => {
   }
   if (pathname === "/search" || pathname.startsWith("/search/")) {
     return "search";
-  }
-  if (
-    pathname === "/cycle-counting" ||
-    pathname.startsWith("/cycle-counting/")
-  ) {
-    return "warehouse";
   }
 
   const match = modules.find(

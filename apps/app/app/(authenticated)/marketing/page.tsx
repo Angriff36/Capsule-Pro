@@ -1,18 +1,10 @@
-import { BarChart3, Mail, Megaphone, MessageSquare, Users } from "lucide-react";
+import { BarChart3, Mail, MessageSquare, Users } from "lucide-react";
 import { ModuleLanding } from "../components/module-landing";
 
 const MarketingPage = () => (
   <ModuleLanding
     eyebrow="Operations / Marketing"
     highlights={[
-      {
-        title: "Campaigns",
-        description:
-          "Create and manage multi-channel marketing campaigns with performance tracking.",
-        href: "/marketing/campaigns",
-        actionLabel: "View campaigns",
-        icon: Megaphone,
-      },
       {
         title: "Leads",
         description:
