@@ -16805,6 +16805,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "vendorId",
+        "irName": "vendorId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt",
         "type": "DateTime",
@@ -26829,6 +26840,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "sourceType",
+        "irName": "sourceType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "supplierId",
+        "irName": "supplierId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "itemCount",
         "irName": "itemCount",
         "type": "Int",
@@ -27024,6 +27057,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sourcePrepListIds",
+        "irName": "sourcePrepListIds",
+        "type": "String",
+        "isEnum": false,
+        "isList": true,
+        "optional": false,
         "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
@@ -37846,6 +37890,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": false,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "inventoryItemId",
+        "irName": "inventoryItemId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },

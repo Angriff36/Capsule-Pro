@@ -505,6 +505,11 @@ export interface InventorySupplierDeactivateInput {
   userId?: string;
   reason?: string;
 }
+export interface InventorySupplierLinkVendorInput {
+  id?: string;
+  vendorId?: string;
+  userId?: string;
+}
 export interface InventorySupplierReinstateInput {
   id?: string;
   reinstatedBy?: string;
@@ -892,6 +897,8 @@ export interface PurchaseRequisitionCreateInput {
   justification?: string;
   priority?: string;
   itemCategory?: string;
+  sourceType?: string;
+  supplierId?: string;
 }
 export interface PurchaseRequisitionRejectInput {
   id?: string;
@@ -920,6 +927,7 @@ export interface PurchaseRequisitionItemCreateInput {
   suggestedVendorName?: string;
   specifications?: string;
   notes?: string;
+  sourcePrepListIds?: string[];
 }
 export interface PurchaseRequisitionItemRemoveInput {
   id?: string;
@@ -933,6 +941,7 @@ export interface PurchaseRequisitionItemUpdateInput {
   suggestedVendorName?: string;
   specifications?: string;
   notes?: string;
+  sourcePrepListIds?: string[];
 }
 export interface ReorderSuggestionAcceptInput {
   id?: string;
@@ -1223,6 +1232,11 @@ export interface VendorCatalogCreateInput {
 export interface VendorCatalogDeactivateInput {
   id?: string;
   reason?: string;
+}
+export interface VendorCatalogLinkInventoryItemInput {
+  id?: string;
+  inventoryItemId?: string;
+  userId?: string;
 }
 export interface VendorCatalogReactivateInput {
   id?: string;
@@ -2400,6 +2414,10 @@ export async function inventorySupplierDeactivate(input: InventorySupplierDeacti
   const r = await executeCommand<InventorySupplier>("InventorySupplier", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
+export async function inventorySupplierLinkVendor(input: InventorySupplierLinkVendorInput = {}): Promise<InventorySupplier | undefined> {
+  const r = await executeCommand<InventorySupplier>("InventorySupplier", "linkVendor", input as Record<string, unknown>);
+  return r.result;
+}
 export async function inventorySupplierReinstate(input: InventorySupplierReinstateInput = {}): Promise<InventorySupplier | undefined> {
   const r = await executeCommand<InventorySupplier>("InventorySupplier", "reinstate", input as Record<string, unknown>);
   return r.result;
@@ -2870,6 +2888,10 @@ export async function vendorCatalogCreate(input: VendorCatalogCreateInput = {}):
 }
 export async function vendorCatalogDeactivate(input: VendorCatalogDeactivateInput = {}): Promise<VendorCatalog | undefined> {
   const r = await executeCommand<VendorCatalog>("VendorCatalog", "deactivate", input as Record<string, unknown>);
+  return r.result;
+}
+export async function vendorCatalogLinkInventoryItem(input: VendorCatalogLinkInventoryItemInput = {}): Promise<VendorCatalog | undefined> {
+  const r = await executeCommand<VendorCatalog>("VendorCatalog", "linkInventoryItem", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorCatalogReactivate(input: VendorCatalogReactivateInput = {}): Promise<VendorCatalog | undefined> {

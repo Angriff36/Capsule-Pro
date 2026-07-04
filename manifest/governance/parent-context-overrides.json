@@ -314,6 +314,28 @@
       "reason": "Surfaced 2026-06-10 when the Event hub-propagation increment added a `templateId` property to Event (which event-creation template the event was built from). AutomatedFollowup.templateId is the followup's OWN notification template — the email/sms/push message template used to render the followup — authored per followup and semantically independent of the parent Event's source template. The name+type match is coincidental; the followup message template must NOT inherit the event's creation template.",
       "owner": "events",
       "reviewed": "2026-06-10"
+    },
+    "InventorySupplier": {
+      "fields": [
+        "email",
+        "phone",
+        "paymentTerms"
+      ],
+      "category": "FALSE_POSITIVE",
+      "reason": "InventorySupplier.email/phone/paymentTerms are the inventory-side supplier record's OWN contact and terms fields. The new optional vendorId bridge (2026-07-04) links to the procurement Vendor identity, but a Vendor's contact/terms do not define the inventory supplier's — the two records are maintained independently and the bridge is optional (may be empty).",
+      "owner": "inventory",
+      "reviewed": "2026-07-04"
+    },
+    "VendorCatalog": {
+      "fields": [
+        "supplierId",
+        "category",
+        "unitOfMeasure"
+      ],
+      "category": "FALSE_POSITIVE",
+      "reason": "VendorCatalog.supplierId is the owning InventorySupplier of the catalog entry — unrelated to the new optional inventoryItemId mapping (2026-07-04) that links a supplier product to the stock item it fulfills. category/unitOfMeasure describe the SUPPLIER'S product (pack/case units), which legitimately differ from the inventory item's stock category/unit; inheriting them would erase the supplier-vs-stock distinction the unit-conversion path depends on.",
+      "owner": "procurement",
+      "reviewed": "2026-07-04"
     }
   }
 }

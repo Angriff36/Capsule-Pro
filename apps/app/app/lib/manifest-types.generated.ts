@@ -1732,6 +1732,7 @@ export interface InventorySupplier {
   blacklistedAt?: string | null;
   blacklistedReason?: string | null;
   qualificationStatus?: string | null;
+  vendorId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2736,6 +2737,8 @@ export interface PurchaseRequisition {
   submittedAt?: string | null;
   itemCategory?: string | null;
   priority?: string;
+  sourceType?: string | null;
+  supplierId?: string | null;
   itemCount?: number | null;
   createdAt: string;
   updatedAt: string;
@@ -2756,6 +2759,7 @@ export interface PurchaseRequisitionItem {
   suggestedVendorName?: string | null;
   specifications?: string | null;
   notes?: string | null;
+  sourcePrepListIds?: string[] | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3856,6 +3860,7 @@ export interface VendorCatalog {
   tenantId: string;
   deletedAt?: string | null;
   supplierId: string;
+  inventoryItemId?: string | null;
   itemNumber?: string;
   itemName?: string;
   description?: string | null;

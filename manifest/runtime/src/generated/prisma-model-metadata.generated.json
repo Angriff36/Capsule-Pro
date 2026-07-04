@@ -6568,6 +6568,10 @@
         "irName": "qualificationStatus"
       },
       {
+        "name": "vendorId",
+        "irName": "vendorId"
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt"
       },
@@ -10482,6 +10486,14 @@
         "irName": "priority"
       },
       {
+        "name": "sourceType",
+        "irName": "sourceType"
+      },
+      {
+        "name": "supplierId",
+        "irName": "supplierId"
+      },
+      {
         "name": "itemCount",
         "irName": "itemCount"
       },
@@ -10558,6 +10570,10 @@
       {
         "name": "notes",
         "irName": "notes"
+      },
+      {
+        "name": "sourcePrepListIds",
+        "irName": "sourcePrepListIds"
       },
       {
         "name": "createdAt",
@@ -14804,6 +14820,10 @@
       {
         "name": "supplierId",
         "irName": "supplierId"
+      },
+      {
+        "name": "inventoryItemId",
+        "irName": "inventoryItemId"
       },
       {
         "name": "itemNumber",

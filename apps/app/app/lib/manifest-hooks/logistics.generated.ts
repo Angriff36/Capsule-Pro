@@ -2188,6 +2188,19 @@ export function useInventorySupplierBlacklistMutation(
   });
 }
 
+export function useInventorySupplierLinkVendorMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<InventorySupplier>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<InventorySupplier>("InventorySupplier", "linkVendor", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventorySupplier.all });
+    },
+    ...options,
+  });
+}
+
 export function useInventoryTransactionCreateMutation(
   options?: Omit<UseMutationOptions<CommandEnvelope<InventoryTransaction>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
@@ -3728,6 +3741,19 @@ export function useVendorCatalogSoftDeleteMutation(
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input) => executeCommand<VendorCatalog>("VendorCatalog", "softDelete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorCatalog.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorCatalogLinkInventoryItemMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VendorCatalog>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VendorCatalog>("VendorCatalog", "linkInventoryItem", input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.vendorCatalog.all });
     },

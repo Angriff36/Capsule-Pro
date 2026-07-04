@@ -30,6 +30,10 @@ entity InventorySupplier mixin TenantScoped, SoftDeletable {
   property blacklistedAt: datetime?
   property blacklistedReason: string? = ""
   property qualificationStatus: string? = "pending"
+  // Bridge to the procurement-side Vendor identity (2026-07-04): purchasing
+  // (PurchaseOrder.vendorId) uses Vendor while inventory uses InventorySupplier;
+  // this optional link declares "this inventory supplier IS this purchasing vendor".
+  property vendorId: string? = ""
   timestamps
 
   computed hasContact: boolean = self.contactPerson != "" or self.email != ""
@@ -44,6 +48,8 @@ entity InventorySupplier mixin TenantScoped, SoftDeletable {
   // Back-relations (U11): additional inverse hasMany for children that belongTo InventorySupplier
   relationship hasMany shipments: Shipment
   relationship hasMany catalogs: VendorCatalog
+  relationship hasMany requisitions: PurchaseRequisition
+  relationship belongsTo vendor: Vendor fields [vendorId, tenantId] references [id, tenantId]
 
   constraint validPaymentTerms: self.paymentTerms in ["NET_15", "NET_30", "NET_45", "NET_60", "COD", "PREPAID"] "Invalid payment terms"
   constraint validQualificationStatus: self.qualificationStatus in ["pending", "approved", "suspended", "blacklisted"] "Invalid qualification status"
@@ -172,6 +178,15 @@ entity InventorySupplier mixin TenantScoped, SoftDeletable {
     emit InventorySupplierBlacklisted
   }
 
+  // Link this inventory supplier to its procurement-side Vendor identity.
+  command linkVendor(vendorId: string, userId: string) {
+    guard vendorId != null and vendorId != "" "Vendor ID is required"
+
+    mutate vendorId = vendorId
+
+    emit InventorySupplierVendorLinked
+  }
+
   store InventorySupplier in durable
 }
 
@@ -186,6 +201,15 @@ event InventorySupplierCreated: "inventory.supplier.created" {
   supplierNumber: string
   paymentTerms: string
   createdAt: datetime
+}
+
+event InventorySupplierVendorLinked: "inventory.supplier.vendor.linked" {
+  supplierId: string
+  tenantId: string
+  name: string
+  vendorId: string
+  userId: string
+  updatedAt: datetime
 }
 
 event InventorySupplierUpdated: "inventory.supplier.updated" {

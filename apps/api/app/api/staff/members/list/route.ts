@@ -7,7 +7,7 @@ import { database } from "@repo/database";
 import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
 import { auth } from "@repo/auth/server";
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
   const { orgId, userId } = await auth();
   if (!(userId && orgId)) {

@@ -52,6 +52,7 @@ entity InventoryItem mixin TenantScoped, SoftDeletable {
 
   // Back-relations (U11): inverse hasMany for children that belongTo InventoryItem
   relationship hasMany ingredients: Ingredient
+  relationship hasMany catalogEntries: VendorCatalog
   relationship hasMany cycleCountRecords: CycleCountRecord
   relationship hasMany varianceReports: VarianceReport
   relationship hasMany shipmentItems: ShipmentItem

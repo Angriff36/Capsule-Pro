@@ -45,6 +45,7 @@ entity Vendor mixin TenantScoped {
   hasMany contracts: VendorContract
   hasMany purchaseOrders: PurchaseOrder
   hasMany requisitionSuggestions: PurchaseRequisitionItem
+  hasMany inventorySuppliers: InventorySupplier
 
   default policy VendorDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Vendor management"
   command create(name: string, type: string, email: string, phone: string, website: string, address: string, city: string, state: string, zip: string, taxId: string, paymentTerms: string, notes: string) {

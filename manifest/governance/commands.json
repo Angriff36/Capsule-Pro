@@ -1,5 +1,5 @@
 {
-  "irHash": "699b045fd51e27ee39e1c5732e94e28a7465bb74c0d139df3108ff555ef99237",
+  "irHash": "5ec027facfedc2aeef289e5f1d29a8ec59e97f48d2821422e84ad87a09db1aa8",
   "compilerVersion": "3.1.3",
   "commands": [
     {
@@ -1849,7 +1849,7 @@
       "policies": [
         "CallPlanningSessionDefaultAccess"
       ],
-      "guardCount": 3,
+      "guardCount": 2,
       "emits": [
         "CallPlanningSessionStarted"
       ],
@@ -7678,6 +7678,22 @@
     },
     {
       "entity": "InventorySupplier",
+      "command": "linkVendor",
+      "commandId": "InventorySupplier.linkVendor",
+      "policies": [
+        "InventorySupplierDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "InventorySupplierVendorLinked"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "InventorySupplier",
       "command": "reinstate",
       "commandId": "InventorySupplier.reinstate",
       "policies": [
@@ -12603,6 +12619,21 @@
     },
     {
       "entity": "Recipe",
+      "command": "setSubrecipe",
+      "commandId": "Recipe.setSubrecipe",
+      "policies": [
+        "RecipeDefaultAccess"
+      ],
+      "guardCount": 0,
+      "emits": [
+        "RecipeSubrecipeSet"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Recipe",
       "command": "update",
       "commandId": "Recipe.update",
       "policies": [
@@ -12713,6 +12744,21 @@
     },
     {
       "entity": "RecipeStep",
+      "command": "setStepDetails",
+      "commandId": "RecipeStep.setStepDetails",
+      "policies": [
+        "RecipeStepDefaultAccess"
+      ],
+      "guardCount": 0,
+      "emits": [
+        "RecipeStepDetailsSet"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RecipeStep",
       "command": "updateInstruction",
       "commandId": "RecipeStep.updateInstruction",
       "policies": [
@@ -12804,6 +12850,21 @@
       ],
       "effects": [
         "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RecipeVersion",
+      "command": "setPackaging",
+      "commandId": "RecipeVersion.setPackaging",
+      "policies": [
+        "RecipeVersionDefaultAccess"
+      ],
+      "guardCount": 0,
+      "emits": [
+        "RecipeVersionPackagingSet"
+      ],
+      "effects": [
         "mutate"
       ]
     },
@@ -15916,6 +15977,22 @@
       "guardCount": 2,
       "emits": [
         "VendorCatalogItemDeactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VendorCatalog",
+      "command": "linkInventoryItem",
+      "commandId": "VendorCatalog.linkInventoryItem",
+      "policies": [
+        "VendorCatalogDefaultAccess"
+      ],
+      "guardCount": 2,
+      "emits": [
+        "VendorCatalogInventoryItemLinked"
       ],
       "effects": [
         "compute",

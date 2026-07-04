@@ -2835,6 +2835,7 @@ model InventoryItem {
   transferItems InventoryTransferItem[]
   supplier InventorySupplier? @relation(fields: [tenantId, supplierId], references: [tenantId, id])
   ingredients Ingredient[]
+  catalogEntries VendorCatalog[]
   cycleCountRecords CycleCountRecord[]
   varianceReports VarianceReport[]
   shipmentItems ShipmentItem[]
@@ -2909,6 +2910,7 @@ model InventorySupplier {
   blacklistedAt DateTime? @map("blacklisted_at") @db.Timestamptz(6)
   blacklistedReason String? @map("blacklisted_reason") @default("")
   qualificationStatus String? @map("qualification_status") @default("pending")
+  vendorId String? @map("vendor_id") @default("")
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -2917,6 +2919,8 @@ model InventorySupplier {
   ratings VendorRating[]
   shipments Shipment[]
   catalogs VendorCatalog[]
+  requisitions PurchaseRequisition[]
+  vendor Vendor? @relation(fields: [vendorId, tenantId], references: [id, tenantId])
 
   @@map("inventory_suppliers")
   @@id([tenantId, id])
@@ -4619,12 +4623,15 @@ model PurchaseRequisition {
   submittedAt DateTime? @map("submitted_at") @db.Timestamptz(6)
   itemCategory String? @map("item_category") @default("")
   priority String @default("normal")
+  sourceType String? @map("source_type") @default("")
+  supplierId String? @map("supplier_id") @default("")
   itemCount Int? @map("item_count") @default(0)
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
   items PurchaseRequisitionItem[]
   convertedToPo PurchaseOrder? @relation(fields: [convertedToPoId], references: [id])
+  supplier InventorySupplier? @relation(fields: [supplierId, tenantId], references: [id, tenantId])
   location Facility? @relation(fields: [locationId], references: [id])
 
   @@map("purchase_requisitions")
@@ -4653,6 +4660,7 @@ model PurchaseRequisitionItem {
   suggestedVendorName String? @map("suggested_vendor_name") @default("")
   specifications String? @default("")
   notes String? @default("")
+  sourcePrepListIds String[] @map("source_prep_list_ids") @default([])
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -6517,6 +6525,7 @@ model Vendor {
   contracts VendorContract[]
   purchaseOrders PurchaseOrder[]
   requisitionSuggestions PurchaseRequisitionItem[]
+  inventorySuppliers InventorySupplier[]
 
   @@map("Vendor")
   @@id([tenantId, id])
@@ -6534,6 +6543,7 @@ model VendorCatalog {
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   supplierId String @map("supplier_id") @db.Uuid
+  inventoryItemId String? @map("inventory_item_id") @default("")
   itemNumber String @map("item_number") @default("")
   itemName String @map("item_name") @default("")
   description String? @default("")
@@ -6557,6 +6567,7 @@ model VendorCatalog {
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
   supplier InventorySupplier @relation(fields: [supplierId, tenantId], references: [id, tenantId])
+  inventoryItem InventoryItem? @relation(fields: [inventoryItemId, tenantId], references: [id, tenantId])
 
   @@map("vendor_catalogs")
   @@id([tenantId, id])

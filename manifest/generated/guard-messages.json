@@ -1738,6 +1738,9 @@
   "InventorySupplier.deactivate": [
     "Supplier is already inactive"
   ],
+  "InventorySupplier.linkVendor": [
+    "Vendor ID is required"
+  ],
   "InventorySupplier.reinstate": [
     "Only suspended suppliers can be reinstated",
     "Reinstating user is required"
@@ -3711,6 +3714,10 @@
   "VendorCatalog.deactivate": [
     "Catalog entry is already inactive",
     "Catalog entry is deleted"
+  ],
+  "VendorCatalog.linkInventoryItem": [
+    "Cannot link inventory item on an inactive catalog entry",
+    "Inventory item ID is required"
   ],
   "VendorCatalog.reactivate": [
     "Catalog entry is already active",

@@ -16750,6 +16750,17 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
+        "name": "vendor_id",
+        "irName": "vendorId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "created_at",
         "irName": "createdAt",
         "type": "DateTime",
@@ -26688,6 +26699,28 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
+        "name": "source_type",
+        "irName": "sourceType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "supplier_id",
+        "irName": "supplierId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "item_count",
         "irName": "itemCount",
         "type": "Int",
@@ -26882,6 +26915,17 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "type": "String",
         "isEnum": false,
         "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "source_prep_list_ids",
+        "irName": "sourcePrepListIds",
+        "type": "String",
+        "isEnum": false,
+        "isList": true,
         "optional": true,
         "hasDefault": true,
         "isUpdatedAt": false,
@@ -37651,6 +37695,17 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isList": false,
         "optional": false,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "inventory_item_id",
+        "irName": "inventoryItemId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },

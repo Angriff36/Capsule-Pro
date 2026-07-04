@@ -6,6 +6,9 @@ use "../_base.manifest"
 entity VendorCatalog mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required supplierId: string
+  // Mapping to the stock item this supplier product fulfills (2026-07-04):
+  // the load-bearing link for prep-demand ordering and catalog-priced purchasing.
+  property inventoryItemId: string? = ""
   unique property required itemNumber: string = ""
   searchable searchable property required itemName: string = ""
   searchable property description: string? = ""
@@ -167,8 +170,28 @@ entity VendorCatalog mixin TenantScoped, SoftDeletable {
   }
 
   relationship belongsTo supplier: InventorySupplier fields [supplierId, tenantId] references [id, tenantId]
+  relationship belongsTo inventoryItem: InventoryItem fields [inventoryItemId, tenantId] references [id, tenantId]
+
+  command linkInventoryItem(inventoryItemId: string, userId: string) {
+    guard self.isActive "Cannot link inventory item on an inactive catalog entry"
+    guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
+
+    mutate inventoryItemId = inventoryItemId
+
+    emit VendorCatalogInventoryItemLinked
+  }
 
   store VendorCatalog in durable
+}
+
+event VendorCatalogInventoryItemLinked: "inventory.vendor-catalog.inventory-item.linked" {
+  catalogId: string
+  tenantId: string
+  supplierId: string
+  itemNumber: string
+  inventoryItemId: string
+  userId: string
+  updatedAt: datetime
 }
 
 event VendorCatalogCreated: "inventory.vendor-catalog.created" {

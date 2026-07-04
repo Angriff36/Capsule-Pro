@@ -2421,6 +2421,11 @@
   },
   {
     "entity": "InventorySupplier",
+    "command": "linkVendor",
+    "commandId": "InventorySupplier.linkVendor"
+  },
+  {
+    "entity": "InventorySupplier",
     "command": "reinstate",
     "commandId": "InventorySupplier.reinstate"
   },
@@ -5043,6 +5048,11 @@
     "entity": "VendorCatalog",
     "command": "deactivate",
     "commandId": "VendorCatalog.deactivate"
+  },
+  {
+    "entity": "VendorCatalog",
+    "command": "linkInventoryItem",
+    "commandId": "VendorCatalog.linkInventoryItem"
   },
   {
     "entity": "VendorCatalog",

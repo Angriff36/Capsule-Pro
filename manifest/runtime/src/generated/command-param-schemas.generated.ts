@@ -7,7 +7,7 @@
 // canonical command dispatcher (run-manifest-command-core) as a pre-flight gate
 // that rejects malformed requests with a 400 before the runtime is created.
 //
-// Commands: 1062
+// Commands: 1064
 
 import { z } from "zod";
 
@@ -2226,6 +2226,10 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   userId: z.string(),
   reason: z.string(),
 }),
+  "InventorySupplier.linkVendor": z.object({
+  vendorId: z.string(),
+  userId: z.string(),
+}),
   "InventorySupplier.reinstate": z.object({
   reinstatedBy: z.string(),
   notes: z.string(),
@@ -3482,6 +3486,8 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   justification: z.string(),
   priority: z.string(),
   itemCategory: z.string(),
+  sourceType: z.string().optional(),
+  supplierId: z.string().optional(),
 }),
   "PurchaseRequisition.reject": z.object({
   userId: z.string(),
@@ -3507,6 +3513,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   suggestedVendorName: z.string(),
   specifications: z.string(),
   notes: z.string(),
+  sourcePrepListIds: z.array(z.string()).optional(),
 }),
   "PurchaseRequisitionItem.remove": z.object({
   userId: z.string(),
@@ -3518,6 +3525,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   suggestedVendorName: z.string(),
   specifications: z.string(),
   notes: z.string(),
+  sourcePrepListIds: z.array(z.string()).optional(),
 }),
   "QACheck.complete": z.object({
   result: z.string(),
@@ -4641,6 +4649,10 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "VendorCatalog.deactivate": z.object({
   reason: z.string(),
+}),
+  "VendorCatalog.linkInventoryItem": z.object({
+  inventoryItemId: z.string(),
+  userId: z.string(),
 }),
   "VendorCatalog.reactivate": z.object({
   reactivatedBy: z.string(),

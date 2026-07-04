@@ -33,6 +33,13 @@ entity PurchaseRequisition mixin TenantScoped, SoftDeletable {
   property submittedAt: datetime?
   property itemCategory: string? = ""
   property required priority: string = "normal"
+  // Provenance (2026-07-04): how this requisition came to exist ("prep_demand"
+  // for drafts consolidated from finalized prep lists; "" for manual) and the
+  // inventory supplier the draft is grouped for (one draft per tenant+supplier
+  // in the prep-demand path). Per-item prep-list traceability lives on
+  // PurchaseRequisitionItem.sourcePrepListIds.
+  property sourceType: string? = ""
+  property supplierId: string? = ""
   timestamps
   property itemCount: int? = 0
 
@@ -40,6 +47,7 @@ entity PurchaseRequisition mixin TenantScoped, SoftDeletable {
 
   hasMany items: PurchaseRequisitionItem
   belongsTo convertedToPo: PurchaseOrder with convertedToPoId
+  belongsTo supplier: InventorySupplier fields [supplierId, tenantId] references [id, tenantId]
   belongsTo location: Facility with locationId
 
   computed isDraft: boolean = self.status == "draft"
@@ -68,7 +76,7 @@ entity PurchaseRequisition mixin TenantScoped, SoftDeletable {
   }
 
   default policy PurchaseRequisitionDefaultAccess execute: user.role in ["kitchen_lead", "procurement_manager", "manager", "admin"] "Procurement management"
-  command create(requisitionNumber: string, locationId: string, department: string, requestedBy: string, requiredBy: datetime, justification: string, priority: string, itemCategory: string) {
+  command create(requisitionNumber: string, locationId: string, department: string, requestedBy: string, requiredBy: datetime, justification: string, priority: string, itemCategory: string, optional sourceType: string, optional supplierId: string) {
     guard requisitionNumber != null and requisitionNumber != "" "Requisition number is required"
     guard requestedBy != null and requestedBy != "" "Requester is required"
     guard requiredBy != null "Required by date is required"
@@ -82,6 +90,8 @@ entity PurchaseRequisition mixin TenantScoped, SoftDeletable {
     mutate justification = justification
     mutate priority = priority
     mutate itemCategory = itemCategory
+    mutate sourceType = sourceType
+    mutate supplierId = supplierId
     mutate subtotal = 0
     mutate estimatedTax = 0
     mutate estimatedShipping = 0
@@ -224,6 +234,9 @@ entity PurchaseRequisitionItem mixin TenantScoped, SoftDeletable {
   property suggestedVendorName: string? = ""
   property specifications: string? = ""
   searchable property notes: string? = ""
+  // Provenance (2026-07-04): the prep lists whose finalized demand produced
+  // this line (merged demand for the same item accumulates every source id).
+  property sourcePrepListIds: array<string>? = []
   timestamps
 
   key [tenantId, id]
@@ -239,7 +252,7 @@ entity PurchaseRequisitionItem mixin TenantScoped, SoftDeletable {
   constraint nonNegativeCost: self.estimatedUnitCost >= 0 "Unit cost cannot be negative"
 
   default policy PurchaseRequisitionItemDefaultAccess execute: user.role in ["kitchen_lead", "procurement_manager", "manager", "admin"] "Procurement management"
-  command create(requisitionId: string, itemId: string, itemName: string, quantityRequested: decimal, unitId: number, estimatedUnitCost: money, suggestedVendorId: string, suggestedVendorName: string, specifications: string, notes: string) {
+  command create(requisitionId: string, itemId: string, itemName: string, quantityRequested: decimal, unitId: number, estimatedUnitCost: money, suggestedVendorId: string, suggestedVendorName: string, specifications: string, notes: string, optional sourcePrepListIds: array<string>) {
     guard requisitionId != null and requisitionId != "" "Requisition ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
     guard quantityRequested != null and quantityRequested > 0 "Quantity must be positive"
@@ -256,11 +269,12 @@ entity PurchaseRequisitionItem mixin TenantScoped, SoftDeletable {
     mutate suggestedVendorName = suggestedVendorName
     mutate specifications = specifications
     mutate notes = notes
+    mutate sourcePrepListIds = sourcePrepListIds
 
     emit PurchaseRequisitionItemCreated
   }
 
-  command update(quantityRequested: decimal, estimatedUnitCost: money, suggestedVendorId: string, suggestedVendorName: string, specifications: string, notes: string) {
+  command update(quantityRequested: decimal, estimatedUnitCost: money, suggestedVendorId: string, suggestedVendorName: string, specifications: string, notes: string, optional sourcePrepListIds: array<string>) {
     guard quantityRequested != null and quantityRequested > 0 "Quantity must be positive"
     guard estimatedUnitCost != null and estimatedUnitCost >= 0 "Unit cost cannot be negative"
 
@@ -271,6 +285,7 @@ entity PurchaseRequisitionItem mixin TenantScoped, SoftDeletable {
     mutate suggestedVendorName = suggestedVendorName
     mutate specifications = specifications
     mutate notes = notes
+    mutate sourcePrepListIds = sourcePrepListIds
 
     emit PurchaseRequisitionItemUpdated
   }
