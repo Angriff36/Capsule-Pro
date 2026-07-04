@@ -221,10 +221,20 @@ The retired packages `packages/manifest-runtime`, `packages/manifest-ir`, and `p
 | Governance registries: commands, entities, bypasses, baselines, allowlists       | `manifest/governance/`                                           | Governance data                  |
 | Compile, build, audit, generation, and utility scripts                           | `manifest/scripts/`                                              | Build pipeline scripts           |
 | Human-readable audit and normalization reports                                   | `manifest/reports/`                                              | Reports                          |
-| API-side runtime glue: command resolver, execution wrapper, outbox, telemetry    | `apps/api/lib/manifest/`                                         | API transport glue               |
-| API runtime factory (Sentry/DB injection)                                        | `apps/api/lib/manifest-runtime.ts`                               | API transport glue               |
-| API command handler for REST domain adapters                                     | `apps/api/lib/manifest-command-handler.ts`                       | API transport glue               |
-| Canonical Next.js App Router HTTP dispatcher                                     | `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` | API dispatcher route             |
+| API-side runtime glue: command resolver, execution wrapper, outbox, telemetry | `apps/api/lib/manifest/` | API transport glue |
+| API runtime factory (Sentry/DB injection) | `apps/api/lib/manifest-runtime.ts` | API transport glue |
+| API command handler for REST domain adapters | `apps/api/lib/manifest-command-handler.ts` | API transport glue |
+| Canonical Next.js App Router HTTP dispatcher | `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` | API dispatcher route |
+
+> **Annotated 2026-07-04 (PR #78 / `@angriff36/manifest@3.1.3`):** The three "API transport glue" rows
+> above (`apps/api/lib/manifest-runtime.ts`, `apps/api/lib/manifest-command-handler.ts`, and much of
+> `apps/api/lib/manifest/`) are **deletion targets** once Ryan approves the native companion/dispatcher
+> flip tracked at `canonical/manifest/runtime-native-ownership/`. Native 3.1.3 ships companion modules
+> (`createManifestRuntime`, `manifest-response`, database, auth/tenant helpers), a native Next.js
+> dispatcher (`externalExecutor` mode), and full `RuntimeOptions` — making the hand-rolled factory,
+> response envelope, and executor nonconforming duplicates of native surfaces. The **dispatcher route
+> path stays canonical** (constitution §6) whether the file is hand-written or natively generated. This
+> annotation records the divergence; the binding table rows themselves are Ryan's to amend.
 
 ### Dispatcher Execution Wrapper Rule
 

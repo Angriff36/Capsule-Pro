@@ -123,17 +123,24 @@ Evidence:
 
 ## 3a. Custom Glue & Why Manifest Can't Do It Natively
 
+> **RECONCILIATION 2026-07-04 (PR #78, `@angriff36/manifest@3.1.3`):** This table was authored
+> against 2.18.x. Most rows are now SUPERSEDED. PR #78 commit `d1f2159` rewired `generate.mjs` to
+> call the native nextjs projection with a config option bag (`routeSegments` + `accessorNames` +
+> `dispatcher.enabled:false` + `concreteCommandRoutes.enabled:false` + `emitCompanions:false`),
+> dropping the temp-dir staging, `remapToDomainPath`, the drifted-accessor rewrite, and the
+> phantom-field rewrite. `generate.mjs` went 672 → ~215 LOC. Updated status per row below.
+
 `generate.mjs` calls the stock `nextjs` projection, then post-processes its output. Each glue piece and why the stock projection can't replace it:
 
 | Glue | What stock projection does | What Capsule needs | Why Manifest can't do it natively (today) | Status |
 |---|---|---|---|---|
-| Flat → domain path remap (via `ENTITY_DOMAIN_MAP`) | Emits **flat** paths: `event/list → app/api/event/list/route.ts` | **Domain-grouped** paths: `app/api/events/event/list/route.ts` + `commands/{cmd}` infix + per-entity `[detailSegment]` | `routeSegments` overrides only the per-entity URL *prefix* — it **cannot** add the `commands/` infix (per-command routes like `events/profitability/commands/recalculate` exist) nor set custom detail-param names (`ENTITY_DETAIL_SEGMENT_OVERRIDES`, not always `[id]`). **Corrected 2026-06-27** (was wrongly marked "retireable via routeSegments"): the remap is irreducible — the stock projection can't express these shapes. | **REQUIRED** (routeSegments handles only the read-route prefix, not commands/ or detail overrides) |
-| Prisma accessor rewrite | Hardcodes `database.<camelCase(entity)>` with no model-existence check | Correct accessor when the Prisma model name drifts from the entity name (`@@map`, PascalCase, renamed models) | Stock has no model-existence check → emits phantom accessors that throw at runtime. No projection option for accessor drift. (`accessor-resolution.mjs`) | **REQUIRED** |
-| Field-name overrides | Emits IR property names verbatim | Real column names for legacy/drifted models (snake_case, missing `createdAt`) | Stock can't know the live Prisma column names — they diverge from the IR. No projection knob. (`applyFieldOverrides`) | **REQUIRED** |
-| Entity drop (no Prisma table) | Emits read routes for every entity | No read route for entities with no backing table | Stock generates unconditionally; a route to a non-existent table 500s. No projection filter. | **REQUIRED** |
-| Legacy per-command route pruning | (stock now defaults `concreteCommandRoutes.enabled=false`) | Single dispatcher only; remove stale per-command files | Largely covered now by stock `concreteCommandRoutes` defaults; the prune step (`pruneLegacyCommandRoutes`) cleans pre-existing files the projection won't delete. | **PARTIAL — cleanup only** |
+| Flat → domain path remap (via `ENTITY_DOMAIN_MAP`) | Emits **flat** paths: `event/list → app/api/event/list/route.ts` | **Domain-grouped** paths: `app/api/events/event/list/route.ts` + `commands/{cmd}` infix + per-entity `[detailSegment]` | **SUPERSEDED 2026-07-04.** 3.x native `routeSegments` (188 entries now in `manifest.config.yaml`) drives generation directly; `ENTITY_DOMAIN_MAP` now *derives from* config (no duplication). The earlier "routeSegments can't express commands/ infix" claim (2026-06-27) no longer holds — Capsule runs with `concreteCommandRoutes.enabled:false` + a single native dispatcher, so no per-command infix is generated. | **RESOLVED — native config** |
+| Prisma accessor rewrite | Hardcodes `database.<camelCase(entity)>` with no model-existence check | Correct accessor when the Prisma model name drifts from the entity name (`@@map`, PascalCase, renamed models) | **SUPERSEDED 2026-07-04.** Native `accessorNames` config (15 non-naive delegates in `manifest.config.yaml`) resolves this at the projection. The hand-rolled `accessor-resolution.mjs` rewrite is gone. | **RESOLVED — native config** |
+| Field-name overrides | Emits IR property names verbatim | Real column names for legacy/drifted models (snake_case, missing `createdAt`) | **SUPERSEDED 2026-07-04.** With the native prisma projection owning `schema.prisma` (`@map("snake_case")`), Prisma client fields ARE camelCase; the snake_case `ENTITY_FIELD_OVERRIDES` pass was provably dead and dropped (commit `d1f2159`). | **RESOLVED — native schema** |
+| Entity drop (no Prisma table) | Emits read routes for every entity | No read route for entities with no backing table | Native generation now skips non-generated entities via the skip-non-generated safety in `generate.mjs`; under the native schema every IR entity IS its own model, so the no-table case largely disappears. Remaining skips: `TaskBundleItem` (composite PK), `AdminChatThread`/`EventImport` (hand-written `[threadId]`/`[importId]` handlers). | **PARTIAL — small explicit skip-list** |
+| Legacy per-command route pruning | (stock now defaults `concreteCommandRoutes.enabled=false`) | Single dispatcher only; remove stale per-command files | Covered by stock `concreteCommandRoutes` default + `pruneLegacyCommandRoutes` cleanup. | **RESOLVED** |
 
-The command **dispatcher** itself is fully native (stock `nextjs.dispatcher`) — no glue. Only read-route shaping + accessor/field correctness need glue. The accessor/field/entity-drop glue is genuinely required (it compensates for IR↔Prisma drift the projection can't see); the path remap is retireable config.
+The command **dispatcher** itself is fully native (stock `nextjs.dispatcher`, supports `externalExecutor` mode). Capsule currently runs `dispatcher.enabled:false` + hand-writes the dispatcher — flipping that is the open NEEDS-RYAN decision in `canonical/manifest/runtime-native-ownership/`. Only the small explicit skip-list and the hand-written dispatcher template remain as glue; the accessor/field/path glue is retired.
 
 ---
 

@@ -52,6 +52,46 @@ type check". Root causes, all from the "smart import" work (commit `43c852456`),
    dep-build graph green. Final `next build` not runnable locally (needs prod env) but compiled clean
    on Vercel before — failure was purely typecheck.
 
+## 0b. RECONCILIATION (2026-07-04) — Manifest 3.1.3 native surfaces supersede several earlier findings
+
+Branch `feat/manifest-3.0-native` (PR #78, open) took the package from 2.22.0 glue to **3.1.3 native**.
+Verified against `node_modules/@angriff36/manifest@3.1.3` dist + `manifest.config.yaml`. The following
+earlier findings in THIS file are now SUPERSEDED — read this section first:
+
+- **§3b ("no Prisma store/repository projection ships") — WRONG as of 3.1.3.** Native GenericPrismaStore
+  ships at `@angriff36/manifest/stores/prisma-generic/store.{js,d.ts}`. Capsule's hand-rolled
+  `prisma-stores/*` + `prisma-store.ts` switch + the `manifest-runtime-factory.ts` 2,050-LOC runtime
+  owner are now DELETION TARGETS, not "the documented integration path."
+- **§3a/§8 ("adopting the Prisma projection requires building an options bag") — SUPERSEDED.** Native
+  config-driven generation owns `packages/database/prisma/schema.prisma` directly (commit `c845d7827`,
+  199 models, multi-schema, `prisma validate` green). The 294KB `prisma-options.config.json` and
+  `generate-full-schema.mjs` wrapper were DELETED in PR #78 (commit `570c57df`).
+- **§11a ("the package was bumped to 2.2.0, re-verify") — RESOLVED.** Live pin is 3.1.3 across root,
+  apps/api, apps/app, manifest/runtime, packages/mcp-server.
+- **§13a ("store wiring = the repo's already-documented path; no plugin needed") — REVERSED.** Native
+  companions (`projections/shared/companions.js`) emit `createManifestRuntime`, `manifest-response`,
+  database, and auth/tenant helpers by default. Capsule currently runs with `emitCompanions: false`
+  (`manifest.config.yaml:72`) and hand-wires all of them. The flip is staged in config:
+  `dispatcher.executionMode: externalExecutor`, `executorImportPath: "@/lib/manifest/execute-command"`,
+  but `dispatcher.enabled: false` / `concreteCommandRoutes.enabled: false` / `emitCompanions: false`.
+
+**Native 3.1.3 first-class surfaces (verified in `runtime-engine.d.ts` + dist):**
+`RuntimeOptions` carries `middleware`, `storeProvider`, `idempotencyStore`, `auditSink`, `outboxStore`,
+`approvalStore`, `eventBus`, `customBuiltins`, `requireTenantContext`, `encryptionProvider`, and a
+threaded transaction handle across store/outbox/idempotency/job/approval writes. The Next.js projection
+emits a native dispatcher (incl. `externalExecutor` mode). `stores/prisma-generic` is the native
+GenericPrismaStore.
+
+**New deletion directive (supersedes the "keep the factory" framing in §13a and phase-out-registry §A):**
+delete anything Capsule implements locally that is now a first-class package surface — custom runtime
+subclass, `manifest-runtime-factory.ts`, custom dispatcher template, response normalization helpers
+(`manifest-response.ts`), bespoke Prisma stores (incl. soft-delete cases covered by native metadata),
+app routes that instantiate runtime directly for ordinary writes, and middleware whose only job is now
+native reactions / fan-out / count aggregates / schedules / webhooks / outbox / eventBus delivery. What
+remains is a thin Capsule options/binding module (Prisma client, auth-derived context, Sentry/log,
+flags, custom builtins, genuinely business-specific middleware), an optional external executor only if
+the response contract is intentionally different, and domain adapters Manifest can't infer.
+
 ## 0. How this started
 A manually-triggered production deploy (`.github/workflows/deploy.yml`, `workflow_dispatch`, runs
 `vercel deploy --prod` → `next build` with `typescript.ignoreBuildErrors: false`) failed. The

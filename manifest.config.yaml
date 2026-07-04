@@ -59,6 +59,9 @@ projections:
       # Capsule owns a CUSTOM dispatcher template (auth/tenant resolution + runManifestCommand),
       # so native dispatcher emission is DISABLED; generate.mjs writes the template itself.
       # executorImportPath/Name still name the real module (read by generate.mjs).
+      # NEEDS-RYAN(@angriff36/manifest@3.1.3, PR #78): Manifest now ships a native dispatcher
+      # (externalExecutor mode). Flipping `enabled: true` makes apps/api/lib/manifest/execute-command.ts
+      # a deletion candidate. Decision tracked at canonical/manifest/runtime-native-ownership Q001.
       dispatcher:
         enabled: false
         path: apps/api/app/api/manifest/[entity]/commands/[command]/route.ts
@@ -69,6 +72,11 @@ projections:
       concreteCommandRoutes:
         enabled: false
       # Capsule hand-writes its runtime factory / response / db companions.
+      # NEEDS-RYAN(@angriff36/manifest@3.1.3, PR #78): Manifest now emits companion modules
+      # natively (createManifestRuntime, manifest-response, database, auth/tenant helpers).
+      # Flipping `emitCompanions: true` makes manifest-runtime-factory.ts (2,050 LOC),
+      # apps/api/lib/manifest-runtime.ts, and manifest-response.ts deletion candidates.
+      # Decision tracked at canonical/manifest/runtime-native-ownership Q001/Q003.
       emitCompanions: false
       # Per-entity URL path segments (replaces the old generate.mjs domain remap).
       # Single source of truth for route paths — entity-domain-map.mjs derives

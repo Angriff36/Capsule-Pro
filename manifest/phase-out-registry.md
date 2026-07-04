@@ -9,13 +9,20 @@ Legend: **Status** = `BLOCKED` (waiting on a phase) · `READY` (replacement prov
 ---
 
 ## A. Hand-rolled Prisma stores → IR-driven store generation/provider (Phase 4)
-Replaced by: `@angriff36/manifest/stores/prisma-generic` + `prisma-store` projection metadata/registry.
+Replaced by: native `@angriff36/manifest/stores/prisma-generic` (GenericPrismaStore, shipped 3.1.3) + `RuntimeOptions.storeProvider`.
+
+> **RECONCILIATION 2026-07-04 (PR #78 / 3.1.3):** The "keep `manifest-runtime-factory.ts`" framing
+> below is SUPERSEDED. Native GenericPrismaStore + companion-emitted `createManifestRuntime` now
+> ship. The deletion directive says: delete the factory as runtime owner; move the 4 bespoke stores'
+> business logic into `.manifest` source or a thin Capsule options module; keep at most a thin binding
+> module. See canonical `manifest.runtime-native-ownership` Q001/Q002 (NEEDS-RYAN).
 
 | Path | LOC (approx) | Replaced by | Status |
 |---|---|---|---|
 | `manifest/runtime/src/prisma-stores/generic-prisma-store.ts` | 323 | package `GenericPrismaStore` | **DONE** (2026-06-10) |
 | `manifest/runtime/src/prisma-stores/` (remainder: **4 files**) | ~350 | package generic + bespoke exceptions | **PARTIAL** — bespoke stores remain |
 | `manifest/runtime/src/prisma-store.ts` (`createPrismaStoreProvider` switch) | ~990 | registry `createGenericPrismaStore` + 6 bespoke cases | **PARTIAL** — switch for exceptions only |
+| `manifest/runtime/src/manifest-runtime-factory.ts` | **2,050** | native companion-emitted `createManifestRuntime` + thin Capsule options module | **DELETION TARGET** — needs `emitCompanions:true` flip (Ryan decision, `canonical/manifest/runtime-native-ownership`) |
 | `prisma-stores/broken-read-batch*` naming | — | `inventory-transfer-prisma-store.ts` | **DONE** (renamed 2026-06-10) |
 
 **Remaining bespoke stores (intentional):** PrepTask, KitchenTask, PrepTaskPlanWorkflow, Station, InventoryTransfer, Event (`event-prisma-store.ts`).
@@ -135,6 +142,37 @@ Canonical handler: `apps/api/lib/manifest/execute-command.ts` → `runManifestCo
 - `manifest/runtime/src/manifest-runtime-factory.ts` (rewire to new provider; do not delete).
 - `manifest/scripts/audit-schema-drift.mjs` (upgrade to compare generated vs committed).
 - The `@angriff36/manifest` package and `manifest/runtime/` workspace package.
+
+> **RECONCILIATION 2026-07-04:** The two "keep" rows above (dispatcher template, manifest-runtime-factory.ts)
+> are SUPERSEDED by §G — both are deletion targets once native companions/dispatcher are enabled.
+
+## G. Native companion / dispatcher / runtime ownership flip (PR #78 / `@angriff36/manifest@3.1.3`)
+> New section. Source: PR #78 (open, branch `feat/manifest-3.0-native`) + the 2026-07-04 deletion directive.
+> Decision owner: Ryan — tracked at `canonical/manifest/runtime-native-ownership/`.
+
+Manifest 3.1.3 ships first-class: native GenericPrismaStore, companion modules (`createManifestRuntime`,
+`manifest-response`, database, auth/tenant helpers), native Next.js dispatcher (incl. `externalExecutor`
+mode), and full `RuntimeOptions` (middleware, storeProvider, idempotencyStore, auditSink, outboxStore,
+approvalStore, eventBus, customBuiltins, requireTenantContext, encryptionProvider, threaded transaction
+handle). Capsule currently runs all of these as hand-rolled code with config flags `:false`.
+
+| Path | LOC (approx) | Replaced by | Status |
+|---|---|---|---|
+| `manifest/runtime/src/manifest-runtime-factory.ts` | 2,050 | native companion `createManifestRuntime` + thin Capsule options module | **DELETION TARGET** — flip `emitCompanions:true` (Ryan) |
+| `apps/api/lib/manifest-runtime.ts` | 212 | native companion | **DELETION TARGET** |
+| `apps/api/lib/manifest/execute-command.ts` | 384 | native dispatcher (`externalExecutor` mode) | **DELETION TARGET** — flip `dispatcher.enabled:true` (Ryan) |
+| `apps/api/lib/manifest/execute-saga.ts` | — | native saga runtime | **DELETION TARGET** (evaluate) |
+| `apps/api/lib/manifest-response.ts` | 200 | native `manifest-response` companion | **DELETION TARGET** — Q003 (response contract audit) |
+| `manifest/runtime/src/middleware/`, `async-reactions/`, `event-bus.ts`, outbox glue | — | native RuntimeOptions middleware / eventBus / outboxStore / reactions / fan-out / schedules / webhooks | **DELETION TARGET** — migrate business-specific pieces to options module first |
+| `manifest.config.yaml` flags | — | `emitCompanions:true`, `dispatcher.enabled:true`, `concreteCommandRoutes.enabled:true` | **FLIP TARGET** (one-line trigger for the campaign) |
+
+**What remains after the flip (intentionally small):**
+- A thin Capsule options/binding module: Prisma client, auth-derived context, Sentry/log adapter, feature flags, custom builtins, genuinely business-specific middleware.
+- An external executor ONLY if the Capsule response contract is intentionally different from native `manifest-response` (Q003).
+- Domain-specific adapters Manifest can't infer from IR/config (e.g. the 4 bespoke stores' business logic until authored into `.manifest` source).
+
+**Do not delete until:** (a) Ryan signs off via `canonical/manifest/runtime-native-ownership` Q001;
+(b) the 4 bespoke stores' logic is migrated (Q002); (c) response contract audited (Q003).
 
 ---
 

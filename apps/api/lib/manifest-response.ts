@@ -1,6 +1,12 @@
 /**
  * Response helpers for generated command handlers.
  *
+ * NEEDS-RYAN (@angriff36/manifest@3.1.3, PR #78): this 200-LOC response envelope is a DELETION
+ * TARGET. Manifest's native companion modules emit `manifest-response` (projections/shared/
+ * companions). If the Capsule response contract is intentionally different from native, this
+ * stays as a thin executor (Q003); if not, delete it when `emitCompanions: true` flips on.
+ * Decision tracked at canonical/manifest/runtime-native-ownership/ Q003.
+ *
  * Wraps the kitchen-ops api-response utilities into the simple
  * `manifestSuccessResponse` / `manifestErrorResponse` interface
  * that the generated handlers call.

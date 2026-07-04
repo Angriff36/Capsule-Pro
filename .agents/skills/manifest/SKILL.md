@@ -101,6 +101,21 @@ Pick by need: routes→nextjs/express/hono; schema→prisma/drizzle/convex; vali
 ## Stores & adapters
 `store Order in memory|durable|postgres|supabase|localStorage|dynamodb|redis|turso|event-sourced`. memory=testing; durable needs a `storeProvider`. Custom = implement `Store<T>` (`getAll getById create update delete clear`). Durable events: pair a store with `OutboxStore` (at-least-once; consumers idempotent). `AuditSink` = one `AuditRecord` per `runCommand`.
 
+> **UPDATE 2026-07-04 (PR #78 / `@angriff36/manifest@3.1.3`):** The package now ships a **native
+> GenericPrismaStore** (`@angriff36/manifest/stores/prisma-generic`) and **companion modules**
+> (`projections/shared/companions` emits `createManifestRuntime` + `manifest-response` + database +
+> auth/tenant helpers) plus a **native Next.js dispatcher** (`externalExecutor` mode). `RuntimeOptions`
+> is now first-class: `middleware`, `storeProvider`, `idempotencyStore`, `auditSink`, `outboxStore`,
+> `approvalStore`, `eventBus`, `customBuiltins`, `requireTenantContext`, `encryptionProvider`, and a
+> threaded transaction handle. **In capsule-pro:** the deletion directive says delete any local runtime
+> subclass / factory / dispatcher template / response envelope / bespoke store / outbox-audit-eventBus
+> middleware that twinned these — keep only a thin Capsule options/binding module (Prisma client, auth
+> context, Sentry/log, flags, custom builtins, genuinely business-specific middleware) + optional
+> external executor + domain adapters Manifest can't infer. Capsule currently runs
+> `emitCompanions:false` / `dispatcher.enabled:false` — the flip is Ryan's decision
+> (`canonical/manifest/runtime-native-ownership/`). Do NOT assume "Capsule hand-rolls these because the
+> package lacks them" — that was true pre-3.0 and is now stale.
+
 ## Extensibility
 - **Agent SDK** `@angriff36/manifest/agent-sdk`: `AgentRuntime.getToolDefinitions(format)` + `executeToolCall` → expose commands as LLM tools (Anthropic/OpenAI/Vercel).
 - **MCP server** `@angriff36/manifest/mcp-server`: tools `compile execute validate explain`; resources `manifest://ir/*`.

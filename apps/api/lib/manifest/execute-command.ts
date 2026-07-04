@@ -1,3 +1,10 @@
+// NEEDS-RYAN (@angriff36/manifest@3.1.3, PR #78): this 384-LOC dispatcher/executor is a DELETION
+// TARGET. Manifest's native Next.js projection emits a dispatcher in `externalExecutor` mode
+// (manifest.config.yaml already stages executionMode + executorImportPath). Flipping
+// `dispatcher.enabled: true` makes this file nonconforming. Before deletion: confirm the Capsule
+// auth/tenant-resolution + webhook/activity-feed side effects below are preserved (move to a thin
+// external executor or RuntimeOptions.middleware). Decision tracked at
+// canonical/manifest/runtime-native-ownership/ Q001/Q003.
 import { database } from "@repo/database";
 import {
   type ManifestUserContext,

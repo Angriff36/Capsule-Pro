@@ -8,7 +8,7 @@ Owner decision status: `needs-ryan`
 
 Implementation status: `working`
 
-Last reviewed: `2026-06-26`
+Last reviewed: `2026-07-04`
 
 Last updated by: `agent`
 
@@ -327,6 +327,7 @@ Agents may add rows. Agents may not decide for Ryan.
 | ---- | -------- | -------------- | -------------- | ------- | ------------- |
 | Q001 | Fix GenericPrismaStore OCC bug for remaining 7 entities? | Silent data loss on version mismatch. Event fixed via bespoke store; others still vulnerable. | prisma-store.ts uses version in compound key. 7 entities affected (Invoice, Payment, InventoryItem, etc.). Memory has full list. | A: Bespoke store per entity (like Event); B: Fix GenericPrismaStore upstream; C: Remove OCC for these entities | NEEDS-RYAN |
 | Q002 | Should bespoke stores be governed or remain implementation detail? | Bespoke stores contain business logic (sequence generation, advisory locks) that could drift from .manifest definitions. | 4 bespoke stores with non-trivial logic not declared in .manifest source. | A: Declare bespoke logic in .manifest; B: Keep as implementation detail; C: Auto-generate bespoke store stubs | NEEDS-RYAN |
+| Q003 | Delete the hand-rolled `manifest-runtime-factory.ts` (2,050 LOC) + `manifest/runtime/src/prisma-stores/*` and let native GenericPrismaStore + companion-emitted `createManifestRuntime` own runtime/store construction? | PR #78 (`@angriff36/manifest@3.1.3`) ships native GenericPrismaStore + companion modules (`projections/shared/companions.js`) emitting `createManifestRuntime`. Capsule currently runs `emitCompanions:false` and hand-wires the factory. The deletion directive (2026-07-04) says: delete the factory as runtime owner, move the 4 bespoke stores' business logic into `.manifest` source or a thin Capsule options module, keep at most a thin binding module. | `manifest/runtime/src/manifest-runtime-factory.ts` (2,050 LOC), `manifest/runtime/src/prisma-stores/*`, `manifest.config.yaml: emitCompanions:false`. Verified native: `node_modules/@angriff36/manifest/dist/manifest/stores/prisma-generic/store.js` + `projections/shared/companions.js`. | A: Flip `emitCompanions:true`, delete factory entirely, keep thin options module (per directive); B: Keep factory, only adopt native GenericPrismaStore for the un-bespoke majority; C: Defer until PR #78 merges | NEEDS-RYAN |
 
 ---
 
@@ -335,3 +336,4 @@ Agents may add rows. Agents may not decide for Ryan.
 | Date       | Decision | Made by | Reason |
 | ---------- | -------- | ------- | ------ |
 | 2026-06-26 | Initial evidence gathered | agent | Canonical unit created with real repo evidence |
+| 2026-07-04 | Added Q003 — native GenericPrismaStore + companion-emitted `createManifestRuntime` deletion directive | agent | PR #78 bumped `@angriff36/manifest` to 3.1.3; native `stores/prisma-generic` + `projections/shared/companions.js` now ship, making the 2,050-LOC `manifest-runtime-factory.ts` + hand-rolled dispatcher/response/store companions deletion targets. Config already stages the flip (`emitCompanions:false` / `dispatcher.enabled:false`). Decision is Ryan's. |

@@ -4,6 +4,28 @@ AI agents developing or coding in the Capsule-pro app must read this and use the
 
 ---
 
+## ⚠️ RECONCILIATION 2026-07-04 — Manifest 3.1.3 native surfaces (PR #78)
+
+`@angriff36/manifest` is now at **3.1.3** (branch `feat/manifest-3.0-native`, PR #78 open). The native
+package now ships first-class: GenericPrismaStore (`stores/prisma-generic`), companion modules
+(`projections/shared/companions.js` emits `createManifestRuntime` + `manifest-response` + database +
+auth/tenant helpers), native Next.js dispatcher (incl. `externalExecutor` mode), and full `RuntimeOptions`
+(middleware, storeProvider, idempotencyStore, auditSink, outboxStore, approvalStore, eventBus,
+customBuiltins, requireTenantContext, encryptionProvider, threaded transaction handle).
+
+**Capsule currently runs all of these as hand-rolled code** — `manifest.config.yaml` has
+`emitCompanions:false`, `dispatcher.enabled:false`, `concreteCommandRoutes.enabled:false`. The deletion
+directive (2026-07-04): flip those on, then delete every local file that exists only because the native
+generated files used to be missing. Deletion targets: `manifest-runtime-factory.ts` (2,050 LOC),
+`apps/api/lib/manifest-runtime.ts`, `apps/api/lib/manifest/execute-command.ts`,
+`apps/api/lib/manifest-response.ts`, the bespoke `prisma-stores/*`, and middleware that only mirrors
+native reactions/fan-out/schedules/webhooks/outbox/eventBus. What remains: a thin Capsule options/binding
+module. **Decision is Ryan's** — tracked at `canonical/manifest/runtime-native-ownership/`. Until then,
+the "Final directory shape" below showing Capsule owning `runtime-engine.ts`/`prisma-store.ts`/etc. is the
+*current* state, NOT the target state.
+
+---
+
 ## ⛔ STOP — READ THE OFFICIAL DOCS. THIS IS THE #1 REPEATED FAILURE.
 
 Agents in this repo have, OVER AND OVER, given confident answers about Manifest based on

@@ -84,12 +84,22 @@ datasource/generator header. Add a CI check (extend manifest/scripts/audit-schem
 fails if regeneration diffs from committed. New schema changes now start in .manifest source ->
 recompile IR -> regenerate schema -> `db:dev --create-only` -> review -> deploy.
 
-PHASE 4 — Stores. The package ships NO store/repository projection. Choose and build ONE:
-  (a) a generic IR-driven store provider that replaces all ~95 *PrismaStore classes + the 3,075-line
-      switch with a single metadata-driven implementation, OR
-  (b) a Capsule-owned store codegen step under manifest/scripts/.
-Prove behavioral parity against the existing stores (port shared.ts coercion helpers). Rewire
-manifest-runtime-factory.ts. Then retire prisma-stores/* and prisma-store.ts per the registry.
+PHASE 4 — Stores. **(SUPERSEDED 2026-07-04 — native GenericPrismaStore ships in @angriff36/manifest@3.1.3.)**
+  The package now provides GenericPrismaStore natively (`@angriff36/manifest/stores/prisma-generic`) AND
+  companion modules that emit `createManifestRuntime` (`projections/shared/companions.js`). So Phase 4 is
+  no longer "build (a) or (b)" — it is DELETE + REWIRE:
+   - Flip `manifest.config.yaml`: `emitCompanions:true`, `dispatcher.enabled:true`,
+     `concreteCommandRoutes.enabled:true`. (Ryan decision — `canonical/manifest/runtime-native-ownership`.)
+   - Move the 4 bespoke stores' business logic (Event advisory-lock, InventoryTransfer sequence,
+     PrepTask cross-table, KitchenTask) into `.manifest` source or a thin Capsule options module.
+   - Delete `manifest/runtime/src/manifest-runtime-factory.ts` (2,050 LOC), `apps/api/lib/manifest-runtime.ts`,
+     `apps/api/lib/manifest/execute-command.ts`, `apps/api/lib/manifest-response.ts`, and the bespoke
+     `prisma-stores/*` covered by native GenericPrismaStore metadata.
+   - Keep a thin Capsule options/binding module: Prisma client, auth-derived context, Sentry/log, flags,
+     custom builtins, genuinely business-specific middleware. Optionally an external executor only if the
+     Capsule response contract is intentionally different from native `manifest-response`.
+   - Prove behavioral parity (port shared.ts coercion helpers into the options module or rely on package
+     `coercion.ts`). Rewire consumers. Retire per `phase-out-registry.md` §G.
 
 PHASE 5 — Adjacent projections. Evaluate enabling zod (input validation), react-query (client
 hooks), openapi (API docs) projections to retire hand-written equivalents. Only adopt where output

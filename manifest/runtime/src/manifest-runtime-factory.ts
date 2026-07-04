@@ -1,6 +1,17 @@
 /**
  * Shared manifest runtime factory.
  *
+ * NEEDS-RYAN (@angriff36/manifest@3.1.3, PR #78): this 2,050-LOC hand-rolled runtime owner is a
+ * DELETION TARGET. Manifest now ships native companion modules (projections/shared/companions)
+ * that emit `createManifestRuntime`, plus a full RuntimeOptions surface (middleware, storeProvider,
+ * idempotencyStore, auditSink, outboxStore, approvalStore, eventBus, customBuiltins,
+ * requireTenantContext, encryptionProvider). The plan is to flip `emitCompanions: true` in
+ * manifest.config.yaml, move the binding logic below (Prisma client, auth context, Sentry/log,
+ * flags, custom builtins) into a thin Capsule options module, and delete this file. The 4 bespoke
+ * stores' business logic must migrate to .manifest source or the options module FIRST (Q002).
+ * Decision tracked at canonical/manifest/runtime-native-ownership/. Do not extend this factory
+ * with new logic — that increases the migration surface.
+ *
  * This is the ONE canonical implementation of `createManifestRuntime`.
  * Both `apps/api` and `apps/app` use this factory — the only difference
  * is which concrete singletons they inject for prisma, logging, telemetry,

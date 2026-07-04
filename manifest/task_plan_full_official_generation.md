@@ -103,6 +103,19 @@ around keeping them.
 - [ ] **Phase 7 — Fix downstream.** The hand-written raw-SQL routes (e.g. facilities/work-orders
       `work_order_type` 500) get replaced by generated routes against the generated schema — the whole
       column-drift bug class disappears. Verify app boots + key flows.
+- [ ] **Phase 8 — Native companion / dispatcher / runtime ownership flip (PR #78 / 3.1.3).** NEW 2026-07-04.
+      `@angriff36/manifest@3.1.3` ships native GenericPrismaStore, companion modules (`createManifestRuntime`,
+      `manifest-response`, database, auth/tenant helpers), native Next.js dispatcher (`externalExecutor` mode),
+      and full `RuntimeOptions` (middleware/storeProvider/idempotency/audit/outbox/approvals/transactions/eventBus/
+      customBuiltins/tenantGate). Capsule currently runs `emitCompanions:false` + `dispatcher.enabled:false` and
+      hand-writes ~2,800 LOC of factory/dispatcher/response/store twins. Work:
+        (a) WebFetch mintlify `/extensibility/plugin-api`, `/adapters/custom-stores`, `/integration/nextjs`.
+        (b) Migrate the 4 bespoke stores' business logic to `.manifest` source or options module.
+        (c) Flip config flags → delete `manifest-runtime-factory.ts`, `apps/api/lib/manifest-runtime.ts`,
+            `execute-command.ts`, `manifest-response.ts`, bespoke `prisma-stores/*`, duplicated middleware.
+        (d) Keep a thin Capsule options/binding module (Prisma client, auth context, Sentry/log, flags, builtins).
+        (e) Amend `constitution.md` §4a canonical-homes table (currently blesses the deleted glue paths).
+      Ryan decision gate: `canonical/manifest/runtime-native-ownership/` Q001/Q002/Q003.
 
 ## Hard rules
 - DOCS FIRST every phase. No push. Dev DB resettable. One retirement per commit, replacement proven.
@@ -181,6 +194,9 @@ tables. (Original plan's parity framing was reversed per user correction.)
 
 ## Decisions / open questions
 1. Domain route tree (95+ frontend URLs) vs flat entity URLs — keep wrapper, migrate FE, or shims?
+   **(SUPERSEDED 2026-07-04: native `routeSegments` config in 3.1.3 owns this; PR #78 commit `d1f2159`.)**
 2. `manifest build` wholesale vs `generate.mjs` wrapper retained for domain remap only.
 3. Per-entity bespoke stores vs the generic IR-driven store for the 37 blob entities.
+   **(SUPERSEDED 2026-07-04: native GenericPrismaStore ships; question is now deletion timing, see
+   `canonical/manifest/runtime-native-ownership`.)**
 4. Replace custom `audit-*` scripts with official `manifest doctor`/`audit-governance`?
