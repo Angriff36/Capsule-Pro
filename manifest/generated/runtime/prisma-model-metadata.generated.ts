@@ -28077,6 +28077,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "isSubrecipe",
+        "irName": "isSubrecipe",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt",
         "type": "DateTime",
@@ -28411,6 +28422,39 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "phase",
+        "irName": "phase",
+        "type": "RecipeStepPhase",
+        "isEnum": true,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "linkedRecipeId",
+        "irName": "linkedRecipeId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "linkedTechniqueId",
+        "irName": "linkedTechniqueId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt",
         "type": "DateTime",
@@ -28712,6 +28756,39 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "approvedBy",
         "irName": "approvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "dropOffNotes",
+        "irName": "dropOffNotes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "bringHotNotes",
+        "irName": "bringHotNotes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "cookOnSiteNotes",
+        "irName": "cookOnSiteNotes",
         "type": "String",
         "isEnum": false,
         "isList": false,

@@ -26,6 +26,8 @@ export type ProposalStatus = "draft" | "sent" | "viewed" | "accepted" | "rejecte
 
 export type QACheckStatus = "pending" | "completed" | "reinspection_required";
 
+export type RecipeStepPhase = "prep" | "method" | "finish" | "packaging";
+
 export type RecipeVersionStatus = "draft" | "published";
 
 export type ScheduleStatus = "draft" | "approved" | "published" | "closed";
@@ -2862,6 +2864,7 @@ export interface Recipe {
   description?: string | null;
   tags: string[];
   isActive?: boolean;
+  isSubrecipe?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -2896,6 +2899,9 @@ export interface RecipeStep {
   tips?: string | null;
   videoUrl?: string | null;
   imageUrl?: string | null;
+  phase?: RecipeStepPhase | null;
+  linkedRecipeId?: string | null;
+  linkedTechniqueId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2926,6 +2932,9 @@ export interface RecipeVersion {
   publishedAt?: string | null;
   approvedAt?: string | null;
   approvedBy?: string | null;
+  dropOffNotes?: string | null;
+  bringHotNotes?: string | null;
+  cookOnSiteNotes?: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -3149,6 +3149,19 @@ export function useRecipeDeactivateMutation(
   });
 }
 
+export function useRecipeSetSubrecipeMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Recipe>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Recipe>("Recipe", "setSubrecipe", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.recipe.all });
+    },
+    ...options,
+  });
+}
+
 export function useRecipeActivateMutation(
   options?: Omit<UseMutationOptions<CommandEnvelope<Recipe>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
@@ -3253,6 +3266,19 @@ export function useRecipeStepUpdateInstructionMutation(
   });
 }
 
+export function useRecipeStepSetStepDetailsMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RecipeStep>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RecipeStep>("RecipeStep", "setStepDetails", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.recipeStep.all });
+    },
+    ...options,
+  });
+}
+
 export function useRecipeStepRemoveMutation(
   options?: Omit<UseMutationOptions<CommandEnvelope<RecipeStep>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
@@ -3337,6 +3363,19 @@ export function useRecipeVersionUpdateCostsMutation(
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input) => executeCommand<RecipeVersion>("RecipeVersion", "updateCosts", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.recipeVersion.all });
+    },
+    ...options,
+  });
+}
+
+export function useRecipeVersionSetPackagingMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RecipeVersion>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RecipeVersion>("RecipeVersion", "setPackaging", input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.recipeVersion.all });
     },

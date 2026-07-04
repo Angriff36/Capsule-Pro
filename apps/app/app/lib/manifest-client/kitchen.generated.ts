@@ -969,6 +969,10 @@ export interface RecipeDeactivateInput {
   id?: string;
   reason?: string;
 }
+export interface RecipeSetSubrecipeInput {
+  id?: string;
+  isSubrecipe?: boolean;
+}
 export interface RecipeUpdateInput {
   id?: string;
   newName?: string;
@@ -1010,10 +1014,19 @@ export interface RecipeStepCreateInput {
   tips?: string;
   videoUrl?: string;
   imageUrl?: string;
+  phase?: string;
+  linkedRecipeId?: string;
+  linkedTechniqueId?: string;
 }
 export interface RecipeStepRemoveInput {
   id?: string;
   userId?: string;
+}
+export interface RecipeStepSetStepDetailsInput {
+  id?: string;
+  newPhase?: string;
+  newLinkedRecipeId?: string;
+  newLinkedTechniqueId?: string;
 }
 export interface RecipeStepUpdateInstructionInput {
   id?: string;
@@ -1047,6 +1060,12 @@ export interface RecipeVersionRestoreInput {
 export interface RecipeVersionRetractInput {
   id?: string;
   reason?: string;
+}
+export interface RecipeVersionSetPackagingInput {
+  id?: string;
+  dropOff?: string;
+  bringHot?: string;
+  cookOnSite?: string;
 }
 export interface RecipeVersionUpdateCostsInput {
   id?: string;
@@ -2487,6 +2506,10 @@ export async function recipeDeactivate(input: RecipeDeactivateInput = {}): Promi
   const r = await executeCommand<Recipe>("Recipe", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
+export async function recipeSetSubrecipe(input: RecipeSetSubrecipeInput = {}): Promise<Recipe | undefined> {
+  const r = await executeCommand<Recipe>("Recipe", "setSubrecipe", input as Record<string, unknown>);
+  return r.result;
+}
 export async function recipeUpdate(input: RecipeUpdateInput = {}): Promise<Recipe | undefined> {
   const r = await executeCommand<Recipe>("Recipe", "update", input as Record<string, unknown>);
   return r.result;
@@ -2515,6 +2538,10 @@ export async function recipeStepRemove(input: RecipeStepRemoveInput = {}): Promi
   const r = await executeCommand<RecipeStep>("RecipeStep", "remove", input as Record<string, unknown>);
   return r.result;
 }
+export async function recipeStepSetStepDetails(input: RecipeStepSetStepDetailsInput = {}): Promise<RecipeStep | undefined> {
+  const r = await executeCommand<RecipeStep>("RecipeStep", "setStepDetails", input as Record<string, unknown>);
+  return r.result;
+}
 export async function recipeStepUpdateInstruction(input: RecipeStepUpdateInstructionInput = {}): Promise<RecipeStep | undefined> {
   const r = await executeCommand<RecipeStep>("RecipeStep", "updateInstruction", input as Record<string, unknown>);
   return r.result;
@@ -2537,6 +2564,10 @@ export async function recipeVersionRestore(input: RecipeVersionRestoreInput = {}
 }
 export async function recipeVersionRetract(input: RecipeVersionRetractInput = {}): Promise<RecipeVersion | undefined> {
   const r = await executeCommand<RecipeVersion>("RecipeVersion", "retract", input as Record<string, unknown>);
+  return r.result;
+}
+export async function recipeVersionSetPackaging(input: RecipeVersionSetPackagingInput = {}): Promise<RecipeVersion | undefined> {
+  const r = await executeCommand<RecipeVersion>("RecipeVersion", "setPackaging", input as Record<string, unknown>);
   return r.result;
 }
 export async function recipeVersionUpdateCosts(input: RecipeVersionUpdateCostsInput = {}): Promise<RecipeVersion | undefined> {

@@ -4853,6 +4853,7 @@ model Recipe {
   description String? @default("")
   tags String[]
   isActive Boolean @map("is_active") @default(true)
+  isSubrecipe Boolean @map("is_subrecipe") @default(false)
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -4913,6 +4914,9 @@ model RecipeStep {
   tips String? @default("")
   videoUrl String? @map("video_url") @default("")
   imageUrl String? @map("image_url") @default("")
+  phase RecipeStepPhase? @default(method)
+  linkedRecipeId String? @map("linked_recipe_id") @default("")
+  linkedTechniqueId String? @map("linked_technique_id") @default("")
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -4955,6 +4959,9 @@ model RecipeVersion {
   publishedAt DateTime? @map("published_at") @db.Timestamptz(6)
   approvedAt DateTime? @map("approved_at") @db.Timestamptz(6)
   approvedBy String? @map("approved_by") @default("")
+  dropOffNotes String? @map("drop_off_notes") @default("")
+  bringHotNotes String? @map("bring_hot_notes") @default("")
+  cookOnSiteNotes String? @map("cook_on_site_notes") @default("")
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -6671,6 +6678,15 @@ enum QACheckStatus {
   pending
   completed
   reinspection_required
+
+  @@schema("public")
+}
+
+enum RecipeStepPhase {
+  prep
+  method
+  finish
+  packaging
 
   @@schema("public")
 }

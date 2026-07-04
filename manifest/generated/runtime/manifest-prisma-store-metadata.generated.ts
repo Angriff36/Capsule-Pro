@@ -27925,6 +27925,17 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
+        "name": "is_subrecipe",
+        "irName": "isSubrecipe",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "created_at",
         "irName": "createdAt",
         "type": "DateTime",
@@ -28259,6 +28270,28 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
+        "name": "linked_recipe_id",
+        "irName": "linkedRecipeId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "linked_technique_id",
+        "irName": "linkedTechniqueId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "created_at",
         "irName": "createdAt",
         "type": "DateTime",
@@ -28549,6 +28582,39 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "approved_by",
         "irName": "approvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "drop_off_notes",
+        "irName": "dropOffNotes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "bring_hot_notes",
+        "irName": "bringHotNotes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "cook_on_site_notes",
+        "irName": "cookOnSiteNotes",
         "type": "String",
         "isEnum": false,
         "isList": false,

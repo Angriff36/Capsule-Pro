@@ -3171,71 +3171,83 @@
     },
     "command:Recipe.activate": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 63
+      "line": 81
     },
     "command:Recipe.create": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 71
+      "line": 89
     },
     "command:Recipe.deactivate": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 55
+      "line": 66
+    },
+    "command:Recipe.setSubrecipe": {
+      "file": "kitchen/recipe-rules.manifest",
+      "line": 75
     },
     "command:Recipe.update": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 35
+      "line": 46
     },
     "command:RecipeIngredient.create": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 306
+      "line": 338
     },
     "command:RecipeIngredient.remove": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 323
+      "line": 355
     },
     "command:RecipeIngredient.updateQuantity": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 272
+      "line": 304
     },
     "command:RecipeIngredient.updateWasteFactor": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 290
+      "line": 322
     },
     "command:RecipeStep.create": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 352
+      "line": 389
     },
     "command:RecipeStep.remove": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 381
+      "line": 430
+    },
+    "command:RecipeStep.setStepDetails": {
+      "file": "kitchen/recipe-rules.manifest",
+      "line": 422
     },
     "command:RecipeStep.updateInstruction": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 371
+      "line": 411
     },
     "command:RecipeVersion.approve": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 208
+      "line": 230
     },
     "command:RecipeVersion.create": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 158
+      "line": 180
     },
     "command:RecipeVersion.markPublished": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 179
+      "line": 201
     },
     "command:RecipeVersion.restore": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 219
+      "line": 241
     },
     "command:RecipeVersion.retract": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 189
+      "line": 211
+    },
+    "command:RecipeVersion.setPackaging": {
+      "file": "kitchen/recipe-rules.manifest",
+      "line": 273
     },
     "command:RecipeVersion.updateCosts": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 232
+      "line": 254
     },
     "command:ReorderSuggestion.accept": {
       "file": "inventory/inventory-extended-rules.manifest",
@@ -6507,71 +6519,71 @@
     },
     "constraint:Recipe.validName": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 32
+      "line": 43
     },
     "constraint:Recipe.warnNameChange": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 38
+      "line": 49
     },
     "constraint:RecipeIngredient.positiveQuantity": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 267
+      "line": 299
     },
     "constraint:RecipeIngredient.validOrder": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 268
+      "line": 300
     },
     "constraint:RecipeIngredient.validWasteFactor": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 269
+      "line": 301
     },
     "constraint:RecipeIngredient.warnHighWasteFactor": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 293
+      "line": 325
     },
     "constraint:RecipeIngredient.warnQuantityIncrease": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 275
+      "line": 307
     },
     "constraint:RecipeStep.positiveStepNumber": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 348
+      "line": 385
     },
     "constraint:RecipeStep.validInstruction": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 349
+      "line": 386
     },
     "constraint:RecipeVersion.nonNegativeCost": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 139
+      "line": 161
     },
     "constraint:RecipeVersion.positiveYield": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 132
+      "line": 154
     },
     "constraint:RecipeVersion.validTimes": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 138
+      "line": 160
     },
     "constraint:RecipeVersion.validVersionNumber": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 131
+      "line": 153
     },
     "constraint:RecipeVersion.warnHighCost": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 235
+      "line": 257
     },
     "constraint:RecipeVersion.warnHighDifficulty": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 150
+      "line": 172
     },
     "constraint:RecipeVersion.warnLongRecipe": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 141
+      "line": 163
     },
     "constraint:RecipeVersion.warnRetract": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 192
+      "line": 214
     },
     "constraint:ReorderSuggestion.positiveSuggestedQty": {
       "file": "inventory/inventory-extended-rules.manifest",
@@ -7751,19 +7763,19 @@
     },
     "entity:Recipe": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 14
+      "line": 23
     },
     "entity:RecipeIngredient": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 252
+      "line": 284
     },
     "entity:RecipeStep": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 332
+      "line": 364
     },
     "entity:RecipeVersion": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 87
+      "line": 105
     },
     "entity:ReorderSuggestion": {
       "file": "inventory/inventory-extended-rules.manifest",
@@ -8299,7 +8311,7 @@
     },
     "transition:RecipeVersion.status": {
       "file": "kitchen/recipe-rules.manifest",
-      "line": 128
+      "line": 150
     },
     "transition:ReorderSuggestion.status": {
       "file": "inventory/inventory-extended-rules.manifest",

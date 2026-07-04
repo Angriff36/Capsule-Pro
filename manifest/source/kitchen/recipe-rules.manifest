@@ -11,6 +11,15 @@ enum RecipeVersionStatus {
   published
 }
 
+// Cookbook-integration: step execution phase, mirrors the cookbook UI's
+// grouping (prep tasks / method / finish at event / packaging & event build).
+enum RecipeStepPhase {
+  prep
+  method
+  finish
+  packaging
+}
+
 entity Recipe mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property required name: string
@@ -19,6 +28,8 @@ entity Recipe mixin TenantScoped, SoftDeletable {
   searchable property description: string? = ""
   property required tags: string[]
   property required isActive: boolean = true
+  // Cookbook-integration: distinguishes a component sub-recipe from a plated dish.
+  property required isSubrecipe: boolean = false
   timestamps
 
   computed hasVersion: boolean = count_of(self.versions) > 0 cache request
@@ -58,6 +69,13 @@ entity Recipe mixin TenantScoped, SoftDeletable {
     mutate isActive = false
 
     emit RecipeDeactivated
+  }
+
+  // Cookbook-integration: flip a recipe between plated-dish and sub-recipe.
+  command setSubrecipe(isSubrecipe: boolean) {
+    mutate isSubrecipe = isSubrecipe
+
+    emit RecipeSubrecipeSet
   }
 
   command activate() {
@@ -109,6 +127,10 @@ entity RecipeVersion mixin TenantScoped, SoftDeletable {
   property publishedAt: datetime?
   property approvedAt: datetime?
   property approvedBy: string? = ""
+  // Cookbook-integration: packaging / event-build instructions per service mode.
+  property dropOffNotes: string? = ""
+  property bringHotNotes: string? = ""
+  property cookOnSiteNotes: string? = ""
   timestamps
 
   computed totalTimeMinutes: int = self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes
@@ -246,6 +268,16 @@ entity RecipeVersion mixin TenantScoped, SoftDeletable {
     emit RecipeVersionCostUpdated
   }
 
+  // Cookbook-integration: set the packaging / event-build notes shown on the
+  // recipe detail page (drop-off, bring-hot, cook-on-site service modes).
+  command setPackaging(dropOff: string, bringHot: string, cookOnSite: string) {
+    mutate dropOffNotes = dropOff
+    mutate bringHotNotes = bringHot
+    mutate cookOnSiteNotes = cookOnSite
+
+    emit RecipeVersionPackagingSet
+  }
+
   store RecipeVersion in durable
 }
 
@@ -341,6 +373,11 @@ entity RecipeStep mixin TenantScoped, SoftDeletable {
   property tips: string? = ""
   property videoUrl: string? = ""
   property imageUrl: string? = ""
+  // Cookbook-integration: execution phase + optional links to a sub-recipe and
+  // a technique reference, mirroring the cookbook step card.
+  property phase: RecipeStepPhase? = method
+  property linkedRecipeId: string? = ""
+  property linkedTechniqueId: string? = ""
   timestamps
 
   relationship belongsTo recipeVersion: RecipeVersion fields [tenantId, recipeVersionId] references [tenantId, id]
@@ -349,7 +386,7 @@ entity RecipeStep mixin TenantScoped, SoftDeletable {
   constraint validInstruction: self.instruction != null and self.instruction != "" "Instruction is required"
 
   default policy RecipeStepDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Recipe management"
-  command create(recipeVersionId: string, stepNumber: number, instruction: string, durationMinutes: int, temperatureValue: number, temperatureUnit: string, equipmentNeeded: string[], tips: string, videoUrl: string, imageUrl: string) {
+  command create(recipeVersionId: string, stepNumber: number, instruction: string, durationMinutes: int, temperatureValue: number, temperatureUnit: string, equipmentNeeded: string[], tips: string, videoUrl: string, imageUrl: string, phase: string = "method", linkedRecipeId: string = "", linkedTechniqueId: string = "") {
     guard recipeVersionId != null and recipeVersionId != "" "Recipe version ID is required"
     guard stepNumber > 0 "Step number must be positive"
     guard instruction != null and instruction != "" "Instruction is required"
@@ -364,6 +401,9 @@ entity RecipeStep mixin TenantScoped, SoftDeletable {
     mutate tips = tips
     mutate videoUrl = videoUrl
     mutate imageUrl = imageUrl
+    mutate phase = phase
+    mutate linkedRecipeId = linkedRecipeId
+    mutate linkedTechniqueId = linkedTechniqueId
 
     emit RecipeStepCreated
   }
@@ -376,6 +416,15 @@ entity RecipeStep mixin TenantScoped, SoftDeletable {
     mutate tips = newTips
 
     emit RecipeStepUpdated
+  }
+
+  // Cookbook-integration: set a step's phase and its sub-recipe / technique links.
+  command setStepDetails(newPhase: string, newLinkedRecipeId: string, newLinkedTechniqueId: string) {
+    mutate phase = newPhase
+    mutate linkedRecipeId = newLinkedRecipeId
+    mutate linkedTechniqueId = newLinkedTechniqueId
+
+    emit RecipeStepDetailsSet
   }
 
   command remove(userId: string) {
@@ -538,5 +587,30 @@ event RecipeStepRemoved: "kitchen.recipe.step.removed" {
   tenantId: string
   stepNumber: number
   removedAt: datetime
+}
+
+// Cookbook-integration events
+event RecipeSubrecipeSet: "kitchen.recipe.subrecipe.set" {
+  recipeId: string
+  tenantId: string
+  isSubrecipe: boolean
+  updatedAt: datetime
+}
+
+event RecipeVersionPackagingSet: "kitchen.recipe.version.packaging.set" {
+  recipeVersionId: string
+  recipeId: string
+  tenantId: string
+  updatedAt: datetime
+}
+
+event RecipeStepDetailsSet: "kitchen.recipe.step.details.set" {
+  recipeStepId: string
+  recipeVersionId: string
+  tenantId: string
+  phase: string
+  linkedRecipeId: string
+  linkedTechniqueId: string
+  updatedAt: datetime
 }
 

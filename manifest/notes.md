@@ -2144,3 +2144,58 @@ GenericPrismaStore update returns undefined, can't edit event.
 - Verified via a temp vitest (`source-location-verify`, deleted) against the real sidecar: 5/5 — entity
   lookup, constraint-by-name, command fallback, entity fallback, unknown-entity → undefined.
   Search: source map, source location, manifest file line, error serializer, command-source-map.json
+
+---
+
+## 2026-07-03 — Cookbook UI/feature integration into recipes (Phase 2 schema, Wave 1)
+
+**Goal:** make capsule's recipe detail look + function like `c:/Projects/cookbook` (a standalone
+Next13+Supabase recipe app) WITHOUT losing capsule features (costing, version history/compare/restore,
+nutrition, HACCP CCP step safety). Cookbook's data model is a strict subset of capsule's — most of what
+it shows already existed (Dish.presentationImageUrl/allergens/portionSizeDescription,
+RecipeVersion.difficultyLevel/versionNumber/yieldDescription, rich RecipeStep temp/duration/equipment/
+tips) and was simply not wired into the detail page. Genuinely-missing = step phase grouping, step→
+sub-recipe link, Technique library, packaging notes, isSubrecipe.
+
+**Wave 1 (this pass) — additive fields on existing kitchen entities, `recipe-rules.manifest`:**
+- new `enum RecipeStepPhase { prep, method, finish, packaging }`
+- `Recipe.isSubrecipe: boolean` + `command setSubrecipe` + `event RecipeSubrecipeSet`
+- `RecipeVersion.{dropOffNotes,bringHotNotes,cookOnSiteNotes}` + `command setPackaging` + `event RecipeVersionPackagingSet`
+- `RecipeStep.{phase,linkedRecipeId,linkedTechniqueId}` + extended `create` (3 defaulted params) +
+  `command setStepDetails` + `event RecipeStepDetailsSet`
+- compile: 213 entities / 1062 cmds / 1037 events (was 1059/1034). Prisma projection regenerated
+  (16-line additive diff, enums land in `@@schema("public")` like RecipeVersionStatus).
+
+**Wave 1 STATUS: DEPLOYED + verified in dev DB** (migration `20260704060258_cookbook_recipe_step_phase_links_packaging`).
+All 7 columns exist in `tenant_kitchen` + `RecipeStepPhase` enum in `public` (prep/method/finish/packaging).
+
+**Wave 2 (next) — new `Technique` entity** (needs entity-domain-map + schema-placement rule) + techniques
+page + wiring step links. **Then** the UI restyle (single file, keep all tabs).
+
+**MIGRATION-HISTORY REPAIR done to unblock this (documents a pre-existing dev-DB mess):**
+1. `db:dev --create-only` wanted to RESET the DB — `20260624071824_repair_drift` was applied (row in
+   `_prisma_migrations`) but its folder was missing locally. Restored it from git:
+   `git checkout c3d4c9be8 -- packages/database/prisma/migrations/20260624071824_repair_drift/migration.sql`
+   (content = training quiz tables + async-reaction indexes; matched the DB delta). PREFERRED fix per cheatsheet.
+2. Still blocked: `async_reaction_dlq`/`async_reaction_jobs` tables exist in the DB but are created by the
+   **manifest runtime** (`manifest/runtime/src/async-reactions/postgres-async-reaction-store.ts`), NOT by any
+   Prisma migration — so `migrate dev`'s shadow replay ALWAYS sees them as drift and wants a reset. This is
+   structural: `db:dev` is unusable in this repo as long as runtime-managed tables live outside migration history.
+3. Workaround that worked: generate the migration via schema-to-schema diff (no shadow, no live-DB drift noise):
+   stage `git show HEAD:...schema/*.prisma` into a temp dir, then
+   `prisma migrate diff --from-schema <tmp> --to-schema ./prisma/schema --script -o <newfolder>/migration.sql`,
+   then `pnpm db:deploy` (deploy skips shadow + drift checks, applies pending folders only). Prisma-generated
+   SQL (satisfies the "don't hand-author" rule's intent). `public` enums emit UNqualified `CREATE TYPE` (Prisma
+   omits the default-schema prefix) — matches existing enum migrations.
+Search: db:dev reset, repair_drift missing folder, async_reaction runtime table drift, migrate diff schema-to-schema, db:deploy workaround
+
+**GOTCHA — stale Infisical secret blocks `db:dev`:** dev env `SHADOW_DATABASE_URL` points at a DEAD Neon
+endpoint (`ep-dawn-dew-...-pooler`), while `DATABASE_URL` (`ep-square-dust-...-pooler`) is live and
+`DIRECT_URL` is unset. `prisma migrate dev` tries the shadow first → `P1001 can't reach`. Fix: clear the
+var so Prisma auto-provisions a shadow on Neon —
+`infisical run ... -- pwsh -NoProfile -Command "Remove-Item Env:SHADOW_DATABASE_URL; pnpm db:dev ..."`.
+Do NOT wrap in `bash -c` inside `infisical run` — MSYS mangles the pnpm/corepack path
+(`C:\c\Program Files\nodejs\...` MODULE_NOT_FOUND). The `SHADOW_DATABASE_URL` secret should be deleted or
+repointed in Infisical (dev, /apps/capsule-pro/app). Supersedes the "db:dev runs headless" optimism in
+[[dev-db-via-infisical]].
+Search: cookbook, recipe step phase, packaging notes, isSubrecipe, technique, SHADOW_DATABASE_URL dead, P1001 shadow

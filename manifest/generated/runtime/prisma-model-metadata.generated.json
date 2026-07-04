@@ -10978,6 +10978,10 @@
         "irName": "isActive"
       },
       {
+        "name": "isSubrecipe",
+        "irName": "isSubrecipe"
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt"
       },
@@ -11110,6 +11114,18 @@
         "irName": "imageUrl"
       },
       {
+        "name": "phase",
+        "irName": "phase"
+      },
+      {
+        "name": "linkedRecipeId",
+        "irName": "linkedRecipeId"
+      },
+      {
+        "name": "linkedTechniqueId",
+        "irName": "linkedTechniqueId"
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt"
       },
@@ -11226,6 +11242,18 @@
       {
         "name": "approvedBy",
         "irName": "approvedBy"
+      },
+      {
+        "name": "dropOffNotes",
+        "irName": "dropOffNotes"
+      },
+      {
+        "name": "bringHotNotes",
+        "irName": "bringHotNotes"
+      },
+      {
+        "name": "cookOnSiteNotes",
+        "irName": "cookOnSiteNotes"
       },
       {
         "name": "createdAt",

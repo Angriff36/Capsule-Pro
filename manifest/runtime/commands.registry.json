@@ -3976,6 +3976,11 @@
   },
   {
     "entity": "Recipe",
+    "command": "setSubrecipe",
+    "commandId": "Recipe.setSubrecipe"
+  },
+  {
+    "entity": "Recipe",
     "command": "update",
     "commandId": "Recipe.update"
   },
@@ -4011,6 +4016,11 @@
   },
   {
     "entity": "RecipeStep",
+    "command": "setStepDetails",
+    "commandId": "RecipeStep.setStepDetails"
+  },
+  {
+    "entity": "RecipeStep",
     "command": "updateInstruction",
     "commandId": "RecipeStep.updateInstruction"
   },
@@ -4038,6 +4048,11 @@
     "entity": "RecipeVersion",
     "command": "retract",
     "commandId": "RecipeVersion.retract"
+  },
+  {
+    "entity": "RecipeVersion",
+    "command": "setPackaging",
+    "commandId": "RecipeVersion.setPackaging"
   },
   {
     "entity": "RecipeVersion",
