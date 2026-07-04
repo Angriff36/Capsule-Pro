@@ -18,7 +18,7 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { ArrowLeft, Loader2, Package, Plus, Search } from "lucide-react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -48,7 +48,7 @@ interface InventoryItem {
 
 export default function NewPOPage() {
   const posthog = usePostHog();
-  const _router = useRouter();
+
   const searchParams = useSearchParams();
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
