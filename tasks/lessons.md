@@ -161,3 +161,29 @@ corrected the premise (the resulting fix was still right, for a different reason
 **Rule:** kitchen.ir.json shape: `ir.commands[] = {name, entity, parameters,...}`;
 `ir.entities[].commands = string[]`. Verify IR claims against the schema
 (node_modules/@angriff36/manifest/docs/spec/ir/ir-v1.schema.json) before asserting absence.
+
+## Lesson 12: Search with bare `rg <term>` — don't filter the user's view
+
+**Date:** 2026-07-03
+**What happened:** Asked to find every `in-progress`/`inprogress` occurrence, I reached for `grep -riE`, glob excludes, and `grep -viE '...'` to pre-categorize hits. That suppressed lines before the user saw them and let me assert conclusions from a partial view — I misclassified `seed-data.ts` as a bug, then walked it back. User had to repeat "JUST THE COMMANDS `rg inprogress` and `rg in-progress`, NO OTHER ARGS."
+**Root cause:** Filtering = editorializing. Every `-v`/glob/`-i` I add hides signal and substitutes my judgment for the raw data. `grep -r` also crawls node_modules/generated noise and is slower.
+**Rule:** When the user says use `rg`, or when hunting for all occurrences of a pattern, run **bare `rg <term>`** — no flags, no pipes, no cd prefix. It's gitignore-aware, fast, and shows the complete unfiltered set so the human sees ground truth and judges for themselves. Only add flags if the user asks. Show the whole landscape; don't narrow it.
+
+## Lesson 13: App surfaces follow root DESIGN.md — never a marketing design kit
+
+**Date:** 2026-07-04
+**What happened:** The recipe detail page was styled 1:1 from `DESIGN-sanity.md` (a dark
+marketing-site design kit: #0b0b0b canvas, 112px display type, fonts the app doesn't even
+load) and grafted into the light app shell as a full-width black island with inline-style
+hexes, at a different max-width than its sibling tabs. User verdict: "looks like shit."
+**Root cause:** The real canonical spec (root DESIGN.md, the "Cohere editorial" system all
+of packages/design-system was built against) had been deleted AND gitignored
+(`.gitignore` had a `DESIGN.md` line under "generated docs"), so agents grabbed whatever
+design doc they found. Inline hex styles also bypass all four theme dimensions
+(dark/high-contrast/font-scale/density).
+**Rule:** (1) Product UI in apps/app follows root `DESIGN.md` and composes
+`page-shell.tsx` blocks (PageCanvas/CommandBand/SectionHeader/...). `DESIGN-sanity.md` is
+marketing-only. (2) Never write hex colors or inline `style={{color}}` in app code — use
+token classes (`bg-deep-green`, `text-coral`, `border-hairline`, semantic shadcn vars).
+(3) When a "canonical" doc referenced by code is missing, check `.gitignore` before
+concluding it never existed.

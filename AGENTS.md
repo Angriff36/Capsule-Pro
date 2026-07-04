@@ -1,3 +1,9 @@
+# ⚠️ SEARCHING THE CODEBASE — USE BARE `rg <term>`, NO FLAGS
+
+When hunting for occurrences of a string/pattern (bug source, enum value, usage sweep), run **bare `rg <term>`** — no `-i`, no `-v`, no globs, no pipes, no `cd` prefix. `rg` is gitignore-aware, fast, and shows the COMPLETE unfiltered set. Every flag you add (`grep -viE`, glob excludes) suppresses lines before the human sees them and substitutes your judgment for the raw data — that is how agents misclassify hits and assert conclusions from a partial view. Show the whole landscape; let the human judge. Add flags ONLY when the user explicitly asks. Do NOT use `grep -r` (crawls node_modules/generated noise, slower).
+
+---
+
 # ⚠️ "BOARD" DISAMBIGUATION — READ BEFORE TOUCHING ANYTHING WITH "BOARD" IN THE NAME
 
 **Canonical product taxonomy:** [`VISION.md`](VISION.md) (`BOARD_TAXONOMY` block). Read it first.
@@ -19,6 +25,14 @@ RULES:
 3. **Battle Board = per-event execution**, fed from committed Event-tree data — not event assembly, not global ops.
 4. Never resolve "board" by proximity. Confirm against this table and `VISION.md`.
 5. If intent is ambiguous, ASK which concept — do not guess.
+
+# ⚠️ UI / STYLING — root `DESIGN.md` is the only design system for apps/app
+
+Before styling ANY product surface, read root **`DESIGN.md`** and compose pages
+from `packages/design-system/components/blocks/page-shell.tsx` blocks. Never
+hex colors or inline `style={{color}}` in app code — token classes only.
+`DESIGN-sanity.md` is a MARKETING design kit (do not apply to app pages), and
+per-directory DESIGN.md files are not authoritative.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

@@ -1,103 +1,40 @@
-# Partition the generated Capsule client into domain-scoped chunks
+# UI overhaul: recipe detail + canonical DESIGN.md
 
-Feature: feature-1781435713420-506r2pr8i
+(Replaces stale plan for feature-1781435713420-506r2pr8i — generated-client
+partitioning — which shipped/stalled in a previous session.)
 
-## Problem
-`manifest-client.generated.ts` is a 14k-line monolith holding list/get/command
-callers for all ~188 entities / ~1054 commands across every domain. Every page
-that imports a single caller pulls the whole module graph (the hooks file makes
-it worse with `import * as client`). A CRM page ships kitchen/payroll code.
+Problem: recipe detail page was styled against DESIGN-sanity.md (a *marketing-site*
+design language, dark #0b0b0b canvas) and grafted into the light app shell as a
+full-width black island; tabs card below it uses a different max-width (4xl vs 5xl).
+Root DESIGN.md (the "Cohere" system globals.css tokens come from) no longer exists,
+so agents keep forking design languages. User verdict: recipe page + site look bad.
 
-## Approach (generation-layer; zero churn at 100+ import sites)
-Derive domain chunks from `ENTITY_DOMAIN_MAP` (first route segment), consolidated
-into 7 client chunks (6 named domains + shared core). Each chunk is its own file
-so the bundler can emit separate JS chunks and tree-shake aggressively.
+## Plan
 
-### Route-segment → client-chunk map (`CLIENT_DOMAIN_MAP`)
-| route segment        | client chunk | entities |
-|----------------------|--------------|----------|
-| kitchen              | kitchen      | 40       |
-| events + command-board| events      | 31       |
-| inventory + procurement + shipments + logistics + facilities | logistics | 44 |
-| staff + timecards + training | staffing   | 24       |
-| accounting + payroll | finance      | 17       |
-| crm                  | crm          | 11       |
-| collaboration + communications + administrative + settings + rolepolicy | core | 21 |
-
-(command-board → events: AGENTS.md BOARD disambiguation — CommandBoard* = event tree.)
-
-## Output layout
-```
-apps/app/app/lib/
-  manifest-types.generated.ts          # UNCHANGED (type-only, zero runtime payload)
-  manifest-client.generated.ts         # SHIM: export * from "./manifest-client/index.generated"
-  manifest-client/
-    core.generated.ts                  # PaginatedResponse<T> + dynamic import() domain loader
-    events.generated.ts                # list/get/command callers for events domain
-    kitchen.generated.ts
-    finance.generated.ts
-    staffing.generated.ts
-    crm.generated.ts
-    logistics.generated.ts
-    index.generated.ts                 # static barrel (tree-shakeable re-exports) + loadClientDomain()
-  manifest-hooks.generated.ts          # SHIM: export * from "./manifest-hooks/index.generated"
-  manifest-hooks/
-    core.generated.ts                  # full queryKeys factory (constant arrays, negligible)
-    <domain>.generated.ts              # per-domain useQuery/useMutation, star-import scoped to 1 domain chunk
-    index.generated.ts
-```
-
-## Why backward compatible
-- Shim files keep `@/app/lib/manifest-client.generated` / `…-hooks.generated`
-  imports working unchanged (100+ sites).
-- Modern SWC/Turbopack tree-shakes `export *` re-exports, so a CRM page still
-  only bundles the crm chunk.
-- `loadClientDomain(name)` (`() => import('./<domain>.generated')`) lets
-  route-based layouts opt into explicit async chunks.
-
-## Checklist
-- [x] Explore generators + conventions + import surface
-- [ ] Add CLIENT_DOMAIN_MAP to entity-domain-map.mjs
-- [ ] Rewrite generate-capsule-client.mjs (chunks + core + barrel + shim)
-- [ ] Rewrite generate-react-query-hooks.mjs (per-domain chunks + barrel + shim)
-- [ ] Update capsule-conventions.json client paths
-- [ ] Regenerate + typecheck
-- [ ] Playwright verify
+- [x] Parallel audit: app shell chrome, kitchen page patterns, design-system inventory, token adoption (workflow wf_76dd73e6-9e9, 5 agents)
+- [x] Author canonical root DESIGN.md (light Cohere-editorial app system; Saniti = marketing only)
+- [x] Redesign recipe detail page on app tokens (kill dark island, integrate tabs, fix widths)
+- [x] Typecheck + visual verify in browser (localhost:2221)
+- [x] Punch list of remaining site-wide offenders documented in DESIGN.md §8
 
 ## Review
-**Status: COMPLETE & verified.**
 
-Distribution: 188 entities / 1054 commands across 6 domain chunks + core:
-core=21, events=31 (incl. command-board event tree), kitchen=40, finance=17
-(accounting+payroll), staffing=24 (staff+timecards+training), crm=11,
-logistics=44 (inventory+procurement+shipments+logistics+facilities).
-
-Verification performed:
-- TypeScript (`tsc --noEmit`): 0 errors in any generated/consumer file. The 25
-  pre-existing errors (Set.difference/ArrayIterator, es2025 lib) are in 2
-  unrelated component files and unchanged by this feature.
-- 100+ existing `@/app/lib/manifest-client.generated` import sites resolve
-  unchanged via the shim (proven by the typecheck).
-- Client generator is deterministic (idempotent regenerate → byte-identical).
-- `check-react-query-drift.mjs`: extended to cover the chunk dir + shim, passes
-  (all chunks in sync, working tree left clean).
-- Playwright (10 tests, all passed): generated-artifact integrity — chunk
-  layout, barrel re-exports, typed `loadClientDomain` dynamic loader, per-domain
-  star-imports scoped to one client chunk, queryKeys defined-once-in-core /
-  imported-by-domains (no circular import), command-board routed to events
-  (AGENTS.md disambiguation), and dev-server smoke load with no module errors.
-
-Notes:
-- The monolithic `manifest-client.generated.ts` (14008 lines) is now a 7-line
-  shim; the monolithic hooks file is now a 4-line shim. Real callers/hooks live
-  in `manifest-client/` and `manifest-hooks/` chunk dirs.
-- `manifest-types.generated.ts` kept monolithic — it is type-only (zero runtime
-  payload), so it does not affect JS bundle size.
-- Route-based layouts can now either import from a specific domain chunk
-  (`@/app/lib/manifest-client/crm.generated`) for tree-shaken bundling, or use
-  `loadClientDomain('crm')` for an explicit async JS chunk.
-- The drift gate previously would have mutated chunk files + only compared the
-  shim; now it snapshots/restores the whole chunk dir and compares every file.
-- Playwright config's `e2e/` helper files (`detect-browser-endpoint.ts`,
-  `env.ts`) are gitignored local-only files absent from this worktree; temporary
-  stubs were created to run the verification and then removed.
+- Root `DESIGN.md` authored — canonical product design system (tokens, page
+  anatomy via page-shell blocks, color semantics, theming contract, debt list).
+  Un-gitignored it (.gitignore:558 was how the original vanished).
+- `recipe-cookbook-view.tsx` rewritten: CommandBand hero (Playfair headline,
+  mono eyebrow, allergen coral pills, 4 MetricCells) + FilterRail
+  (ingredients/equipment/at-a-glance) + phase-grouped checkable steps
+  (CCP = coral spine + pill, deep-green progress/checkboxes, action-blue
+  sub-recipe links). All features preserved: CCP >=135°F detection,
+  localStorage progress, packaging modes, linked recipes, tips.
+- `page.tsx`: tabs section integrated at canvas width under a "Records /
+  Analysis & history" SectionHeader; extracted helpers (complexity 25 -> <=20,
+  the file's only Biome warning, now zero).
+- `DESIGN-sanity.md` scoped marketing-only (warning header);
+  kitchen/tasks/DESIGN.md ("Verdana Health", orphaned) deleted.
+- Verified: tsc clean on changed files (repo-wide backlog pre-existing),
+  Biome clean, rendered page inspected in browser at localhost:2221.
+- Not done (documented as DESIGN.md §8 debt): chrome-stack collapse (4 nav
+  layers), active-state startsWith bug, 136 ad-hoc heading files, raw palette
+  sweep (71 files), intake wizard #faf8f5, kitchen-dashboard hex benchmark.

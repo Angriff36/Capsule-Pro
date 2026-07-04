@@ -555,7 +555,9 @@ update_plan.py
 cdp-screenshot.ps1
 
 # Generated/planning docs at root
-DESIGN.md
+# (DESIGN.md is deliberately NOT ignored — it is the canonical design system
+#  contract cited by packages/design-system docstrings; ignoring it is how the
+#  original spec vanished.)
 FIXLIST.md
 TODO.md
 FeaturesTodo

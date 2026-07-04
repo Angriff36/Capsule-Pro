@@ -1,3 +1,9 @@
+> ⚠️ **SCOPE: MARKETING SURFACES ONLY.** This is a marketing-site design kit
+> (dark hero pages, pricing tables). It is NOT the product design system —
+> `apps/app` UI is governed by the root `DESIGN.md` (light editorial ops
+> system). Applying this file to app pages produced the recipe-page dark-island
+> regression (fixed 2026-07). Do not style any `(authenticated)` surface with it.
+
 ---
 version: alpha
 name: Saniti-design-analysis

@@ -1,30 +1,47 @@
 "use client";
 
+import {
+  CommandBand,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  FilterRail,
+  FilterRailGroup,
+  FilterRailLabel,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageBody,
+  SectionHeader,
+  StatusPill,
+} from "@repo/design-system/components/blocks/page-shell";
+import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import {
   AlertTriangle,
+  Check,
   CheckCircle2,
   ChevronDown,
   Clock,
-  Flame,
-  Hourglass,
   Lightbulb,
   Link2,
-  Package,
   RotateCcw,
   Thermometer,
-  Timer,
-  UtensilsCrossed,
   Wrench,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-// Cookbook-integration: recipe detail styled after c:/Projects/cookbook, bound to
-// capsule's real data. Keeps ALL of capsule's rich step metadata (duration,
-// temperature/HACCP CCP, equipment, tips) and adds cookbook's phase grouping,
-// packaging notes, sub-recipe/technique links, and checkable step progress.
+// Recipe detail per DESIGN.md: deep-green CommandBand identity hero (Playfair
+// headline, mono eyebrow, time metrics), then rail (ingredients + at-a-glance)
+// beside phase-grouped, checkable instructions. Coral is reserved for the
+// attention signals: allergens and CCP food-safety steps (>=135°F hot hold).
+// Step progress stays device-local (localStorage), no backend.
 
 const PHASE_ORDER = ["prep", "method", "finish", "packaging"] as const;
 type Phase = (typeof PHASE_ORDER)[number];
@@ -35,7 +52,6 @@ const PHASE_LABELS: Record<Phase, string> = {
   packaging: "Packaging & Event Build",
 };
 
-// HACCP hot-holding critical control point threshold (Fahrenheit).
 const CCP_MIN_F = 135;
 const isCCP = (value: number | null, unit: string | null) => {
   if (value === null || value === undefined) {
@@ -128,214 +144,288 @@ export function RecipeCookbookView(recipe: RecipeCookbookViewProps) {
     isCCP(s.temperatureValue, s.temperatureUnit)
   ).length;
 
+  const timeMetrics = [
+    { label: "Active Prep", value: recipe.activePrep },
+    { label: "Cook Time", value: recipe.cookTime },
+    { label: "Rest Time", value: recipe.restTime },
+    { label: "Total Time", value: recipe.totalTime },
+  ];
+
+  const atAGlance = [
+    { label: "Yield", value: recipe.yield },
+    { label: "Portion", value: recipe.portion },
+    { label: "Difficulty", value: recipe.difficulty },
+    { label: "Version", value: recipe.versionLabel },
+  ].filter((row) => row.value?.trim());
+
   const packagingRows = [
-    { label: "Drop-Off (ready to serve)", value: recipe.packaging.dropOff },
-    { label: "Bring-Hot (hot hold + serve)", value: recipe.packaging.bringHot },
     {
-      label: "Cook On-Site (finish at event)",
+      label: "Drop-off",
+      note: "ready to serve",
+      value: recipe.packaging.dropOff,
+    },
+    {
+      label: "Bring hot",
+      note: "hot hold + serve",
+      value: recipe.packaging.bringHot,
+    },
+    {
+      label: "Cook on-site",
+      note: "finish at event",
       value: recipe.packaging.cookOnSite,
     },
   ].filter((r) => r.value?.trim());
 
   return (
-    <div className="pb-12">
-      <div className="relative h-64 w-full overflow-hidden sm:h-80">
-        <SmartImage
-          alt={recipe.name}
-          className="h-full w-full"
-          src={recipe.heroImageUrl}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
-        <div className="absolute inset-x-0 bottom-0">
-          <div className="mx-auto max-w-4xl px-4 pb-6 sm:px-6">
-            <div className="flex items-center gap-2">
-              <p className="font-semibold text-orange-300 text-xs uppercase tracking-widest">
-                {recipe.categoryLabel}
-              </p>
-              {recipe.isSubrecipe && (
-                <span className="rounded-full bg-white/15 px-2 py-0.5 font-medium text-[10px] text-white uppercase tracking-wide">
-                  Sub-Recipe
-                </span>
-              )}
-              {!recipe.isActive && (
-                <span className="rounded-full bg-red-500/30 px-2 py-0.5 font-medium text-[10px] text-red-100 uppercase tracking-wide">
-                  Inactive
-                </span>
-              )}
-            </div>
-            <h1 className="mt-1 font-bold text-3xl text-white tracking-tight sm:text-4xl">
+    <>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="min-w-0 space-y-4">
+            <MonoLabel tone="dark">Kitchen / {recipe.categoryLabel}</MonoLabel>
+            <DisplayHeading className="text-balance" size="md">
               {recipe.name}
-            </h1>
+            </DisplayHeading>
             {recipe.description && (
-              <p className="mt-2 max-w-2xl text-sm text-stone-200">
-                {recipe.description}
-              </p>
+              <CommandBandLede>{recipe.description}</CommandBandLede>
             )}
-          </div>
-        </div>
-      </div>
-
-      <div className="mx-auto max-w-4xl px-4 sm:px-6">
-        <div className="-mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Stat icon={Timer} label="Active Prep" value={recipe.activePrep} />
-          <Stat icon={Flame} label="Cook Time" value={recipe.cookTime} />
-          <Stat icon={Hourglass} label="Rest Time" value={recipe.restTime} />
-          <Stat icon={Clock} label="Total Time" value={recipe.totalTime} />
-        </div>
-
-        <div className="mt-6 grid gap-3 rounded-2xl border border-border bg-card p-5 sm:grid-cols-4">
-          <Meta label="Yield" value={recipe.yield} />
-          <Meta label="Portion" value={recipe.portion} />
-          <Meta label="Difficulty" value={recipe.difficulty} />
-          <Meta label="Version" value={recipe.versionLabel} />
-        </div>
-
-        {(recipe.allergens.length > 0 || recipe.equipment.length > 0) && (
-          <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-border bg-card p-5">
-            <div>
-              <p className="mb-2 font-bold text-[11px] text-muted-foreground uppercase tracking-wider">
-                Allergens
-              </p>
-              <AllergenBadges allergens={recipe.allergens} />
-            </div>
-            {recipe.equipment.length > 0 && (
-              <div>
-                <p className="mb-2 flex items-center gap-1.5 font-bold text-[11px] text-muted-foreground uppercase tracking-wider">
-                  <Wrench className="h-3.5 w-3.5" /> Equipment Needed
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {recipe.equipment.map((e) => (
-                    <span
-                      className="rounded-md bg-secondary px-2.5 py-1 font-medium text-secondary-foreground text-xs"
-                      key={e}
-                    >
-                      {e}
-                    </span>
-                  ))}
-                </div>
+            {(recipe.isSubrecipe ||
+              !recipe.isActive ||
+              recipe.allergens.length > 0) && (
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                {recipe.isSubrecipe && <HeroPill>Sub-Recipe</HeroPill>}
+                {!recipe.isActive && <HeroPill>Inactive</HeroPill>}
+                {recipe.allergens.map((a) => (
+                  <HeroPill key={a} tone="coral">
+                    <AlertTriangle className="size-3" />
+                    {a}
+                  </HeroPill>
+                ))}
               </div>
             )}
           </div>
-        )}
+        </CommandBandHeader>
+        <CommandBandBody>
+          <MetricBand>
+            {timeMetrics.map((m) => (
+              <MetricCell key={m.label}>
+                <MetricLabel>{m.label}</MetricLabel>
+                <MetricValue>{m.value || "—"}</MetricValue>
+              </MetricCell>
+            ))}
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[300px_1fr]">
+      {recipe.heroImageUrl && (
+        <div className="relative aspect-[21/9] w-full overflow-hidden rounded-media border border-hairline">
+          <Image
+            alt={recipe.name}
+            className="object-cover"
+            fill
+            sizes="(max-width: 1024px) 100vw, 1280px"
+            src={recipe.heroImageUrl}
+          />
+        </div>
+      )}
+
+      <PageBody variant="rail">
+        <FilterRail>
           {ingredients.length > 0 && (
-            <aside className="lg:sticky lg:top-20 lg:self-start">
-              <h2 className="mb-3 font-bold text-lg tracking-tight">
-                Ingredients
-              </h2>
-              <ul className="overflow-hidden rounded-xl border border-border bg-card">
+            <FilterRailGroup>
+              <FilterRailLabel>
+                Ingredients · {ingredients.length}
+              </FilterRailLabel>
+              <ul className="divide-y divide-hairline">
                 {ingredients.map((i) => (
                   <li
-                    className="flex items-baseline justify-between gap-3 border-border border-b px-4 py-2.5 text-sm last:border-0"
+                    className="flex items-baseline justify-between gap-3 py-2.5"
                     key={i.id}
                   >
-                    <span className="font-medium text-foreground">
+                    <span className="text-[14px] text-ink leading-snug">
                       {i.name}
                       {i.note && (
-                        <span className="ml-1 text-muted-foreground text-xs">
+                        <span className="ml-1 text-[12px] text-muted-foreground">
                           ({i.note})
                         </span>
                       )}
                     </span>
-                    <span className="shrink-0 font-semibold text-primary">
+                    <span className="shrink-0 font-mono text-[12px] text-ink/70">
                       {i.amountDisplay}
                     </span>
                   </li>
                 ))}
               </ul>
-            </aside>
+            </FilterRailGroup>
           )}
 
-          <section className={cn(ingredients.length === 0 && "lg:col-span-2")}>
-            <div className="mb-4 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <h2 className="font-bold text-lg tracking-tight">
-                  Instructions
-                </h2>
-                {ccpCount > 0 && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2 py-0.5 font-semibold text-white text-xs">
-                    <AlertTriangle className="h-3 w-3" />
-                    {ccpCount} CCP
+          {recipe.equipment.length > 0 && (
+            <FilterRailGroup>
+              <FilterRailLabel>Equipment</FilterRailLabel>
+              <div className="flex flex-wrap gap-1.5">
+                {recipe.equipment.map((e) => (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full border border-hairline bg-canvas px-2.5 py-1 text-[12px] text-ink"
+                    key={e}
+                  >
+                    <Wrench className="size-3 text-muted-foreground" />
+                    {e}
                   </span>
-                )}
+                ))}
               </div>
-              {steps.length > 0 && (
-                <button
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 font-medium text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground"
-                  onClick={reset}
-                  type="button"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" /> Reset
-                </button>
-              )}
-            </div>
+            </FilterRailGroup>
+          )}
 
-            {steps.length > 0 && (
-              <div className="mb-6 rounded-xl border border-border bg-card p-4">
-                <div className="mb-2 flex items-center justify-between text-sm">
-                  <span className="font-medium text-foreground">
-                    {completed} of {steps.length} tasks complete
-                  </span>
-                  <span className="font-bold text-primary">{pct}%</span>
-                </div>
-                <ProgressBar value={pct} />
-                {pct === 100 && (
-                  <p className="mt-2 inline-flex items-center gap-1.5 font-medium text-emerald-700 text-sm">
-                    <CheckCircle2 className="h-4 w-4" /> All tasks done — ready
-                    to plate!
-                  </p>
-                )}
-              </div>
-            )}
+          {atAGlance.length > 0 && (
+            <FilterRailGroup>
+              <FilterRailLabel>At a Glance</FilterRailLabel>
+              <dl className="divide-y divide-hairline">
+                {atAGlance.map((row) => (
+                  <div
+                    className="flex items-baseline justify-between gap-3 py-2.5"
+                    key={row.label}
+                  >
+                    <dt className="text-[13px] text-muted-foreground">
+                      {row.label}
+                    </dt>
+                    <dd className="text-right text-[14px] text-ink">
+                      {row.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </FilterRailGroup>
+          )}
 
-            <div className="space-y-6">
-              {PHASE_ORDER.filter((p) => grouped[p].length > 0).map((phase) => (
-                <div key={phase}>
-                  <h3 className="mb-2 font-bold text-muted-foreground text-sm uppercase tracking-wider">
-                    {PHASE_LABELS[phase]}
-                  </h3>
-                  <ol className="space-y-2">
-                    {grouped[phase].map((step, idx) => (
-                      <StepRow
-                        checked={!!done[step.key]}
-                        index={idx}
-                        key={step.key}
-                        onToggle={() => toggle(step.key)}
-                        step={step}
-                      />
-                    ))}
-                  </ol>
-                </div>
-              ))}
-            </div>
+          {recipe.allergens.length === 0 && (
+            <FilterRailGroup>
+              <FilterRailLabel>Allergens</FilterRailLabel>
+              <p className="text-[13px] text-muted-foreground">
+                No major allergens recorded.
+              </p>
+            </FilterRailGroup>
+          )}
+        </FilterRail>
 
-            {packagingRows.length > 0 && (
-              <div className="mt-8">
-                <h3 className="mb-2 flex items-center gap-1.5 font-bold text-muted-foreground text-sm uppercase tracking-wider">
-                  <Package className="h-4 w-4" /> Packaging / Event Build
-                </h3>
+        <OperationalColumn>
+          <section className="space-y-6">
+            <SectionHeader
+              actions={
+                <>
+                  {ccpCount > 0 && (
+                    <StatusPill className="border-coral-soft bg-coral/10 text-coral">
+                      <AlertTriangle className="mr-1 size-3" />
+                      {ccpCount} CCP
+                    </StatusPill>
+                  )}
+                  {steps.length > 0 && (
+                    <Button onClick={reset} size="sm" variant="outline">
+                      <RotateCcw className="size-3.5" />
+                      Reset
+                    </Button>
+                  )}
+                </>
+              }
+              count={
+                steps.length > 0 ? `${completed}/${steps.length} done` : null
+              }
+              eyebrow="Execution"
+              title="Instructions"
+            />
+
+            {steps.length > 0 ? (
+              <>
                 <div className="space-y-2">
-                  {packagingRows.map((r) => (
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-soft-stone">
                     <div
-                      className="rounded-xl border border-border bg-card p-4"
-                      key={r.label}
-                    >
-                      <p className="font-bold text-foreground text-sm">
-                        {r.label}
-                      </p>
-                      <p className="mt-1 text-muted-foreground text-sm">
-                        {r.value}
-                      </p>
-                    </div>
-                  ))}
+                      className="h-full rounded-full bg-deep-green transition-all duration-500"
+                      style={{
+                        width: `${Math.min(100, Math.max(0, pct))}%`,
+                      }}
+                    />
+                  </div>
+                  {pct === 100 && (
+                    <p className="flex items-center gap-1.5 text-[14px] text-deep-green">
+                      <CheckCircle2 className="size-4" />
+                      All tasks done — ready to plate.
+                    </p>
+                  )}
                 </div>
+
+                <div className="space-y-8">
+                  {PHASE_ORDER.filter((p) => grouped[p].length > 0).map(
+                    (phase) => (
+                      <div className="space-y-3" key={phase}>
+                        <div className="flex items-center gap-4">
+                          <span className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.28em]">
+                            {PHASE_LABELS[phase]}
+                          </span>
+                          <span
+                            aria-hidden
+                            className="h-px flex-1 bg-hairline"
+                          />
+                          <span className="font-mono text-[11px] text-muted-foreground">
+                            {grouped[phase].filter((s) => done[s.key]).length}/
+                            {grouped[phase].length}
+                          </span>
+                        </div>
+                        <ol className="space-y-2.5">
+                          {grouped[phase].map((step, idx) => (
+                            <StepRow
+                              checked={!!done[step.key]}
+                              index={idx}
+                              key={step.key}
+                              onToggle={() => toggle(step.key)}
+                              step={step}
+                            />
+                          ))}
+                        </ol>
+                      </div>
+                    )
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col items-center gap-2 rounded-card border border-hairline bg-soft-stone px-6 py-14 text-center">
+                <p className="font-medium text-[16px] text-ink">
+                  No method steps yet
+                </p>
+                <p className="max-w-md text-[14px] text-muted-foreground">
+                  Edit this recipe to add phase-grouped steps — prep, method,
+                  finish at event, and packaging.
+                </p>
               </div>
             )}
           </section>
-        </div>
-      </div>
-    </div>
+
+          {packagingRows.length > 0 && (
+            <section className="space-y-6">
+              <SectionHeader
+                eyebrow="Service"
+                title="Packaging & event build"
+              />
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {packagingRows.map((r) => (
+                  <div
+                    className="rounded-card border border-hairline bg-canvas p-5"
+                    key={r.label}
+                  >
+                    <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.28em]">
+                      {r.label}
+                      <span className="ml-2 normal-case tracking-normal">
+                        · {r.note}
+                      </span>
+                    </p>
+                    <p className="mt-2 text-[15px] text-ink leading-relaxed">
+                      {r.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </OperationalColumn>
+      </PageBody>
+    </>
   );
 }
 
@@ -356,115 +446,106 @@ function StepRow({
   const temp = formatTemp(step.temperatureValue, step.temperatureUnit);
 
   return (
-    <li
-      className={cn(
-        "group flex gap-3 rounded-xl border bg-card p-3.5 transition-colors",
-        checked
-          ? "border-emerald-200 bg-emerald-50/60"
-          : ccp
-            ? "border-amber-300"
-            : "border-border hover:border-primary/30"
-      )}
-    >
-      <button
-        aria-label="Toggle task"
+    <li className="flex gap-4 rounded-card border border-hairline bg-canvas p-4 transition-colors hover:border-ink/25 sm:p-5">
+      <span
+        aria-hidden
         className={cn(
-          "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-colors",
+          "w-0.5 shrink-0 self-stretch rounded-full",
+          ccp ? "bg-coral" : "bg-ink/10"
+        )}
+      />
+      <button
+        aria-label={checked ? "Mark step incomplete" : "Mark step complete"}
+        aria-pressed={checked}
+        className={cn(
+          "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
           checked
-            ? "border-emerald-500 bg-emerald-500 text-white"
-            : "border-muted-foreground/30 text-transparent hover:border-primary"
+            ? "border-deep-green bg-deep-green text-white"
+            : "border-ink/25 bg-canvas text-transparent hover:border-deep-green/60"
         )}
         onClick={onToggle}
         type="button"
       >
-        <CheckCircle2 className="h-4 w-4" />
+        <Check className="size-3.5" />
       </button>
-      <div className="flex-1">
-        <div className="flex items-start gap-2">
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="flex items-baseline gap-3">
           <span
             className={cn(
-              "mt-0.5 font-bold text-xs",
-              checked
-                ? "text-emerald-600"
-                : ccp
-                  ? "text-amber-600"
-                  : "text-primary"
+              "shrink-0 font-mono text-[12px]",
+              ccp ? "text-coral" : "text-muted-foreground"
             )}
           >
-            {index + 1}
+            {String(index + 1).padStart(2, "0")}
           </span>
           <p
             className={cn(
-              "text-sm leading-relaxed transition-colors",
-              checked ? "text-muted-foreground line-through" : "text-foreground"
+              "text-[15px] leading-relaxed",
+              checked ? "text-muted-foreground line-through" : "text-ink"
             )}
           >
             {step.instruction}
           </p>
         </div>
 
-        {(duration || temp || step.equipmentNeeded.length > 0) && (
-          <div className="mt-2 flex flex-wrap items-center gap-1.5 pl-6">
+        {(ccp || duration || temp || step.equipmentNeeded.length > 0) && (
+          <div className="flex flex-wrap items-center gap-1.5 pl-[30px]">
             {ccp && (
-              <Badge className="bg-amber-500 text-white">
-                <AlertTriangle className="h-3 w-3" /> CCP
-              </Badge>
+              <span className="inline-flex items-center gap-1 rounded-full bg-coral px-2.5 py-0.5 font-mono text-[10px] text-white uppercase tracking-[0.18em]">
+                <AlertTriangle className="size-3" /> CCP
+              </span>
             )}
             {duration && (
-              <Badge>
-                <Clock className="h-3 w-3" /> {duration}
-              </Badge>
+              <StepChip>
+                <Clock className="size-3" /> {duration}
+              </StepChip>
             )}
             {temp && (
-              <Badge className={cn(ccp && "bg-amber-900/10 text-amber-900")}>
-                <Thermometer className="h-3 w-3" /> {temp}
-              </Badge>
+              <StepChip>
+                <Thermometer className="size-3" /> {temp}
+              </StepChip>
             )}
             {step.equipmentNeeded.map((eq) => (
-              <Badge key={eq}>
-                <Wrench className="h-3 w-3" /> {eq}
-              </Badge>
+              <StepChip key={eq}>
+                <Wrench className="size-3" /> {eq}
+              </StepChip>
             ))}
           </div>
         )}
 
         {(step.linkedRecipeId || step.linkedTechniqueId) && (
-          <div className="mt-2 flex flex-wrap items-center gap-2 pl-6">
+          <div className="flex flex-wrap items-center gap-3 pl-[30px]">
             {step.linkedRecipeId && (
               <Link
-                className="inline-flex items-center gap-1 font-semibold text-orange-700 text-xs underline decoration-orange-300 underline-offset-2 hover:decoration-orange-600"
+                className="inline-flex items-center gap-1 text-[13px] text-action-blue underline underline-offset-2"
                 href={`/kitchen/recipes/${step.linkedRecipeId}`}
               >
-                <Link2 className="h-3 w-3" />
+                <Link2 className="size-3" />
                 {step.linkedRecipeName ?? "Linked sub-recipe"}
               </Link>
             )}
-            {step.linkedTechniqueId && (
-              <span className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-0.5 font-medium text-secondary-foreground text-xs">
-                <Lightbulb className="h-3 w-3" /> Technique
-              </span>
-            )}
+            {step.linkedTechniqueId && <StepChip>Technique</StepChip>}
           </div>
         )}
 
         {step.tips?.trim() && (
-          <div className="mt-2 pl-6">
+          <div className="pl-[30px]">
             <button
-              className="inline-flex items-center gap-1.5 font-medium text-muted-foreground text-xs hover:text-foreground"
+              className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground transition-colors hover:text-ink"
               onClick={() => setTipsOpen((o) => !o)}
               type="button"
             >
-              <Lightbulb className="h-3.5 w-3.5" />
+              <Lightbulb className="size-3.5" />
               {tipsOpen ? "Hide tip" : "Show tip"}
               <ChevronDown
                 className={cn(
-                  "h-3.5 w-3.5 transition-transform",
+                  "size-3.5 transition-transform",
                   tipsOpen && "rotate-180"
                 )}
               />
             </button>
             {tipsOpen && (
-              <div className="mt-1.5 rounded-md bg-muted/50 p-3 text-muted-foreground text-sm">
+              <div className="mt-2 rounded-sm bg-soft-stone p-3 text-[14px] text-ink/80 leading-relaxed">
                 {step.tips}
               </div>
             )}
@@ -475,123 +556,32 @@ function StepRow({
   );
 }
 
-function Badge({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
+function StepChip({ children }: { children: React.ReactNode }) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-md border border-border bg-secondary px-2 py-0.5 font-medium text-secondary-foreground text-xs",
-        className
-      )}
-    >
+    <span className="inline-flex items-center gap-1 rounded-full border border-hairline bg-soft-stone/60 px-2.5 py-0.5 font-mono text-[11px] text-ink/80">
       {children}
     </span>
   );
 }
 
-function Stat({
-  icon: Icon,
-  label,
-  value,
+function HeroPill({
+  children,
+  tone,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
+  children: React.ReactNode;
+  tone?: "coral";
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-3 shadow-sm">
-      <Icon className="h-4 w-4 text-primary" />
-      <p className="mt-1.5 font-medium text-[11px] text-muted-foreground uppercase tracking-wide">
-        {label}
-      </p>
-      <p className="font-bold text-foreground text-sm">{value || "—"}</p>
-    </div>
-  );
-}
-
-function Meta({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="font-bold text-[11px] text-muted-foreground uppercase tracking-wider">
-        {label}
-      </p>
-      <p className="mt-0.5 font-semibold text-foreground text-sm">
-        {value || "—"}
-      </p>
-    </div>
-  );
-}
-
-function AllergenBadges({ allergens }: { allergens: string[] }) {
-  if (allergens.length === 0) {
-    return (
-      <span className="inline-flex items-center rounded-full bg-accent px-2.5 py-0.5 font-medium text-accent-foreground text-xs">
-        No major allergens
-      </span>
-    );
-  }
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {allergens.map((a) => (
-        <span
-          className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 font-medium text-red-800 text-xs"
-          key={a}
-        >
-          <AlertTriangle className="h-3 w-3" />
-          {a}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function SmartImage({
-  src,
-  alt,
-  className,
-}: {
-  src: string | null;
-  alt: string;
-  className?: string;
-}) {
-  const [failed, setFailed] = useState(false);
-  if (!src || failed) {
-    return (
-      <div
-        className={cn(
-          "flex items-center justify-center bg-gradient-to-br from-amber-100 via-orange-100 to-stone-200",
-          className
-        )}
-      >
-        <UtensilsCrossed className="h-10 w-10 text-orange-300" />
-      </div>
-    );
-  }
-  return (
-    <Image
-      alt={alt}
-      className={cn("object-cover", className)}
-      fill
-      onError={() => setFailed(true)}
-      sizes="(max-width: 640px) 100vw, 896px"
-      src={src}
-    />
-  );
-}
-
-function ProgressBar({ value }: { value: number }) {
-  return (
-    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-      <div
-        className="h-full rounded-full bg-primary transition-all duration-500"
-        style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
-      />
-    </div>
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em]",
+        tone === "coral"
+          ? "border-coral-soft/50 bg-coral/20 text-white"
+          : "border-white/25 bg-white/10 text-white/85"
+      )}
+    >
+      {children}
+    </span>
   );
 }
 

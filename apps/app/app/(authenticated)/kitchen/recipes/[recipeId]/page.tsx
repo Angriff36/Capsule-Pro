@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { SectionHeader } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -117,6 +118,73 @@ const cleanString = (value: string | null | undefined) => {
   const trimmed = value?.trim();
   return trimmed && trimmed.length > 0 ? trimmed : null;
 };
+
+// Resolve names for any sub-recipes linked from steps.
+const resolveLinkedRecipeNames = async (
+  tenantId: string,
+  stepRows: RecipeStepRow[]
+): Promise<Record<string, string>> => {
+  const linkedRecipeIds = Array.from(
+    new Set(
+      stepRows.map((s) => cleanString(s.linked_recipe_id)).filter(Boolean)
+    )
+  ) as string[];
+  const linkedNames: Record<string, string> = {};
+  if (linkedRecipeIds.length > 0) {
+    const nameRows = await database.$queryRaw<{ id: string; name: string }[]>(
+      Prisma.sql`
+        SELECT id, name
+        FROM tenant_kitchen.recipes
+        WHERE tenant_id = ${tenantId}
+          AND id IN (${Prisma.join(linkedRecipeIds)})
+          AND deleted_at IS NULL
+      `
+    );
+    for (const row of nameRows) {
+      linkedNames[row.id] = row.name;
+    }
+  }
+  return linkedNames;
+};
+
+const VALID_PHASES = new Set(["prep", "method", "finish", "packaging"]);
+
+const buildCookbookSteps = (
+  stepRows: RecipeStepRow[],
+  linkedNames: Record<string, string>
+): CookbookStep[] =>
+  stepRows.map((s) => {
+    const linkedRecipeId = cleanString(s.linked_recipe_id);
+    return {
+      key: String(s.step_number),
+      stepNumber: s.step_number,
+      instruction: s.instruction,
+      phase: (VALID_PHASES.has(s.phase ?? "") ? s.phase : "method") as
+        | "prep"
+        | "method"
+        | "finish"
+        | "packaging",
+      durationMinutes: s.duration_minutes,
+      temperatureValue: toDecimalNumberOrNull(
+        s.temperature_value,
+        "step.temperature_value"
+      ),
+      temperatureUnit: cleanString(s.temperature_unit),
+      equipmentNeeded: s.equipment_needed ?? [],
+      tips: s.tips,
+      linkedRecipeId,
+      linkedRecipeName: linkedRecipeId
+        ? (linkedNames[linkedRecipeId] ?? null)
+        : null,
+      linkedTechniqueId: cleanString(s.linked_technique_id),
+    };
+  });
+
+const deriveCategoryLabel = (recipe: RecipeDetailRow) =>
+  cleanString(recipe.category) ?? (recipe.is_subrecipe ? "Sub-Recipe" : "Dish");
+
+const deriveDifficultyLabel = (level: number | null) =>
+  level ? (DIFFICULTY_LABELS[level] ?? `Level ${level}`) : "";
 
 const RecipeDetailPage = async ({
   params,
@@ -287,55 +355,8 @@ const RecipeDetailPage = async ({
       )
     : [];
 
-  // Resolve names for any sub-recipes linked from steps.
-  const linkedRecipeIds = Array.from(
-    new Set(
-      stepRows.map((s) => cleanString(s.linked_recipe_id)).filter(Boolean)
-    )
-  ) as string[];
-  const linkedNames: Record<string, string> = {};
-  if (linkedRecipeIds.length > 0) {
-    const nameRows = await database.$queryRaw<{ id: string; name: string }[]>(
-      Prisma.sql`
-        SELECT id, name
-        FROM tenant_kitchen.recipes
-        WHERE tenant_id = ${tenantId}
-          AND id IN (${Prisma.join(linkedRecipeIds)})
-          AND deleted_at IS NULL
-      `
-    );
-    for (const row of nameRows) {
-      linkedNames[row.id] = row.name;
-    }
-  }
-
-  const validPhases = new Set(["prep", "method", "finish", "packaging"]);
-  const steps: CookbookStep[] = stepRows.map((s) => {
-    const linkedRecipeId = cleanString(s.linked_recipe_id);
-    return {
-      key: String(s.step_number),
-      stepNumber: s.step_number,
-      instruction: s.instruction,
-      phase: (validPhases.has(s.phase ?? "") ? s.phase : "method") as
-        | "prep"
-        | "method"
-        | "finish"
-        | "packaging",
-      durationMinutes: s.duration_minutes,
-      temperatureValue: toDecimalNumberOrNull(
-        s.temperature_value,
-        "step.temperature_value"
-      ),
-      temperatureUnit: cleanString(s.temperature_unit),
-      equipmentNeeded: s.equipment_needed ?? [],
-      tips: s.tips,
-      linkedRecipeId,
-      linkedRecipeName: linkedRecipeId
-        ? (linkedNames[linkedRecipeId] ?? null)
-        : null,
-      linkedTechniqueId: cleanString(s.linked_technique_id),
-    };
-  });
+  const linkedNames = await resolveLinkedRecipeNames(tenantId, stepRows);
+  const steps = buildCookbookSteps(stepRows, linkedNames);
 
   const equipment = Array.from(
     new Set(stepRows.flatMap((s) => s.equipment_needed ?? []).filter(Boolean))
@@ -370,18 +391,10 @@ const RecipeDetailPage = async ({
       <RecipeCookbookView
         activePrep={formatMinutes(recipe.prep_time_minutes)}
         allergens={dish?.allergens ?? []}
-        categoryLabel={
-          cleanString(recipe.category) ??
-          (recipe.is_subrecipe ? "Sub-Recipe" : "Dish")
-        }
+        categoryLabel={deriveCategoryLabel(recipe)}
         cookTime={formatMinutes(recipe.cook_time_minutes)}
         description={cleanString(recipe.description)}
-        difficulty={
-          recipe.difficulty_level
-            ? (DIFFICULTY_LABELS[recipe.difficulty_level] ??
-              `Level ${recipe.difficulty_level}`)
-            : ""
-        }
+        difficulty={deriveDifficultyLabel(recipe.difficulty_level)}
         equipment={equipment}
         heroImageUrl={heroImageUrl}
         ingredients={ingredients.map((ingredient) => ({
@@ -409,7 +422,8 @@ const RecipeDetailPage = async ({
       />
 
       {/* Power features preserved: costing, nutrition, version history */}
-      <div className="mx-auto w-full max-w-4xl px-4 pb-8 sm:px-6">
+      <section className="space-y-6">
+        <SectionHeader eyebrow="Records" title="Analysis & history" />
         <RecipeDetailTabs
           ingredients={ingredients}
           recipe={recipe}
@@ -417,7 +431,7 @@ const RecipeDetailPage = async ({
           steps={stepRows}
           tabs={["nutrition", "costing", "history"]}
         />
-      </div>
+      </section>
     </>
   );
 };
