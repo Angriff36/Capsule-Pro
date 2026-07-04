@@ -17,6 +17,11 @@
       "rule": "snake_case variant of tenantId for legacy snake_case models (ActionMilestone, DisciplinaryAction, OnboardingCompletion, OnboardingTask, PerformanceReview, EventFollowup, ...). Every Prisma store adapter injects tenantId from RuntimeContext.user.tenantId; the prisma-model-metadata bridge maps the IR tenantId property onto the tenant_id column. Constitution §19.",
       "owner": "platform",
       "reviewBy": "2027-06-01"
+    },
+    "id": {
+      "rule": "The Prisma store adapter generates id via crypto.randomUUID() when the create command does not supply one (see manifest/runtime/src/prisma-store.ts .create()). Most entities take id as an explicit create param; no-param definition creates (e.g. SelOnboardingTraining*Definition) rely on the generated id.",
+      "owner": "platform",
+      "reviewBy": "2027-01-01"
     }
   },
   "adapterDerived": {

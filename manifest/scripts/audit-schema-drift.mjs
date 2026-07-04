@@ -18,7 +18,7 @@
  *
  *   1. Declared in manifest? Either a `command create` parameter or an entity
  *      property with a default value the manifest's create action will use.
- *   2. Adapter-derived? In `scripts/manifest/schema-drift-allowlist.json` under
+ *   2. Adapter-derived? In `manifest/governance/schema-drift-allowlist.json` under
  *      `adapterDerived` with a documented rule.
  *   3. Bypass / nonconforming? In the same allowlist under `nonconforming`
  *      with a removal plan and owner.
@@ -465,7 +465,7 @@ function checkEntity({ modelName, model, ir, governedSet, allowlist }) {
       field: field.name,
       prismaType: field.prismaType,
       expectedManifestKind: expectedKind,
-      recommendation: `Add \`${field.name}\` as a parameter to the manifest \`create\` command for ${entityName} (or as a property with a default), or document an adapter-derived rule in scripts/manifest/schema-drift-allowlist.json under adapterDerived.${entityName}.${field.name}.`,
+      recommendation: `Add \`${field.name}\` as a parameter to the manifest \`create\` command for ${entityName} (or as a property with a default), or document an adapter-derived rule in manifest/governance/schema-drift-allowlist.json under adapterDerived.${entityName}.${field.name}.`,
     });
   }
 
@@ -709,7 +709,7 @@ function renderMarkdown(summary, results) {
     "1. **Add to manifest** — update the entity's `.manifest` source: add the field as a `command create` parameter or as a `property` with a default, then run `pnpm manifest:compile`."
   );
   lines.push(
-    '2. **Adapter-derived rule** — if the field is intentionally infrastructural (e.g. looked up from a parent entity), add an entry to `scripts/manifest/schema-drift-allowlist.json` under `adapterDerived.<Entity>.<field>` with `{ "rule": "...", "owner": "...", "reviewBy": "YYYY-MM-DD" }`.'
+    '2. **Adapter-derived rule** — if the field is intentionally infrastructural (e.g. looked up from a parent entity), add an entry to `manifest/governance/schema-drift-allowlist.json` under `adapterDerived.<Entity>.<field>` with `{ "rule": "...", "owner": "...", "reviewBy": "YYYY-MM-DD" }`.'
   );
   lines.push(
     '3. **Documented bypass** — if neither path is currently viable, add an entry under `nonconforming.<Entity>.<field>` with `{ "reason": "...", "owner": "...", "removalPlan": "...", "reviewBy": "YYYY-MM-DD" }`. The bypass is technical debt with a name attached, not permission.'
