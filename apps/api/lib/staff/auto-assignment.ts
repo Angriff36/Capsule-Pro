@@ -248,15 +248,15 @@ async function fetchEmployeesForShift(
           tenantId,
           deletedAt: null,
           id: { not: shiftId },
-          shift_start: { lt: shiftEnd },
-          shift_end: { gt: shiftStart },
+          shiftStart: { lt: shiftEnd },
+          shiftEnd: { gt: shiftStart },
         },
         select: {
           id: true,
           employeeId: true,
           locationId: true,
-          shift_start: true,
-          shift_end: true,
+          shiftStart: true,
+          shiftEnd: true,
         },
       }),
     ]);
@@ -338,8 +338,8 @@ async function fetchEmployeesForShift(
     const employeeConflicts = conflictsByEmployeeId.get(shift.employeeId) ?? [];
     employeeConflicts.push({
       id: shift.id,
-      shift_start: shift.shift_start,
-      shift_end: shift.shift_end,
+      shift_start: shift.shiftStart,
+      shift_end: shift.shiftEnd,
       location_name: locationNamesById.get(shift.locationId) ?? "",
     });
     conflictsByEmployeeId.set(shift.employeeId, employeeConflicts);

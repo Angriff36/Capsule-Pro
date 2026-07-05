@@ -103,14 +103,14 @@ export async function scanOvertimeRisk(
     where: {
       tenantId,
       deletedAt: null,
-      shift_start: { gte: startDate, lte: endDate },
+      shiftStart: { gte: startDate, lte: endDate },
       ...(locationId ? { locationId } : {}),
     },
     select: {
       id: true,
       employeeId: true,
-      shift_start: true,
-      shift_end: true,
+      shiftStart: true,
+      shiftEnd: true,
     },
   });
 
@@ -156,8 +156,8 @@ export async function scanOvertimeRisk(
   >();
 
   for (const shift of shifts) {
-    const hours = computeShiftHours(shift.shift_start, shift.shift_end);
-    const week = weekKey(shift.shift_start);
+    const hours = computeShiftHours(shift.shiftStart, shift.shiftEnd);
+    const week = weekKey(shift.shiftStart);
     const key = `${shift.employeeId}:${week}`;
     const existing = buckets.get(key);
     if (existing) {
