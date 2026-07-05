@@ -114,7 +114,7 @@ entity PurchaseRequisition mixin TenantScoped, SoftDeletable {
 
   command completeDraftFromPrepDemand(itemCount: number, subtotal: money, estimatedTax: number, estimatedShipping: number, estimatedTotal: money, notes: string) {
     guard self.status == "draft" "Can only complete draft requisitions"
-    guard itemCount != null and itemCount > 0 "At least one line item is required"
+    guard itemCount != null and (itemCount > 0 or self.sourceType == "prep_demand_unresolved") "At least one line item is required (unresolved prep drafts may be notes-only)"
     guard subtotal != null and subtotal >= 0 "Subtotal cannot be negative"
     guard estimatedTotal != null and estimatedTotal >= 0 "Estimated total cannot be negative"
 

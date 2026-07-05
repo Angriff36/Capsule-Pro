@@ -30,6 +30,7 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import { resolveIngredientInventoryIds } from "./ingredient-inventory-resolution";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -335,14 +336,24 @@ export function createPrepInventoryDemandMiddleware(
           continue;
         }
 
+        // PrepListItem.ingredientId is a KITCHEN Ingredient id; the inventory
+        // mapping lives on Ingredient.inventoryItemId. Resolve each distinct
+        // ingredient to its inventory item (falling back to the raw id for
+        // rows that already carry an InventoryItem id directly).
+        const inventoryIdByIngredient = await resolveIngredientInventoryIds(
+          storeProvider,
+          tenantId,
+          sourceItems
+        );
+
         // Free stock per item, snapshotted BEFORE this list's reservation:
         // net purchase demand = max(0, demand - free-at-reservation-time).
         const inventoryStoreForSnapshot = storeProvider("InventoryItem");
         const freeBeforeReserve = new Map<string, number>();
         for (const item of sourceItems) {
-          const inventoryItemId = asNonEmptyString(item.ingredientId);
+          const ingredientId = asNonEmptyString(item.ingredientId);
           const quantity = asPositiveNumber(item.scaledQuantity);
-          if (!inventoryItemId || quantity === undefined) {
+          if (!ingredientId || quantity === undefined) {
             onDiagnostic({
               stage: "reserve",
               reason:
@@ -354,6 +365,12 @@ export function createPrepInventoryDemandMiddleware(
                 ingredientName: asNonEmptyString(item.ingredientName),
               },
             });
+            continue;
+          }
+          const inventoryItemId = inventoryIdByIngredient.get(ingredientId);
+          if (!inventoryItemId) {
+            // No inventory mapping — nothing to reserve. The line is surfaced
+            // on the UNRESOLVED draft by resolveDemandLines, not dropped.
             continue;
           }
 
@@ -408,6 +425,7 @@ export function createPrepInventoryDemandMiddleware(
           tenantId,
           eventId,
           sourceItems,
+          inventoryIdByIngredient,
           freeBeforeReserve,
           storeProvider,
           dispatchCommand,
@@ -448,6 +466,8 @@ interface ConsolidateOptions {
   dispatchCommand: DispatchCommand;
   eventId: string;
   freeBeforeReserve: Map<string, number>;
+  /** PrepListItem.ingredientId -> tenant InventoryItem id (unmapped ids absent). */
+  inventoryIdByIngredient: Map<string, string>;
   onDiagnostic: (diag: PrepDemandDiagnostic) => void;
   prepList: PrepListLike | undefined;
   prepListId: string;
@@ -656,6 +676,7 @@ async function resolveDemandLines(args: {
     prepListId,
     tenantId,
     sourceItems,
+    inventoryIdByIngredient,
     freeBeforeReserve,
     onDiagnostic,
     resolveUnitConversion,
@@ -667,18 +688,24 @@ async function resolveDemandLines(args: {
   let coveredByStock = 0;
 
   for (const item of sourceItems) {
-    const inventoryItemId = asNonEmptyString(item.ingredientId);
+    const ingredientId = asNonEmptyString(item.ingredientId);
     const quantity = asPositiveNumber(item.scaledQuantity);
-    if (!inventoryItemId || quantity === undefined) {
+    if (!ingredientId || quantity === undefined) {
       continue; // already reported in the reserve loop
     }
     const prepUnit = asNonEmptyString(item.scaledUnit) ?? "each";
-    const prepName = asNonEmptyString(item.ingredientName) ?? inventoryItemId;
+    const prepName = asNonEmptyString(item.ingredientName) ?? ingredientId;
 
-    const inventoryItem = (await inventoryStore.getById(inventoryItemId)) as
-      | InventoryItemLike
-      | undefined;
-    if (asNonEmptyString(inventoryItem?.tenantId) !== tenantId) {
+    const inventoryItemId = inventoryIdByIngredient.get(ingredientId);
+    const inventoryItem = inventoryItemId
+      ? ((await inventoryStore.getById(inventoryItemId)) as
+          | InventoryItemLike
+          | undefined)
+      : undefined;
+    if (
+      !inventoryItemId ||
+      asNonEmptyString(inventoryItem?.tenantId) !== tenantId
+    ) {
       unresolvedUnmapped.push({
         itemName: prepName,
         quantity,
@@ -691,7 +718,7 @@ async function resolveDemandLines(args: {
         reason: "ingredient has no tenant inventory item — line UNRESOLVED",
         prepListId,
         tenantId,
-        detail: { ingredientId: inventoryItemId, ingredientName: prepName },
+        detail: { ingredientId, ingredientName: prepName },
       });
       continue;
     }

@@ -22,6 +22,7 @@ async function buildRuntime(options?: {
 }) {
   const manifestFiles = [
     "kitchen/prep-list-rules.manifest",
+    "kitchen/ingredient-rules.manifest",
     "inventory/inventory-rules.manifest",
     "inventory/inventory-supplier-rules.manifest",
     "procurement/vendor-catalog-rules.manifest",
@@ -547,6 +548,78 @@ describe("Prep list finalization derives inventory demand", () => {
       "supplier"
     );
     expect(diagnostics.some((d) => d.stage === "order")).toBe(true);
+  });
+
+  it("resolves kitchen Ingredient ids through Ingredient.inventoryItemId — the shape live prep-list generation writes", async () => {
+    // WHY: PrepListItem.ingredientId references tenant_kitchen.ingredients,
+    // NOT inventory items. The inventory linkage is Ingredient.inventoryItemId
+    // (set via Ingredient.linkInventoryItem). If the middleware treats the
+    // ingredient id as an inventory id, every generated prep list finalizes
+    // with ALL demand unmapped — which is exactly the production bug this
+    // guards against.
+    const { runtime, storeProvider } = await buildRuntime();
+    await seedInventory(runtime);
+    await seedSuppliersAndCatalogs(runtime);
+
+    // Linked kitchen ingredient: flour -> inventory-flour.
+    await runtime.createInstance("Ingredient", {
+      id: "ingredient-flour",
+      tenantId: TEST_TENANT_ID,
+      name: "AP Flour",
+      inventoryItemId: "inventory-flour",
+    });
+    // Unlinked kitchen ingredient: no inventory item chosen yet.
+    await runtime.createInstance("Ingredient", {
+      id: "ingredient-saffron",
+      tenantId: TEST_TENANT_ID,
+      name: "Saffron",
+    });
+
+    await seedPrepList(runtime, "prep-list-demand-001", "event-demand-001", [
+      {
+        id: "prep-item-flour-1",
+        ingredientId: "ingredient-flour",
+        ingredientName: "AP Flour",
+        scaledQuantity: 8,
+      },
+      {
+        id: "prep-item-saffron-1",
+        ingredientId: "ingredient-saffron",
+        ingredientName: "Saffron",
+        scaledQuantity: 1,
+      },
+    ]);
+
+    const result = await finalize(runtime, "prep-list-demand-001");
+    expect(result.success).toBe(true);
+
+    // The reservation landed on the MAPPED inventory item.
+    await expect(
+      storeProvider("InventoryItem").getById("inventory-flour")
+    ).resolves.toMatchObject({ quantityReserved: 8 });
+
+    const requisitions = (await storeProvider(
+      "PurchaseRequisition"
+    ).getAll()) as Record<string, unknown>[];
+
+    // flour: 8 needed - 2 free = 6 -> orderMultiple 5 -> 10kg @ 2.5 = 25.
+    const usFoodsDraft = requisitions.find(
+      (r) => r.supplierId === "supplier-us-foods"
+    );
+    expect(usFoodsDraft).toMatchObject({ itemCount: 1, subtotal: 25 });
+
+    // Saffron (ingredient never linked to inventory) is SURFACED on the
+    // unresolved draft's notes — not guessed, not dropped. It cannot be an
+    // item row because PurchaseRequisitionItem.itemId requires a real
+    // inventory item.
+    const unresolvedDraft = requisitions.find(
+      (r) => r.sourceType === "prep_demand_unresolved"
+    );
+    expect(unresolvedDraft).toBeDefined();
+    expect(String(unresolvedDraft?.notes)).toContain("[unmapped] Saffron");
+    expect(String(unresolvedDraft?.notes)).toContain(
+      "no tenant inventory item"
+    );
   });
 
   it("converts prep units to the catalog's ordering unit via the injected conversion — and surfaces missing conversions as UNRESOLVED", async () => {

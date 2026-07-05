@@ -40,6 +40,7 @@ import {
   captureTriggeringEvents,
   PREP_LIST_CANCELLED_RELEASE_RESERVATION_REACTION,
 } from "../async-reactions";
+import { resolveIngredientInventoryIds } from "./ingredient-inventory-resolution";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -221,10 +222,23 @@ export function createPrepListCancelledReleaseReservationMiddleware(
           continue;
         }
 
+        // PrepListItem.ingredientId is a KITCHEN Ingredient id; resolve to the
+        // linked InventoryItem (Ingredient.inventoryItemId) before releasing.
+        const inventoryIdByIngredient = await resolveIngredientInventoryIds(
+          storeProvider,
+          tenantId,
+          prepItems
+        );
+
         for (const item of prepItems) {
-          const inventoryItemId = asNonEmptyString(item.ingredientId);
+          const ingredientId = asNonEmptyString(item.ingredientId);
           const quantity = asPositiveNumber(item.scaledQuantity);
-          if (!inventoryItemId || quantity === undefined) {
+          if (!ingredientId || quantity === undefined) {
+            continue;
+          }
+          const inventoryItemId = inventoryIdByIngredient.get(ingredientId);
+          if (!inventoryItemId) {
+            // Unlinked ingredient — finalize never reserved it; nothing to release.
             continue;
           }
 

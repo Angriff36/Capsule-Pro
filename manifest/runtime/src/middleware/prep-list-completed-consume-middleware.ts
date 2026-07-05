@@ -27,6 +27,7 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import { resolveIngredientInventoryIds } from "./ingredient-inventory-resolution";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -181,10 +182,18 @@ export function createPrepListCompletedConsumeMiddleware(
           continue;
         }
 
+        // PrepListItem.ingredientId is a KITCHEN Ingredient id; resolve to the
+        // linked InventoryItem (Ingredient.inventoryItemId) before consuming.
+        const inventoryIdByIngredient = await resolveIngredientInventoryIds(
+          storeProvider,
+          tenantId,
+          sourceItems
+        );
+
         for (const item of sourceItems) {
-          const inventoryItemId = asNonEmptyString(item.ingredientId);
+          const ingredientId = asNonEmptyString(item.ingredientId);
           const quantity = asPositiveNumber(item.scaledQuantity);
-          if (!inventoryItemId || quantity === undefined) {
+          if (!ingredientId || quantity === undefined) {
             onDiagnostic({
               stage: "consume",
               reason:
@@ -196,6 +205,12 @@ export function createPrepListCompletedConsumeMiddleware(
                 ingredientName: asNonEmptyString(item.ingredientName),
               },
             });
+            continue;
+          }
+          const inventoryItemId = inventoryIdByIngredient.get(ingredientId);
+          if (!inventoryItemId) {
+            // Ingredient not linked to inventory — finalize never reserved it,
+            // so there is nothing to consume either. Symmetric with reserve.
             continue;
           }
 
