@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-07-04T16:28:17.551Z",
+  "generatedAt": "2026-07-05T22:12:41.670Z",
   "basePath": "/api",
   "routes": [
     {
@@ -7462,7 +7462,7 @@
           "name": "notes",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -18013,7 +18013,7 @@
           "name": "eventId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "budgetedRevenue",
@@ -18586,7 +18586,7 @@
           "name": "eventId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "highlights",
@@ -18623,6 +18623,12 @@
           "type": "string",
           "location": "body",
           "required": true
+        },
+        {
+          "name": "generationDurationMs",
+          "type": "string",
+          "location": "body",
+          "required": false
         }
       ],
       "source": {
@@ -18643,6 +18649,27 @@
         "kind": "command",
         "entity": "EventSummary",
         "command": "refresh",
+        "variant": "dispatcher"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventSummary.softDelete",
+      "path": "/api/manifest/EventSummary/commands/soft-delete",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventSummary",
+        "command": "softDelete",
         "variant": "dispatcher"
       },
       "auth": true,
@@ -21591,6 +21618,27 @@
       "tenant": true
     },
     {
+      "id": "InventorySupplier.linkVendor",
+      "path": "/api/manifest/InventorySupplier/commands/link-vendor",
+      "method": "POST",
+      "params": [
+        {
+          "name": "vendorId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "InventorySupplier",
+        "command": "linkVendor",
+        "variant": "dispatcher"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "InventorySupplier.reinstate",
       "path": "/api/manifest/InventorySupplier/commands/reinstate",
       "method": "POST",
@@ -23924,25 +23972,25 @@
           "name": "endTime",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "totalDistance",
           "type": "number",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "totalDuration",
           "type": "number",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "description",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -30206,6 +30254,18 @@
           "type": "string",
           "location": "body",
           "required": true
+        },
+        {
+          "name": "sourceType",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "supplierId",
+          "type": "string",
+          "location": "body",
+          "required": false
         }
       ],
       "source": {
@@ -30368,6 +30428,12 @@
           "type": "string",
           "location": "body",
           "required": true
+        },
+        {
+          "name": "sourcePrepListIds",
+          "type": "string",
+          "location": "body",
+          "required": false
         }
       ],
       "source": {
@@ -30440,6 +30506,12 @@
           "type": "string",
           "location": "body",
           "required": true
+        },
+        {
+          "name": "sourcePrepListIds",
+          "type": "string",
+          "location": "body",
+          "required": false
         }
       ],
       "source": {
@@ -38111,6 +38183,27 @@
         "kind": "command",
         "entity": "VendorCatalog",
         "command": "deactivate",
+        "variant": "dispatcher"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "VendorCatalog.linkInventoryItem",
+      "path": "/api/manifest/VendorCatalog/commands/link-inventory-item",
+      "method": "POST",
+      "params": [
+        {
+          "name": "inventoryItemId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "VendorCatalog",
+        "command": "linkInventoryItem",
         "variant": "dispatcher"
       },
       "auth": true,

@@ -2027,6 +2027,26 @@
     "expiresOn": "2027-06-01"
   },
   {
+    "path": "app/api/manifest/approvals/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Manifest runtime meta API — grants/denies IR-declared approval stages via engine.approveStage/denyApproval. Cross-entity infrastructure for governed execution, not an entity-scoped command.",
+    "category": "infrastructure",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/procurement/requisitions/[id]/convert-to-po/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Uses runManifestCommandCore — governed requisition→PO conversion orchestration (multi-entity tx via InventorySupplier.vendorId bridge) but lives outside commands/ namespace.",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
     "path": "app/api/kitchen/import/route.ts",
     "methods": [
       "POST"

@@ -13393,6 +13393,17 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
     "hasDeletedAt": true,
     "fields": [
       {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "id",
         "irName": "id",
         "type": "String",
@@ -13410,17 +13421,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -33095,6 +33095,17 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
     "hasDeletedAt": true,
     "fields": [
       {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "id",
         "irName": "id",
         "type": "String",
@@ -33112,17 +33123,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
@@ -33965,8 +33965,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
     "hasDeletedAt": false,
     "fields": [
       {
-        "name": "id",
-        "irName": "id",
+        "name": "tenant_id",
+        "irName": "tenantId",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -33976,8 +33976,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "tenant_id",
-        "irName": "tenantId",
+        "name": "id",
+        "irName": "id",
         "type": "String",
         "isEnum": false,
         "isList": false,

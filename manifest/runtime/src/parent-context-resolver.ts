@@ -56,6 +56,24 @@ function isMeaningful(value: unknown): boolean {
   return value !== undefined && value !== null && value !== "";
 }
 
+const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Postgres throws (and poisons the surrounding transaction) if a non-UUID
+ * string is compared against a uuid column. When the parent's `id` is
+ * uuid-typed, skip lookups for FK values that cannot possibly match
+ * (e.g. logical slugs like "prep-station" stored in loosely-typed columns).
+ */
+function canLookUpParent(parentEntity: IREntity, fkValue: string): boolean {
+  const idProp = parentEntity.properties.find((p) => p.name === "id");
+  const idType = (idProp as { type?: { name?: string } } | undefined)?.type
+    ?.name;
+  if (idType === "uuid") {
+    return UUID_SHAPE.test(fkValue);
+  }
+  return true;
+}
+
 /** A scalar, non-list property type whose values are safe to copy verbatim. */
 function scalarTypeName(
   prop: { type?: { name?: string } } | undefined
@@ -105,15 +123,18 @@ async function inheritFromParents(
       continue;
     }
 
+    const parentEntity = runtime.getEntity(rel.target) as IREntity | undefined;
+    if (!parentEntity) {
+      continue;
+    }
+    if (!canLookUpParent(parentEntity, fkValue)) {
+      continue;
+    }
+
     const parent = (await runtime.getInstance(rel.target, fkValue)) as
       | Record<string, unknown>
       | undefined;
     if (!parent) {
-      continue;
-    }
-
-    const parentEntity = runtime.getEntity(rel.target) as IREntity | undefined;
-    if (!parentEntity) {
       continue;
     }
     const parentScalarTypes = new Map<string, string>();

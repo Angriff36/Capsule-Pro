@@ -10,9 +10,8 @@ entity Station mixin TenantScoped, SoftDeletable {
   // (relationship added below for parent-context resolution)
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
 
-  // Back-relations (U11): inverse hasMany for children that belongTo Station
-  relationship hasMany prepTasks: PrepTask
-  relationship hasMany prepListItems: PrepListItem
+  // NOTE: no hasMany prepTasks/prepListItems — those entities carry a LOGICAL
+  // station-type slug in stationId ("prep-station", ...), not a FK to Station.id.
 
   key [tenantId, id]
   property required locationId: uuid

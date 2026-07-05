@@ -5258,16 +5258,16 @@
     ],
     "fields": [
       {
+        "name": "deletedAt",
+        "irName": "deletedAt"
+      },
+      {
         "name": "id",
         "irName": "id"
       },
       {
         "name": "tenantId",
         "irName": "tenantId"
-      },
-      {
-        "name": "deletedAt",
-        "irName": "deletedAt"
       },
       {
         "name": "eventId",
@@ -13016,16 +13016,16 @@
     ],
     "fields": [
       {
+        "name": "deletedAt",
+        "irName": "deletedAt"
+      },
+      {
         "name": "id",
         "irName": "id"
       },
       {
         "name": "tenantId",
         "irName": "tenantId"
-      },
-      {
-        "name": "deletedAt",
-        "irName": "deletedAt"
       },
       {
         "name": "displayName",
@@ -13364,12 +13364,12 @@
     ],
     "fields": [
       {
-        "name": "id",
-        "irName": "id"
-      },
-      {
         "name": "tenantId",
         "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
       },
       {
         "name": "taskBundleId",

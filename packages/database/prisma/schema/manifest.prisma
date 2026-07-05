@@ -4095,7 +4095,6 @@ model PrepListItem {
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
   prepList PrepList @relation(fields: [tenantId, prepListId], references: [tenantId, id])
-  station Station? @relation(fields: [tenantId, stationId], references: [tenantId, id])
   ingredient Ingredient @relation(fields: [tenantId, ingredientId], references: [tenantId, id])
   dish Dish? @relation(fields: [tenantId, dishId], references: [tenantId, id])
   recipeVersion RecipeVersion? @relation(fields: [tenantId, recipeVersionId], references: [tenantId, id])
@@ -4167,7 +4166,6 @@ model PrepTask {
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
   prepList PrepList? @relation(fields: [tenantId, prepListId], references: [tenantId, id])
-  station Station? @relation(fields: [tenantId, stationId], references: [tenantId, id])
   event Event @relation(fields: [tenantId, eventId], references: [tenantId, id])
   dish Dish? @relation(fields: [tenantId, dishId], references: [tenantId, id])
   location Facility @relation(fields: [tenantId, locationId], references: [tenantId, id])
@@ -5805,8 +5803,6 @@ model Station {
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
   location Facility @relation(fields: [tenantId, locationId], references: [tenantId, id])
-  prepTasks PrepTask[]
-  prepListItems PrepListItem[]
 
   @@map("stations")
   @@id([tenantId, id])

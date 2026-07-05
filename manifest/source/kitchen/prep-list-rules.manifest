@@ -248,7 +248,9 @@ entity PrepListItem mixin TenantScoped, SoftDeletable {
   computed isDeleted: boolean = self.deletedAt != null
 
   relationship belongsTo prepList: PrepList fields [tenantId, prepListId] references [tenantId, id]
-  relationship belongsTo station: Station fields [tenantId, stationId] references [tenantId, id]
+  // NOTE: stationId is a LOGICAL station-type slug ("prep-station", "hot-line", ...), not a FK
+  // to Station.id (uuid). A belongsTo here would make the runtime look up Station by slug,
+  // throwing P2007 inside the create transaction and poisoning it. See canonical/kitchen/stations.
   relationship belongsTo ingredient: Ingredient fields [tenantId, ingredientId] references [tenantId, id]
   relationship belongsTo dish: Dish fields [tenantId, dishId] references [tenantId, id]
   relationship belongsTo recipeVersion: RecipeVersion fields [tenantId, recipeVersionId] references [tenantId, id]

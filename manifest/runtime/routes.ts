@@ -4116,6 +4116,11 @@ export function eventSummaryRefreshPath(): string {
   return "/api/manifest/EventSummary/commands/refresh";
 }
 
+/** POST /api/manifest/EventSummary/commands/softDelete */
+export function eventSummarySoftDeletePath(): string {
+  return "/api/manifest/EventSummary/commands/softDelete";
+}
+
 /** POST /api/manifest/EventSummary/commands/update */
 export function eventSummaryUpdatePath(): string {
   return "/api/manifest/EventSummary/commands/update";
@@ -4559,6 +4564,11 @@ export function inventorySupplierCreatePath(): string {
 /** POST /api/manifest/InventorySupplier/commands/deactivate */
 export function inventorySupplierDeactivatePath(): string {
   return "/api/manifest/InventorySupplier/commands/deactivate";
+}
+
+/** POST /api/manifest/InventorySupplier/commands/linkVendor */
+export function inventorySupplierLinkVendorPath(): string {
+  return "/api/manifest/InventorySupplier/commands/linkVendor";
 }
 
 /** POST /api/manifest/InventorySupplier/commands/reinstate */
@@ -7186,6 +7196,11 @@ export function vendorCatalogDeactivatePath(): string {
   return "/api/manifest/VendorCatalog/commands/deactivate";
 }
 
+/** POST /api/manifest/VendorCatalog/commands/linkInventoryItem */
+export function vendorCatalogLinkInventoryItemPath(): string {
+  return "/api/manifest/VendorCatalog/commands/linkInventoryItem";
+}
+
 /** POST /api/manifest/VendorCatalog/commands/reactivate */
 export function vendorCatalogReactivatePath(): string {
   return "/api/manifest/VendorCatalog/commands/reactivate";
@@ -8286,6 +8301,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "EventStaff.updateShift", path: "/api/manifest/EventStaff/commands/updateShift", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventSummary.create", path: "/api/manifest/EventSummary/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventSummary.refresh", path: "/api/manifest/EventSummary/commands/refresh", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventSummary.softDelete", path: "/api/manifest/EventSummary/commands/softDelete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventSummary.update", path: "/api/manifest/EventSummary/commands/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventTimeline.create", path: "/api/manifest/EventTimeline/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventTimeline.remove", path: "/api/manifest/EventTimeline/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
@@ -8375,6 +8391,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "InventorySupplier.blacklist", path: "/api/manifest/InventorySupplier/commands/blacklist", method: "POST", source: "command", auth: true, tenant: true },
   { id: "InventorySupplier.create", path: "/api/manifest/InventorySupplier/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "InventorySupplier.deactivate", path: "/api/manifest/InventorySupplier/commands/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "InventorySupplier.linkVendor", path: "/api/manifest/InventorySupplier/commands/linkVendor", method: "POST", source: "command", auth: true, tenant: true },
   { id: "InventorySupplier.reinstate", path: "/api/manifest/InventorySupplier/commands/reinstate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "InventorySupplier.suspend", path: "/api/manifest/InventorySupplier/commands/suspend", method: "POST", source: "command", auth: true, tenant: true },
   { id: "InventorySupplier.update", path: "/api/manifest/InventorySupplier/commands/update", method: "POST", source: "command", auth: true, tenant: true },
@@ -8900,6 +8917,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "Vendor.update", path: "/api/manifest/Vendor/commands/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VendorCatalog.create", path: "/api/manifest/VendorCatalog/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VendorCatalog.deactivate", path: "/api/manifest/VendorCatalog/commands/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "VendorCatalog.linkInventoryItem", path: "/api/manifest/VendorCatalog/commands/linkInventoryItem", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VendorCatalog.reactivate", path: "/api/manifest/VendorCatalog/commands/reactivate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VendorCatalog.softDelete", path: "/api/manifest/VendorCatalog/commands/softDelete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VendorCatalog.update", path: "/api/manifest/VendorCatalog/commands/update", method: "POST", source: "command", auth: true, tenant: true },

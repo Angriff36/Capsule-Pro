@@ -2659,31 +2659,31 @@
     },
     "command:PrepListItem.create": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 347
+      "line": 349
     },
     "command:PrepListItem.markCompleted": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 326
+      "line": 328
     },
     "command:PrepListItem.markUncompleted": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 337
+      "line": 339
     },
     "command:PrepListItem.remove": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 377
+      "line": 379
     },
     "command:PrepListItem.updatePrepNotes": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 319
+      "line": 321
     },
     "command:PrepListItem.updateQuantity": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 280
+      "line": 282
     },
     "command:PrepListItem.updateStation": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 301
+      "line": 303
     },
     "command:PrepMethod.create": {
       "file": "kitchen/prep-method-rules.manifest",
@@ -2703,59 +2703,59 @@
     },
     "command:PrepTask.cancel": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 203
+      "line": 205
     },
     "command:PrepTask.claim": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 83
+      "line": 85
     },
     "command:PrepTask.complete": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 130
+      "line": 132
     },
     "command:PrepTask.create": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 219
+      "line": 221
     },
     "command:PrepTask.reassign": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 165
+      "line": 167
     },
     "command:PrepTask.release": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 153
+      "line": 155
     },
     "command:PrepTask.start": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 118
+      "line": 120
     },
     "command:PrepTask.unclaim": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 104
+      "line": 106
     },
     "command:PrepTask.updateAssignment": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 256
+      "line": 258
     },
     "command:PrepTask.updateDetails": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 268
+      "line": 270
     },
     "command:PrepTask.updateDueDate": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 262
+      "line": 264
     },
     "command:PrepTask.updatePriority": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 248
+      "line": 250
     },
     "command:PrepTask.updateQuantity": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 184
+      "line": 186
     },
     "command:PrepTask.updateStatus": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 240
+      "line": 242
     },
     "command:PrepTaskPlanWorkflow.approvePlan": {
       "file": "kitchen/prep-task-plan-workflow.manifest",
@@ -3627,43 +3627,43 @@
     },
     "command:Station.activate": {
       "file": "kitchen/station-rules.manifest",
-      "line": 171
+      "line": 170
     },
     "command:Station.assignTask": {
       "file": "kitchen/station-rules.manifest",
-      "line": 75
+      "line": 74
     },
     "command:Station.create": {
       "file": "kitchen/station-rules.manifest",
-      "line": 57
+      "line": 56
     },
     "command:Station.deactivate": {
       "file": "kitchen/station-rules.manifest",
-      "line": 154
+      "line": 153
     },
     "command:Station.endMaintenance": {
       "file": "kitchen/station-rules.manifest",
-      "line": 212
+      "line": 211
     },
     "command:Station.removeTask": {
       "file": "kitchen/station-rules.manifest",
-      "line": 105
+      "line": 104
     },
     "command:Station.startMaintenance": {
       "file": "kitchen/station-rules.manifest",
-      "line": 190
+      "line": 189
     },
     "command:Station.syncTaskCount": {
       "file": "kitchen/station-rules.manifest",
-      "line": 128
+      "line": 127
     },
     "command:Station.updateCapacity": {
       "file": "kitchen/station-rules.manifest",
-      "line": 136
+      "line": 135
     },
     "command:Station.updateEquipment": {
       "file": "kitchen/station-rules.manifest",
-      "line": 181
+      "line": 180
     },
     "command:StorageLocation.create": {
       "file": "inventory/inventory-extended-rules.manifest",
@@ -6115,43 +6115,43 @@
     },
     "constraint:PrepListItem.positiveScaledQuantity": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 261
+      "line": 263
     },
     "constraint:PrepListItem.positiveSortOrder": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 260
+      "line": 262
     },
     "constraint:PrepListItem.validIngredientId": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 258
+      "line": 260
     },
     "constraint:PrepListItem.validIngredientName": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 259
+      "line": 261
     },
     "constraint:PrepListItem.validPrepListId": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 256
+      "line": 258
     },
     "constraint:PrepListItem.validStationName": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 257
+      "line": 259
     },
     "constraint:PrepListItem.warnMajorAllergen": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 263
+      "line": 265
     },
     "constraint:PrepListItem.warnOptionalRequired": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 271
+      "line": 273
     },
     "constraint:PrepListItem.warnQuantityIncrease": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 284
+      "line": 286
     },
     "constraint:PrepListItem.warnStationChange": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 305
+      "line": 307
     },
     "constraint:PrepMethod.positiveDuration": {
       "file": "kitchen/prep-method-rules.manifest",
@@ -6171,43 +6171,43 @@
     },
     "constraint:PrepTask.positiveQuantity": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 62
+      "line": 64
     },
     "constraint:PrepTask.validPriority": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 63
+      "line": 65
     },
     "constraint:PrepTask.validStatus": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 61
+      "line": 63
     },
     "constraint:PrepTask.warnCancelInProgress": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 206
+      "line": 208
     },
     "constraint:PrepTask.warnIncomplete": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 136
+      "line": 138
     },
     "constraint:PrepTask.warnOverdue": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 65
+      "line": 67
     },
     "constraint:PrepTask.warnOverdueClaim": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 88
+      "line": 90
     },
     "constraint:PrepTask.warnQuantityDecrease": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 189
+      "line": 191
     },
     "constraint:PrepTask.warnReassignInProgress": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 170
+      "line": 172
     },
     "constraint:PrepTask.warnStationCapacity": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 74
+      "line": 76
     },
     "constraint:PrepTaskPlanWorkflow.hasEventId": {
       "file": "kitchen/prep-task-plan-workflow.manifest",
@@ -6743,35 +6743,35 @@
     },
     "constraint:Station.blockFull": {
       "file": "kitchen/station-rules.manifest",
-      "line": 91
+      "line": 90
     },
     "constraint:Station.positiveCapacity": {
       "file": "kitchen/station-rules.manifest",
-      "line": 39
+      "line": 38
     },
     "constraint:Station.validStationType": {
       "file": "kitchen/station-rules.manifest",
-      "line": 40
+      "line": 39
     },
     "constraint:Station.warnActiveTasks": {
       "file": "kitchen/station-rules.manifest",
-      "line": 195
+      "line": 194
     },
     "constraint:Station.warnCapacityReduction": {
       "file": "kitchen/station-rules.manifest",
-      "line": 139
+      "line": 138
     },
     "constraint:Station.warnDeactivateWithTasks": {
       "file": "kitchen/station-rules.manifest",
-      "line": 157
+      "line": 156
     },
     "constraint:Station.warnNearCapacity": {
       "file": "kitchen/station-rules.manifest",
-      "line": 47
+      "line": 46
     },
     "constraint:Station.warnNoTasks": {
       "file": "kitchen/station-rules.manifest",
-      "line": 108
+      "line": 107
     },
     "constraint:StorageLocation.requireName": {
       "file": "inventory/inventory-extended-rules.manifest",
@@ -8283,7 +8283,7 @@
     },
     "transition:PrepTask.status": {
       "file": "kitchen/prep-task-rules.manifest",
-      "line": 56
+      "line": 58
     },
     "transition:PrepTaskPlanWorkflow.status": {
       "file": "kitchen/prep-task-plan-workflow.manifest",
