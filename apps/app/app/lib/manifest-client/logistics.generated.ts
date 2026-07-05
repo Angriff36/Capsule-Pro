@@ -508,7 +508,6 @@ export interface InventorySupplierDeactivateInput {
 export interface InventorySupplierLinkVendorInput {
   id?: string;
   vendorId?: string;
-  userId?: string;
 }
 export interface InventorySupplierReinstateInput {
   id?: string;
@@ -1236,7 +1235,6 @@ export interface VendorCatalogDeactivateInput {
 export interface VendorCatalogLinkInventoryItemInput {
   id?: string;
   inventoryItemId?: string;
-  userId?: string;
 }
 export interface VendorCatalogReactivateInput {
   id?: string;

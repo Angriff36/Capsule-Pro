@@ -2603,43 +2603,43 @@
     },
     "command:PrepList.activate": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 129
+      "line": 132
     },
     "command:PrepList.cancel": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 153
+      "line": 156
     },
     "command:PrepList.create": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 161
+      "line": 164
     },
     "command:PrepList.createFromSeed": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 179
+      "line": 182
     },
     "command:PrepList.deactivate": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 137
+      "line": 140
     },
     "command:PrepList.finalize": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 119
+      "line": 122
     },
     "command:PrepList.markCompleted": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 145
+      "line": 148
     },
     "command:PrepList.reopen": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 204
+      "line": 207
     },
     "command:PrepList.update": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 82
+      "line": 85
     },
     "command:PrepList.updateBatchMultiplier": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 102
+      "line": 105
     },
     "command:PrepListImport.complete": {
       "file": "kitchen/kitchen-extended-rules.manifest",
@@ -2655,31 +2655,31 @@
     },
     "command:PrepListItem.create": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 344
+      "line": 347
     },
     "command:PrepListItem.markCompleted": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 323
+      "line": 326
     },
     "command:PrepListItem.markUncompleted": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 334
+      "line": 337
     },
     "command:PrepListItem.remove": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 374
+      "line": 377
     },
     "command:PrepListItem.updatePrepNotes": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 316
+      "line": 319
     },
     "command:PrepListItem.updateQuantity": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 277
+      "line": 280
     },
     "command:PrepListItem.updateStation": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 298
+      "line": 301
     },
     "command:PrepMethod.create": {
       "file": "kitchen/prep-method-rules.manifest",
@@ -6051,51 +6051,51 @@
     },
     "constraint:PrepList.positiveTotalItems": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 43
+      "line": 46
     },
     "constraint:PrepList.positiveTotalTime": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 44
+      "line": 47
     },
     "constraint:PrepList.validBatchMultiplier": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 41
+      "line": 44
     },
     "constraint:PrepList.validEventId": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 40
+      "line": 43
     },
     "constraint:PrepList.validName": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 39
+      "line": 42
     },
     "constraint:PrepList.validStatus": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 42
+      "line": 45
     },
     "constraint:PrepList.warnLargeBatchMultiplier": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 53
+      "line": 56
     },
     "constraint:PrepList.warnLargeMultiplierIncrease": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 106
+      "line": 109
     },
     "constraint:PrepList.warnLongTotalTime": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 60
+      "line": 63
     },
     "constraint:PrepList.warnManyItems": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 68
+      "line": 71
     },
     "constraint:PrepList.warnNameChange": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 87
+      "line": 90
     },
     "constraint:PrepList.warnZeroItems": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 46
+      "line": 49
     },
     "constraint:PrepListImport.requireFileName": {
       "file": "kitchen/kitchen-extended-rules.manifest",
@@ -6111,43 +6111,43 @@
     },
     "constraint:PrepListItem.positiveScaledQuantity": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 258
+      "line": 261
     },
     "constraint:PrepListItem.positiveSortOrder": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 257
+      "line": 260
     },
     "constraint:PrepListItem.validIngredientId": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 255
+      "line": 258
     },
     "constraint:PrepListItem.validIngredientName": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 256
+      "line": 259
     },
     "constraint:PrepListItem.validPrepListId": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 253
+      "line": 256
     },
     "constraint:PrepListItem.validStationName": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 254
+      "line": 257
     },
     "constraint:PrepListItem.warnMajorAllergen": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 260
+      "line": 263
     },
     "constraint:PrepListItem.warnOptionalRequired": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 268
+      "line": 271
     },
     "constraint:PrepListItem.warnQuantityIncrease": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 281
+      "line": 284
     },
     "constraint:PrepListItem.warnStationChange": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 302
+      "line": 305
     },
     "constraint:PrepMethod.positiveDuration": {
       "file": "kitchen/prep-method-rules.manifest",
@@ -7683,7 +7683,7 @@
     },
     "entity:PrepListItem": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 217
+      "line": 220
     },
     "entity:PrepMethod": {
       "file": "kitchen/prep-method-rules.manifest",
@@ -8271,7 +8271,7 @@
     },
     "transition:PrepList.status": {
       "file": "kitchen/prep-list-rules.manifest",
-      "line": 77
+      "line": 80
     },
     "transition:PrepListImport.status": {
       "file": "kitchen/kitchen-extended-rules.manifest",
