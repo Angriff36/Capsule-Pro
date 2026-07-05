@@ -138,8 +138,20 @@ export default function RequisitionDetailPage() {
         const camelCommand = command.replace(/-([a-z])/g, (_, c) =>
           c.toUpperCase()
         );
+        // submit/approveManager/approveFinance take the ACTOR's employee id
+        // (userId) — resolve it server-side via /api/me; omitting it fails
+        // the zod pre-flight silently from this page.
+        const meResponse = await fetch(apiUrl("/api/me"), {
+          credentials: "include",
+        });
+        const me = (await meResponse.json()) as { id?: string };
+        if (!me.id) {
+          toast.error("Could not resolve your user identity");
+          return;
+        }
         await executeCommand("PurchaseRequisition", camelCommand, {
           id: requisition.id,
+          userId: me.id,
         });
       }
       await loadRequisition();
@@ -157,8 +169,13 @@ export default function RequisitionDetailPage() {
     setUpdating("reject");
     setReasonDialogOpen(false);
     try {
+      const meResponse = await fetch(apiUrl("/api/me"), {
+        credentials: "include",
+      });
+      const me = (await meResponse.json()) as { id?: string };
       await purchaseRequisitionReject({
         id: requisition.id,
+        userId: me.id ?? "",
         reason: reasonText.trim(),
       });
       await loadRequisition();
