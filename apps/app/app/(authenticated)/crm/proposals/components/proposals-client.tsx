@@ -85,9 +85,9 @@ interface Proposal {
   acceptedAt: string | null;
   client?: {
     id: string;
-    company_name: string | null;
-    first_name: string | null;
-    last_name: string | null;
+    companyName: string | null;
+    firstName: string | null;
+    lastName: string | null;
   } | null;
   createdAt: string;
   eventDate: string | null;
@@ -95,9 +95,8 @@ interface Proposal {
   id: string;
   lead?: {
     id: string;
-    company_name: string | null;
-    first_name: string | null;
-    last_name: string | null;
+    companyName: string | null;
+    contactName: string | null;
   } | null;
   proposalNumber: string;
   sentAt: string | null;
@@ -137,23 +136,20 @@ const statusLabels: Record<string, string> = {
 };
 
 function getClientName(proposal: Proposal): string {
-  if (proposal.client?.company_name) {
-    return proposal.client.company_name;
+  if (proposal.client?.companyName) {
+    return proposal.client.companyName;
   }
   if (proposal.client) {
     return (
-      `${proposal.client.first_name || ""} ${proposal.client.last_name || ""}`.trim() ||
+      `${proposal.client.firstName || ""} ${proposal.client.lastName || ""}`.trim() ||
       "No name"
     );
   }
-  if (proposal.lead?.company_name) {
-    return proposal.lead.company_name;
+  if (proposal.lead?.companyName) {
+    return proposal.lead.companyName;
   }
   if (proposal.lead) {
-    return (
-      `${proposal.lead.first_name || ""} ${proposal.lead.last_name || ""}`.trim() ||
-      "No name"
-    );
+    return proposal.lead.contactName || "No name";
   }
   return "No client";
 }

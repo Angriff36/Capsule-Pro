@@ -156,9 +156,9 @@ export async function getProposals(
       client: {
         select: {
           id: true,
-          company_name: true,
-          first_name: true,
-          last_name: true,
+          companyName: true,
+          firstName: true,
+          lastName: true,
         },
       },
       lead: {
