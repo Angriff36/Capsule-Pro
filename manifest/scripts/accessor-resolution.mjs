@@ -27,17 +27,28 @@ function loadPrismaMetadata() {
   if (_prismaMetadata) {
     return _prismaMetadata;
   }
+  const jsonPath = join(
+    here,
+    "..",
+    "runtime",
+    "src",
+    "generated",
+    "prisma-model-metadata.generated.json"
+  );
   try {
-    const jsonPath = join(
-      here,
-      "..",
-      "generated",
-      "runtime",
-      "prisma-model-metadata.generated.json"
-    );
     _prismaMetadata = JSON.parse(readFileSync(jsonPath, "utf8"));
-  } catch {
-    _prismaMetadata = {};
+  } catch (error) {
+    // FAIL LOUD: an unreadable metadata file must never silently resolve
+    // every entity to drop:true (2026-07-04 incident — a missed path repoint
+    // regenerated entity-accessor with 208/213 entities dropped).
+    throw new Error(
+      `[accessor-resolution] cannot read ${jsonPath}: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+  if (Object.keys(_prismaMetadata).length === 0) {
+    throw new Error(
+      `[accessor-resolution] ${jsonPath} is empty — refusing to resolve (would drop every entity)`
+    );
   }
   return _prismaMetadata;
 }
@@ -236,8 +247,6 @@ export function resolveEntityResolution(entityName) {
     hasDetail: !ENTITY_DETAIL_DROP.has(entityName),
     tenantIdField: fields?.tenantId ?? "tenantId",
     createdAtField,
-    softDeleteField: hasDeletedAt
-      ? (fields?.deletedAt ?? "deletedAt")
-      : null,
+    softDeleteField: hasDeletedAt ? (fields?.deletedAt ?? "deletedAt") : null,
   };
 }

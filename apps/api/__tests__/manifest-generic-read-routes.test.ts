@@ -194,10 +194,11 @@ describe("Generic Manifest read routes", () => {
     });
 
     it("should return 404 for dropped entities (no backing table)", async () => {
-      // IR-only entity with no Prisma model (auto-dropped by metadata resolution)
-      const res = await listGet(listRequest("SelOnboardingTrainingModuleDefinition"), {
+      // memory-store entity with no Prisma model (auto-dropped by metadata resolution;
+      // the former Sel* fixture gained real tables 2026-07-04)
+      const res = await listGet(listRequest("FeatureFlag"), {
         params: Promise.resolve({
-          entity: "SelOnboardingTrainingModuleDefinition",
+          entity: "FeatureFlag",
         }),
       });
       expect(res.status).toBe(404);
@@ -322,10 +323,10 @@ describe("Generic Manifest read routes", () => {
 
     it("should return 404 for dropped entities", async () => {
       const res = await detailGet(
-        detailRequest("SelOnboardingTrainingModuleDefinition", "x"),
+        detailRequest("FeatureFlag", "x"),
         {
           params: Promise.resolve({
-            entity: "SelOnboardingTrainingModuleDefinition",
+            entity: "FeatureFlag",
             id: "x",
           }),
         }
