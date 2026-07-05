@@ -63,7 +63,8 @@ entity AllergenWarning mixin TenantScoped, SoftDeletable {
     emit AllergenWarningCreated
   }
 
-  command acknowledge(acknowledgedBy: string, notes: string) {
+  // notes optional: the acknowledge button has no notes input
+  command acknowledge(acknowledgedBy: string, optional notes: string) {
     guard self.isAcknowledged == false "Warning is already acknowledged"
     guard acknowledgedBy != null and acknowledgedBy != "" "Acknowledged by user is required"
 

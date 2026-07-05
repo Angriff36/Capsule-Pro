@@ -3,6 +3,8 @@ import { log } from "@repo/observability/log";
 import { logManifestIssue } from "./issue-log";
 
 const JSON_STORE_PREFIX = "Using PrismaJsonStore for entity:";
+const reportedMissingStores = new Set<string>();
+
 const MISSING_STORE_PREFIX = "No store for entity";
 
 function extractEntityName(
@@ -38,6 +40,15 @@ export function createManifestRuntimeLogger(): ManifestRuntimeLogger {
     error(message, meta) {
       if (message.includes(MISSING_STORE_PREFIX)) {
         const entity = extractEntityName(message, MISSING_STORE_PREFIX);
+        // Dedup per entity per process: runtime construction re-reports every
+        // store-less entity on each request (820 lines/session of identical
+        // spam). First occurrence still lands in the issue log; a command that
+        // actually TARGETS a store-less entity fails loudly on its own.
+        const dedupKey = entity ?? "(unknown)";
+        if (reportedMissingStores.has(dedupKey)) {
+          return;
+        }
+        reportedMissingStores.add(dedupKey);
         logManifestIssue({
           kind: "store_missing",
           entity,

@@ -158,7 +158,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "AllergenWarning.acknowledge": z.object({
   acknowledgedBy: z.string(),
-  notes: z.string(),
+  notes: z.string().optional(),
 }),
   "AllergenWarning.applyOverride": z.object({
   overrideReason: z.string(),
@@ -2576,10 +2576,10 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   vehicleId: z.string().optional(),
   driverId: z.string().optional(),
   scheduledDate: z.coerce.date(),
-  endTime: z.coerce.date(),
-  totalDistance: z.number(),
-  totalDuration: z.number(),
-  description: z.string(),
+  endTime: z.coerce.date().optional(),
+  totalDistance: z.number().optional(),
+  totalDuration: z.number().optional(),
+  description: z.string().optional(),
 }),
   "LogisticsRoute.optimize": z.object({}),
   "LogisticsRoute.recordDelay": z.object({

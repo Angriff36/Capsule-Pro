@@ -216,6 +216,12 @@ const RecipeDetailPage = async ({
   const tenantId = await getTenantIdForOrg(orgId);
   const recipeId = resolvedParams.recipeId;
 
+  // Non-uuid segments (e.g. a stray /kitchen/recipes/dishes hit) fall through
+  // to this dynamic route; the raw ::uuid casts below would 500 with 22P02.
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(recipeId)) {
+    return notFound();
+  }
+
   // Fetch recipe details (recipe header + latest version)
   const recipes = await database.$queryRaw<RecipeDetailRow[]>(
     Prisma.sql`

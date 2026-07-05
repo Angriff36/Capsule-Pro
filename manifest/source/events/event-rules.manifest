@@ -9,7 +9,10 @@ entity Event mixin TenantScoped, SoftDeletable {
   unique property eventNumber: string? = ""
   searchable property required title: string = "Untitled Event"
   property required eventType: string = "general"
-  property required eventDate: datetime
+  // = now(): engine persists auto-created instances BEFORE mutates run; a
+  // required datetime with no default inserts NULL into the NOT NULL column
+  // (quick-create with no date 500'd). create()'s mutate still overrides.
+  property required eventDate: datetime = now()
   property required guestCount: int = 1
   indexed property required status: string = "draft"
   property budget: money? = 0

@@ -333,7 +333,9 @@ entity LogisticsRoute mixin TenantScoped {
   relationship hasMany dispatches: LogisticsDispatch
 
   default policy LogisticsRouteDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
-  command create(name: string, optional vehicleId: string, optional driverId: string, scheduledDate: datetime, endTime: datetime, totalDistance: number, totalDuration: number, description: string) {
+  // endTime/totalDistance/totalDuration/description optional: unknown at
+  // creation time — the routes dialog only knows name/date/assignments.
+  command create(name: string, optional vehicleId: string, optional driverId: string, scheduledDate: datetime, optional endTime: datetime, optional totalDistance: number, optional totalDuration: number, optional description: string) {
     guard name != null and name != "" "Route name is required"
 
     mutate name = name

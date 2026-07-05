@@ -31,7 +31,11 @@ export const SCALAR_TO_TS = {
 };
 
 export function toTsTypes(content) {
-  return content;
+  // UPSTREAM GAP (3.1.3): the stock `types` surface emits bare `json` as a TS
+  // type for json-typed properties — not a TypeScript type (50 TS2304/TS2552
+  // in apps/app). Map exactly that token to `unknown`; drop this when the
+  // surface emits valid TS for json natively (Ryan owns the compiler).
+  return content.replace(/(\??:\s*)json(\s*[;|,)\]}])/g, "$1unknown$2");
 }
 
 /**

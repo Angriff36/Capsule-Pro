@@ -19,12 +19,25 @@ import { getCommandAccess } from "../../../../../../packages/mcp-server/src/lib/
 export type { CommandAccess } from "../../../../../../packages/mcp-server/src/lib/command-policy";
 
 /**
+ * Destructive verbs escalate to CONFIRM when the shared map has no explicit
+ * entry — 45 `*.remove` commands (plus deletes/soft-deletes) would otherwise
+ * ride the chat surface's default-ALLOW with no confirmation step.
+ */
+const DESTRUCTIVE_COMMAND_RE =
+  /^(remove|delete|softDelete|destroy|purge|hardDelete)$/;
+
+/**
  * Resolve the access tier for a command on the chat surface.
- * ALLOW unless the shared map marks it CONFIRM or DENY.
+ * ALLOW unless the shared map marks it CONFIRM or DENY, except destructive
+ * verbs which default to CONFIRM when unlisted.
  */
 export function getChatCommandAccess(
   entity: string,
   command: string
 ): CommandAccess {
-  return getCommandAccess(entity, command, { defaultAccess: "ALLOW" });
+  const mapped = getCommandAccess(entity, command, { defaultAccess: "ALLOW" });
+  if (mapped === "ALLOW" && DESTRUCTIVE_COMMAND_RE.test(command)) {
+    return "CONFIRM";
+  }
+  return mapped;
 }

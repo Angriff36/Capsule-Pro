@@ -22,8 +22,9 @@ const RESTORABLE_ENTITIES = [
   "KitchenTask",
   "PrepTask",
   "PrepTaskDependency",
-  "KitchenTaskClaim",
-  "KitchenTaskProgress",
+  // KitchenTaskClaim/KitchenTaskProgress removed: neither model has a
+  // deletedAt column (claims use releasedAt; both are hard-delete) — every
+  // trash-page load errored + skipped them.
   "PrepList",
   "PrepListItem",
   "Station",
@@ -131,8 +132,6 @@ const ENTITY_DISPLAY_NAMES: Record<RestorableEntity, string> = {
   KitchenTask: "Kitchen Task",
   PrepTask: "Prep Task",
   PrepTaskDependency: "Prep Task Dependency",
-  KitchenTaskClaim: "Kitchen Task Claim",
-  KitchenTaskProgress: "Kitchen Task Progress",
   PrepList: "Prep List",
   PrepListItem: "Prep List Item",
   Station: "Station",

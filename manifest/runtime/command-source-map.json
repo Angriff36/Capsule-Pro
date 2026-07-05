@@ -155,11 +155,11 @@
     },
     "command:AllergenWarning.acknowledge": {
       "file": "core/allergen-warning-rules.manifest",
-      "line": 66
+      "line": 67
     },
     "command:AllergenWarning.applyOverride": {
       "file": "core/allergen-warning-rules.manifest",
-      "line": 90
+      "line": 91
     },
     "command:AllergenWarning.create": {
       "file": "core/allergen-warning-rules.manifest",
@@ -167,15 +167,15 @@
     },
     "command:AllergenWarning.escalate": {
       "file": "core/allergen-warning-rules.manifest",
-      "line": 103
+      "line": 104
     },
     "command:AllergenWarning.markResolved": {
       "file": "core/allergen-warning-rules.manifest",
-      "line": 78
+      "line": 79
     },
     "command:AllergenWarning.softDelete": {
       "file": "core/allergen-warning-rules.manifest",
-      "line": 115
+      "line": 116
     },
     "command:ApiKey.create": {
       "file": "platform/api-key-rules.manifest",
@@ -1211,51 +1211,51 @@
     },
     "command:Event.archive": {
       "file": "events/event-rules.manifest",
-      "line": 176
+      "line": 179
     },
     "command:Event.cancel": {
       "file": "events/event-rules.manifest",
-      "line": 166
+      "line": 169
     },
     "command:Event.confirm": {
       "file": "events/event-rules.manifest",
-      "line": 147
+      "line": 150
     },
     "command:Event.create": {
       "file": "events/event-rules.manifest",
-      "line": 90
+      "line": 93
     },
     "command:Event.finalize": {
       "file": "events/event-rules.manifest",
-      "line": 247
+      "line": 250
     },
     "command:Event.softDelete": {
       "file": "events/event-rules.manifest",
-      "line": 263
+      "line": 266
     },
     "command:Event.unfinalize": {
       "file": "events/event-rules.manifest",
-      "line": 255
+      "line": 258
     },
     "command:Event.update": {
       "file": "events/event-rules.manifest",
-      "line": 115
+      "line": 118
     },
     "command:Event.updateBudget": {
       "file": "events/event-rules.manifest",
-      "line": 184
+      "line": 187
     },
     "command:Event.updateDate": {
       "file": "events/event-rules.manifest",
-      "line": 214
+      "line": 217
     },
     "command:Event.updateGuestCount": {
       "file": "events/event-rules.manifest",
-      "line": 194
+      "line": 197
     },
     "command:Event.updateLocation": {
       "file": "events/event-rules.manifest",
-      "line": 225
+      "line": 228
     },
     "command:EventBudget.approve": {
       "file": "events/event-budget-rules.manifest",
@@ -1503,15 +1503,15 @@
     },
     "command:EventProfitability.create": {
       "file": "events/event-rules.manifest",
-      "line": 332
+      "line": 335
     },
     "command:EventProfitability.recalculate": {
       "file": "events/event-rules.manifest",
-      "line": 365
+      "line": 368
     },
     "command:EventProfitability.update": {
       "file": "events/event-rules.manifest",
-      "line": 349
+      "line": 352
     },
     "command:EventReport.approve": {
       "file": "events/event-report-rules.manifest",
@@ -1575,19 +1575,19 @@
     },
     "command:EventSummary.create": {
       "file": "events/event-rules.manifest",
-      "line": 413
+      "line": 416
     },
     "command:EventSummary.refresh": {
       "file": "events/event-rules.manifest",
-      "line": 440
+      "line": 443
     },
     "command:EventSummary.softDelete": {
       "file": "events/event-rules.manifest",
-      "line": 446
+      "line": 449
     },
     "command:EventSummary.update": {
       "file": "events/event-rules.manifest",
-      "line": 429
+      "line": 432
     },
     "command:EventTimeline.create": {
       "file": "events/events-extended-rules.manifest",
@@ -2219,59 +2219,59 @@
     },
     "command:LogisticsDispatch.assign": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 475
+      "line": 477
     },
     "command:LogisticsDispatch.deliver": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 502
+      "line": 504
     },
     "command:LogisticsDispatch.depart": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 492
+      "line": 494
     },
     "command:LogisticsDispatch.fail": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 512
+      "line": 514
     },
     "command:LogisticsDispatch.reassign": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 523
+      "line": 525
     },
     "command:LogisticsRoute.cancel": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 416
+      "line": 418
     },
     "command:LogisticsRoute.complete": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 407
+      "line": 409
     },
     "command:LogisticsRoute.completeStop": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 388
+      "line": 390
     },
     "command:LogisticsRoute.create": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 336
+      "line": 338
     },
     "command:LogisticsRoute.optimize": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 425
+      "line": 427
     },
     "command:LogisticsRoute.recordDelay": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 397
+      "line": 399
     },
     "command:LogisticsRoute.remove": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 353
+      "line": 355
     },
     "command:LogisticsRoute.start": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 378
+      "line": 380
     },
     "command:LogisticsRoute.update": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 361
+      "line": 363
     },
     "command:MaintenanceWorkOrder.assign": {
       "file": "operations/equipment-rules.manifest",
@@ -5159,35 +5159,35 @@
     },
     "constraint:Event.blockNoGuestCount": {
       "file": "events/event-rules.manifest",
-      "line": 153
+      "line": 156
     },
     "constraint:Event.positiveGuestCount": {
       "file": "events/event-rules.manifest",
-      "line": 70
+      "line": 73
     },
     "constraint:Event.validEventType": {
       "file": "events/event-rules.manifest",
-      "line": 68
+      "line": 71
     },
     "constraint:Event.validStatus": {
       "file": "events/event-rules.manifest",
-      "line": 69
+      "line": 72
     },
     "constraint:Event.validTitle": {
       "file": "events/event-rules.manifest",
-      "line": 67
+      "line": 70
     },
     "constraint:Event.warnLargeGuestCount": {
       "file": "events/event-rules.manifest",
-      "line": 72
+      "line": 75
     },
     "constraint:Event.warnLargeGuestCountChange": {
       "file": "events/event-rules.manifest",
-      "line": 200
+      "line": 203
     },
     "constraint:Event.warnLocationChange": {
       "file": "events/event-rules.manifest",
-      "line": 230
+      "line": 233
     },
     "constraint:EventBudget.blockFinalizeHighVariance": {
       "file": "events/event-budget-rules.manifest",
@@ -5343,15 +5343,15 @@
     },
     "constraint:EventProfitability.validEventId": {
       "file": "events/event-rules.manifest",
-      "line": 312
+      "line": 315
     },
     "constraint:EventProfitability.warnHighCostVariance": {
       "file": "events/event-rules.manifest",
-      "line": 322
+      "line": 325
     },
     "constraint:EventProfitability.warnNegativeMargin": {
       "file": "events/event-rules.manifest",
-      "line": 314
+      "line": 317
     },
     "constraint:EventReport.validCompletion": {
       "file": "events/event-report-rules.manifest",
@@ -5391,7 +5391,7 @@
     },
     "constraint:EventSummary.validEventId": {
       "file": "events/event-rules.manifest",
-      "line": 410
+      "line": 413
     },
     "constraint:EventTimeline.positiveDuration": {
       "file": "events/events-extended-rules.manifest",
@@ -5823,11 +5823,11 @@
     },
     "constraint:LogisticsDispatch.validPriority": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 455
+      "line": 457
     },
     "constraint:LogisticsDispatch.validStatus": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 454
+      "line": 456
     },
     "constraint:LogisticsRoute.validStatus": {
       "file": "operations/logistics-all-rules.manifest",
@@ -7459,7 +7459,7 @@
     },
     "entity:EventProfitability": {
       "file": "events/event-rules.manifest",
-      "line": 279
+      "line": 282
     },
     "entity:EventReport": {
       "file": "events/event-report-rules.manifest",
@@ -7471,7 +7471,7 @@
     },
     "entity:EventSummary": {
       "file": "events/event-rules.manifest",
-      "line": 391
+      "line": 394
     },
     "entity:EventTimeline": {
       "file": "events/events-extended-rules.manifest",
@@ -7591,7 +7591,7 @@
     },
     "entity:LogisticsDispatch": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 435
+      "line": 437
     },
     "entity:LogisticsRoute": {
       "file": "operations/logistics-all-rules.manifest",
@@ -8131,7 +8131,7 @@
     },
     "transition:Event.status": {
       "file": "events/event-rules.manifest",
-      "line": 270
+      "line": 273
     },
     "transition:EventBudget.status": {
       "file": "events/event-budget-rules.manifest",
@@ -8239,7 +8239,7 @@
     },
     "transition:LogisticsDispatch.status": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 461
+      "line": 463
     },
     "transition:LogisticsRoute.status": {
       "file": "operations/logistics-all-rules.manifest",
