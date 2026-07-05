@@ -66,6 +66,7 @@ export default function PrepListDetailPage() {
   const params = useParams<{ prepListId: string }>();
   const prepListId = params?.prepListId ?? "";
   const [prepList, setPrepList] = useState<PrepListDetail | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
 
@@ -78,11 +79,20 @@ export default function PrepListDetailPage() {
       );
       if (!response.ok) {
         setPrepList(null);
+        // A missing record and a backend failure are different states —
+        // don't report a 500 as "not found".
+        setLoadError(
+          response.status === 404
+            ? null
+            : `Failed to load prep list (HTTP ${response.status})`
+        );
         return;
       }
       setPrepList((await response.json()) as PrepListDetail);
+      setLoadError(null);
     } catch (error) {
       console.error("Failed to load prep list:", error);
+      setLoadError("Failed to load prep list — network or server error");
       toast.error("Failed to load prep list");
     } finally {
       setLoading(false);
@@ -121,15 +131,23 @@ export default function PrepListDetailPage() {
   if (!prepList) {
     return (
       <OperationalPageShell
+        description={loadError ?? undefined}
         eyebrow="Kitchen / Prep Lists"
-        title="Prep list not found"
+        title={loadError ? "Could not load prep list" : "Prep list not found"}
         withCanvas={false}
       >
-        <Button asChild variant="outline">
-          <Link href="/kitchen/prep-lists">
-            <ArrowLeft className="mr-1 h-4 w-4" /> Back to prep lists
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          {loadError && (
+            <Button onClick={load} variant="default">
+              Retry
+            </Button>
+          )}
+          <Button asChild variant="outline">
+            <Link href="/kitchen/prep-lists">
+              <ArrowLeft className="mr-1 h-4 w-4" /> Back to prep lists
+            </Link>
+          </Button>
+        </div>
       </OperationalPageShell>
     );
   }
@@ -202,7 +220,7 @@ export default function PrepListDetailPage() {
                           {item.ingredientId ? (
                             <Link
                               className="underline-offset-2 hover:underline"
-                              href={`/inventory/items/${item.ingredientId}`}
+                              href={`/kitchen/ingredients/${item.ingredientId}`}
                             >
                               {item.ingredientName}
                             </Link>

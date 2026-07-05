@@ -28,14 +28,10 @@ const KNOWN_VIOLATIONS: string[] = [
   "app/app/(authenticated)/kitchen/recipes/actions-manifest.ts",
   "app/app/(authenticated)/kitchen/recipes/actions-manifest-v2.ts",
   "app/app/(authenticated)/kitchen/recipes/cleanup/server-actions.ts",
-  // Kitchen prep lists — complex prep plan generation, not yet governed
-  "app/app/(authenticated)/kitchen/prep-lists/actions.ts",
-  "app/app/(authenticated)/kitchen/prep-lists/actions-manifest.ts",
   // Battle board tasks — raw SQL for task management, not yet governed
   "app/app/(authenticated)/events/[eventId]/battle-board/actions/tasks.ts",
   // API routes — raw SQL for complex queries not expressible via Prisma ORM
   "api/app/api/payroll/tax/list/route.ts",
-  "api/app/api/kitchen/prep-lists/generate/route.ts",
   "api/app/api/events/import/server-to-server/route.ts",
   // API command routes — governed Manifest orchestration + raw SQL persistence
   "api/app/api/kitchen/dishes/commands/create/route.ts",

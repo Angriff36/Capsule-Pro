@@ -7,12 +7,6 @@ import {
 } from "@repo/design-system/components/ui/alert";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import {
   Select,
@@ -22,23 +16,15 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import { captureException } from "@sentry/nextjs";
 import { format } from "date-fns";
 import {
   AlertTriangle,
   Calendar,
-  Check,
-  ChefHat,
-  Clock,
   Download,
   FileText,
-  Flame,
-  Leaf,
   RefreshCw,
-  Snowflake,
   Users,
-  UtensilsCrossed,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
@@ -48,12 +34,16 @@ import { PrintFooter, PrintViewButton } from "@/app/components/print-view";
 // — generated client has prepListCreate/prepListItemMarkCompleted but these target different
 //   API routes and semantics (Manifest command dispatch vs. custom action endpoints)
 import { apiFetch } from "@/app/lib/api";
-import type {
-  IngredientItem,
-  PrepListGenerationResult,
-  StationPrepList,
-} from "./actions";
+import type { PrepListGenerationResult, StationPrepList } from "./actions";
+import {
+  AllDishesUnresolvedState,
+  GenerationErrorState,
+  NoLinkedDishesState,
+  NotGeneratedState,
+  PartiallyUnresolvedAlert,
+} from "./components/generation-states";
 import { PrepListSaveButton } from "./components/prep-list-form-with-constraints";
+import { StationCard, StationSkeleton } from "./components/station-card";
 import { getEventMenuDishesHref } from "./navigation";
 
 interface PrepListClientProps {
@@ -64,271 +54,39 @@ interface PrepListClientProps {
     guestCount: number;
   }>;
   eventId: string;
+  initialError: string | null;
   initialPrepList: PrepListGenerationResult | null;
-}
-
-const STATION_ICONS = {
-  "hot-line": Flame,
-  "cold-prep": Snowflake,
-  bakery: ChefHat,
-  "prep-station": UtensilsCrossed,
-  garnish: Leaf,
-};
-
-function getIngredientReviewTitle(
-  hasSavedPrepList: boolean,
-  isReviewed: boolean
-) {
-  if (!hasSavedPrepList) {
-    return "Save prep list first";
-  }
-
-  return isReviewed ? "Reviewed" : "Mark reviewed";
-}
-
-function StationCard({
-  station,
-  isExpanded,
-  onToggle,
-  reviewedIngredients,
-  onReviewIngredient,
-  savedPrepListId,
-}: {
-  station: StationPrepList;
-  isExpanded: boolean;
-  onToggle: () => void;
-  reviewedIngredients: Set<string>;
-  onReviewIngredient: (ingredientId: string) => void;
-  savedPrepListId: string | null;
-}) {
-  const Icon =
-    STATION_ICONS[station.stationId as keyof typeof STATION_ICONS] ||
-    UtensilsCrossed;
-
-  return (
-    <Card tone="canvas">
-      <CardHeader
-        className="cursor-pointer transition-colors hover:bg-muted/50"
-        onClick={onToggle}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`rounded-lg p-2 ${station.color}`}>
-              <Icon className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <CardTitle className="text-lg">{station.stationName}</CardTitle>
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <span>{station.totalIngredients} ingredients</span>
-                <span>•</span>
-                <span className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {station.estimatedTime}h est.
-                </span>
-              </div>
-            </div>
-          </div>
-          <Button
-            aria-label="Toggle details"
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggle();
-            }}
-            size="icon"
-            type="button"
-            variant="ghost"
-          >
-            {isExpanded ? (
-              <Check className="h-4 w-4" />
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
-      </CardHeader>
-      {isExpanded && (
-        <CardContent className="pt-6">
-          {station.ingredients.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
-              <UtensilsCrossed className="mb-2 h-8 w-8" />
-              <p className="text-sm">No ingredients for this station</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {station.ingredients.map((ingredient: IngredientItem) => (
-                <div
-                  className="flex flex-col gap-1 rounded-lg border p-3"
-                  key={ingredient.ingredientId}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">
-                          {ingredient.ingredientName}
-                        </span>
-                        {ingredient.isOptional && (
-                          <Badge className="text-xs" variant="secondary">
-                            Optional
-                          </Badge>
-                        )}
-                        {ingredient.allergens.length > 0 && (
-                          <Badge className="text-xs" variant="outline">
-                            {ingredient.allergens.join(", ")}
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                        <span>
-                          {ingredient.scaledQuantity} {ingredient.scaledUnit}
-                        </span>
-                        {ingredient.preparationNotes && (
-                          <span className="italic">
-                            {ingredient.preparationNotes}
-                          </span>
-                        )}
-                      </div>
-                      {ingredient.dietarySubstitutions.length > 0 && (
-                        <div className="mt-2 rounded-md bg-muted/50 p-2 text-foreground text-xs">
-                          <strong>Substitution:</strong>{" "}
-                          {ingredient.dietarySubstitutions.join("; ")}
-                        </div>
-                      )}
-                    </div>
-                    <Button
-                      aria-label={
-                        reviewedIngredients.has(ingredient.ingredientId)
-                          ? "Mark as unreviewed"
-                          : "Mark ingredient reviewed"
-                      }
-                      className={`h-8 w-8 shrink-0 ${reviewedIngredients.has(ingredient.ingredientId) ? "bg-primary/10 text-primary" : ""}`}
-                      disabled={!savedPrepListId}
-                      onClick={() =>
-                        onReviewIngredient(ingredient.ingredientId)
-                      }
-                      size="icon"
-                      title={getIngredientReviewTitle(
-                        Boolean(savedPrepListId),
-                        reviewedIngredients.has(ingredient.ingredientId)
-                      )}
-                      type="button"
-                      variant="ghost"
-                    >
-                      <Check className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {station.tasks.length > 0 && (
-            <div className="mt-6 space-y-4">
-              <Separator />
-              <h4 className="font-medium text-muted-foreground text-sm">
-                Production Tasks
-              </h4>
-              <div className="space-y-2">
-                {station.tasks.map(
-                  (task: {
-                    id: string;
-                    name: string;
-                    dueDate: Date;
-                    status: string;
-                    priority: number;
-                  }) => (
-                    <div
-                      className="flex items-center justify-between rounded-lg border p-3"
-                      key={task.id}
-                    >
-                      <div>
-                        <div className="font-medium">{task.name}</div>
-                        <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                          <Calendar className="h-3 w-3" />
-                          Due {format(new Date(task.dueDate), "MMM d, yyyy")}
-                        </div>
-                      </div>
-                      <Badge
-                        variant={
-                          task.priority === 1 ? "destructive" : "secondary"
-                        }
-                      >
-                        {task.priority === 1 ? "High" : "Normal"}
-                      </Badge>
-                    </div>
-                  )
-                )}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      )}
-    </Card>
-  );
-}
-
-function EmptyState({ onGoToEvents }: { onGoToEvents: () => void }) {
-  return (
-    <Card tone="canvas">
-      <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="mb-4 rounded-full bg-muted p-4">
-          <UtensilsCrossed className="h-12 w-12 text-muted-foreground" />
-        </div>
-        <h3 className="mb-2 font-semibold text-lg">
-          No dishes linked to event
-        </h3>
-        <p className="mb-6 max-w-md text-muted-foreground">
-          To generate a prep list, you need to link dishes with recipes to this
-          event. Add dishes from your menu to this event first.
-        </p>
-        <Button onClick={onGoToEvents}>Add Dishes to Event</Button>
-      </CardContent>
-    </Card>
-  );
-}
-
-function StationSkeleton() {
-  return (
-    <Card tone="canvas">
-      <CardHeader>
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-12 w-12 rounded-lg" />
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-4 w-48" />
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <Skeleton className="h-20 w-full rounded-lg" key={i} />
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
 }
 
 export function PrepListClient({
   eventId,
   initialPrepList,
+  initialError,
   availableEvents,
 }: PrepListClientProps) {
   const router = useRouter();
   const [prepList, setPrepList] = useState<PrepListGenerationResult | null>(
     initialPrepList
   );
+  const [generationError, setGenerationError] = useState<string | null>(
+    initialError
+  );
   const [savedPrepListId, setSavedPrepListId] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string>(eventId);
   const [batchMultiplier, setBatchMultiplier] = useState<number>(1);
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [expandedStations, setExpandedStations] = useState<Set<string>>(
-    new Set()
+    new Set(initialPrepList?.stationLists.map((s) => s.stationId) ?? [])
   );
   const [reviewedIngredients, setReviewedIngredients] = useState<Set<string>>(
     new Set()
   );
+
+  const goToEventMenu = useCallback(() => {
+    router.push(getEventMenuDishesHref(selectedEventId || eventId));
+  }, [router, selectedEventId, eventId]);
 
   const handleReviewIngredient = useCallback(
     async (ingredientId: string) => {
@@ -379,25 +137,41 @@ export function PrepListClient({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to generate prep list");
+        const body = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        throw new Error(
+          body?.error ?? `Generation failed (HTTP ${response.status})`
+        );
       }
 
-      const result = await response.json();
+      const result = (await response.json()) as PrepListGenerationResult;
       setPrepList(result);
+      setGenerationError(null);
       setSavedPrepListId(null);
       setReviewedIngredients(new Set());
       setExpandedStations(
         new Set(result.stationLists.map((s: StationPrepList) => s.stationId))
       );
 
-      toast.success("Prep list generated", {
-        description: `${result.totalIngredients} ingredients across ${result.stationLists.length} stations`,
-      });
+      if (result.totalIngredients === 0) {
+        toast.warning("No ingredients generated", {
+          description:
+            result.linkedDishCount === 0
+              ? "This event has no dishes linked to it."
+              : `${result.unresolvedDishes.length} linked dish(es) could not be expanded — see details below.`,
+        });
+      } else {
+        toast.success("Prep list generated", {
+          description: `${result.totalIngredients} ingredients across ${result.stationLists.length} stations`,
+        });
+      }
     } catch (error) {
       captureException(error);
-      toast.error("Generation failed", {
-        description: "Failed to generate prep list. Please try again.",
-      });
+      const message =
+        error instanceof Error ? error.message : "Failed to generate prep list";
+      setGenerationError(message);
+      toast.error("Generation failed", { description: message });
     } finally {
       setIsGenerating(false);
     }
@@ -422,8 +196,6 @@ export function PrepListClient({
     link.click();
     document.body.removeChild(link);
   }, [prepList]);
-
-  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   const handleDownloadPdf = useCallback(async () => {
     if (!savedPrepListId) {
@@ -458,9 +230,8 @@ export function PrepListClient({
 
       toast.success("PDF downloaded successfully");
     } catch (error) {
-      console.error("PDF download error:", error);
-      toast.error("Failed to generate PDF. Please try again.");
       captureException(error);
+      toast.error("Failed to generate PDF. Please try again.");
     } finally {
       setIsDownloadingPdf(false);
     }
@@ -478,144 +249,7 @@ export function PrepListClient({
     });
   };
 
-  if (!prepList) {
-    return (
-      <div className="flex min-h-0 flex-1 flex-col bg-canvas">
-        <header className="sticky top-0 z-10 border-hairline border-b bg-background/80 backdrop-blur-md">
-          <div className="flex flex-col gap-4 px-6 py-4">
-            <div>
-              <h1 className="font-bold text-2xl text-foreground">Prep Lists</h1>
-              <p className="text-muted-foreground text-sm">
-                Choose an event and generate a prep list from its linked menu
-                dishes.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <label
-                    className="font-medium text-foreground text-sm"
-                    htmlFor="event-select-empty"
-                  >
-                    Event:
-                  </label>
-                  <Select
-                    onValueChange={(value) => setSelectedEventId(value)}
-                    value={selectedEventId}
-                  >
-                    <SelectTrigger
-                      className="w-[240px]"
-                      id="event-select-empty"
-                    >
-                      <SelectValue placeholder="Select an event" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableEvents.map((event) => (
-                        <SelectItem key={event.id} value={event.id}>
-                          {event.title} (
-                          {format(new Date(event.eventDate), "MMM d")})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <label
-                    className="font-medium text-foreground text-sm"
-                    htmlFor="batch-size-empty"
-                  >
-                    Batch Size:
-                  </label>
-                  <Input
-                    className="w-24"
-                    id="batch-size-empty"
-                    min="0.1"
-                    onChange={(e) => setBatchMultiplier(Number(e.target.value))}
-                    step="0.1"
-                    type="number"
-                    value={batchMultiplier}
-                  />
-                  <span className="text-muted-foreground text-sm">×</span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <label
-                    className="font-medium text-foreground text-sm"
-                    htmlFor="dietary-restrictions-empty"
-                  >
-                    Dietary:
-                  </label>
-                  <Select
-                    onValueChange={(value) =>
-                      setDietaryRestrictions(
-                        value && value !== "__none__"
-                          ? value.split(",").map((s) => s.trim())
-                          : []
-                      )
-                    }
-                    value={dietaryRestrictions.join(",") || "__none__"}
-                  >
-                    <SelectTrigger
-                      className="w-[180px]"
-                      id="dietary-restrictions-empty"
-                    >
-                      <SelectValue placeholder="None" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">None</SelectItem>
-                      <SelectItem value="gluten-free">Gluten Free</SelectItem>
-                      <SelectItem value="dairy-free">Dairy Free</SelectItem>
-                      <SelectItem value="vegan">Vegan</SelectItem>
-                      <SelectItem value="nut-free">Nut Free</SelectItem>
-                      <SelectItem value="vegetarian">Vegetarian</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <Button
-                className="gap-2"
-                disabled={isGenerating || !selectedEventId}
-                onClick={handleGenerate}
-              >
-                {isGenerating ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="h-4 w-4" />
-                    Generate Prep List
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </header>
-
-        <main className="flex-1 p-6">
-          {isGenerating ? (
-            <div className="grid gap-6 md:grid-cols-2">
-              {[1, 2, 3, 4].map((i) => (
-                <StationSkeleton key={i} />
-              ))}
-            </div>
-          ) : (
-            <EmptyState
-              onGoToEvents={() =>
-                router.push(getEventMenuDishesHref(selectedEventId || eventId))
-              }
-            />
-          )}
-        </main>
-      </div>
-    );
-  }
-
-  const renderPrepListContent = () => {
+  const renderBody = () => {
     if (isGenerating) {
       return (
         <div className="grid gap-6 md:grid-cols-2">
@@ -626,18 +260,39 @@ export function PrepListClient({
       );
     }
 
+    if (!prepList) {
+      return generationError ? (
+        <GenerationErrorState
+          message={generationError}
+          onRetry={handleGenerate}
+        />
+      ) : (
+        <NotGeneratedState />
+      );
+    }
+
+    if (prepList.linkedDishCount === 0) {
+      return <NoLinkedDishesState onGoToEventMenu={goToEventMenu} />;
+    }
+
     if (prepList.totalIngredients === 0) {
       return (
-        <EmptyState
-          onGoToEvents={() =>
-            router.push(getEventMenuDishesHref(selectedEventId || eventId))
-          }
+        <AllDishesUnresolvedState
+          linkedDishCount={prepList.linkedDishCount}
+          onGoToEventMenu={goToEventMenu}
+          unresolvedDishes={prepList.unresolvedDishes}
         />
       );
     }
 
     return (
       <div className="space-y-8">
+        {prepList.unresolvedDishes.length > 0 && (
+          <PartiallyUnresolvedAlert
+            unresolvedDishes={prepList.unresolvedDishes}
+          />
+        )}
+
         <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Review before saving</AlertTitle>
@@ -680,6 +335,8 @@ export function PrepListClient({
     );
   };
 
+  const hasResult = prepList !== null;
+
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-canvas">
       <header className="sticky top-0 z-10 border-hairline border-b bg-background/80 backdrop-blur-md">
@@ -687,50 +344,64 @@ export function PrepListClient({
           <div className="flex items-center justify-between">
             <div>
               <h1 className="font-bold text-2xl text-foreground">
-                {prepList.eventTitle}
+                {hasResult ? prepList.eventTitle : "Prep Lists"}
               </h1>
-              <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="h-4 w-4" />
-                  {format(new Date(prepList.eventDate), "MMM d, yyyy")}
+              {hasResult ? (
+                <div className="flex items-center gap-4 text-muted-foreground text-sm">
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="h-4 w-4" />
+                    {format(new Date(prepList.eventDate), "MMM d, yyyy")}
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Users className="h-4 w-4" />
+                    {prepList.guestCount} guests
+                  </div>
+                  <div>
+                    {prepList.resolvedDishCount}/{prepList.linkedDishCount}{" "}
+                    dishes resolved
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Users className="h-4 w-4" />
-                  {prepList.guestCount} guests
-                </div>
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  Choose an event and generate a prep list from its linked menu
+                  dishes.
+                </p>
+              )}
+            </div>
+            {hasResult && (
+              <div className="flex items-center gap-2">
+                <Button
+                  aria-label="Export prep list as CSV"
+                  disabled={prepList.totalIngredients === 0}
+                  onClick={handleExport}
+                  size="icon"
+                  title="Export CSV"
+                  variant="outline"
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+                <Button
+                  aria-label="Export prep list as PDF"
+                  disabled={isDownloadingPdf || !savedPrepListId}
+                  onClick={handleDownloadPdf}
+                  size="icon"
+                  title="Export PDF (requires save first)"
+                  variant="outline"
+                >
+                  {isDownloadingPdf ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <FileText className="h-4 w-4" />
+                  )}
+                </Button>
+                <PrintViewButton />
+                <PrepListSaveButton
+                  disabled={prepList.totalIngredients === 0}
+                  onSaved={setSavedPrepListId}
+                  prepList={prepList}
+                />
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                aria-label="Export prep list as CSV"
-                onClick={handleExport}
-                size="icon"
-                title="Export CSV"
-                variant="outline"
-              >
-                <Download className="h-4 w-4" />
-              </Button>
-              <Button
-                aria-label="Export prep list as PDF"
-                disabled={isDownloadingPdf || !savedPrepListId}
-                onClick={handleDownloadPdf}
-                size="icon"
-                title="Export PDF (requires save first)"
-                variant="outline"
-              >
-                {isDownloadingPdf ? (
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                ) : (
-                  <FileText className="h-4 w-4" />
-                )}
-              </Button>
-              <PrintViewButton />
-              <PrepListSaveButton
-                disabled={prepList.totalIngredients === 0}
-                onSaved={setSavedPrepListId}
-                prepList={prepList}
-              />
-            </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -746,7 +417,7 @@ export function PrepListClient({
                   onValueChange={(value) => setSelectedEventId(value)}
                   value={selectedEventId}
                 >
-                  <SelectTrigger className="w-[200px]">
+                  <SelectTrigger className="w-[220px]" id="event-select">
                     <SelectValue placeholder="Select an event" />
                   </SelectTrigger>
                   <SelectContent>
@@ -796,7 +467,10 @@ export function PrepListClient({
                   }
                   value={dietaryRestrictions.join(",") || "__none__"}
                 >
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger
+                    className="w-[180px]"
+                    id="dietary-restrictions"
+                  >
                     <SelectValue placeholder="None" />
                   </SelectTrigger>
                   <SelectContent>
@@ -813,7 +487,7 @@ export function PrepListClient({
 
             <Button
               className="gap-2"
-              disabled={isGenerating}
+              disabled={isGenerating || !selectedEventId}
               onClick={handleGenerate}
             >
               {isGenerating ? (
@@ -824,7 +498,7 @@ export function PrepListClient({
               ) : (
                 <>
                   <RefreshCw className="h-4 w-4" />
-                  Regenerate Prep List
+                  {hasResult ? "Regenerate Prep List" : "Generate Prep List"}
                 </>
               )}
             </Button>
@@ -834,7 +508,7 @@ export function PrepListClient({
 
       <Separator />
 
-      <main className="flex-1 p-6">{renderPrepListContent()}</main>
+      <main className="flex-1 p-6">{renderBody()}</main>
     </div>
   );
 }

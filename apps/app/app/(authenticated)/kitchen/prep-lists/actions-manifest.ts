@@ -163,20 +163,8 @@ export const createPrepListWithOverride = async (
   return initialResult;
 };
 
-// ============ Re-export existing actions ============
+// ============ Re-export generation types ============
 
-// Re-export generatePrepList, savePrepListToProductionBoard, savePrepListToDatabase from original actions
-import {
-  generatePrepList as _generatePrepList,
-  savePrepListToDatabase as _savePrepListToDatabase,
-  savePrepListToProductionBoard as _savePrepListToProductionBoard,
-} from "./actions";
-
-export const generatePrepList = _generatePrepList;
-export const savePrepListToDatabase = _savePrepListToDatabase;
-export const savePrepListToProductionBoard = _savePrepListToProductionBoard;
-
-// Re-export types
 export type {
   IngredientItem,
   PrepListGenerationResult,

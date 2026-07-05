@@ -46,11 +46,14 @@ const KitchenPrepListsPage = async ({ searchParams }: PrepListPageProps) => {
   );
 
   let initialPrepList: PrepListGenerationResult | null = null;
+  let initialError: string | null = null;
   if (eventId) {
     try {
       initialPrepList = await generatePrepList({ eventId });
     } catch (error) {
       captureException(error);
+      initialError =
+        error instanceof Error ? error.message : "Failed to generate prep list";
     }
   }
 
@@ -65,6 +68,7 @@ const KitchenPrepListsPage = async ({ searchParams }: PrepListPageProps) => {
           guestCount: e.guest_count,
         }))}
         eventId={eventId ?? availableEvents[0]?.id ?? ""}
+        initialError={initialError}
         initialPrepList={initialPrepList}
       />
     </>

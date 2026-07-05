@@ -45,6 +45,23 @@ export async function generateEventPrepList(
       dietaryRestrictions: input.dietaryRestrictions,
     });
 
+    // Saving an empty list would create a useless record (and finalize would
+    // be rejected by the Manifest warnZeroItems/finalize guard). Explain why
+    // the list is empty instead.
+    if (prepList.totalIngredients === 0) {
+      const detail =
+        prepList.linkedDishCount === 0
+          ? "This event has no dishes linked to it yet. Add dishes to the event menu first."
+          : `${prepList.linkedDishCount} linked dish(es) could not be expanded into ingredients: ${prepList.unresolvedDishes
+              .map((d) => `${d.dishName} (${d.reason.replace(/_/g, " ")})`)
+              .join(", ")}`;
+      return {
+        success: false,
+        error: `Prep list would be empty. ${detail}`,
+        prepList,
+      };
+    }
+
     const requestHeaders = await headers();
     const saveResponse = await fetch(apiUrl(kitchenPrepListsSaveDb()), {
       method: "POST",

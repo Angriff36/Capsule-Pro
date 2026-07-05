@@ -6,6 +6,7 @@ import type { OverrideReasonCode } from "@repo/design-system/components/override
 import { Button } from "@repo/design-system/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import type {
   CreatePrepListInput,
   PrepListGenerationResult,
@@ -102,9 +103,16 @@ export function PrepListSaveButton({
         ) {
           setConstraintOutcomes(result.constraintOutcomes);
           setShowOverrideDialog(true);
+        } else {
+          toast.error("Failed to save prep list", {
+            description: result.error ?? "Unknown error",
+          });
         }
-      } catch {
-        // Error handling - could add toast notification here
+      } catch (error) {
+        toast.error("Failed to save prep list", {
+          description:
+            error instanceof Error ? error.message : "Unknown error",
+        });
       }
     });
   };
@@ -125,9 +133,16 @@ export function PrepListSaveButton({
         if (result.success) {
           setShowOverrideDialog(false);
           handleSuccessfulSave(result);
+        } else {
+          toast.error("Failed to save prep list with override", {
+            description: result.error ?? "Constraints are still blocking",
+          });
         }
-      } catch {
-        // Error handling
+      } catch (error) {
+        toast.error("Failed to save prep list with override", {
+          description:
+            error instanceof Error ? error.message : "Unknown error",
+        });
       }
     });
   };
