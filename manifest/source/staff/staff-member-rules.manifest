@@ -5,6 +5,9 @@ use "../_base.manifest"
 // that EventStaff assignments reference. Authored 2026-05-30 for the Manifest vertical slice.
 
 entity StaffMember mixin TenantScoped, SoftDeletable {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   // No relationships: role is a value string, no entity FKs beyond tenantId
   key [tenantId, id]
   property required displayName: string = "Unnamed"

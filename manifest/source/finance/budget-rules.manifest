@@ -11,6 +11,9 @@ enum BudgetStatus {
 }
 
 entity Budget mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   // No relationships: departmentId/approvedBy are loose identifier strings, no matching entity FKs
   key [tenantId, id]
   searchable property required name: string

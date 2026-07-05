@@ -4,9 +4,9 @@ use "../_base.manifest"
 
 entity LaborBudget mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property eventId: string?
+  property eventId: uuid?
   property name: string
-  property locationId: string? = ""
+  property locationId: uuid? = ""
   property periodStart: datetime?
   property periodEnd: datetime?
   property budgetTarget: money = 0
@@ -14,7 +14,7 @@ entity LaborBudget mixin TenantScoped, SoftDeletable {
   property budgetType: string = "weekly"
   indexed property status: string = "draft"
   searchable property description: string? = ""
-  property approvedBy: string? = ""
+  property approvedBy: uuid? = ""
   property approvedAt: datetime?
   timestamps
 
@@ -122,12 +122,12 @@ entity LaborBudget mixin TenantScoped, SoftDeletable {
 
 entity BudgetAlert mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property budgetId: string = ""
+  property budgetId: uuid = ""
   property alertType: string = ""
   property utilization: decimal = 0
   property message: string = ""
   property isAcknowledged: boolean = false
-  property acknowledgedBy: string? = ""
+  property acknowledgedBy: uuid? = ""
   property acknowledgedAt: datetime?
   property resolved: boolean = false
   property resolvedAt: datetime?

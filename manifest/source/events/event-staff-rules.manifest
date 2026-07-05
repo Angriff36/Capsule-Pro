@@ -4,6 +4,9 @@ use "../_base.manifest"
 // Lifecycle: assigned -> confirmed -> checked_in -> checked_out (or no_show / unassigned).
 
 entity EventStaff mixin TenantScoped, SoftDeletable {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
   property required eventId: string
   property required staffMemberId: string

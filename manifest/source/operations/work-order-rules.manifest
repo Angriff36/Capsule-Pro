@@ -14,7 +14,7 @@ enum WorkOrderStatus {
 
 entity WorkOrder mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required equipmentId: string
+  property required equipmentId: uuid
   property equipmentName: string = ""
   searchable property required title: string
   property type: string = "repair"
@@ -23,7 +23,7 @@ entity WorkOrder mixin TenantScoped, SoftDeletable {
   searchable property description: string? = ""
   // scheduledDate: nullable — no default; set when known
   property scheduledDate: datetime?
-  property assignedTo: string? = ""
+  property assignedTo: uuid? = ""
   // completedDate: nullable — only set when work finishes
   property completedDate: datetime?
   timestamps

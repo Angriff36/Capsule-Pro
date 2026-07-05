@@ -109,13 +109,13 @@ entity QACheck mixin TenantScoped, SoftDeletable {
 entity QACorrectiveAction mixin TenantScoped {
   key [tenantId, id]
   // relatedCheckId: nullable Uuid column (related_check_id) — standalone actions have no check; "" maps to null
-  property relatedCheckId: string = ""
+  property relatedCheckId: uuid = ""
   searchable property required description: string
-  property assignedTo: string = ""
+  property assignedTo: uuid = ""
   property severity: string = "medium"
   indexed property status: string = "open"
   property resolutionNotes: string = ""
-  property escalatedTo: string = ""
+  property escalatedTo: uuid = ""
   property escalationReason: string = ""
   // Bug fix: lifecycle datetimes must be nullable
   property dueDate: datetime
@@ -209,9 +209,9 @@ entity QATemperatureLog mixin TenantScoped {
   property required temperature: decimal
   property unit: string = "fahrenheit"
   // equipmentId: nullable Uuid column (equipment_id) — "" maps to null
-  property equipmentId: string = ""
+  property equipmentId: uuid = ""
   // loggedBy: nullable Uuid column (logged_by) — "" maps to null
-  property loggedBy: string = ""
+  property loggedBy: uuid = ""
   searchable property notes: string = ""
   // Bug fix: lifecycle datetime must be nullable
   property loggedAt: datetime

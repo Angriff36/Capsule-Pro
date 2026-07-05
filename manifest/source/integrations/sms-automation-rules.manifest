@@ -8,7 +8,7 @@ entity SmsAutomationRule mixin TenantScoped, SoftDeletable {
   searchable property description: string? = ""
   property required triggerType: string = "custom_event"
   property triggerConfig: json = {}
-  property templateId: string? = ""
+  property templateId: uuid? = ""
   property customMessage: string? = ""
   property recipientType: string = "employee"
   property recipientConfig: json = {}

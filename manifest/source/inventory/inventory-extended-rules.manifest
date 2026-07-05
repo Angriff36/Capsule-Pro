@@ -10,7 +10,7 @@ use "../_base.manifest"
 // ─────────────────────────────────────────────────────────────────────────────
 entity StorageLocation mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required locationId: string
+  property required locationId: uuid
   searchable property required name: string
   property required storageType: string
   property temperatureZone: string = ""
@@ -75,8 +75,8 @@ entity StorageLocation mixin TenantScoped, SoftDeletable {
 // ─────────────────────────────────────────────────────────────────────────────
 entity InventoryStock mixin TenantScoped {
   key [tenantId, id]
-  property required itemId: string
-  property required storageLocationId: string
+  property required itemId: uuid
+  property required storageLocationId: uuid
   property required quantityOnHand: decimal = 0
   property required unitId: int
   property lastCountedAt: datetime?
@@ -160,7 +160,7 @@ entity InventoryStock mixin TenantScoped {
 // ─────────────────────────────────────────────────────────────────────────────
 entity InventoryAlert mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required itemId: string
+  property required itemId: uuid
   property required alertType: string
   property required severity: string?
   property required thresholdValue: decimal
@@ -451,7 +451,7 @@ entity ReorderSuggestion mixin TenantScoped {
 entity VendorContact mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property notes: string?
-  property required supplierId: string
+  property required supplierId: uuid
   searchable property required contactName: string
   encrypted property contactEmail: string? = ""
   encrypted property contactPhone: string? = ""
@@ -508,12 +508,12 @@ entity VendorContact mixin TenantScoped, SoftDeletable {
 // ─────────────────────────────────────────────────────────────────────────────
 entity VendorRating mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required supplierId: string
+  property required supplierId: uuid
   property required category: string
   property required rating: int = 0
   property comment: string? = ""
   property ratedAt: datetime?
-  property ratedBy: string? = ""
+  property ratedBy: uuid? = ""
   timestamps
 
   computed isHighScore: boolean = self.rating >= 4
@@ -569,8 +569,8 @@ entity VendorRating mixin TenantScoped, SoftDeletable {
 entity InventoryTransferItem mixin TenantScoped {
   key [tenantId, id]
   property notes: string?
-  property required transferId: string
-  property required itemId: string
+  property required transferId: uuid
+  property required itemId: uuid
   property required quantity: decimal = 0
   property required unitId: string?
   timestamps
@@ -730,13 +730,13 @@ entity ProcurementBudgetAlert mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property resolved: boolean = false
   property resolvedAt: datetime?
-  property required budgetId: string
+  property required budgetId: uuid
   property required utilizationPct: decimal = 0
   property required alertType: string
   property required message: string
   property triggeredAt: datetime?
   property acknowledgedAt: datetime?
-  property acknowledgedBy: string? = ""
+  property acknowledgedBy: uuid? = ""
   property isAcknowledged: boolean = false
   timestamps
 
@@ -789,7 +789,7 @@ entity AuditSchedule mixin TenantScoped, SoftDeletable {
   searchable property required name: string
   property required frequency: string
   property required time: string
-  property required createdBy: string
+  property required createdBy: uuid
   property nextRunAt: datetime?
   property lastRunAt: datetime?
   property isActive: boolean = true

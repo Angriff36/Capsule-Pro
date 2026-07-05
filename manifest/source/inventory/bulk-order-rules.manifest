@@ -9,7 +9,7 @@ use "../_base.manifest"
 entity BulkOrderRule mixin TenantScoped, SoftDeletable {
   // No relationships: catalogEntryId references a catalog entry not modeled as a Manifest entity
   key [tenantId, id]
-  property required catalogEntryId: string
+  property required catalogEntryId: uuid
   property ruleName: string = ""
   property required minimumQuantity: decimal = 1
   property required ruleType: string = "discount"

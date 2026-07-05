@@ -6,11 +6,11 @@ entity AdminTaskFileRef mixin TenantScoped, SoftDeletable {
   // No relationships: taskId/refId are loose keys by design (refId is
   // polymorphic via refType); AdminTask declares no child relationships.
   key [tenantId, id]
-  indexed property taskId: string = ""
+  indexed property taskId: uuid = ""
   property refType: string = ""
-  property refId: string = ""
+  property refId: uuid = ""
   searchable property refLabel: string = ""
-  property linkedBy: string? = ""
+  property linkedBy: uuid? = ""
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null

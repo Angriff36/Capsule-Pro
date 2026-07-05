@@ -23,7 +23,7 @@ entity Client mixin TenantScoped, SoftDeletable {
   searchable searchable property notes: string? = ""
   property required tags: array<string>
   property source: string? = ""
-  property assignedTo: string? = ""
+  property assignedTo: uuid? = ""
   timestamps
 
   computed displayName: string = self.clientType == "company" ? self.companyName : self.firstName + " " + self.lastName
@@ -144,7 +144,7 @@ entity Client mixin TenantScoped, SoftDeletable {
 
 entity ClientContact mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required clientId: string
+  property required clientId: uuid
   property firstName: string = ""
   property lastName: string = ""
   searchable property title: string? = ""
@@ -238,7 +238,7 @@ entity ClientContact mixin TenantScoped, SoftDeletable {
 
 entity ClientPreference mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required clientId: string
+  property required clientId: uuid
   property preferenceType: string = ""
   property preferenceKey: string = ""
   property preferenceValue: json = {}

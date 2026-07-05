@@ -22,11 +22,11 @@ entity AdminTask mixin TenantScoped, SoftDeletable {
   property position: int = 0
   property labels: array<string>? = []
   property estimatedHours: decimal? = 0
-  property assignedTo: string? = ""
+  property assignedTo: uuid? = ""
   property dueDate: datetime?
-  property createdBy: string? = ""
+  property createdBy: uuid? = ""
   property sourceType: string? = ""
-  property sourceId: string? = ""
+  property sourceId: uuid? = ""
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null

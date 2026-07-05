@@ -15,7 +15,7 @@ entity Station mixin TenantScoped, SoftDeletable {
   relationship hasMany prepListItems: PrepListItem
 
   key [tenantId, id]
-  property required locationId: string
+  property required locationId: uuid
   searchable property required name: string
   property required stationType: string = "prep-station"
   property capacitySimultaneousTasks: int = 1

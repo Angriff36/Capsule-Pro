@@ -1385,9 +1385,9 @@ export interface EventReport {
 }
 
 export interface EventStaff {
+  deletedAt?: string | null;
   id: string;
   tenantId: string;
-  deletedAt?: string | null;
   eventId: string;
   staffMemberId: string;
   role?: string | null;
@@ -3391,9 +3391,9 @@ export interface SoftDeletable {
 }
 
 export interface StaffMember {
+  deletedAt?: string | null;
   id: string;
   tenantId: string;
-  deletedAt?: string | null;
   displayName?: string;
   email?: string | null;
   phone?: string | null;
@@ -3481,8 +3481,8 @@ export interface TaskBundle {
 }
 
 export interface TaskBundleItem {
-  id: string;
   tenantId: string;
+  id: string;
   taskBundleId: string;
   kitchenTaskId: string;
   sortOrder?: number;

@@ -158,7 +158,7 @@ event VenueDeleted: "events.venue.deleted" {
 entity EventTimeline mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property completedAt: datetime?
-  property required eventId: string
+  property required eventId: uuid
   searchable property required description: string = ""
   // Bug fix: lifecycle datetime — no default
   property timelineTime: datetime
@@ -244,14 +244,14 @@ event EventTimelineRemoved: "events.timeline.removed" {
 entity TimelineTask mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property description: string?
-  property required eventId: string
+  property required eventId: uuid
   searchable property required title: string = ""
   property required category: string = ""
   // Bug fix: lifecycle datetime — no default
   property startTime: datetime
   property endTime: datetime
   indexed property status: string = "pending"
-  property assigneeId: string? = ""
+  property assigneeId: uuid? = ""
   searchable property notes: string? = ""
   property sortOrder: int? = 0
   property completedAt: datetime?
@@ -393,7 +393,7 @@ event TimelineTaskRemoved: "events.timeline_task.removed" {
 
 entity EventImport mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property eventId: string?
+  property eventId: uuid?
   property required fileType: string = ""
   property required fileName: string = ""
   property required mimeType: string = ""
@@ -507,13 +507,13 @@ event EventImportRetried: "events.import.retried" {
 
 entity EventFollowup mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required eventId: string
+  property required eventId: uuid
   property required taskType: string = ""
   property required description: string = ""
   // Bug fix: lifecycle datetime — no default
   property dueDate: datetime?
   indexed property status: string = "pending"
-  property assignedTo: string? = ""
+  property assignedTo: uuid? = ""
   searchable property notes: string? = ""
   property completedAt: datetime?
   timestamps
@@ -603,9 +603,9 @@ event EventFollowupCancelled: "events.followup.cancelled" {
 
 entity BoardProjection mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required boardId: string
+  property required boardId: uuid
   property required entityType: string = ""
-  property required entityId: string = ""
+  property required entityId: uuid = ""
   property positionX: int = 0
   property positionY: int = 0
   property width: int = 280
@@ -693,7 +693,7 @@ event BoardProjectionRemoved: "board.projection.removed" {
 
 entity BoardAnnotation mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required boardId: string
+  property required boardId: uuid
   property label: string? = ""
   property positionX: int? = 0
   property positionY: int? = 0
@@ -759,7 +759,7 @@ entity Note mixin TenantScoped, SoftDeletable {
   // Bug fix: array<string> is not valid DSL — use string[]
   property tags: array<string>? = []
   property entityType: string? = ""
-  property entityId: string? = ""
+  property entityId: uuid? = ""
   timestamps
 
   constraint requireTitle: self.title != "" "Note title is required"

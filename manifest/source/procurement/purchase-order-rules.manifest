@@ -4,8 +4,8 @@ use "../_base.manifest"
 
 entity PurchaseOrder mixin TenantScoped, SoftDeletable {
   unique property required poNumber: string
-  property required vendorId: string
-  property required locationId: string
+  property required vendorId: uuid
+  property required locationId: uuid
   property required orderDate: datetime = now()
   property expectedDeliveryDate: datetime?
   property actualDeliveryDate: datetime?
@@ -15,9 +15,9 @@ entity PurchaseOrder mixin TenantScoped, SoftDeletable {
   property required shippingAmount: money = 0
   property required total: money = 0
   searchable property notes: string? = ""
-  property submittedBy: string? = ""
+  property submittedBy: uuid? = ""
   property submittedAt: datetime?
-  property receivedBy: string? = ""
+  property receivedBy: uuid? = ""
   property receivedAt: datetime?
   timestamps
   property itemCount: int? = 0
@@ -189,8 +189,8 @@ entity PurchaseOrder mixin TenantScoped, SoftDeletable {
 }
 
 entity PurchaseOrderItem mixin TenantScoped, SoftDeletable {
-  property required purchaseOrderId: string
-  property required itemId: string
+  property required purchaseOrderId: uuid
+  property required itemId: uuid
   property required quantityOrdered: decimal = 0
   property required quantityReceived: decimal = 0
   property required unitId: int = 0

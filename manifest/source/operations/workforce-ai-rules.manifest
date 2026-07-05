@@ -3,6 +3,9 @@ use "../_base.manifest"
 // Manifest spec for AI-powered workforce optimization features
 
 entity WorkforceOptimization mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
   property locationId: string? = ""
   property optimizationType: string? = "" // "schedule", "assignment", "performance"
@@ -62,6 +65,9 @@ entity WorkforceOptimization mixin TenantScoped {
 }
 
 entity PerformancePrediction mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
   property employeeId: string? = ""
   property predictionType: string? = "" // "productivity", "attendance", "overtime_risk", "skill_match"

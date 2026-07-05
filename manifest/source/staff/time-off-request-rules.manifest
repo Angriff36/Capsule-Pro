@@ -7,13 +7,13 @@ use "../_base.manifest"
 entity TimeOffRequest mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property submittedAt: datetime = now()
-  property employeeId: string = ""
+  property employeeId: uuid = ""
   property required startDate: datetime
   property required endDate: datetime
   property reason: string? = ""
   property requestType: string = ""
   indexed property status: string = "PENDING"
-  property reviewedBy: string? = ""
+  property reviewedBy: uuid? = ""
   // Bug fix: reviewedAt is a lifecycle timestamp — must be nullable
   property reviewedAt: datetime?
   property rejectionReason: string? = ""

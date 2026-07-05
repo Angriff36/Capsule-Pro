@@ -6,12 +6,12 @@ use "../_base.manifest"
 
 entity Dish mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required recipeId: string
+  property required recipeId: uuid
   searchable property required name: string
   searchable property description: string? = ""
   property category: string? = ""
   property serviceStyle: string? = ""
-  property defaultContainerId: string? = ""
+  property defaultContainerId: uuid? = ""
   property presentationImageUrl: string? = ""
   property minPrepLeadDays: int = 0
   property maxPrepLeadDays: int? = 0

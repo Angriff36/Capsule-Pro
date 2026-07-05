@@ -4,11 +4,11 @@ use "../_base.manifest"
 
 entity EventPlanningDraft mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  indexed property required sessionId: string
+  indexed property required sessionId: uuid
   property required userId: string
   indexed property status: string = "active"
   searchable property clientName: string? = ""
-  property clientContactId: string? = ""
+  property clientContactId: uuid? = ""
   property eventType: string? = ""
   property eventDate: datetime?
   property eventTime: string? = ""
@@ -16,7 +16,7 @@ entity EventPlanningDraft mixin TenantScoped, SoftDeletable {
   property guestCountMin: int? = 0
   property guestCountMax: int? = 0
   property venuePreference: string? = ""
-  property venueId: string? = ""
+  property venueId: uuid? = ""
   property serviceStyle: string? = ""
   property dietaryRestrictions: string? = ""
   // menuPreferences/customItems: JSON-as-string payloads (Manifest IR grammar
@@ -32,8 +32,8 @@ entity EventPlanningDraft mixin TenantScoped, SoftDeletable {
   property specialNotes: string? = ""
   property aiSummary: string? = ""
   property overallConfidence: decimal? = 0
-  property convertedEventId: string? = ""
-  property proposalId: string? = ""
+  property convertedEventId: uuid? = ""
+  property proposalId: uuid? = ""
   property expiresAt: datetime?
   timestamps
 

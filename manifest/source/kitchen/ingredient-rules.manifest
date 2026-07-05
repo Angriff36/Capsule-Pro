@@ -14,7 +14,7 @@ entity Ingredient mixin TenantScoped, SoftDeletable {
   property storageInstructions: string? = ""
   property allergens: array<string>? = []
   property isActive: boolean = true
-  property inventoryItemId: string? = ""
+  property inventoryItemId: uuid? = ""
   // Lot/recall tracking: last received lot number and expiry for kitchen food-safety audits.
   property currentLotNumber: string? = ""
   property currentLotReceivedAt: datetime?

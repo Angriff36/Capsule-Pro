@@ -23,7 +23,7 @@ enum PrepTaskPlanWorkflowStatus {
 
 entity PrepTaskPlanWorkflow mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property eventId: string = ""
+  property eventId: uuid = ""
   property idempotencyKey: string = ""
   indexed property status: PrepTaskPlanWorkflowStatus = created
   property currentStep: int = 0

@@ -5,7 +5,7 @@ use "../_base.manifest"
 
 entity EventGuest mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property eventId: string = ""
+  property eventId: uuid = ""
   property guestName: string = ""
   property guestEmail: string? = ""
   property guestPhone: string? = ""

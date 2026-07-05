@@ -6,10 +6,10 @@ entity RevenueRecognitionSchedule mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
 
   // Reference information
-  property required invoiceId: string
-  property required eventId: string
-  property required contractId: string?
-  property required clientId: string
+  property required invoiceId: uuid
+  property required eventId: uuid
+  property required contractId: uuid?
+  property required clientId: uuid
 
   // Revenue details
   property required totalAmount: money = 0
@@ -209,7 +209,7 @@ entity RevenueRecognitionSchedule mixin TenantScoped, SoftDeletable {
 
 entity RevenueRecognitionLine mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required scheduleId: string
+  property required scheduleId: uuid
 
   // Line details
   property required sequence: int = 0
@@ -222,7 +222,7 @@ entity RevenueRecognitionLine mixin TenantScoped, SoftDeletable {
   property recognizedAt: datetime?
 
   // Milestone info (for milestone-based recognition)
-  property milestoneId: string? = ""
+  property milestoneId: uuid? = ""
   property milestoneName: string? = ""
   property milestoneDescription: string? = ""
 

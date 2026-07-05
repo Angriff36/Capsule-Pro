@@ -6,7 +6,7 @@ use "../_base.manifest"
 
 entity BattleBoard mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property eventId: string? = ""
+  property eventId: uuid? = ""
   property boardName: string = ""
   property boardType: string = "event-specific"
   property schemaVersion: string = "mangia-battle-board@1"

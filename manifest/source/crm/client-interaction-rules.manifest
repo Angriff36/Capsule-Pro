@@ -4,9 +4,9 @@ use "../_base.manifest"
 
 entity ClientInteraction mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property clientId: string? = ""
-  property leadId: string? = ""
-  property employeeId: string = ""
+  property clientId: uuid? = ""
+  property leadId: uuid? = ""
+  property employeeId: uuid = ""
   property interactionType: string = "note"
   property interactionDate: datetime = now()
   property subject: string? = ""

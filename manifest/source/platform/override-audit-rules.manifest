@@ -6,12 +6,12 @@ entity OverrideAudit mixin TenantScoped, SoftDeletable {
   // No relationships: entityType/entityId are polymorphic references, not direct FKs to a single entity
   key [tenantId, id]
   property entityType: string = ""
-  property entityId: string = ""
+  property entityId: uuid = ""
   property constraintId: string = ""
   property guardExpression: string? = ""
-  property overriddenBy: string = ""
+  property overriddenBy: uuid = ""
   property overrideReason: string = ""
-  property authorizedBy: string? = ""
+  property authorizedBy: uuid? = ""
   property authorizedAt: datetime?
   // No `timestamps` keyword: tenant_kitchen.override_audit is append-only (createdAt + authorizedAt only, no updated_at column)
   property createdAt: datetime = now()

@@ -12,7 +12,7 @@ entity ApiKey mixin TenantScoped, SoftDeletable {
   property lastUsedAt: datetime?
   property expiresAt: datetime? = now()
   property revokedAt: datetime?
-  property required createdByUserId: string = ""
+  property required createdByUserId: uuid = ""
   timestamps
 
   computed isRevoked: boolean = self.revokedAt != null

@@ -6,7 +6,7 @@ use "../_base.manifest"
 entity RolePolicy mixin TenantScoped, SoftDeletable {
   // No relationships: roleId is a role identifier string, not a FK to a separate Role entity
   key [tenantId, id]
-  property required roleId: string
+  property required roleId: uuid
   property roleName: string = ""
   // json (not array<string>): the physical column is a single jsonb value.
   // String[] emission crashed every read (.map on string) and write (text[]

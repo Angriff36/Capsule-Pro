@@ -4,7 +4,7 @@ use "../_base.manifest"
 
 entity EventReport mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required eventId: string
+  property required eventId: uuid
   searchable property required name: string
   property version: string = "2025-01-01"
   indexed property status: string = "draft"
@@ -14,12 +14,12 @@ entity EventReport mixin TenantScoped, SoftDeletable {
   property reportConfig: json? = {}
   property autoFillScore: int? = 0
   property reviewNotes: string? = ""
-  property reviewedBy: string? = ""
+  property reviewedBy: uuid? = ""
   // Bug fix: lifecycle datetimes — no default
   property reviewedAt: datetime?
   property completedAt: datetime?
   property rejectedAt: datetime?
-  property rejectedBy: string? = ""
+  property rejectedBy: uuid? = ""
   property rejectionReason: string? = ""
   timestamps
 

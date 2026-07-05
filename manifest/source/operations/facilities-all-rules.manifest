@@ -119,7 +119,7 @@ entity Facility mixin TenantScoped, SoftDeletable {
 
 entity FacilityArea mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property venueId: string? = ""
+  property venueId: uuid? = ""
   searchable property required name: string
   unique property code: string? = ""
   property areaType: string = "other"
@@ -195,8 +195,8 @@ entity FacilityArea mixin TenantScoped, SoftDeletable {
 
 entity FacilityAsset mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property facilityId: string? = ""
-  property areaId: string? = ""
+  property facilityId: uuid? = ""
+  property areaId: uuid? = ""
   searchable property required name: string
   property assetType: string = "other"
   indexed property status: string = "operational"
@@ -314,6 +314,9 @@ entity FacilityAsset mixin TenantScoped, SoftDeletable {
 }
 
 entity FacilitySchedule mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
   property facilityId: string? = ""
   property areaId: string? = ""
@@ -414,6 +417,9 @@ entity FacilitySchedule mixin TenantScoped {
 }
 
 entity FacilityWorkOrder mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
   property facilityId: string? = ""
   property areaId: string? = ""

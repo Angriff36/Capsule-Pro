@@ -10,7 +10,7 @@ entity TemperatureProbe mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property required name: string
   property required probeId: string
-  property locationId: string? = ""
+  property locationId: uuid? = ""
   property required minTemp: decimal
   property required maxTemp: decimal
   property isActive: boolean = true
@@ -79,13 +79,13 @@ entity TemperatureProbe mixin TenantScoped, SoftDeletable {
 // ---------------------------------------------------------------------------
 entity TemperatureLog mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property eventId: string?
+  property eventId: uuid?
   property itemName: string?
   property unit: string = "F"
-  property required equipmentId: string?
+  property required equipmentId: uuid?
   property required logNumber: string
   property required logType: string
-  property required loggedBy: string?
+  property required loggedBy: uuid?
   property required temperature: decimal
   property required loggedAt: datetime
   property required withinRange: boolean?
@@ -133,9 +133,9 @@ entity TemperatureLog mixin TenantScoped, SoftDeletable {
 // ---------------------------------------------------------------------------
 entity TemperatureReading mixin TenantScoped {
   key [tenantId, id]
-  property eventId: string?
+  property eventId: uuid?
   property unit: string = "F"
-  property required probeId: string
+  property required probeId: uuid
   property required temperature: decimal
   property required loggedAt: datetime = now()
   property required withinRange: boolean?
@@ -175,7 +175,7 @@ entity TemperatureReading mixin TenantScoped {
 entity IotAlertRule mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property required name: string
-  property required equipmentId: string
+  property required equipmentId: uuid
   property required sensorType: string
   property required condition: string
   property threshold: float?
@@ -250,11 +250,11 @@ entity IotAlertRule mixin TenantScoped, SoftDeletable {
 entity IoTAlert mixin TenantScoped {
   key [tenantId, id]
   property acknowledgedAt: datetime?
-  property eventId: string?
+  property eventId: uuid?
   property resolutionNotes: string?
   property resolvedAt: datetime?
-  property required probeId: string?
-  property ruleId: string? = ""
+  property required probeId: uuid?
+  property ruleId: uuid? = ""
   property required severity: string
   property required message: string?
   property required value: decimal?
@@ -264,8 +264,8 @@ entity IoTAlert mixin TenantScoped {
   property alertType: string = ""
   searchable property title: string = ""
   property temperature: decimal? = 0
-  property acknowledgedBy: string? = ""
-  property resolvedBy: string? = ""
+  property acknowledgedBy: uuid? = ""
+  property resolvedBy: uuid? = ""
   timestamps
 
   computed isActive: boolean = self.status == "active"
@@ -331,21 +331,21 @@ entity IoTAlert mixin TenantScoped {
 // ---------------------------------------------------------------------------
 entity CorrectiveAction mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property eventId: string?
+  property eventId: uuid?
   property immediateAction: string?
   property preventiveAction: string?
   property resolutionNotes: string?
-  property resolvedBy: string?
+  property resolvedBy: uuid?
   property rootCause: string?
   property severity: string = "medium"
   property verificationMethod: string?
-  property verifiedBy: string?
+  property verifiedBy: uuid?
   property required actionNumber: string
   property required title: string
   property required sourceType: string
   property required sourceId: string
   searchable property required description: string? = ""
-  property assignedTo: string? = ""
+  property assignedTo: uuid? = ""
   indexed property required status: string = "open"
   property dueDate: datetime?
   property resolvedAt: datetime?
@@ -417,12 +417,12 @@ entity CorrectiveAction mixin TenantScoped, SoftDeletable {
 entity QualityCheck mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property description: string?
-  property eventId: string?
+  property eventId: uuid?
   property scheduledAt: datetime?
   property required checkNumber: string
   property required title: string
   property required checkType: string
-  property required completedBy: string?
+  property required completedBy: uuid?
   indexed property required status: string = "pending"
   property completedAt: datetime?
   searchable property notes: string? = ""
@@ -497,7 +497,7 @@ entity QualityCheck mixin TenantScoped, SoftDeletable {
 // ---------------------------------------------------------------------------
 entity QualityCheckItem mixin TenantScoped {
   key [tenantId, id]
-  property required checkId: string
+  property required checkId: uuid
   property required itemName: string
   property required criterion: string
   property passed: boolean? = false
@@ -545,8 +545,8 @@ entity QualityCheckItem mixin TenantScoped {
 // ---------------------------------------------------------------------------
 entity KitchenTaskClaim mixin TenantScoped {
   key [tenantId, id]
-  property required taskId: string
-  property required employeeId: string
+  property required taskId: uuid
+  property required employeeId: uuid
   property required claimedAt: datetime
   indexed property required status: string? = "active"
   property releasedAt: datetime?
@@ -598,8 +598,8 @@ entity KitchenTaskClaim mixin TenantScoped {
 entity KitchenTaskProgress mixin TenantScoped {
   key [tenantId, id]
   property oldStatus: string?
-  property required taskId: string
-  property required employeeId: string
+  property required taskId: uuid
+  property required employeeId: uuid
   property required progressType: string
   indexed property required newStatus: string?
   property required progressPct: decimal?
@@ -643,7 +643,7 @@ entity KitchenTaskProgress mixin TenantScoped {
 entity TaskBundle mixin TenantScoped {
   key [tenantId, id]
   searchable property required name: string
-  property eventId: string? = ""
+  property eventId: uuid? = ""
   searchable property description: string? = ""
   indexed property required status: string = "active"
   timestamps
@@ -695,6 +695,8 @@ entity TaskBundle mixin TenantScoped {
 // TaskBundleItem — a kitchen task within a bundle
 // ---------------------------------------------------------------------------
 entity TaskBundleItem mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
   key [tenantId, id]
   property required taskBundleId: string
   property required kitchenTaskId: string

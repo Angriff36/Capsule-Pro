@@ -6,10 +6,10 @@ entity CollectionCase mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
 
   // Reference information
-  property required invoiceId: string = ""
+  property required invoiceId: uuid = ""
   unique property required invoiceNumber: string = ""
-  property required eventId: string = ""
-  property required clientId: string = ""
+  property required eventId: uuid = ""
+  property required clientId: uuid = ""
   property required clientName: string = ""
 
   // Amount details
@@ -27,12 +27,12 @@ entity CollectionCase mixin TenantScoped, SoftDeletable {
   property agingBucket: string? = ""
 
   // Assignment
-  property assignedTo: string? = ""
+  property assignedTo: uuid? = ""
   property assignedAt: datetime?
 
   // Payment plan
   property hasPaymentPlan: boolean = false
-  property paymentPlanId: string? = ""
+  property paymentPlanId: uuid? = ""
   property nextPaymentDue: datetime?
 
   // Dispute handling
@@ -249,7 +249,7 @@ entity CollectionCase mixin TenantScoped, SoftDeletable {
 
 entity CollectionAction mixin TenantScoped {
   key [tenantId, id]
-  property required collectionCaseId: string = ""
+  property required collectionCaseId: uuid = ""
 
   // Action details
   property required actionType: string = ""
@@ -324,7 +324,7 @@ entity CollectionAction mixin TenantScoped {
 // Payment plan entity for installment arrangements
 entity CollectionPaymentPlan mixin TenantScoped {
   key [tenantId, id]
-  property required collectionCaseId: string = ""
+  property required collectionCaseId: uuid = ""
 
   // Plan details
   property required totalAmount: money = 0

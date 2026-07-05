@@ -14,6 +14,9 @@ use "../_base.manifest"
 // - Policies ensure only authorized users can manage sample data
 
 entity SampleData mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   // No relationships: purely operational entity for seed/clear, no entity FKs
   key [tenantId, id]
   // The tenant this sample data belongs to

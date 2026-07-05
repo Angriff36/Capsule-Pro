@@ -78,7 +78,7 @@ entity PayrollPeriod mixin TenantScoped, SoftDeletable {
 
 entity EmployeeDeduction mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property employeeId: string = ""
+  property employeeId: uuid = ""
   property type: string = ""
   searchable property name: string = ""
   property amount: money? = 0
@@ -147,11 +147,11 @@ entity EmployeeDeduction mixin TenantScoped, SoftDeletable {
 
 entity PayrollApprovalHistory mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property payrollRunId: string = ""
+  property payrollRunId: uuid = ""
   property action: string = ""
   property previousStatus: string = ""
   property newStatus: string = ""
-  property performedBy: string = ""
+  property performedBy: uuid = ""
   property performedAt: datetime = now()
   property reason: string? = ""
   property createdAt: datetime = now()
@@ -179,15 +179,15 @@ entity PayrollApprovalHistory mixin TenantScoped, SoftDeletable {
 
 entity PayrollRun mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property payrollPeriodId: string = ""
+  property payrollPeriodId: uuid = ""
   property required runDate: datetime = now()
   indexed property status: PayrollRunStatus = pending
   property totalGross: money = 0
   property totalDeductions: money = 0
   property totalNet: money = 0
-  readonly property approvedBy: string? = ""
+  readonly property approvedBy: uuid? = ""
   readonly property approvedAt: datetime?
-  property rejectedBy: string? = ""
+  property rejectedBy: uuid? = ""
   readonly property paidAt: datetime?
   property rejectReason: string? = ""
   timestamps

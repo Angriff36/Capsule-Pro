@@ -8,7 +8,7 @@ entity Driver mixin TenantScoped, SoftDeletable {
   encrypted property phone: string? = ""
   private encrypted property licenseNumber: string? = ""
   property licenseExpiry: datetime?
-  property vehicleId: string? = ""
+  property vehicleId: uuid? = ""
   indexed property status: string = "available"
   searchable property notes: string? = ""
   timestamps
@@ -284,8 +284,8 @@ entity LogisticsRoute mixin TenantScoped {
   key [tenantId, id]
   searchable property required name: string
   indexed property status: string = "planned"
-  property vehicleId: string = ""
-  property driverId: string = ""
+  property vehicleId: uuid = ""
+  property driverId: uuid = ""
   property totalDistance: decimal = 0
   property totalDuration: int = 0
   // scheduledDate/endTime and actualStartTime/actualEndTime: lifecycle times — no = now() default
@@ -435,6 +435,9 @@ entity LogisticsRoute mixin TenantScoped {
 }
 
 entity LogisticsDispatch mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
   property required routeId: string
   property driverId: string? = ""

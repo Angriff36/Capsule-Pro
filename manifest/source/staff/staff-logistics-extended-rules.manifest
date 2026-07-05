@@ -10,11 +10,11 @@ use "../_base.manifest"
 entity TimecardApproval mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property submittedAt: datetime = now()
-  property required employeeId: string
-  property required payrollRunId: string
-  property required submittedBy: string
+  property required employeeId: uuid
+  property required payrollRunId: uuid
+  property required submittedBy: uuid
   indexed property status: string = "pending"
-  property approvedBy: string? = ""
+  property approvedBy: uuid? = ""
   property approvedAt: datetime?
   searchable property notes: string? = ""
   timestamps
@@ -87,8 +87,8 @@ entity TimecardApproval mixin TenantScoped, SoftDeletable {
 entity PayrollLineItem mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property deductions: json = {}
-  property required payrollRunId: string
-  property required employeeId: string
+  property required payrollRunId: uuid
+  property required employeeId: uuid
   property grossPay: money = 0
   property netPay: money = 0
   property totalDeductions: money? = 0
@@ -154,7 +154,7 @@ entity PayrollLineItem mixin TenantScoped, SoftDeletable {
 
 entity TipPool mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property periodId: string = ""
+  property periodId: uuid = ""
   property totalTips: money = 0
   indexed property status: string? = "open"
   // Allocation
@@ -163,7 +163,7 @@ entity TipPool mixin TenantScoped, SoftDeletable {
   // Distribution tracking
   property distributedAmount: money? = 0
   property distributedAt: datetime?
-  property distributedBy: string? = ""
+  property distributedBy: uuid? = ""
   timestamps
 
   computed isOpen: boolean = self.status == "open"
@@ -250,13 +250,13 @@ entity TipPool mixin TenantScoped, SoftDeletable {
 entity DisciplinaryAction mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property description: string?
-  property required employeeId: string
+  property required employeeId: uuid
   property actionType: string = ""
   property reason: string = ""
   property severity: string? = "low"
   indexed property status: string = "open"
-  property issuedBy: string = ""
-  property escalatedTo: string? = ""
+  property issuedBy: uuid = ""
+  property escalatedTo: uuid? = ""
   property escalationReason: string? = ""
   property escalatedAt: datetime?
   property issuedDate: datetime = now()
@@ -333,7 +333,7 @@ entity ActionMilestone mixin TenantScoped {
   key [tenantId, id]
   property description: string?
   property notes: string?
-  property required disciplinaryActionId: string
+  property required disciplinaryActionId: uuid
   searchable property title: string = ""
   property dueDate: datetime
   indexed property status: string = "pending"
@@ -388,8 +388,8 @@ entity ActionMilestone mixin TenantScoped {
 entity PerformanceReview mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property strengths: string?
-  property required employeeId: string
-  property required reviewerId: string
+  property required employeeId: uuid
+  property required reviewerId: uuid
   property reviewType: string = ""
   property scheduledDate: datetime
   property rating: decimal? = 0
@@ -463,9 +463,9 @@ entity TrainingCompletion mixin TenantScoped {
   key [tenantId, id]
   property notes: string?
   property startedAt: datetime?
-  property required employeeId: string
-  property required assignmentId: string
-  property required moduleId: string
+  property required employeeId: uuid
+  property required assignmentId: uuid
+  property required moduleId: uuid
   property completedAt: datetime?
   property score: decimal? = 0
   property passed: boolean = false
@@ -547,8 +547,8 @@ entity OnboardingTask mixin TenantScoped, SoftDeletable {
 entity OnboardingCompletion mixin TenantScoped {
   key [tenantId, id]
   property notes: string?
-  property required employeeId: string
-  property required taskId: string
+  property required employeeId: uuid
+  property required taskId: uuid
   property completedAt: datetime = now()
   timestamps
 
@@ -578,12 +578,12 @@ entity OnboardingCompletion mixin TenantScoped {
 
 entity OpenShift mixin TenantScoped {
   key [tenantId, id]
-  property required scheduleId: string
+  property required scheduleId: uuid
   property role: string = ""
   property shiftStart: datetime
   property shiftEnd: datetime
   indexed property status: string = "open"
-  property claimedBy: string? = ""
+  property claimedBy: uuid? = ""
   timestamps
 
   computed isOpen: boolean = self.status == "open"
@@ -645,7 +645,7 @@ entity DeliveryRoute mixin TenantScoped, SoftDeletable {
   property vehicleId: string?
   searchable property name: string = ""
   property routeNumber: string = ""
-  property driverId: string? = ""
+  property driverId: uuid? = ""
   property scheduledDate: datetime?
   indexed property status: string = "planned"
   // totalDistance is stored in km (delivery_routes.total_distance)
@@ -717,7 +717,7 @@ entity RouteStop mixin TenantScoped {
   property city: string?
   property notes: string?
   property postalCode: string?
-  property required routeId: string
+  property required routeId: uuid
   property name: string = ""
   property stopNumber: int = 0
   property plannedArrival: datetime?
@@ -785,7 +785,7 @@ entity RouteStop mixin TenantScoped {
 
 entity PaymentRefundAttempt mixin TenantScoped {
   key [tenantId, id]
-  property required paymentId: string
+  property required paymentId: uuid
   property requestedAmount: money = 0
   property effectiveAmount: money = 0
   property refundReason: string? = ""
@@ -829,15 +829,15 @@ entity PaymentRefundAttempt mixin TenantScoped {
 entity PreventiveMaintenanceSchedule mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property scheduleNumber: string = ""
-  property areaId: string? = ""
-  property equipmentId: string? = ""
+  property areaId: uuid? = ""
+  property equipmentId: uuid? = ""
   searchable property title: string = ""
   searchable property description: string? = ""
   property frequency: string = "monthly"
   property intervalDays: int = 30
   property nextDueAt: datetime
   property lastCompletedAt: datetime?
-  property assignedTo: string? = ""
+  property assignedTo: uuid? = ""
   property estimatedHours: decimal? = 0
   property estimatedCost: money? = 0
   indexed property status: string = "active"

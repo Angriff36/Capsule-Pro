@@ -5,15 +5,15 @@ use "../_base.manifest"
 entity DocumentVersion mixin TenantScoped {
   key [tenantId, id]
   property documentType: string
-  property required documentId: string
+  property required documentId: uuid
   unique property required versionNumber: int
   property required content: string
   property changeSummary: string = ""
-  property createdById: string? = ""
+  property createdById: uuid? = ""
   indexed property status: string? = "draft"
   property approvedBy: string? = ""
   property publishedBy: string? = ""
-  property supersededBy: string? = ""
+  property supersededBy: uuid? = ""
   // createdAt/updatedAt are audit timestamps — = now() is correct
   timestamps
   // Lifecycle datetimes — no default

@@ -9,7 +9,7 @@ entity KnowledgeBaseEntry mixin TenantScoped, SoftDeletable {
   property content: string? = ""
   property tags: array<string>? = []
   indexed property status: string = "draft"
-  property authorId: string? = ""
+  property authorId: uuid? = ""
   property publishedAt: datetime?
   property viewCount: int? = 0
   timestamps

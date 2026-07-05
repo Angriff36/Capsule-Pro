@@ -4,7 +4,7 @@ use "../_base.manifest"
 
 entity CycleCountSession mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required locationId: string
+  property required locationId: uuid
   property required sessionId: string
   property required sessionName: string
   property countType: string = "ad_hoc"
@@ -18,8 +18,8 @@ entity CycleCountSession mixin TenantScoped, SoftDeletable {
   property totalVariance: decimal = 0
   property variancePercentage: decimal = 0
   searchable property notes: string? = ""
-  property createdById: string = ""
-  property approvedById: string? = ""
+  property createdById: uuid = ""
+  property approvedById: uuid? = ""
   timestamps
 
   computed isDraft: boolean = self.status == "draft"
@@ -159,21 +159,21 @@ entity CycleCountSession mixin TenantScoped, SoftDeletable {
 
 entity CycleCountRecord mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required sessionId: string
-  property required itemId: string
+  property required sessionId: uuid
+  property required itemId: uuid
   property required itemNumber: string
   property required itemName: string
-  property required storageLocationId: string
+  property required storageLocationId: uuid
   property expectedQuantity: decimal = 0
   property countedQuantity: decimal = 0
   property variance: decimal = 0
   property variancePct: decimal = 0
   property countDate: datetime
-  property countedById: string = ""
+  property countedById: uuid = ""
   property barcode: string? = ""
   searchable property notes: string? = ""
   property isVerified: boolean = false
-  property verifiedById: string? = ""
+  property verifiedById: uuid? = ""
   property verifiedAt: datetime?
   property syncStatus: string = "synced"
   property offlineId: string? = ""
@@ -264,9 +264,9 @@ entity CycleCountRecord mixin TenantScoped, SoftDeletable {
 
 entity VarianceReport mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required sessionId: string
+  property required sessionId: uuid
   property required reportType: string
-  property required itemId: string
+  property required itemId: uuid
   property required itemNumber: string
   property required itemName: string
   property expectedQuantity: decimal = 0
@@ -284,7 +284,7 @@ entity VarianceReport mixin TenantScoped, SoftDeletable {
   searchable property notes: string? = ""
   property rootCause: string? = ""
   property resolutionNotes: string? = ""
-  property resolvedById: string? = ""
+  property resolvedById: uuid? = ""
   property resolvedAt: datetime?
   property generatedAt: datetime
   timestamps

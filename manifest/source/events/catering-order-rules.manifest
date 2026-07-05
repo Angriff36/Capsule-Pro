@@ -5,8 +5,8 @@ use "../_base.manifest"
 entity CateringOrder mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   unique property required orderNumber: string
-  property customerId: string = ""
-  property eventId: string? = ""
+  property customerId: uuid = ""
+  property eventId: uuid? = ""
   property orderStatus: string = "draft"
   property orderDate: datetime = now()
   property deliveryDate: datetime

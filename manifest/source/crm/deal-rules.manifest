@@ -12,6 +12,9 @@ enum DealStatus {
 }
 
 entity Deal mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
   property required leadId: string
   searchable property required title: string

@@ -5,7 +5,7 @@ use "../_base.manifest"
 
 entity VendorCatalog mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required supplierId: string
+  property required supplierId: uuid
   // Mapping to the stock item this supplier product fulfills (2026-07-04):
   // the load-bearing link for prep-demand ordering and catalog-priced purchasing.
   property inventoryItemId: string? = ""

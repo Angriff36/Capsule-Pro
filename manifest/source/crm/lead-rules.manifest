@@ -15,9 +15,9 @@ entity Lead mixin TenantScoped, SoftDeletable {
   property estimatedGuests: int? = 0
   property estimatedValue: decimal? = 0
   indexed property status: string = "new"
-  property assignedTo: string? = ""
+  property assignedTo: uuid? = ""
   searchable property notes: string? = ""
-  property convertedToClientId: string? = ""
+  property convertedToClientId: uuid? = ""
   property convertedAt: datetime?
   timestamps
 

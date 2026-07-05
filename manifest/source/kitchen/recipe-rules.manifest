@@ -104,7 +104,7 @@ entity Recipe mixin TenantScoped, SoftDeletable {
 
 entity RecipeVersion mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required recipeId: string
+  property required recipeId: uuid
   searchable property required name: string
   property versionNumber: int = 1
   property category: string? = ""
@@ -283,8 +283,8 @@ entity RecipeVersion mixin TenantScoped, SoftDeletable {
 
 entity RecipeIngredient mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required recipeVersionId: string
-  property required ingredientId: string
+  property required recipeVersionId: uuid
+  property required ingredientId: uuid
   property required quantity: decimal
   property required unitId: int
   property required sortOrder: int
@@ -363,7 +363,7 @@ entity RecipeIngredient mixin TenantScoped, SoftDeletable {
 
 entity RecipeStep mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required recipeVersionId: string
+  property required recipeVersionId: uuid
   property required stepNumber: int
   property required instruction: string
   property durationMinutes: int? = 0

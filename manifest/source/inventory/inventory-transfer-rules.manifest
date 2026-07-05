@@ -5,13 +5,13 @@ use "../_base.manifest"
 entity InventoryTransfer mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property requestedAt: datetime = now()
-  property fromLocationId: string = ""
-  property toLocationId: string = ""
+  property fromLocationId: uuid = ""
+  property toLocationId: uuid = ""
   indexed property status: string = "draft"
-  property requestedBy: string? = ""
-  property approvedBy: string? = ""
-  property shippedBy: string? = ""
-  property receivedBy: string? = ""
+  property requestedBy: uuid? = ""
+  property approvedBy: uuid? = ""
+  property shippedBy: uuid? = ""
+  property receivedBy: uuid? = ""
   property shippedAt: datetime?
   property receivedAt: datetime?
   property discrepancyNotes: string? = ""

@@ -151,7 +151,7 @@ entity TrainingModule mixin TenantScoped, SoftDeletable {
   property publishedAt: datetime?
   property archivedAt: datetime?
   searchable property notes: string? = ""
-  property createdBy: string? = ""
+  property createdBy: uuid? = ""
 
   timestamps
 
@@ -285,7 +285,7 @@ entity TrainingModule mixin TenantScoped, SoftDeletable {
 entity TrainingQuestion mixin TenantScoped {
   key [tenantId, id]
 
-  property required moduleId: string
+  property required moduleId: uuid
   property code: string = ""
   property sectionTitle: string = ""
   property displayOrder: int = 0
@@ -344,13 +344,13 @@ entity TrainingQuestion mixin TenantScoped {
 entity TrainingAssignment mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property assignedAt: datetime = now()
-  property assignedBy: string
+  property assignedBy: uuid
   property assignedToAll: boolean = false
 
-  property required moduleId: string
+  property required moduleId: uuid
   property moduleCode: string? = ""
   property moduleTitle: string? = ""
-  property employeeId: string? = ""
+  property employeeId: uuid? = ""
   property staffRole: string? = "staff"
   indexed property status: string = "assigned"
   property dueDate: datetime?
@@ -541,9 +541,9 @@ entity TrainingAssignment mixin TenantScoped, SoftDeletable {
 entity TrainingAttempt mixin TenantScoped {
   key [tenantId, id]
 
-  property required assignmentId: string
-  property required moduleId: string
-  property required staffMemberId: string
+  property required assignmentId: uuid
+  property required moduleId: uuid
+  property required staffMemberId: uuid
   property attemptNumber: int = 1
   property scorePercent: int = 0
   property passThresholdPercent: int = 80
@@ -590,9 +590,9 @@ entity TrainingAttempt mixin TenantScoped {
 entity StaffTrainingSignal mixin TenantScoped {
   key [tenantId, id]
 
-  property required staffMemberId: string
-  property required moduleId: string
-  property required assignmentId: string
+  property required staffMemberId: uuid
+  property required moduleId: uuid
+  property required assignmentId: uuid
   property signalType: string = ""
   property reason: string = ""
 

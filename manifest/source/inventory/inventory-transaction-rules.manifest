@@ -4,22 +4,22 @@ use "../_base.manifest"
 
 entity InventoryTransaction mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required itemId: string
+  property required itemId: uuid
   property required transactionType: string
   property quantity: decimal = 0
   property unitCost: money = 0
   property totalCost: money? = 0
   property reference: string? = ""
   property referenceType: string? = ""
-  property referenceId: string? = ""
+  property referenceId: uuid? = ""
   searchable property notes: string? = ""
   property reason: string = ""
-  property employeeId: string? = ""
-  property storageLocationId: string? = ""
+  property employeeId: uuid? = ""
+  property storageLocationId: uuid? = ""
   property transactionDate: datetime
   property reversedAt: datetime?
   property reversedBy: string? = ""
-  property reverseOfTransactionId: string? = ""
+  property reverseOfTransactionId: uuid? = ""
   property isReversed: boolean? = false
   // Append-only ledger: the table has createdAt but deliberately NO updated_at column,
   // so the `timestamps` macro (which emits both) is replaced by an explicit createdAt.

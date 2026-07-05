@@ -14,8 +14,8 @@ enum PrepTaskStatus {
 
 entity PrepTask mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required eventId: string
-  property prepListId: string? = ""
+  property required eventId: uuid
+  property prepListId: uuid? = ""
   searchable property required name: string
   property required taskType: string = "prep"
   indexed property required status: PrepTaskStatus = open
@@ -29,8 +29,8 @@ entity PrepTask mixin TenantScoped, SoftDeletable {
   property startByDate: datetime = now()
   property dueByDate: datetime
   property priority: int = 5
-  property dishId: string? = ""
-  property locationId: string = ""
+  property dishId: uuid? = ""
+  property locationId: uuid = ""
   property estimatedMinutes: int? = 0
   property dueByTime: datetime?
   searchable property notes: string? = ""

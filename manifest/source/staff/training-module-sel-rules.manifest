@@ -22,6 +22,9 @@ event SelOnboardingTrainingQuestionDefinitionCreated: "training.sel-onboarding.q
 }
 
 entity SelOnboardingTrainingModuleDefinition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
 
   property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
@@ -49,6 +52,9 @@ entity SelOnboardingTrainingModuleDefinition mixin TenantScoped {
 }
 
 entity SelOnboardingTrainingQuestion01Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
 
   property questionId: string = "1a4f8a91-f4ee-48cd-9178-171c9c75fceb"
@@ -77,6 +83,9 @@ entity SelOnboardingTrainingQuestion01Definition mixin TenantScoped {
 }
 
 entity SelOnboardingTrainingQuestion02Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
 
   property questionId: string = "cad9ca72-2f74-430f-9b04-d9956b865509"
@@ -105,6 +114,9 @@ entity SelOnboardingTrainingQuestion02Definition mixin TenantScoped {
 }
 
 entity SelOnboardingTrainingQuestion03Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
 
   property questionId: string = "c0d36c00-3b06-4d74-a026-b619883d0578"
@@ -133,6 +145,9 @@ entity SelOnboardingTrainingQuestion03Definition mixin TenantScoped {
 }
 
 entity SelOnboardingTrainingQuestion04Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
 
   property questionId: string = "05e4752c-e786-42d0-91e8-c0b638e0ba33"
@@ -161,6 +176,9 @@ entity SelOnboardingTrainingQuestion04Definition mixin TenantScoped {
 }
 
 entity SelOnboardingTrainingQuestion05Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
 
   property questionId: string = "2c8fb412-5928-4410-97fe-c8d3fa90fd5f"
@@ -189,6 +207,9 @@ entity SelOnboardingTrainingQuestion05Definition mixin TenantScoped {
 }
 
 entity SelOnboardingTrainingQuestion06Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
 
   property questionId: string = "504c8378-1eee-4e4c-a489-a746c417d489"
@@ -217,6 +238,9 @@ entity SelOnboardingTrainingQuestion06Definition mixin TenantScoped {
 }
 
 entity SelOnboardingTrainingQuestion07Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
 
   property questionId: string = "fab41a4d-86bb-4587-991f-8a60f02466df"
@@ -245,6 +269,9 @@ entity SelOnboardingTrainingQuestion07Definition mixin TenantScoped {
 }
 
 entity SelOnboardingTrainingQuestion08Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
 
   property questionId: string = "d7cbf992-dde5-4af1-8f96-a25e162ab385"
@@ -273,6 +300,9 @@ entity SelOnboardingTrainingQuestion08Definition mixin TenantScoped {
 }
 
 entity SelOnboardingTrainingQuestion09Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
 
   property questionId: string = "4f71378e-8c1d-4f01-b4a7-9393df1da0f8"
@@ -301,6 +331,9 @@ entity SelOnboardingTrainingQuestion09Definition mixin TenantScoped {
 }
 
 entity SelOnboardingTrainingQuestion10Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
 
   property questionId: string = "67760aa3-4fca-4c3d-92ef-bdad9c8d7b89"

@@ -9,7 +9,7 @@ entity BoardConfig mixin TenantScoped, SoftDeletable {
   // object/array<object> kind; same pattern as CommandBoard.metadata).
   property columns: json = []
   property settings: json = {}
-  property createdBy: string? = ""
+  property createdBy: uuid? = ""
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null

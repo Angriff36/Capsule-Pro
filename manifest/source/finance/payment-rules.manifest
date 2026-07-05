@@ -12,9 +12,9 @@ entity Payment mixin TenantScoped, SoftDeletable {
   property required methodType: string = "CREDIT_CARD"
 
   // Reference information
-  property required invoiceId: string = ""
-  property required eventId: string = ""
-  property required clientId: string = ""
+  property required invoiceId: uuid = ""
+  property required eventId: uuid = ""
+  property required clientId: uuid = ""
 
   // Gateway/processor information
   readonly property gatewayTransactionId: string? = ""

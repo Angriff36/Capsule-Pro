@@ -3,6 +3,9 @@ use "../_base.manifest"
 // Manifest spec for vendor management, contacts, and ratings
 
 entity Vendor mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   // No relationships: approvedBy/suspendedBy/blacklistedBy are user identifier strings, no entity FKs
   key [tenantId, id]
   searchable property required name: string

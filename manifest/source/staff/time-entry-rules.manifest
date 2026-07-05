@@ -4,14 +4,14 @@ use "../_base.manifest"
 
 entity TimeEntry mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required employeeId: string
-  property locationId: string? = ""
-  property shiftId: string? = ""
+  property required employeeId: uuid
+  property locationId: uuid? = ""
+  property shiftId: uuid? = ""
   property clockIn: datetime
   property clockOut: datetime?
   property breakMinutes: int = 0
   searchable property notes: string? = ""
-  property approvedBy: string? = ""
+  property approvedBy: uuid? = ""
   property approvedAt: datetime?
   timestamps
 
@@ -132,8 +132,8 @@ entity TimeEntry mixin TenantScoped, SoftDeletable {
 
 entity TimecardEditRequest mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required timeEntryId: string
-  property required employeeId: string
+  property required timeEntryId: uuid
+  property required employeeId: uuid
   property requestedClockIn: datetime?
   property requestedClockOut: datetime?
   property requestedBreakMinutes: int? = 0

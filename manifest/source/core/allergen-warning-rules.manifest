@@ -8,14 +8,14 @@ use "../_base.manifest"
 
 entity AllergenWarning mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property eventId: string = ""
-  property dishId: string? = ""
+  property eventId: uuid = ""
+  property dishId: uuid? = ""
   property warningType: string = ""
   property allergens: array<string>? = []
   property affectedGuests: array<string>? = []
   property severity: string = "warning"
   property isAcknowledged: boolean = false
-  property acknowledgedBy: string? = ""
+  property acknowledgedBy: uuid? = ""
   // BUG FIX: lifecycle timestamp — must NOT default to now()
   property acknowledgedAt: datetime?
   property overrideReason: string? = ""

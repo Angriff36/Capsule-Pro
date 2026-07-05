@@ -13,7 +13,7 @@ enum PrepListStatus {
 
 entity PrepList mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required eventId: string
+  property required eventId: uuid
   searchable property required name: string
   property batchMultiplier: decimal = 1
   property dietaryRestrictions: array<string>? = []
@@ -219,10 +219,10 @@ entity PrepList mixin TenantScoped, SoftDeletable {
 
 entity PrepListItem mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required prepListId: string
+  property required prepListId: uuid
   property required stationId: string?
   property required stationName: string
-  property required ingredientId: string
+  property required ingredientId: uuid
   property required ingredientName: string
   property category: string? = ""
   property baseQuantity: decimal = 0
@@ -233,13 +233,13 @@ entity PrepListItem mixin TenantScoped, SoftDeletable {
   property preparationNotes: string? = ""
   property allergens: array<string>? = []
   property dietarySubstitutions: array<string>? = []
-  property dishId: string? = ""
+  property dishId: uuid? = ""
   property dishName: string? = ""
-  property recipeVersionId: string? = ""
+  property recipeVersionId: uuid? = ""
   property sortOrder: int = 0
   property isCompleted: boolean = false
   property completedAt: datetime?
-  property completedBy: string? = ""
+  property completedBy: uuid? = ""
 
   timestamps
   computed hasAllergens: boolean = self.allergens != null and length(self.allergens) > 0

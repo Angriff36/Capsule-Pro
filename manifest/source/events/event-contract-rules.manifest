@@ -4,9 +4,9 @@ use "../_base.manifest"
 
 entity EventContract mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property signingToken: string?
-  property required eventId: string
-  property required clientId: string
+  property signingToken: uuid?
+  property required eventId: uuid
+  property required clientId: uuid
   unique property contractNumber: string? = ""
   searchable property title: string = "Untitled Contract"
   indexed property status: string = "draft"
@@ -19,7 +19,7 @@ entity EventContract mixin TenantScoped, SoftDeletable {
   property viewedAt: datetime?
   property signedAt: datetime?
   timestamps
-  property canceledBy: string? = ""
+  property canceledBy: uuid? = ""
 
   computed isDraft: boolean = self.status == "draft"
   computed isSent: boolean = self.status == "sent"
@@ -129,7 +129,7 @@ entity EventContract mixin TenantScoped, SoftDeletable {
 
 entity ContractSignature mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required contractId: string
+  property required contractId: uuid
   // Bug fix: signedAt is a lifecycle datetime — no default
   property signedAt: datetime
   property signatureData: string = ""

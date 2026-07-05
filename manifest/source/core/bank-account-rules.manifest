@@ -4,7 +4,7 @@ use "../_base.manifest"
 
 entity BankAccount mixin TenantScoped {
   key [tenantId, id]
-  property required employeeId: string
+  property required employeeId: uuid
   encrypted required property accountHolderName: string
   encrypted required property accountNumber: string
   encrypted required property routingNumber: string

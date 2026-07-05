@@ -9,10 +9,10 @@ use "../_base.manifest"
 
 entity PurchaseRequisition mixin TenantScoped, SoftDeletable {
   unique property required requisitionNumber: string
-  property required requestedBy: string = ""
+  property required requestedBy: uuid = ""
   property required requestDate: datetime = now()
   property requiredBy: datetime?
-  property locationId: string? = ""
+  property locationId: uuid? = ""
   property department: string? = ""
   property justification: string? = ""
   indexed property required status: string = "draft"
@@ -20,13 +20,13 @@ entity PurchaseRequisition mixin TenantScoped, SoftDeletable {
   property required estimatedTax: money = 0
   property required estimatedShipping: money = 0
   property required estimatedTotal: money = 0
-  property approvedBy: string? = ""
+  property approvedBy: uuid? = ""
   property approvedAt: datetime?
-  property managerApprovalBy: string? = ""
+  property managerApprovalBy: uuid? = ""
   property managerApprovalAt: datetime?
-  property financeApprovalBy: string? = ""
+  property financeApprovalBy: uuid? = ""
   property financeApprovalAt: datetime?
-  property convertedToPoId: string? = ""
+  property convertedToPoId: uuid? = ""
   property convertedAt: datetime?
   property rejectionReason: string? = ""
   searchable property notes: string? = ""
@@ -223,14 +223,14 @@ entity PurchaseRequisition mixin TenantScoped, SoftDeletable {
 }
 
 entity PurchaseRequisitionItem mixin TenantScoped, SoftDeletable {
-  property required requisitionId: string
-  property required itemId: string
+  property required requisitionId: uuid
+  property required itemId: uuid
   property itemName: string? = ""
   property required quantityRequested: decimal = 0
   property unitId: int? = 0
   property required estimatedUnitCost: money = 0
   property required estimatedTotalCost: money = 0
-  property suggestedVendorId: string? = ""
+  property suggestedVendorId: uuid? = ""
   property suggestedVendorName: string? = ""
   property specifications: string? = ""
   searchable property notes: string? = ""

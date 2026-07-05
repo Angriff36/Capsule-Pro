@@ -6,7 +6,7 @@ entity PaymentMethod mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
 
   // Client and reference
-  property required clientId: string = ""
+  property required clientId: uuid = ""
   property externalMethodId: string? = ""
 
   // Method type

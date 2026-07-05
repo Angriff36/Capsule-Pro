@@ -215,8 +215,8 @@ entity Menu mixin TenantScoped, SoftDeletable {
 
 entity MenuDish mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required menuId: string
-  property required dishId: string
+  property required menuId: uuid
+  property required dishId: uuid
   property course: string? = ""
   property sortOrder: int = 0
   property isOptional: boolean = false

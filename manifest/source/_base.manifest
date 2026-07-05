@@ -118,8 +118,8 @@ role System extends Admin {}
 // Declared as `entity` (not `mixin` keyword) — the parser resolves mixin targets
 // from the entity index. Apply with: `entity Foo mixin TenantScoped { ... }`
 entity TenantScoped {
-  property required id: string
-  indexed property required tenantId: string
+  property required id: uuid
+  indexed property required tenantId: uuid
 }
 
 // Provides deletedAt — soft-delete timestamp (nullable; null = not deleted).

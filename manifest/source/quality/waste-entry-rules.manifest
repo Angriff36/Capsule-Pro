@@ -4,15 +4,15 @@ use "../_base.manifest"
 
 entity WasteEntry mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property inventoryItemId: string = ""
+  property inventoryItemId: uuid = ""
   property reasonId: int = 0
   property quantity: decimal = 0
   property unitId: int? = 0
-  property locationId: string? = ""
-  property eventId: string? = ""
-  property loggedBy: string = ""
+  property locationId: uuid? = ""
+  property eventId: uuid? = ""
+  property loggedBy: uuid = ""
   property loggedAt: datetime
-  property approvedBy: string? = ""
+  property approvedBy: uuid? = ""
   property approvedAt: datetime?
   indexed property status: string? = "logged"
   property unitCost: money? = 0

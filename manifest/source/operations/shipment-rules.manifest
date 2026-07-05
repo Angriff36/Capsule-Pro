@@ -19,9 +19,9 @@ entity Shipment mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   unique property required shipmentNumber: string
   indexed property status: ShipmentStatus = draft
-  property eventId: string? = ""
-  property supplierId: string? = ""
-  property locationId: string? = ""
+  property eventId: uuid? = ""
+  property supplierId: uuid? = ""
+  property locationId: uuid? = ""
   property scheduledDate: datetime?
   property shippedDate: datetime?
   property estimatedDeliveryDate: datetime?
@@ -32,7 +32,7 @@ entity Shipment mixin TenantScoped, SoftDeletable {
   property trackingNumber: string? = ""
   property carrier: string? = ""
   property shippingMethod: string? = ""
-  property deliveredBy: string? = ""
+  property deliveredBy: uuid? = ""
   property receivedBy: string? = ""
   property signatureData: string = ""
   property signatureText: string?
@@ -179,8 +179,8 @@ entity Shipment mixin TenantScoped, SoftDeletable {
 
 entity ShipmentItem mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required shipmentId: string
-  property required itemId: string
+  property required shipmentId: uuid
+  property required itemId: uuid
   property quantityShipped: decimal = 0
   property quantityReceived: decimal = 0
   property quantityDamaged: decimal = 0

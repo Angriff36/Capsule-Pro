@@ -10,7 +10,7 @@ use "../_base.manifest"
 entity VendorContract mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   unique property required contractNumber: string
-  property required vendorId: string
+  property required vendorId: uuid
   property vendorName: string? = ""
   property contractType: string = "purchase"
   indexed property status: string = "draft"
@@ -26,9 +26,9 @@ entity VendorContract mixin TenantScoped, SoftDeletable {
   // spendToPeriod: the physical column is a DATE (spend_to_period @db.Date) — period boundary, not an amount; nullable, no default
   property spendToPeriod: datetime?
   property currencyCode: string = "USD"
-  property approvedBy: string? = ""
+  property approvedBy: uuid? = ""
   property approvedAt: datetime?
-  property terminatedBy: string? = ""
+  property terminatedBy: uuid? = ""
   property terminatedAt: datetime?
   property terminationReason: string? = ""
   property contractUrl: string? = ""

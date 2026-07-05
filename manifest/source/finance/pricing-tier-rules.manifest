@@ -9,7 +9,7 @@ use "../_base.manifest"
 entity PricingTier mixin TenantScoped, SoftDeletable {
   // No relationships: catalogEntryId references a catalog entry not modeled as a Manifest entity
   key [tenantId, id]
-  property required catalogEntryId: string
+  property required catalogEntryId: uuid
   property tierName: string = ""
   property required minQuantity: decimal = 1
   property maxQuantity: decimal? = 0

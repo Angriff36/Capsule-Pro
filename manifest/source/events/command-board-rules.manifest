@@ -6,7 +6,7 @@ use "../_base.manifest"
 
 entity CommandBoard mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property eventId: string? = ""
+  property eventId: uuid? = ""
   searchable property name: string = ""
   searchable property description: string? = ""
   indexed property status: string = "draft"
@@ -88,7 +88,7 @@ entity CommandBoard mixin TenantScoped, SoftDeletable {
 
 entity CommandBoardCard mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required boardId: string
+  property required boardId: uuid
   searchable property title: string = ""
   property content: string? = ""
   property cardType: string = "task"
@@ -100,8 +100,8 @@ entity CommandBoardCard mixin TenantScoped, SoftDeletable {
   property zIndex: int = 0
   property color: string? = ""
   property metadata: json = {}
-  property groupId: string? = ""
-  property entityId: string? = ""
+  property groupId: uuid? = ""
+  property entityId: uuid? = ""
   property entityType: string? = ""
   property version: int = 0
   timestamps
@@ -194,7 +194,7 @@ entity CommandBoardCard mixin TenantScoped, SoftDeletable {
 
 entity CommandBoardGroup mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required boardId: string
+  property required boardId: uuid
   searchable property name: string = ""
   property color: string? = ""
   property collapsed: boolean = false
@@ -251,9 +251,9 @@ entity CommandBoardGroup mixin TenantScoped, SoftDeletable {
 
 entity CommandBoardConnection mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required boardId: string
-  property required fromCardId: string
-  property required toCardId: string
+  property required boardId: uuid
+  property required fromCardId: uuid
+  property required toCardId: uuid
   property relationshipType: string = "generic"
   property label: string? = ""
   property visible: boolean = true
@@ -296,8 +296,8 @@ entity CommandBoardConnection mixin TenantScoped, SoftDeletable {
 
 entity CommandBoardLayout mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required boardId: string
-  property required userId: string
+  property required boardId: uuid
+  property required userId: uuid
   searchable property name: string = ""
   property viewport: json = {}
   property visibleCards: array<string>? = []

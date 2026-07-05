@@ -2,6 +2,9 @@ use "../_base.manifest"
 // Event Automation Rules — Followups, Timeline Items, Waitlist Entries
 
 entity AutomatedFollowup mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
   property required eventId: string
   property type: string? = "email"
@@ -95,7 +98,7 @@ entity AutomatedFollowup mixin TenantScoped {
 
 entity EventTimelineItem mixin TenantScoped {
   key [tenantId, id]
-  property required eventId: string
+  property required eventId: uuid
   searchable property required title: string
   searchable property description: string = ""
   property itemType: string = "task"
@@ -206,6 +209,9 @@ entity EventTimelineItem mixin TenantScoped {
 }
 
 entity EventWaitlistEntry mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
   key [tenantId, id]
   property required eventId: string
   property required guestName: string

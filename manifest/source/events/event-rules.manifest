@@ -5,7 +5,7 @@ use "../_base.manifest"
 entity Event mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property maxCapacity: int?
-  property clientId: string? = ""
+  property clientId: uuid? = ""
   unique property eventNumber: string? = ""
   searchable property required title: string = "Untitled Event"
   property required eventType: string = "general"
@@ -21,10 +21,10 @@ entity Event mixin TenantScoped, SoftDeletable {
   property eventFormat: string? = ""
   property required accessibilityOptions: array<string>
   property featuredMediaUrl: string? = ""
-  property locationId: string? = ""
-  property venueId: string? = ""
-  property venueEntityId: string? = ""
-  property assignedTo: string? = ""
+  property locationId: uuid? = ""
+  property venueId: uuid? = ""
+  property venueEntityId: uuid? = ""
+  property assignedTo: uuid? = ""
   property venueName: string? = ""
   property venueAddress: string? = ""
   searchable property notes: string? = ""
@@ -281,7 +281,7 @@ entity Event mixin TenantScoped, SoftDeletable {
 
 entity EventProfitability mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required eventId: string
+  property required eventId: uuid
   property budgetedRevenue: money = 0
   property budgetedFoodCost: money = 0
   property budgetedLaborCost: money = 0
@@ -393,7 +393,7 @@ entity EventProfitability mixin TenantScoped, SoftDeletable {
 
 entity EventSummary mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required eventId: string
+  property required eventId: uuid
   property highlights: json? = []
   property issues: json? = []
   property financialPerformance: json? = []
