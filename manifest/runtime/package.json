@@ -27,7 +27,8 @@
     "./run-manifest-saga-core": "./src/run-manifest-saga-core.ts",
     "./bottleneck-detector": "./src/bottleneck-detector/index.ts",
     "./entity-accessor": "./src/generated/entity-accessor.generated.ts",
-    "./flag-provider": "./src/flag-provider.ts"
+    "./flag-provider": "./src/flag-provider.ts",
+    "./routes-manifest": "./src/routes-manifest.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.71",
