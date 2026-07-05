@@ -212,7 +212,7 @@ async function findOrCreateVenue(
   const [existing] = await database.$queryRaw<Array<{ id: string }>>(
     Prisma.sql`
       SELECT id
-      FROM tenant_events.venues
+      FROM tenant.venues
       WHERE tenant_id = ${tenantId}
         AND name = ${venueName}
         AND deleted_at IS NULL
@@ -228,8 +228,8 @@ async function findOrCreateVenue(
   const venueId = randomUUID();
   await database.$executeRaw(
     Prisma.sql`
-      INSERT INTO tenant_events.venues (tenant_id, id, name, address, is_active)
-      VALUES (${tenantId}, ${venueId}, ${venueName}, ${venueAddress || null}, true)
+      INSERT INTO tenant.venues (tenant_id, id, name, address_line1, is_active, updated_at)
+      VALUES (${tenantId}, ${venueId}, ${venueName}, ${venueAddress || ""}, true, NOW())
     `
   );
 
@@ -267,8 +267,8 @@ async function findOrCreateDish(
   const dishId = randomUUID();
   await database.$executeRaw(
     Prisma.sql`
-      INSERT INTO tenant_kitchen.dishes (tenant_id, id, name, category, is_active)
-      VALUES (${tenantId}, ${dishId}, ${menuItem.name}, ${menuItem.category || "Imported"}, true)
+      INSERT INTO tenant_kitchen.dishes (tenant_id, id, name, category, is_active, updated_at)
+      VALUES (${tenantId}, ${dishId}, ${menuItem.name}, ${menuItem.category || "Imported"}, true, NOW())
     `
   );
 
@@ -412,7 +412,8 @@ async function importMenuItems(
             servings,
             special_instructions,
             course,
-            created_at
+            created_at,
+            updated_at
           )
           VALUES (
             ${tenantId},
@@ -424,6 +425,7 @@ async function importMenuItems(
             ${menuItem.servings ?? null},
             ${menuItem.specialInstructions || null},
             ${menuItem.course || null},
+            NOW(),
             NOW()
           )
         `
@@ -453,7 +455,8 @@ async function importGuestList(
           table_number,
           rsvp_status,
           notes,
-          created_at
+          created_at,
+          updated_at
         )
         VALUES (
           ${tenantId},
@@ -465,6 +468,7 @@ async function importGuestList(
           ${guest.tableNumber || null},
           ${guest.rsvpStatus || "pending"},
           ${guest.notes || null},
+          NOW(),
           NOW()
         )
       `

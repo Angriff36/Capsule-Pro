@@ -238,10 +238,10 @@ const insertRecipe = async (
   const id = randomUUID();
   await database.$executeRaw(
     Prisma.sql`
-      INSERT INTO tenant_kitchen.recipes (tenant_id, id, name, category, tags, is_active)
+      INSERT INTO tenant_kitchen.recipes (tenant_id, id, name, category, tags, is_active, updated_at)
       VALUES (${tenantId}, ${id}, ${name}, ${category ?? null}, ${
         tags && tags.length > 0 ? tags : null
-      }, true)
+      }, true, NOW())
     `
   );
   return id;
@@ -275,8 +275,8 @@ const insertDish = async (
   const id = randomUUID();
   await database.$executeRaw(
     Prisma.sql`
-      INSERT INTO tenant_kitchen.dishes (tenant_id, id, recipe_id, name, category, is_active)
-      VALUES (${tenantId}, ${id}, ${recipeId}, ${name}, ${category ?? null}, true)
+      INSERT INTO tenant_kitchen.dishes (tenant_id, id, recipe_id, name, category, is_active, updated_at)
+      VALUES (${tenantId}, ${id}, ${recipeId}, ${name}, ${category ?? null}, true, NOW())
     `
   );
   return id;
@@ -316,9 +316,10 @@ const insertIngredient = async (
         name,
         category,
         default_unit_id,
-        is_active
+        is_active,
+        updated_at
       )
-      VALUES (${tenantId}, ${id}, ${name}, ${category ?? null}, ${defaultUnitId}, true)
+      VALUES (${tenantId}, ${id}, ${name}, ${category ?? null}, ${defaultUnitId}, true, NOW())
     `
   );
   return id;
@@ -362,7 +363,8 @@ const insertInventoryItem = async (
         unit_cost,
         quantity_on_hand,
         reorder_level,
-        tags
+        tags,
+        updated_at
       )
       VALUES (
         ${tenantId},
@@ -373,7 +375,8 @@ const insertInventoryItem = async (
         ${0},
         ${0},
         ${0},
-        ${tags}
+        ${tags},
+        NOW()
       )
     `
   );
@@ -533,7 +536,8 @@ const insertEvent = async (
         event_date,
         guest_count,
         status,
-        notes
+        notes,
+        updated_at
       )
       VALUES (
         ${tenantId},
@@ -543,7 +547,8 @@ const insertEvent = async (
         ${formatDate(eventDate)},
         ${guestCount},
         ${"confirmed"},
-        ${notes ?? null}
+        ${notes ?? null},
+        NOW()
       )
     `
   );
@@ -572,7 +577,8 @@ const insertEventDish = async (
         event_id,
         dish_id,
         quantity_servings,
-        special_instructions
+        special_instructions,
+        updated_at
       )
       VALUES (
         ${tenantId},
@@ -580,7 +586,8 @@ const insertEventDish = async (
         ${eventId},
         ${dishId},
         ${quantityServings},
-        ${specialInstructions ?? null}
+        ${specialInstructions ?? null},
+        NOW()
       )
     `
   );
@@ -632,7 +639,8 @@ const insertPrepTask = async (
         is_event_finish,
         status,
         priority,
-        notes
+        notes,
+        updated_at
       )
       VALUES (
         ${context.tenantId},
@@ -650,7 +658,8 @@ const insertPrepTask = async (
         ${isEventFinish},
         ${"pending"},
         ${5},
-        ${notes ?? null}
+        ${notes ?? null},
+        NOW()
       )
     `
   );
@@ -1256,7 +1265,8 @@ export const importEventFromCsvText = async ({
           file_name,
           mime_type,
           file_size,
-          content
+          content,
+          updated_at
         )
         VALUES (
           ${tenantId},
@@ -1265,7 +1275,8 @@ export const importEventFromCsvText = async ({
           ${fileName},
           ${"text/csv"},
           ${Buffer.byteLength(content)},
-          ${Buffer.from(content)}
+          ${Buffer.from(content)},
+          NOW()
         )
       `
     );
@@ -1318,7 +1329,8 @@ export const importEventFromCsvText = async ({
         file_name,
         mime_type,
         file_size,
-        content
+        content,
+        updated_at
       )
       VALUES (
         ${tenantId},
@@ -1327,7 +1339,8 @@ export const importEventFromCsvText = async ({
         ${fileName},
         ${"text/csv"},
         ${Buffer.byteLength(content)},
-        ${Buffer.from(content)}
+        ${Buffer.from(content)},
+        NOW()
       )
     `
   );

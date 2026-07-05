@@ -135,7 +135,8 @@ const insertInventoryItem = async (
         unit_cost,
         quantity_on_hand,
         reorder_level,
-        tags
+        tags,
+        updated_at
       )
       VALUES (
         ${tenantId},
@@ -146,7 +147,8 @@ const insertInventoryItem = async (
         ${0},
         ${0},
         ${0},
-        ${["cleanup"]}
+        ${["cleanup"]},
+        NOW()
       )
     `
   );
@@ -199,9 +201,10 @@ const insertIngredient = async (
         name,
         category,
         default_unit_id,
-        is_active
+        is_active,
+        updated_at
       )
-      VALUES (${tenantId}, ${id}, ${name}, ${category}, ${defaultUnitId}, true)
+      VALUES (${tenantId}, ${id}, ${name}, ${category}, ${defaultUnitId}, true, NOW())
     `
   );
   return id;

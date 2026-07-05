@@ -214,7 +214,8 @@ export const updateRecipeImage = async (
             tags,
             version_number,
             yield_quantity,
-            yield_unit_id
+            yield_unit_id,
+            updated_at
           )
           VALUES (
             ${tenantId},
@@ -227,7 +228,8 @@ export const updateRecipeImage = async (
             ${newVersionData.recipe.tags ?? null},
             ${newVersionData.maxVersion + 1},
             1,
-            ${newVersionData.fallbackUnitId}
+            ${newVersionData.fallbackUnitId},
+            NOW()
           )
         `
       );
@@ -251,7 +253,8 @@ export const updateRecipeImage = async (
             recipe_version_id,
             step_number,
             instruction,
-            image_url
+            image_url,
+            updated_at
           )
           VALUES (
             ${tenantId},
@@ -259,7 +262,8 @@ export const updateRecipeImage = async (
             ${versionId},
             1,
             'Reference photo',
-            ${imageUrl}
+            ${imageUrl},
+            NOW()
           )
         `
       );
@@ -329,7 +333,8 @@ export const createDish = async (formData: FormData) => {
         min_prep_lead_days,
         max_prep_lead_days,
         portion_size_description,
-        is_active
+        is_active,
+        updated_at
       )
       VALUES (
         ${tenantId},
@@ -347,7 +352,8 @@ export const createDish = async (formData: FormData) => {
         ${minLead ?? 0},
         ${maxLead},
         ${portionSize},
-        true
+        true,
+        NOW()
       )
     `
   );
@@ -511,7 +517,8 @@ export const getRecipeForEdit = async (
           tags,
           version_number,
           yield_quantity,
-          yield_unit_id
+          yield_unit_id,
+          updated_at
         )
         VALUES (
           ${tenantId},
@@ -524,7 +531,8 @@ export const getRecipeForEdit = async (
           ${recipe.tags ?? null},
           ${(maxVersion?.max ?? 0) + 1},
           1,
-          ${fallbackUnit.id}
+          ${fallbackUnit.id},
+          NOW()
         )
       `
     );

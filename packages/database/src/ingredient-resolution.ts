@@ -226,9 +226,10 @@ export const ensureIngredientId = async (
         id,
         name,
         default_unit_id,
-        is_active
+        is_active,
+        updated_at
       )
-      VALUES (${tenantId}, ${id}, ${name}, ${defaultUnitId}, true)
+      VALUES (${tenantId}, ${id}, ${name}, ${defaultUnitId}, true, NOW())
     `
   );
   return id;
