@@ -43,7 +43,7 @@ export default async function PickPackPage() {
       where: {
         tenantId,
         transactionType: "transfer",
-        transaction_date: {
+        transactionDate: {
           gte: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
         },
       },
@@ -52,7 +52,7 @@ export default async function PickPackPage() {
       where: {
         tenantId,
         transactionType: "usage",
-        transaction_date: {
+        transactionDate: {
           gte: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
         },
       },

@@ -44,7 +44,7 @@ export default async function PutawayPage() {
         where: {
           tenantId,
           transactionType: "purchase",
-          transaction_date: {
+          transactionDate: {
             gte: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
           },
         },

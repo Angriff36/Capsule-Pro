@@ -48,11 +48,11 @@ interface ParticipantRow {
     threadType: string;
     slug: string | null;
     lastMessageAt: Date | null;
-    participants: Array<{
+    adminChatParticipants: Array<{
       userId: string;
       user: ThreadParticipantSummary;
     }>;
-    messages: ThreadMessageSummary[];
+    adminChatMessages: ThreadMessageSummary[];
   };
 }
 
@@ -75,7 +75,7 @@ const toThreadSummary = (
 ): ThreadSummary => {
   const { thread } = row;
   const isTeam = thread.threadType === TEAM_THREAD_TYPE;
-  const message = thread.messages[0] ?? null;
+  const message = thread.adminChatMessages[0] ?? null;
 
   if (isTeam) {
     return {
@@ -90,7 +90,7 @@ const toThreadSummary = (
     };
   }
 
-  const other = thread.participants.find(
+  const other = thread.adminChatParticipants.find(
     (participant) => participant.userId !== currentUserId
   );
 
@@ -263,7 +263,7 @@ export async function GET(request: Request) {
             threadType: true,
             slug: true,
             lastMessageAt: true,
-            participants: {
+            adminChatParticipants: {
               where: {
                 deletedAt: null,
               },
@@ -280,7 +280,7 @@ export async function GET(request: Request) {
                 },
               },
             },
-            messages: {
+            adminChatMessages: {
               where: {
                 deletedAt: null,
               },
@@ -512,7 +512,7 @@ export async function POST(request: Request) {
             threadType: true,
             slug: true,
             lastMessageAt: true,
-            participants: {
+            adminChatParticipants: {
               where: {
                 deletedAt: null,
               },
@@ -529,7 +529,7 @@ export async function POST(request: Request) {
                 },
               },
             },
-            messages: {
+            adminChatMessages: {
               where: {
                 deletedAt: null,
               },

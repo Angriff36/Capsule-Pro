@@ -187,11 +187,10 @@ export async function getEventBoardData(
     database.deliveryRoute.count({
       where: { tenantId, eventId, deletedAt: null },
     }),
-    // NOTE: the column is snake_case `board_name` (no @map on this legacy field).
     database.battleBoard.findMany({
       where: { tenantId, eventId, deletedAt: null },
       orderBy: { createdAt: "asc" },
-      select: { id: true, board_name: true },
+      select: { id: true, boardName: true },
     }),
     database.commandBoard.findFirst({
       where: { tenantId, eventId, deletedAt: null },
@@ -260,7 +259,7 @@ export async function getEventBoardData(
 
   const battleBoards = battleBoardRows.map((b) => ({
     id: b.id,
-    name: b.board_name,
+    name: b.boardName,
   }));
 
   // --- Draft cards ---

@@ -3,7 +3,7 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 
 /**
  * GET /api/user-preferences
@@ -21,13 +21,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "No tenant found" }, { status: 401 });
     }
 
+    // user_preferences.user_id is a uuid (employee id) — the raw Clerk id
+    // ("user_…") fails the column cast with a 500 on every page load.
+    const employeeId = (await requireCurrentUser()).id;
+
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category");
 
     const preferences = await database.userPreference.findMany({
       where: {
         tenantId,
-        userId,
+        userId: employeeId,
         deletedAt: null,
         ...(category ? { category } : {}),
       },
@@ -70,6 +74,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No tenant found" }, { status: 401 });
     }
 
+    const employeeId = (await requireCurrentUser()).id;
+
     const body = await req.json();
     const { preferenceKey, preferenceValue, category, notes } = body;
 
@@ -84,14 +90,14 @@ export async function POST(req: NextRequest) {
       where: {
         tenantId_userId_preferenceKey_category: {
           tenantId,
-          userId,
+          userId: employeeId,
           preferenceKey,
           category: category || null,
         },
       },
       create: {
         tenantId,
-        userId,
+        userId: employeeId,
         preferenceKey,
         preferenceValue,
         category: category || null,

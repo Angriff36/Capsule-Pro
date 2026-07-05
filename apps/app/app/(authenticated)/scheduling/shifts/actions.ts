@@ -722,7 +722,7 @@ export async function getEvents(params?: {
       },
       select: {
         id: true,
-        company_name: true,
+        companyName: true,
         first_name: true,
         last_name: true,
       },
@@ -747,7 +747,7 @@ export async function getEvents(params?: {
   const events = eventRecords.map((event) => {
     const client = event.clientId ? clientsById.get(event.clientId) : undefined;
     const clientName =
-      client?.company_name ||
+      client?.companyName ||
       [client?.first_name, client?.last_name].filter(Boolean).join(" ");
     return {
       id: event.id,
