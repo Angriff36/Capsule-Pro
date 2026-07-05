@@ -10,7 +10,7 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -75,6 +75,8 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
 
     const { id } = await params;
 
+    const employeeId = (await requireCurrentUser()).id;
+
     // Mark as resolved instead of hard delete
     const entry = await database.webhookDeadLetterQueue.update({
       where: {
@@ -86,7 +88,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       data: {
         resolvedAt: new Date(),
         reviewedAt: new Date(),
-        reviewedBy: userId,
+        reviewedBy: employeeId,
         resolution: "Marked as resolved without retry",
       },
     });

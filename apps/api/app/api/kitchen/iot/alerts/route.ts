@@ -12,7 +12,7 @@ import { sendEmailNotification } from "@repo/notifications";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
@@ -77,6 +77,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
 
+    const employeeId = (await requireCurrentUser()).id;
+
     const body = await request.json();
     const { probeId, alertType, severity, message, temperature } = body;
 
@@ -107,7 +109,7 @@ export async function POST(request: NextRequest) {
         title: alertType,
         temperature: temperature ?? 0,
       },
-      user: { id: userId, tenantId, role: "" },
+      user: { id: employeeId, tenantId, role: "" },
     });
 
     // Post-create side-effect: dispatch email notification to managers/kitchen staff

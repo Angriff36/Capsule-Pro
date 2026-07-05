@@ -12,7 +12,7 @@ import { createOutboxEvent } from "@repo/realtime";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 import type { CreateAdjustmentResponse } from "../types";
 import { validateCreateAdjustmentRequest } from "../validation";
@@ -69,7 +69,7 @@ async function executeStockAdjustmentTransaction(
   reason: string,
   notes: string | undefined,
   referenceId: string | undefined,
-  userId: string,
+  employeeId: string,
   itemUnitCost: number,
   previousQuantity: number
 ) {
@@ -97,7 +97,7 @@ async function executeStockAdjustmentTransaction(
         reason,
         notes: notes ?? null,
         reference: referenceId ?? null,
-        employeeId: userId,
+        employeeId,
       },
       select: {
         id: true,
@@ -114,7 +114,7 @@ async function executeStockAdjustmentTransaction(
         stockItemId: inventoryItemId,
         quantity: adjustmentAmount,
         reason,
-        employeeId: userId,
+        employeeId,
         adjustedAt: new Date().toISOString(),
         previousQuantity,
         newQuantity,
@@ -258,6 +258,10 @@ export async function POST(request: Request) {
       );
     }
 
+    // employee_id is a person column resolved against tenant_staff.employees —
+    // the raw Clerk id ("user_…") silently misattributes the transaction.
+    const employeeId = (await requireCurrentUser()).id;
+
     const body = await request.json();
     validateCreateAdjustmentRequest(body);
 
@@ -319,7 +323,7 @@ export async function POST(request: Request) {
       reason,
       notes,
       referenceId,
-      userId,
+      employeeId,
       Number(item.unitCost),
       previousQuantity
     );

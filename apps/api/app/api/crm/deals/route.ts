@@ -63,9 +63,9 @@ export async function listDeals(
       client: {
         select: {
           id: true,
-          company_name: true,
-          first_name: true,
-          last_name: true,
+          companyName: true,
+          firstName: true,
+          lastName: true,
         },
       },
       lead: {
@@ -98,9 +98,9 @@ export async function listDeals(
     client: proposal.client
       ? {
           id: proposal.client.id,
-          companyName: proposal.client.company_name,
-          firstName: proposal.client.first_name,
-          lastName: proposal.client.last_name,
+          companyName: proposal.client.companyName,
+          firstName: proposal.client.firstName,
+          lastName: proposal.client.lastName,
         }
       : null,
     lead: proposal.lead

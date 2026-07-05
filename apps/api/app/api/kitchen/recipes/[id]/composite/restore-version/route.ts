@@ -7,7 +7,7 @@ import {
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export const runtime = "nodejs";
@@ -30,6 +30,8 @@ export async function POST(
     if (!tenantId) {
       return manifestErrorResponse("Tenant not found", 400);
     }
+
+    const employeeId = (await requireCurrentUser()).id;
 
     const { id: recipeId } = await params;
     const body: RestoreVersionRequest = await request.json();
@@ -71,7 +73,7 @@ export async function POST(
     const result = await database.$transaction(async (tx) => {
       // Create manifest runtime with transaction client
       const runtime = await createManifestRuntime({
-        user: { id: userId, tenantId },
+        user: { id: employeeId, tenantId },
         prismaOverride: tx,
       });
 

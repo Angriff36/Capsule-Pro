@@ -34,6 +34,7 @@ const mocks = vi.hoisted(() => {
     },
     getTenantIdForOrg: vi.fn(),
     logError: vi.fn(),
+    requireCurrentUser: vi.fn(),
     resolveIngredients: vi.fn(),
     runCommand: vi.fn(),
     tx,
@@ -50,6 +51,7 @@ vi.mock("@/lib/manifest-runtime", () => ({
 }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: mocks.getTenantIdForOrg,
+  requireCurrentUser: mocks.requireCurrentUser,
 }));
 vi.mock("@sentry/nextjs", () => ({
   captureException: mocks.captureException,
@@ -67,6 +69,14 @@ describe("POST /api/kitchen/recipes/[id]/composite/update-with-version", () => {
       userId: "user-1",
     } as never);
     vi.mocked(getTenantIdForOrg).mockResolvedValue("tenant-1");
+    mocks.requireCurrentUser.mockResolvedValue({
+      id: "employee-1",
+      tenantId: "tenant-1",
+      role: "admin",
+      email: "",
+      firstName: "",
+      lastName: "",
+    });
 
     vi.mocked(database.recipeVersion.aggregate).mockResolvedValue({
       _max: { versionNumber: 1 },

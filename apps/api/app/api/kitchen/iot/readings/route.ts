@@ -2,7 +2,7 @@ import { auth } from "@repo/auth/server";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
@@ -72,6 +72,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
 
+    const employeeId = (await requireCurrentUser()).id;
+
     const body = await request.json();
     const { probeId, temperature, batteryLevel } = body;
 
@@ -90,7 +92,7 @@ export async function POST(request: NextRequest) {
         probeId,
         temperature,
       },
-      user: { id: userId, tenantId, role: "" },
+      user: { id: employeeId, tenantId, role: "" },
     });
 
     // Side-effect: update probe status via Manifest
@@ -104,7 +106,7 @@ export async function POST(request: NextRequest) {
           lastReading: temperature,
           batteryLevel: batteryLevel === undefined ? undefined : batteryLevel,
         },
-        user: { id: userId, tenantId, role: "" },
+        user: { id: employeeId, tenantId, role: "" },
         instanceId: probeId,
       });
     } catch (probeError) {
@@ -190,7 +192,7 @@ export async function POST(request: NextRequest) {
             value: 0,
             triggeredAt: new Date(),
           },
-          user: { id: userId, tenantId, role: "" },
+          user: { id: employeeId, tenantId, role: "" },
         });
       } else if (
         probe &&
@@ -219,7 +221,7 @@ export async function POST(request: NextRequest) {
             value: 0,
             triggeredAt: new Date(),
           },
-          user: { id: userId, tenantId, role: "" },
+          user: { id: employeeId, tenantId, role: "" },
         });
       }
     } catch (alertError) {

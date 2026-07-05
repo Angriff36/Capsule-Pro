@@ -12,7 +12,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 // Required for manifest runtime - must use Node.js runtime (not Edge)
@@ -151,13 +151,15 @@ async function createWarningViaManifest(
  */
 export async function POST(request: Request) {
   try {
-    const { orgId, userId } = await auth();
+    const { orgId } = await auth();
     if (!orgId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     invariant(tenantId, `tenantId not found for orgId=${orgId}`);
+
+    const employeeId = (await requireCurrentUser()).id;
 
     const body: DetectConflictsRequest = await request.json();
     invariant(body.eventId, "eventId is required");
@@ -240,7 +242,7 @@ export async function POST(request: Request) {
         },
       });
       const runtime = await createManifestRuntime({
-        user: { id: userId, tenantId },
+        user: { id: employeeId, tenantId },
         prismaOverride: tx,
       });
 

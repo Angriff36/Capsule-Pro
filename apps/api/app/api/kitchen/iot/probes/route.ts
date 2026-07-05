@@ -2,7 +2,7 @@ import { auth } from "@repo/auth/server";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
@@ -62,6 +62,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
 
+    const employeeId = (await requireCurrentUser()).id;
+
     const body = await request.json();
     const { name, probeId, locationId, probeType, minTemp, maxTemp } = body;
 
@@ -86,7 +88,7 @@ export async function POST(request: NextRequest) {
         status: "active",
         batteryLevel: 100,
       },
-      user: { id: userId, tenantId, role: "" },
+      user: { id: employeeId, tenantId, role: "" },
     });
   } catch (error) {
     captureException(error);

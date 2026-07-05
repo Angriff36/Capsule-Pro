@@ -10,6 +10,7 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { generateApiKey } from "@/app/lib/api-key-service";
+import { requireCurrentUser } from "@/app/lib/tenant";
 import { API_SCOPES, VALID_SCOPES } from "@/lib/api-scopes";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { requireDualAuth } from "@/middleware/dual-auth";
@@ -127,6 +128,16 @@ export const POST = withRateLimit(
       // Generate the API key (crypto — must happen outside Manifest)
       const { plainKey, hashedKey, keyPrefix } = generateApiKey();
 
+      // On the session (Clerk) path, authResult.userId is the raw Clerk id
+      // ("user_…"). createdByUserId is a User.id uuid FK and the Manifest actor
+      // context expects the internal employee id, so resolve the Clerk id to the
+      // employee record. On the api-key path authResult.userId is already the
+      // creator's employee uuid.
+      const createdBy =
+        authResult.authMethod === "session"
+          ? (await requireCurrentUser()).id
+          : authResult.userId!;
+
       // Delegate creation to Manifest runtime
       const result = await runManifestCommand({
         entity: "ApiKey",
@@ -137,11 +148,11 @@ export const POST = withRateLimit(
           hashedKey,
           scopes: requestedScopes,
           expiresAt: expiresAt ? new Date(expiresAt as string) : null,
-          createdByUserId: authResult.userId!,
+          createdByUserId: createdBy,
           tenantId: authResult.tenantId,
         },
         user: {
-          id: authResult.userId!,
+          id: createdBy,
           tenantId: authResult.tenantId!,
           role: "admin",
         },

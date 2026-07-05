@@ -3,7 +3,7 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     const offset = clampOffset(searchParams.get("offset"));
 
     const where: Record<string, unknown> = {
-      tenantId: tenantId,
+      tenantId,
       deletedAt: null,
     };
 
@@ -102,6 +102,8 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("Tenant not found", 400);
     }
 
+    const employeeId = (await requireCurrentUser()).id;
+
     const body = await request.json();
     const {
       name,
@@ -131,7 +133,7 @@ export async function POST(request: NextRequest) {
     }
 
     const runtime = await createManifestRuntime({
-      user: { id: userId, tenantId },
+      user: { id: employeeId, tenantId },
     });
 
     const result = await runtime.runCommand("create", body, {

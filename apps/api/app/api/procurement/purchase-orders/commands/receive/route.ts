@@ -4,7 +4,7 @@ import { Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
 import {
   manifestErrorResponse,
@@ -22,6 +22,10 @@ export async function POST(request: NextRequest) {
     if (!tenantId) {
       return manifestErrorResponse("Tenant not found", 400);
     }
+
+    // received_by is a uuid (employee id) column — the raw Clerk id
+    // ("user_…") fails the Postgres cast with a 500 (22P02).
+    const employeeId = (await requireCurrentUser()).id;
 
     const { orderId, items } = await request.json();
     if (!(orderId && items?.length)) {
@@ -108,7 +112,7 @@ export async function POST(request: NextRequest) {
           },
           data: {
             status: "received",
-            receivedBy: userId,
+            receivedBy: employeeId,
             receivedAt: new Date(),
           },
         });

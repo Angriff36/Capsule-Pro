@@ -114,9 +114,9 @@ export async function GET(request: Request) {
         },
         select: {
           id: true,
-          company_name: true,
-          first_name: true,
-          last_name: true,
+          companyName: true,
+          firstName: true,
+          lastName: true,
         },
       }),
       database.lead.findMany({
@@ -132,7 +132,17 @@ export async function GET(request: Request) {
       }),
     ]);
 
-    const clientMap = new Map(clients.map((c) => [c.id, c]));
+    const clientMap = new Map(
+      clients.map((c) => [
+        c.id,
+        {
+          id: c.id,
+          company_name: c.companyName,
+          first_name: c.firstName,
+          last_name: c.lastName,
+        },
+      ])
+    );
     const leadMap = new Map(leads.map((l) => [l.id, l]));
 
     // Batch fetch all line items for all proposals (fixes N+1 query)

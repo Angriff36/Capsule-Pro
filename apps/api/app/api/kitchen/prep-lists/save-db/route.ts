@@ -9,7 +9,7 @@ import {
 } from "@repo/manifest-runtime/route-helpers";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export const runtime = "nodejs";
@@ -36,6 +36,8 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("Tenant not found", 400);
     }
 
+    const employeeId = (await requireCurrentUser()).id;
+
     const body = await request.json();
     const { eventId, prepList, name, finalize } = body;
 
@@ -56,7 +58,7 @@ export async function POST(request: NextRequest) {
       const result = await database.$transaction(async (tx) => {
         // Create manifest runtime with transaction client override
         const runtime = await createManifestRuntime({
-          user: { id: userId, tenantId },
+          user: { id: employeeId, tenantId },
           prismaOverride: tx,
         });
 

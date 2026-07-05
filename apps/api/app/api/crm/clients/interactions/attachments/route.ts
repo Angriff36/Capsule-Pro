@@ -9,10 +9,10 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
-import { deleteFile, uploadFile } from "@repo/storage"
+import { deleteFile, uploadFile } from "@repo/storage";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
@@ -45,6 +45,10 @@ export async function POST(request: Request) {
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
+
+  // uploaded_by is a person column and the runtime records the actor identity —
+  // the raw Clerk id ("user_…") misattributes both.
+  const employeeId = (await requireCurrentUser()).id;
 
   try {
     const formData = await request.formData();
@@ -122,9 +126,9 @@ export async function POST(request: Request) {
           fileUrl: result.url,
           fileType: file.type,
           fileSize: file.size,
-          uploadedBy: userId,
+          uploadedBy: employeeId,
         },
-        user: { id: userId, tenantId, role: "" },
+        user: { id: employeeId, tenantId, role: "" },
       });
 
       attachments.push(manifestResult);
@@ -175,12 +179,16 @@ export async function GET(request: Request) {
  * Soft-delete an attachment via Manifest runtime (after storage file cleanup).
  */
 export async function DELETE(request: Request) {
-  const { orgId, userId } = await auth();
+  const { orgId } = await auth();
   if (!orgId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
+
+  // The runtime records the actor identity — the raw Clerk id ("user_…")
+  // misattributes the governed remove.
+  const employeeId = (await requireCurrentUser()).id;
   const { searchParams } = new URL(request.url);
   const attachmentId = searchParams.get("attachmentId");
 
@@ -212,8 +220,8 @@ export async function DELETE(request: Request) {
     command: "remove",
     body: {
       id: attachmentId,
-      userId,
+      userId: employeeId,
     },
-    user: { id: userId ?? "", tenantId, role: "" },
+    user: { id: employeeId, tenantId, role: "" },
   });
 }

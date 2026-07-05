@@ -58,20 +58,15 @@ export function getTenantField(entityType: string): string {
 
 /**
  * Return the correct Prisma field name for the soft-delete timestamp of
- * `entityType`.  Falls back to `"deletedAt"` when no override is registered.
+ * `entityType`.
+ *
+ * Every soft-deletable model in the current schema exposes the camelCase
+ * Prisma field `deletedAt` (mapped to the `deleted_at` column). The former
+ * per-model `deleted_at` snake overrides were stale — they named the DB column
+ * instead of the Prisma field, which Prisma rejects — and several referenced
+ * models (BulkCombineRule, MethodVideo, OpenShift, PrepListImport, TaskBundle,
+ * TaskBundleItem) have no soft-delete column at all.
  */
-export function getDeletedAtField(entityType: string): string {
-  const overrides: Record<string, Record<string, string | null>> = {
-    Document: { deletedAt: "deleted_at" },
-    SmsAutomationRule: { deletedAt: "deleted_at" },
-    StorageLocation: { deletedAt: "deleted_at" },
-    BulkCombineRule: { deletedAt: "deleted_at" },
-    MethodVideo: { deletedAt: "deleted_at" },
-    PrepListImport: { deletedAt: "deleted_at" },
-    TaskBundle: { deletedAt: "deleted_at" },
-    TaskBundleItem: { deletedAt: "deleted_at" },
-    OpenShift: { deletedAt: "deleted_at" },
-  };
-
-  return overrides[entityType]?.deletedAt ?? "deletedAt";
+export function getDeletedAtField(_entityType: string): string {
+  return "deletedAt";
 }

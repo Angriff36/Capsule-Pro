@@ -172,8 +172,8 @@ async function processTenantContracts(
         select: {
           id: true,
           email: true,
-          first_name: true,
-          last_name: true,
+          firstName: true,
+          lastName: true,
         },
       },
       event: {
@@ -221,8 +221,8 @@ async function processTenantContracts(
         }),
         recipients: buildContractRecipients({
           client_email: contract.client.email,
-          client_first_name: contract.client.first_name,
-          client_last_name: contract.client.last_name,
+          client_first_name: contract.client.firstName,
+          client_last_name: contract.client.lastName,
           client_id: contract.client.id,
         }),
       },

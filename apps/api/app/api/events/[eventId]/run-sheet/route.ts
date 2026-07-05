@@ -36,9 +36,9 @@ export async function GET(
         client: {
           select: {
             id: true,
-            company_name: true,
-            first_name: true,
-            last_name: true,
+            companyName: true,
+            firstName: true,
+            lastName: true,
             email: true,
             phone: true,
           },
@@ -51,15 +51,15 @@ export async function GET(
     }
 
     const clientName = event.client
-      ? event.client.company_name ||
-        `${event.client.first_name ?? ""} ${event.client.last_name ?? ""}`.trim() ||
+      ? event.client.companyName ||
+        `${event.client.firstName ?? ""} ${event.client.lastName ?? ""}`.trim() ||
         null
       : null;
 
     // Check for finalized battle board
     const battleBoard = await database.battleBoard.findFirst({
       where: { eventId, tenantId, status: "finalized", deletedAt: null },
-      select: { id: true, board_name: true },
+      select: { id: true, boardName: true },
     });
 
     // Fetch event-dish links

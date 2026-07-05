@@ -12,7 +12,7 @@ import { sendWebhook, type WebhookPayload } from "@repo/notifications";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { toJson } from "@/lib/prisma-utils";
 
 interface RouteParams {
@@ -37,6 +37,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     if (!tenantId) {
       return NextResponse.json({ error: "No tenant found" }, { status: 401 });
     }
+
+    const employeeId = (await requireCurrentUser()).id;
 
     const { id } = await params;
     const body: RetryRequest = await request.json().catch(() => ({}));
@@ -163,7 +165,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       data: {
         retriedAt: new Date(),
         reviewedAt: new Date(),
-        reviewedBy: userId,
+        reviewedBy: employeeId,
         resolution: result.success
           ? "Successfully retried"
           : `Retry failed: ${result.errorMessage}`,

@@ -8,7 +8,7 @@ import {
 } from "@repo/manifest-runtime/route-helpers";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export const runtime = "nodejs";
@@ -29,6 +29,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return manifestErrorResponse("Tenant not found", 400);
     }
 
+    // The claim command records the claimant, and the runtime records the actor
+    // identity — the raw Clerk id ("user_…") misattributes both. Use the
+    // employee uuid.
+    const employeeId = (await requireCurrentUser()).id;
+
     const { id } = await context.params;
     const body = (await request.json()) as Record<string, unknown>;
     const {
@@ -39,10 +44,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       user: _bodyUser,
       ...payloadBody
     } = body;
-    const payload = { ...payloadBody, id, userId };
+    const payload = { ...payloadBody, id, userId: employeeId };
 
     const runtime = await createManifestRuntime({
-      user: { id: userId, tenantId },
+      user: { id: employeeId, tenantId },
     });
 
     const result = await runtime.runCommand("claim", payload, {

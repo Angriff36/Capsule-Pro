@@ -17,7 +17,7 @@ import {
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export const runtime = "nodejs";
@@ -270,6 +270,8 @@ export async function PATCH(
       return manifestErrorResponse("Tenant not found", 400);
     }
 
+    const employeeId = (await requireCurrentUser()).id;
+
     const body = await request.json();
     const { recipeIngredientId, wasteFactor } = body;
 
@@ -283,7 +285,7 @@ export async function PATCH(
     // Execute update via manifest runtime
     const result = await database.$transaction(async (tx) => {
       const runtime = await createManifestRuntime({
-        user: { id: userId, tenantId },
+        user: { id: employeeId, tenantId },
         prismaOverride: tx,
       });
 

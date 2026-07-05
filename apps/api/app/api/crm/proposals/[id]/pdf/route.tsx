@@ -16,12 +16,12 @@ interface ClientSelect {
   addressLine1: true;
   addressLine2: true;
   city: true;
-  company_name: true;
+  companyName: true;
   countryCode: true;
   email: true;
-  first_name: true;
+  firstName: true;
   id: true;
-  last_name: true;
+  lastName: true;
   phone: true;
   postalCode: true;
   stateProvince: true;
@@ -57,9 +57,9 @@ function fetchProposal(
       client: {
         select: {
           id: true,
-          company_name: true,
-          first_name: true,
-          last_name: true,
+          companyName: true,
+          firstName: true,
+          lastName: true,
           email: true,
           phone: true,
           addressLine1: true,
@@ -126,12 +126,12 @@ interface ProposalClient {
   addressLine1: string | null;
   addressLine2: string | null;
   city: string | null;
-  company_name: string | null;
+  companyName: string | null;
   countryCode: string | null;
   email: string | null;
-  first_name: string | null;
+  firstName: string | null;
   id: string;
-  last_name: string | null;
+  lastName: string | null;
   phone: string | null;
   postalCode: string | null;
   stateProvince: string | null;
@@ -191,9 +191,9 @@ interface ProposalUser {
 function transformClientData(client: ProposalClient) {
   return {
     id: client.id,
-    companyName: client.company_name,
-    firstName: client.first_name,
-    lastName: client.last_name,
+    companyName: client.companyName,
+    firstName: client.firstName,
+    lastName: client.lastName,
     email: client.email,
     phone: client.phone,
     address: {
@@ -250,11 +250,9 @@ function transformEventData(event: ProposalEvent) {
             addressLine2:
               event.venue?.addressLine2 || event.location?.addressLine2,
             city: event.venue?.city || event.location?.city,
-            stateProvince:
-              event.venue?.stateProvince || event.location?.state,
+            stateProvince: event.venue?.stateProvince || event.location?.state,
             postalCode: event.venue?.postalCode || event.location?.postalCode,
-            countryCode:
-              event.venue?.countryCode || event.location?.country,
+            countryCode: event.venue?.countryCode || event.location?.country,
           }
         : event.venueAddress || undefined,
     status: event.status,

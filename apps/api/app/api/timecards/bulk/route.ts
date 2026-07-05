@@ -3,7 +3,7 @@ import { database, Prisma, type PrismaClient } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
 
 interface BulkApproveRequest {
@@ -239,11 +239,14 @@ export const POST = withRateLimit(
         let exceptionFlagCount = 0;
 
         if (isApprove) {
+          // approvedBy is a uuid (employee id) column — the raw Clerk id
+          // ("user_…") fails the Postgres cast with a 500 (22P02).
+          const employeeId = (await requireCurrentUser()).id;
           const approvalResult = await processApprovals(
             tx as TxClient,
             tenantId,
             body.timeEntryIds,
-            userId
+            employeeId
           );
           updatedCount = approvalResult.count;
         }

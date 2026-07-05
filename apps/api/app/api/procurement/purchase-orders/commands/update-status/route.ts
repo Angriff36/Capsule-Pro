@@ -80,8 +80,8 @@ export async function POST(request: NextRequest) {
     const result = await runManifestCommand({
       entity: "PurchaseOrder",
       command,
-      body: { id: orderId, userId },
-      user: { id: userId, tenantId, role: currentUser.role },
+      body: { id: orderId, userId: currentUser.id },
+      user: { id: currentUser.id, tenantId, role: currentUser.role },
     });
 
     if (result.status >= 400) {

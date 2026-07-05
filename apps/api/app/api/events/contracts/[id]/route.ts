@@ -57,17 +57,27 @@ export async function GET(_request: Request, { params }: { params: Params }) {
       },
       select: {
         id: true,
-        company_name: true,
-        first_name: true,
-        last_name: true,
+        companyName: true,
+        firstName: true,
+        lastName: true,
       },
     });
+
+    // Preserve snake_case response contract while reading camelCase fields
+    const clientResponse = client
+      ? {
+          id: client.id,
+          company_name: client.companyName,
+          first_name: client.firstName,
+          last_name: client.lastName,
+        }
+      : null;
 
     return NextResponse.json({
       contract: {
         ...contract,
         event,
-        client,
+        client: clientResponse,
       },
     });
   } catch (error) {

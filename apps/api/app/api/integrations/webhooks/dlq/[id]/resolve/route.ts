@@ -12,7 +12,7 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -36,6 +36,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     if (!tenantId) {
       return NextResponse.json({ error: "No tenant found" }, { status: 401 });
     }
+
+    const employeeId = (await requireCurrentUser()).id;
 
     const { id } = await params;
     const body: ResolveRequest = await request.json();
@@ -83,7 +85,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       data: {
         resolvedAt: new Date(),
         reviewedAt: new Date(),
-        reviewedBy: userId,
+        reviewedBy: employeeId,
         resolution: body.resolution.trim(),
       },
     });

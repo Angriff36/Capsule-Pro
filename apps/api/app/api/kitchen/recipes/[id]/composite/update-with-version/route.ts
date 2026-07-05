@@ -7,7 +7,7 @@ import {
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import {
   ConstraintBlockedError,
   GuardBlockedError,
@@ -33,6 +33,8 @@ export async function POST(
       return manifestErrorResponse("Tenant not found", 400);
     }
 
+    const employeeId = (await requireCurrentUser()).id;
+
     const { id: recipeId } = await params;
     const body: UpdateRecipeRequest = await request.json();
 
@@ -40,7 +42,7 @@ export async function POST(
       body,
       recipeId,
       tenantId,
-      userId,
+      userId: employeeId,
     });
 
     return manifestSuccessResponse({

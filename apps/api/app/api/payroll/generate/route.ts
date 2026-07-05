@@ -37,7 +37,7 @@ import { ManifestPayrollDataSource } from "@/lib/payroll/manifest-payroll-data-s
  */
 export async function POST(request: NextRequest) {
   try {
-    const { orgId, userId } = await auth();
+    const { orgId } = await auth();
     if (!orgId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
     // (reads delegate to Prisma, writes route through Manifest runtime)
     const currentUser = await resolveCurrentUser(request);
     const dataSource = new ManifestPayrollDataSource({
-      id: userId,
+      id: currentUser.id,
       tenantId,
       role: currentUser.role,
     });
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
     const result = await payrollService.generatePayroll(
       tenantId,
       serviceRequest,
-      userId
+      currentUser.id
     );
 
     return NextResponse.json(result, {

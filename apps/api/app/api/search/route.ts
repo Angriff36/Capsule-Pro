@@ -91,9 +91,9 @@ export async function GET(request: NextRequest) {
       const [items, total] = await Promise.all([
         database.client.findMany({
           where: baseFilter([
-            "company_name",
-            "first_name",
-            "last_name",
+            "companyName",
+            "firstName",
+            "lastName",
             "email",
             "phone",
           ]),
@@ -103,18 +103,18 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             tenantId: true,
-            company_name: true,
-            first_name: true,
-            last_name: true,
+            companyName: true,
+            firstName: true,
+            lastName: true,
             email: true,
             phone: true,
           },
         }),
         database.client.count({
           where: baseFilter([
-            "company_name",
-            "first_name",
-            "last_name",
+            "companyName",
+            "firstName",
+            "lastName",
             "email",
             "phone",
           ]),
@@ -127,8 +127,8 @@ export async function GET(request: NextRequest) {
       const [items, total] = await Promise.all([
         database.clientContact.findMany({
           where: baseFilter([
-            "first_name",
-            "last_name",
+            "firstName",
+            "lastName",
             "email",
             "phone",
             "phoneMobile",
@@ -140,8 +140,8 @@ export async function GET(request: NextRequest) {
             id: true,
             tenantId: true,
             clientId: true,
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
             title: true,
             email: true,
             phone: true,
@@ -149,8 +149,8 @@ export async function GET(request: NextRequest) {
         }),
         database.clientContact.count({
           where: baseFilter([
-            "first_name",
-            "last_name",
+            "firstName",
+            "lastName",
             "email",
             "phone",
             "phoneMobile",

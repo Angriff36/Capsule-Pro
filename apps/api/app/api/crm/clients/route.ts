@@ -46,9 +46,9 @@ export async function GET(request: Request) {
         ...(whereClause.AND as Record<string, unknown>[]),
         {
           OR: [
-            { company_name: { contains: searchLower, mode: "insensitive" } },
-            { first_name: { contains: searchLower, mode: "insensitive" } },
-            { last_name: { contains: searchLower, mode: "insensitive" } },
+            { companyName: { contains: searchLower, mode: "insensitive" } },
+            { firstName: { contains: searchLower, mode: "insensitive" } },
+            { lastName: { contains: searchLower, mode: "insensitive" } },
             { email: { contains: searchLower, mode: "insensitive" } },
           ],
         },

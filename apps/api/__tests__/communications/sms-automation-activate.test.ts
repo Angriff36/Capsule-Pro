@@ -17,7 +17,7 @@ import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST as activateRoute } from "@/app/api/smsautomationrule/activate/route";
 import { POST as deactivateRoute } from "@/app/api/smsautomationrule/deactivate/route";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 vi.mock("@repo/database", () => ({
@@ -28,7 +28,10 @@ vi.mock("@repo/database", () => ({
   },
 }));
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
-vi.mock("@/app/lib/tenant", () => ({ getTenantIdForOrg: vi.fn() }));
+vi.mock("@/app/lib/tenant", () => ({
+  getTenantIdForOrg: vi.fn(),
+  requireCurrentUser: vi.fn(),
+}));
 vi.mock("@/lib/manifest-runtime", () => ({ createManifestRuntime: vi.fn() }));
 vi.mock("@/lib/manifest-response", () => ({
   manifestSuccessResponse: vi.fn(
@@ -88,6 +91,14 @@ describe("SMS automation rule activate/deactivate routes", () => {
       orgId: TEST_ORG_ID,
     } as never);
     vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+    vi.mocked(requireCurrentUser).mockResolvedValue({
+      id: "employee-sms-1",
+      tenantId: TEST_TENANT_ID,
+      role: "admin",
+      email: "",
+      firstName: "",
+      lastName: "",
+    });
     vi.mocked(database.smsAutomationRule.findFirst).mockResolvedValue(
       EXISTING_RULE as never
     );

@@ -67,9 +67,9 @@ async function getEventDataForSummary(
     include: {
       client: {
         select: {
-          company_name: true,
-          first_name: true,
-          last_name: true,
+          companyName: true,
+          firstName: true,
+          lastName: true,
           email: true,
           phone: true,
         },
@@ -179,9 +179,9 @@ async function getEventDataForSummary(
     tags: event.tags ?? [],
     client: event.client
       ? {
-          first_name: event.client.first_name,
-          last_name: event.client.last_name,
-          company_name: event.client.company_name,
+          first_name: event.client.firstName,
+          last_name: event.client.lastName,
+          company_name: event.client.companyName,
           email: event.client.email,
           phone: event.client.phone,
         }

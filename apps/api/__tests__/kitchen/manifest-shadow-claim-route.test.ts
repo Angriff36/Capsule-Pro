@@ -4,9 +4,11 @@
  * Tests the shadow Manifest-generated claim endpoint at:
  *   POST /api/kitchen/tasks/[id]/claim-shadow-manifest
  *
- * This route uses auth() + getTenantIdForOrg (not requireCurrentUser),
- * imports response helpers from @repo/manifest-runtime/route-helpers,
- * and strips identity fields from the request body before forwarding.
+ * This route uses auth() for the guard plus requireCurrentUser() to resolve
+ * the acting employee identity (the manifest actor + claim `userId` must be the
+ * internal employee uuid, not the raw Clerk id), imports response helpers from
+ * @repo/manifest-runtime/route-helpers, and strips identity fields from the
+ * request body before forwarding.
  *
  * @vitest-environment node
  */
@@ -16,6 +18,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const authMock = vi.fn();
 const getTenantIdForOrgMock = vi.fn();
+const requireCurrentUserMock = vi.fn();
 const runCommandMock = vi.fn();
 const createManifestRuntimeMock = vi.fn();
 
@@ -25,7 +28,7 @@ vi.mock("@repo/auth/server", () => ({
 
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: getTenantIdForOrgMock,
-  requireCurrentUser: vi.fn(),
+  requireCurrentUser: requireCurrentUserMock,
   requireTenantId: vi.fn(),
   resolveCurrentUser: vi.fn(),
 }));
@@ -55,6 +58,14 @@ describe("Shadow Claim Route - Generated Backup", () => {
       userId: "user-1",
     });
     getTenantIdForOrgMock.mockResolvedValue("tenant-1");
+    requireCurrentUserMock.mockResolvedValue({
+      id: "employee-1",
+      tenantId: "tenant-1",
+      role: "admin",
+      email: "",
+      firstName: "",
+      lastName: "",
+    });
     createManifestRuntimeMock.mockResolvedValue({
       runCommand: runCommandMock,
     });
@@ -117,14 +128,14 @@ describe("Shadow Claim Route - Generated Backup", () => {
     await response.json();
 
     expect(createManifestRuntimeMock).toHaveBeenCalledWith({
-      user: { id: "user-1", tenantId: "tenant-1" },
+      user: { id: "employee-1", tenantId: "tenant-1" },
     });
     expect(runCommandMock).toHaveBeenCalledWith(
       "claim",
       expect.objectContaining({
         id: "task-123",
         stationId: "station-a",
-        userId: "user-1",
+        userId: "employee-1",
       }),
       { entityName: "PrepTask" }
     );
@@ -185,14 +196,14 @@ describe("Shadow Claim Route - Generated Backup", () => {
     const json = await response.json();
 
     expect(createManifestRuntimeMock).toHaveBeenCalledWith({
-      user: { id: "user-1", tenantId: "tenant-1" },
+      user: { id: "employee-1", tenantId: "tenant-1" },
     });
     expect(runCommandMock).toHaveBeenCalledWith(
       "claim",
       expect.objectContaining({
         id: "task-123",
         stationId: "station-a",
-        userId: "user-1",
+        userId: "employee-1",
       }),
       { entityName: "PrepTask" }
     );

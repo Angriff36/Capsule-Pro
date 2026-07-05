@@ -8,7 +8,7 @@ import {
 } from "@repo/manifest-runtime/route-helpers";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export const runtime = "nodejs";
@@ -41,15 +41,20 @@ export async function POST(
       return manifestErrorResponse("completed (boolean) is required", 400);
     }
 
+    // completed_by is a uuid (employee id) column, and the runtime records
+    // the actor identity — the raw Clerk id ("user_…") both fails the Postgres
+    // cast with a 500 (22P02) and misattributes the actor.
+    const employeeId = (await requireCurrentUser()).id;
+
     const runtime = await createManifestRuntime({
-      user: { id: userId, tenantId },
+      user: { id: employeeId, tenantId },
       entityName: "PrepListItem",
     });
 
     // Choose command based on completion state
     const commandName = completed ? "markCompleted" : "markUncompleted";
     const commandBody = completed
-      ? { id: itemId, completedByUserId: userId }
+      ? { id: itemId, completedByUserId: employeeId }
       : { id: itemId };
 
     const result = await runtime.runCommand(commandName, commandBody, {

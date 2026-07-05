@@ -9,7 +9,7 @@ import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { invariant } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
 import { generateBulkPrepTasks } from "./service";
 import type { BulkGenerateRequest, BulkGenerateResponse } from "./types";
@@ -124,7 +124,8 @@ export const POST = withRateLimit(
 
       validateRequestOptions(body);
 
-      const result = await generateBulkPrepTasks(tenantId, userId, body);
+      const employeeId = (await requireCurrentUser()).id;
+      const result = await generateBulkPrepTasks(tenantId, employeeId, body);
       const response = buildResponse(result);
 
       return NextResponse.json(response, { status: 200 });

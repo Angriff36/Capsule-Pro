@@ -37,14 +37,16 @@ vi.mock("@sentry/nextjs", () => ({
 
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
 
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 
 const TENANT_ID = "a0000000-0000-4000-a000-000000000002";
 const ORG_ID = "org-po-test";
 const USER_ID = "u0000000-0000-4000-a000-000000000002";
+const EMPLOYEE_ID = "e0000000-0000-4000-a000-000000000003";
 
 function mockPO(status: string) {
   return {
@@ -92,6 +94,14 @@ describe("POST /api/inventory/purchase-orders/[id]/complete — idempotency guar
       userId: USER_ID,
     } as never);
     vi.mocked(getTenantIdForOrg).mockResolvedValue(TENANT_ID);
+    vi.mocked(requireCurrentUser).mockResolvedValue({
+      id: EMPLOYEE_ID,
+      tenantId: TENANT_ID,
+      role: "admin",
+      email: "",
+      firstName: "",
+      lastName: "",
+    });
   });
 
   it("rejects re-completing an already-received PO with 409 and never touches stock", async () => {

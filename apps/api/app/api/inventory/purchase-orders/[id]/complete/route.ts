@@ -19,7 +19,7 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import type { CompleteReceivingRequest } from "../../types";
 import { validateCompleteReceivingRequest } from "../../validation";
 
@@ -32,7 +32,7 @@ interface RouteContext {
  */
 export async function POST(request: Request, context: RouteContext) {
   try {
-    const { orgId, userId } = await auth();
+    const { orgId } = await auth();
     if (!orgId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -44,6 +44,11 @@ export async function POST(request: Request, context: RouteContext) {
         { status: 404 }
       );
     }
+
+    // received_by is a uuid column and employee_id is a person column resolved
+    // against tenant_staff.employees — the raw Clerk id ("user_…") 500s the uuid
+    // cast (22P02) and misattributes the inventory transactions.
+    const employeeId = (await requireCurrentUser()).id;
 
     const { id } = await context.params;
 
@@ -177,7 +182,7 @@ export async function POST(request: Request, context: RouteContext) {
                 reason: "purchase",
                 referenceType: "purchase_order",
                 referenceId: purchaseOrder.id,
-                employeeId: userId ?? null,
+                employeeId,
               },
             });
             return transaction;
@@ -239,7 +244,7 @@ export async function POST(request: Request, context: RouteContext) {
         data: {
           status: newStatus,
           actualDeliveryDate: new Date(),
-          receivedBy: userId ?? null,
+          receivedBy: employeeId,
           receivedAt: new Date(),
           notes: body.notes ?? purchaseOrder.notes,
         },

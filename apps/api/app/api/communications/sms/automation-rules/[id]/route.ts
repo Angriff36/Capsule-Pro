@@ -3,7 +3,7 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
@@ -33,7 +33,7 @@ export async function GET(
     const rule = await database.smsAutomationRule.findFirst({
       where: {
         id,
-        tenantId: tenantId,
+        tenantId,
         deletedAt: null,
       },
     });
@@ -83,6 +83,8 @@ export async function PATCH(
       return manifestErrorResponse("Tenant not found", 400);
     }
 
+    const employeeId = (await requireCurrentUser()).id;
+
     const { id } = await params;
     const body = await request.json();
 
@@ -90,7 +92,7 @@ export async function PATCH(
     const existingRule = await database.smsAutomationRule.findFirst({
       where: {
         id,
-        tenantId: tenantId,
+        tenantId,
         deletedAt: null,
       },
     });
@@ -100,7 +102,7 @@ export async function PATCH(
     }
 
     const runtime = await createManifestRuntime({
-      user: { id: userId, tenantId },
+      user: { id: employeeId, tenantId },
     });
 
     const result = await runtime.runCommand(
@@ -185,13 +187,15 @@ export async function DELETE(
       return manifestErrorResponse("Tenant not found", 400);
     }
 
+    const employeeId = (await requireCurrentUser()).id;
+
     const { id } = await params;
 
     // Verify rule exists and belongs to tenant
     const existingRule = await database.smsAutomationRule.findFirst({
       where: {
         id,
-        tenantId: tenantId,
+        tenantId,
         deletedAt: null,
       },
     });
@@ -201,7 +205,7 @@ export async function DELETE(
     }
 
     const runtime = await createManifestRuntime({
-      user: { id: userId, tenantId },
+      user: { id: employeeId, tenantId },
     });
 
     const result = await runtime.runCommand(

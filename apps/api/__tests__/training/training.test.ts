@@ -254,7 +254,7 @@ describe("Training API", () => {
           createdBy: TEST_USER_ID,
           createdAt: new Date("2026-01-15"),
           updatedAt: new Date("2026-01-15"),
-          _count: { assignments: 3, completions: 1 },
+          _count: { assignments: 3, trainingCompletions: 1 },
         },
         {
           id: "mod-2",
@@ -270,7 +270,7 @@ describe("Training API", () => {
           createdBy: TEST_USER_ID,
           createdAt: new Date("2026-01-14"),
           updatedAt: new Date("2026-01-14"),
-          _count: { assignments: 0, completions: 0 },
+          _count: { assignments: 0, trainingCompletions: 0 },
         },
       ];
 
@@ -356,7 +356,7 @@ describe("Training API", () => {
         createdBy: TEST_USER_ID,
         createdAt: new Date("2026-01-15"),
         updatedAt: new Date("2026-01-15"),
-        _count: { assignments: 10, completions: 5 },
+        _count: { assignments: 10, trainingCompletions: 5 },
       };
       vi.mocked(database.trainingModule.findMany).mockResolvedValue([
         row,

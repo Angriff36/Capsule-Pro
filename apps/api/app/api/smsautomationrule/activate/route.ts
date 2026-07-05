@@ -3,7 +3,7 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
@@ -25,6 +25,8 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("Tenant not found", 400);
     }
 
+    const employeeId = (await requireCurrentUser()).id;
+
     const body = await request.json();
     const { id } = body;
 
@@ -36,7 +38,7 @@ export async function POST(request: NextRequest) {
     const existingRule = await database.smsAutomationRule.findFirst({
       where: {
         id,
-        tenantId: tenantId,
+        tenantId,
         deletedAt: null,
       },
     });
@@ -46,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     const runtime = await createManifestRuntime({
-      user: { id: userId, tenantId },
+      user: { id: employeeId, tenantId },
     });
 
     // Use the dedicated `activate` command, not generic `update`. The dedicated

@@ -11,7 +11,11 @@ import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
-import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import {
+  getTenantIdForOrg,
+  requireCurrentUser,
+  resolveCurrentUser,
+} from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { validateBoardId } from "./validation";
 
@@ -42,13 +46,14 @@ export async function GET(request: Request) {
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
+    const employeeId = (await requireCurrentUser()).id;
     const { searchParams } = new URL(request.url);
 
     const boardId = searchParams.get("boardId");
 
     // Build where clause
     const whereClause: Prisma.CommandBoardLayoutWhereInput = {
-      AND: [{ tenantId }, { userId }, { deletedAt: null }],
+      AND: [{ tenantId }, { userId: employeeId }, { deletedAt: null }],
     };
 
     if (boardId) {

@@ -14,7 +14,7 @@ import {
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { mapFailureToExplanation } from "@/lib/manifest/friendly-error-mapper";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
@@ -142,6 +142,8 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("Tenant not found", 400);
     }
 
+    const employeeId = (await requireCurrentUser()).id;
+
     const body: CreateRecipeRequest = await request.json();
 
     // Validate required fields
@@ -169,7 +171,7 @@ export async function POST(request: NextRequest) {
     const result = await database.$transaction(async (tx) => {
       // Create manifest runtime WITH transaction client
       const runtime = await createManifestRuntime({
-        user: { id: userId, tenantId },
+        user: { id: employeeId, tenantId },
         prismaOverride: tx,
       });
 

@@ -22,7 +22,7 @@ import {
 } from "./file-ingest";
 import { RecipeOcrNotConfiguredError } from "./lib/recipe-ocr-model";
 import type { RecipeSheet } from "./lib/recipe-sheet-types";
-import { IMPORT_TYPES, type CsvRow, type ImportType } from "./lib/types";
+import { type CsvRow, IMPORT_TYPES, type ImportType } from "./lib/types";
 
 export const runtime = "nodejs";
 
@@ -140,14 +140,21 @@ export async function POST(request: Request) {
       );
     }
 
-    const summary = await dispatchKitchenImport(importType, rows, {
-      tenantId,
-      userId,
-      userRole: currentUser.role,
-    }, {
-      documentSheets,
-      documentWarnings,
-    });
+    const summary = await dispatchKitchenImport(
+      importType,
+      rows,
+      {
+        tenantId,
+        // Importers feed this into governed command actor contexts — use the
+        // resolved employee uuid, not the raw Clerk id, to attribute correctly.
+        userId: currentUser.id,
+        userRole: currentUser.role,
+      },
+      {
+        documentSheets,
+        documentWarnings,
+      }
+    );
 
     log.debug("[POST /api/kitchen/import] Completed", summary);
     return NextResponse.json({ success: true, data: summary });

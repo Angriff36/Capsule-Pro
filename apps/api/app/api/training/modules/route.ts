@@ -67,7 +67,7 @@ export async function GET(request: Request) {
         _count: {
           select: {
             assignments: { where: { deletedAt: null } },
-            completions: true,
+            trainingCompletions: true,
           },
         },
       },
@@ -93,7 +93,7 @@ export async function GET(request: Request) {
     created_at: mod.createdAt,
     updated_at: mod.updatedAt,
     assignment_count: mod._count.assignments,
-    completion_count: mod._count.completions,
+    completion_count: mod._count.trainingCompletions,
   }));
 
   const response: TrainingModulesListResponse = {

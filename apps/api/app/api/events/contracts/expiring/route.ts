@@ -146,9 +146,9 @@ export async function GET(request: Request) {
       },
       select: {
         id: true,
-        company_name: true,
-        first_name: true,
-        last_name: true,
+        companyName: true,
+        firstName: true,
+        lastName: true,
         email: true,
         phone: true,
       },
@@ -172,8 +172,8 @@ export async function GET(request: Request) {
         status: contract.status as ContractStatus,
         clientId: contract.clientId,
         clientName: client
-          ? client.company_name ||
-            `${client.first_name} ${client.last_name}`.trim()
+          ? client.companyName ||
+            `${client.firstName} ${client.lastName}`.trim()
           : "Unknown Client",
         eventName: event?.title || null,
         eventDate: event?.eventDate ?? null,

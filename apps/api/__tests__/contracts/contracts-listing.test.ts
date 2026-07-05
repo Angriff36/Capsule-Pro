@@ -180,9 +180,9 @@ describe("Contract Listing & Detail API", () => {
     });
     mocks.clientFindFirst.mockResolvedValue({
       id: CLIENT_ID,
-      company_name: "Acme Corp",
-      first_name: "Jane",
-      last_name: "Doe",
+      companyName: "Acme Corp",
+      firstName: "Jane",
+      lastName: "Doe",
     });
 
     const res = await ecDetailGET(

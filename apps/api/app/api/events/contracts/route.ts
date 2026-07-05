@@ -177,15 +177,25 @@ export async function GET(request: Request) {
       },
       select: {
         id: true,
-        company_name: true,
-        first_name: true,
-        last_name: true,
+        companyName: true,
+        firstName: true,
+        lastName: true,
       },
     });
 
     // Create lookup maps
     const eventMap = new Map(events.map((e) => [e.id, e]));
-    const clientMap = new Map(clients.map((c) => [c.id, c]));
+    const clientMap = new Map(
+      clients.map((c) => [
+        c.id,
+        {
+          id: c.id,
+          company_name: c.companyName,
+          first_name: c.firstName,
+          last_name: c.lastName,
+        },
+      ])
+    );
 
     // Add event and client details to contracts
     const contractsWithDetails = contracts.map((contract) => ({

@@ -9,7 +9,7 @@ import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { invariant } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
 import { saveGeneratedTasks } from "../service";
 import type { GeneratedPrepTask } from "../types";
@@ -89,9 +89,10 @@ export const POST = withRateLimit(
       }));
 
       // Save tasks to database via manifest runtime
+      const employeeId = (await requireCurrentUser()).id;
       const result = await saveGeneratedTasks(
         tenantId,
-        userId,
+        employeeId,
         body.eventId,
         normalizedTasks
       );

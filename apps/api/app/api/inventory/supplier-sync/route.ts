@@ -130,7 +130,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Build governed write callback for VendorCatalog Manifest commands
-    const userId = clerkId;
     const tid = tenantId;
     const currentUser = await resolveCurrentUser(request);
     const runVendorCatalogCommand = async (params: {
@@ -142,7 +141,7 @@ export async function POST(request: NextRequest) {
         command: params.command,
         body: params.body,
         user: {
-          id: userId as string,
+          id: currentUser.id,
           tenantId: tid as string,
           role: currentUser.role,
         },
@@ -186,7 +185,7 @@ export async function POST(request: NextRequest) {
           productsDeactivated: result.productsDeactivated,
           errors: result.errors,
           durationMs: result.durationMs,
-          triggeredBy: clerkId,
+          triggeredBy: currentUser.id,
         },
       });
     } catch (logError) {

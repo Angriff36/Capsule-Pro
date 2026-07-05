@@ -20,11 +20,11 @@ interface RouteParams {
 }
 
 interface ClientSelect {
-  company_name: true;
+  companyName: true;
   email: true;
-  first_name: true;
+  firstName: true;
   id: true;
-  last_name: true;
+  lastName: true;
   phone: true;
 }
 
@@ -39,27 +39,39 @@ interface LeadSelect {
 /**
  * Fetch client for a proposal
  */
-function fetchClient(
+async function fetchClient(
   database: PrismaClient,
   tenantId: string,
   clientId: string | null
 ): Promise<Record<string, unknown> | null> {
   if (!clientId) {
-    return Promise.resolve(null);
+    return null;
   }
-  return database.client.findFirst({
+  const client = await database.client.findFirst({
     where: {
       AND: [{ tenantId }, { id: clientId }, { deletedAt: null }],
     },
     select: {
       id: true,
-      company_name: true,
-      first_name: true,
-      last_name: true,
+      companyName: true,
+      firstName: true,
+      lastName: true,
       email: true,
       phone: true,
     } as ClientSelect,
   });
+  if (!client) {
+    return null;
+  }
+  // Preserve snake_case response contract while reading camelCase fields
+  return {
+    id: client.id,
+    company_name: client.companyName,
+    first_name: client.firstName,
+    last_name: client.lastName,
+    email: client.email,
+    phone: client.phone,
+  };
 }
 
 /**

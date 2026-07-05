@@ -20,7 +20,7 @@ import { createOutboxEvent } from "@repo/realtime";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { validateUpdateQuantityReceivedRequest } from "../../../../validation";
 
 interface RouteContext {
@@ -32,7 +32,7 @@ interface RouteContext {
  */
 export async function PUT(request: Request, context: RouteContext) {
   try {
-    const { orgId, userId } = await auth();
+    const { orgId } = await auth();
     if (!orgId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -44,6 +44,11 @@ export async function PUT(request: Request, context: RouteContext) {
         { status: 404 }
       );
     }
+
+    // employee_id is a person column resolved against tenant_staff.employees —
+    // the raw Clerk id ("user_…") misattributes the transaction and emitted
+    // events. Emitted-event actor fields carry the same employee id as the row.
+    const employeeId = (await requireCurrentUser()).id;
 
     const { id, itemId } = await context.params;
 
@@ -165,7 +170,7 @@ export async function PUT(request: Request, context: RouteContext) {
             reason: "purchase",
             referenceType: "purchase_order",
             referenceId: purchaseOrder.id,
-            employeeId: userId ?? null,
+            employeeId,
           },
         });
 
@@ -185,7 +190,7 @@ export async function PUT(request: Request, context: RouteContext) {
             purchaseOrderItemId: poItem.id,
             transactionType: "purchase",
             locationId: purchaseOrder.locationId,
-            userId: userId ?? null,
+            userId: employeeId,
             timestamp: new Date().toISOString(),
           },
         });
@@ -203,7 +208,7 @@ export async function PUT(request: Request, context: RouteContext) {
             oldQuantityReceived,
             newQuantityReceived,
             incrementalQuantity,
-            userId: userId ?? null,
+            userId: employeeId,
             timestamp: new Date().toISOString(),
           },
         });
@@ -229,7 +234,7 @@ export async function PUT(request: Request, context: RouteContext) {
           oldQuantityReceived,
           newQuantityReceived,
           incrementalQuantity,
-          userId: userId ?? null,
+          userId: employeeId,
           timestamp: new Date().toISOString(),
         },
       });
