@@ -2372,3 +2372,13 @@ Three classes of bug that in-memory middleware tests CANNOT catch (all fixed 388
    (camelCase, e.g. itemNumber) — middleware written against raw column names (item_number)
    reads undefined on the live store while passing on in-memory fixtures seeded with raw names.
 Also: live uuid columns reject synthetic actor strings ("system:*") — prefer the runtime user id.
+
+
+## 2026-07-04 late-session incidents (mission wrap-up)
+
+- **accessor-resolution silent-drop incident**: `manifest/scripts/accessor-resolution.mjs` built its metadata path from JOIN SEGMENTS (`"generated","runtime"`), so the twin-home repoint sed missed it; the silent `catch {}` then resolved 208/213 entities to `drop:true` and the regenerated entity-accessor 404'd every generic read route. Fixed: single-home path + FAIL LOUD on unreadable/empty metadata. Lesson: never repoint paths by sed alone — `rg` for each path SEGMENT too; never let a resolver silently degrade to "drop everything".
+- **Approval chains had no transport**: IR `approval` blocks (PurchaseRequisition.procurementChain) gate commands via the engine, but nothing exposed `approveStage`/`denyApproval` over HTTP — new `POST /api/manifest/approvals` (apps/api) is that transport; the engine evaluates stage policy itself. Requisition page grants the stage then dispatches the gated command.
+- **Actor-param UI gap**: commands taking the ACTOR's employee id (`userId`) were silently dead from client pages (zod pre-flight). New `GET /api/me` (+ app rewrite) supplies it. Same class likely elsewhere — grep pages dispatching commands whose IR params include userId.
+- **Chat agent fabrication bug (fixed)**: agent-loop's `ensureNonEmptyCommandSequence` FABRICATED a command (biased Event.create) whenever the plan was empty — guessed writes for non-write asks. Removed. Also: chat route 500'd under Turbopack because the agent-sdk `createRequire` shim was statically folded — fixed with callee indirection + `serverExternalPackages: ["@angriff36/manifest"]`.
+- **Generated client detail getters** now tolerate top-level (unwrapped) detail payloads — hand-written detail routes (prep-lists/[id], inventory/purchase-orders/[id]) return the entity at top level and previously parsed as `undefined` on HTTP 200.
+- **COMMAND_BOARD_AI_MODEL**: default gpt-4o-mini cannot plan governed actions reliably (hallucinates command sequences; all rejected by validation = governance held). Dev .env.local now sets gpt-4o; flagship AI run (finalize 2 prep lists by name → supplier drafts) succeeded with it.
