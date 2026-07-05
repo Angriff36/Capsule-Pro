@@ -563,9 +563,8 @@ function loadCatalogInternal(manifestPathInput?: string): CommandCatalog {
       description: nativeSchema
         ? nativeSchema.description
         : buildToolDescription(command),
-      parameters: nativeSchema
-        ? nativeSchema.parameters
-        : buildToolParameters(command),
+      parameters:
+        nativeSchema?.parameters ?? buildToolParameters(command),
     });
   }
 

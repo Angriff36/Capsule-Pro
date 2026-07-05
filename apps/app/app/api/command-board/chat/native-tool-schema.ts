@@ -77,10 +77,12 @@ interface AgentSdkToolgen {
 export interface NativeCommandSchema {
   /** IR-native description (Entity | Module | Parameters | Guards | Emits …). */
   description: string;
-  /** IR-native JSON Schema (Draft-07 subset) for the command's parameters. */
-  parameters: Record<string, unknown>;
   /** Coarse param types the planner/text-registry + arg coercion consume. */
   params: Array<{ name: string; type: CoarseParamType; required: boolean }>;
+  /** IR-native JSON Schema, or null when the agent-sdk toolgen is unavailable —
+   *  coarse params above still come from the IR; the caller falls back to its
+   *  own JSON schema for the tool definition. */
+  parameters: Record<string, unknown> | null;
 }
 
 const IR_RELATIVE_PATH = join("manifest", "ir", "kitchen.ir.json");
@@ -254,10 +256,13 @@ export function getNativeCommandSchema(
   command: string
 ): NativeCommandSchema | null {
   const index = loadIrIndex();
-  const generator = loadToolgen();
-  if (!(index && generator && compiledIr)) {
+  // Coarse param types need ONLY the IR — never gate them on the agent-sdk
+  // loader (when it failed, numeric params fell back to route-surface
+  // "string" and every AI dispatch of a number 400'd the zod gate).
+  if (!index) {
     return null;
   }
+  const generator = loadToolgen();
   const irCommand = index.get(`${entity}.${command}`);
   if (!irCommand) {
     return null;
@@ -266,6 +271,19 @@ export function getNativeCommandSchema(
   const rawParams = Array.isArray(irCommand.parameters)
     ? irCommand.parameters
     : [];
+  const coarseParams = rawParams.map((param) => ({
+    name: param.name,
+    type: coarseTypeOf(param.type?.name ?? "string"),
+    // 3.1.3 IR: optional params carry required:false; required params OMIT the field
+    required: param.required !== false,
+  }));
+  if (!generator) {
+    return {
+      description: `${entity}.${command}`,
+      params: coarseParams,
+      parameters: null,
+    };
+  }
   const canonicalCommand: IrCommand = {
     ...irCommand,
     parameters: rawParams.map((param) => ({
@@ -287,18 +305,23 @@ export function getNativeCommandSchema(
     );
     const parameters = tool.function?.parameters;
     if (!parameters) {
-      return null;
+      return {
+        description: tool.function?.description ?? `${entity}.${command}`,
+        params: coarseParams,
+        parameters: null,
+      };
     }
     return {
       description: tool.function?.description ?? `${entity}.${command}`,
       parameters,
-      params: rawParams.map((param) => ({
-        name: param.name,
-        type: coarseTypeOf(param.type?.name ?? "string"),
-        required: param.required === true,
-      })),
+      params: coarseParams,
     };
   } catch {
-    return null;
+    // toolgen blew up on this command — coarse IR typing is still valid.
+    return {
+      description: `${entity}.${command}`,
+      params: coarseParams,
+      parameters: null,
+    };
   }
 }
