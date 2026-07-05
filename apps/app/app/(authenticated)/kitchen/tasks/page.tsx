@@ -42,9 +42,9 @@ const priorityColors: Record<number, string> = {
 };
 
 const statusLabels: Record<string, string> = {
-  open: "Open",
+  pending: "Pending",
   in_progress: "In Progress",
-  completed: "Completed",
+  done: "Done",
   cancelled: "Cancelled",
 };
 

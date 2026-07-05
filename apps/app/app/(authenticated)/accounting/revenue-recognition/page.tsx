@@ -33,9 +33,9 @@ export default async function RevenueRecognitionPage() {
       where: { tenantId, deletedAt: null },
       select: {
         id: true,
-        company_name: true,
-        first_name: true,
-        last_name: true,
+        companyName: true,
+        firstName: true,
+        lastName: true,
       },
     }),
   ]);
@@ -46,11 +46,11 @@ export default async function RevenueRecognitionPage() {
 
   const clientMap = Object.fromEntries(
     clients.map((cl) => {
-      const personName = [cl.first_name, cl.last_name]
+      const personName = [cl.firstName, cl.lastName]
         .filter(Boolean)
         .join(" ")
         .trim();
-      return [cl.id, cl.company_name || personName || "Unnamed"];
+      return [cl.id, cl.companyName || personName || "Unnamed"];
     })
   );
 

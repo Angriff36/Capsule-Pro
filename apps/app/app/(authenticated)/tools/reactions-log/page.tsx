@@ -23,13 +23,13 @@ export default async function ReactionsLogPage() {
   const { orgId, userId } = await auth();
 
   if (!(userId && orgId)) {
-    redirect("/login");
+    redirect("/sign-in");
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
 
   if (!tenantId) {
-    redirect("/onboarding");
+    redirect("/");
   }
 
   return (

@@ -10,9 +10,17 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import {
-  OperationalPageShell,
-} from "../../components/operational-page-shell";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/design-system/components/ui/table";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 import { CreateTrainingModuleDialog } from "./components/create-training-module-dialog";
 
 interface TrainingModuleRow {
@@ -54,7 +62,7 @@ const StaffTrainingPage = async () => {
       _count: {
         select: {
           assignments: { where: { deletedAt: null } },
-          completions: true,
+          trainingCompletions: true,
         },
       },
     },
@@ -70,7 +78,7 @@ const StaffTrainingPage = async () => {
     is_required: module.isRequired,
     is_active: module.isActive,
     assignment_count: BigInt(module._count.assignments),
-    completion_count: BigInt(module._count.completions),
+    completion_count: BigInt(module._count.trainingCompletions),
     created_at: module.createdAt,
   }));
 

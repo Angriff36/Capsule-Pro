@@ -39,28 +39,28 @@ export default async function CateringOrdersPage() {
         where: { tenantId, deletedAt: null },
       }),
       database.cateringOrder.count({
-        where: { tenantId, deletedAt: null, order_status: "draft" },
+        where: { tenantId, deletedAt: null, orderStatus: "draft" },
       }),
       database.cateringOrder.count({
-        where: { tenantId, deletedAt: null, order_status: "confirmed" },
+        where: { tenantId, deletedAt: null, orderStatus: "confirmed" },
       }),
       database.cateringOrder.count({
         where: {
           tenantId,
           deletedAt: null,
-          order_status: "in_progress",
+          orderStatus: "in_progress",
         },
       }),
       database.cateringOrder.count({
-        where: { tenantId, deletedAt: null, order_status: "completed" },
+        where: { tenantId, deletedAt: null, orderStatus: "completed" },
       }),
       database.cateringOrder.count({
-        where: { tenantId, deletedAt: null, order_status: "cancelled" },
+        where: { tenantId, deletedAt: null, orderStatus: "cancelled" },
       }),
     ]);
 
   const totalRevenue = await database.cateringOrder.aggregate({
-    where: { tenantId, deletedAt: null, order_status: { not: "cancelled" } },
+    where: { tenantId, deletedAt: null, orderStatus: { not: "cancelled" } },
     _sum: { totalAmount: true },
   });
 

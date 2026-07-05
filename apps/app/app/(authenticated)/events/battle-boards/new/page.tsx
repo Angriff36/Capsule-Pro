@@ -66,10 +66,10 @@ export default function NewBattleBoardPage() {
     setCreating(true);
     try {
       const payload: Record<string, unknown> = {
-        board_name: boardName.trim(),
-        board_type: boardType,
+        boardName: boardName.trim(),
+        boardType,
         description: description.trim() || null,
-        is_template: isTemplate,
+        isTemplate,
       };
 
       if (eventId.trim()) {

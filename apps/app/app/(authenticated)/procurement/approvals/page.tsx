@@ -36,8 +36,8 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { OperationalPageShell } from "../../components/operational-page-shell";
 import { apiFetch } from "@/app/lib/api";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 import {
   formatCurrency,
   formatDate,
@@ -271,7 +271,7 @@ export default function ApprovalsPage() {
       const res = await apiFetch("/api/procurement/approvals/list");
       const data = await res.json();
       if (data.success) {
-        setOrders(data.data.orders || []);
+        setOrders(data.orders || []);
       }
     } catch (error) {
       console.error("Failed to load approval orders:", error);
@@ -354,220 +354,219 @@ export default function ApprovalsPage() {
         eyebrow="Procurement / Approvals"
         title="Approvals"
       >
+        {/* Summary Cards */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="font-medium text-sm">
+                Pending Approval
+              </CardTitle>
+              <Clock className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-bold text-2xl">{summaryStats.pending}</div>
+              <p className="text-muted-foreground text-xs">
+                Awaiting your review
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="font-medium text-sm">
+                Approved Today
+              </CardTitle>
+              <CheckCircle2 className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-bold text-2xl">
+                {summaryStats.approvedToday}
+              </div>
+              <p className="text-muted-foreground text-xs">
+                Orders processed today
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="font-medium text-sm">Rejected</CardTitle>
+              <XCircle className="h-4 w-4 text-red-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-bold text-2xl">{summaryStats.rejected}</div>
+              <p className="text-muted-foreground text-xs">Require attention</p>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">
-              Pending Approval
-            </CardTitle>
-            <Clock className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">{summaryStats.pending}</div>
-            <p className="text-muted-foreground text-xs">
-              Awaiting your review
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">
-              Approved Today
-            </CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">
-              {summaryStats.approvedToday}
-            </div>
-            <p className="text-muted-foreground text-xs">
-              Orders processed today
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">Rejected</CardTitle>
-            <XCircle className="h-4 w-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">{summaryStats.rejected}</div>
-            <p className="text-muted-foreground text-xs">Require attention</p>
-          </CardContent>
-        </Card>
-      </div>
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="pl-10"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by PO # or vendor name..."
+            value={searchQuery}
+          />
+        </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          className="pl-10"
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search by PO # or vendor name..."
-          value={searchQuery}
-        />
-      </div>
+        {/* Tabs & List */}
+        <Tabs onValueChange={setActiveTab} value={activeTab}>
+          <TabsList className="rounded-[16px] border border-hairline bg-canvas p-1">
+            <TabsTrigger
+              className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
+              value="pending"
+            >
+              Pending ({orders.filter((o) => o.status === "submitted").length})
+            </TabsTrigger>
+            <TabsTrigger
+              className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
+              value="approved"
+            >
+              Approved ({orders.filter((o) => o.status === "approved").length})
+            </TabsTrigger>
+            <TabsTrigger
+              className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
+              value="rejected"
+            >
+              Rejected ({orders.filter((o) => o.status === "rejected").length})
+            </TabsTrigger>
+            <TabsTrigger
+              className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
+              value="all"
+            >
+              All History ({orders.length})
+            </TabsTrigger>
+          </TabsList>
 
-      {/* Tabs & List */}
-      <Tabs onValueChange={setActiveTab} value={activeTab}>
-        <TabsList className="rounded-[16px] border border-hairline bg-canvas p-1">
-          <TabsTrigger
-            className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
-            value="pending"
-          >
-            Pending ({orders.filter((o) => o.status === "submitted").length})
-          </TabsTrigger>
-          <TabsTrigger
-            className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
-            value="approved"
-          >
-            Approved ({orders.filter((o) => o.status === "approved").length})
-          </TabsTrigger>
-          <TabsTrigger
-            className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
-            value="rejected"
-          >
-            Rejected ({orders.filter((o) => o.status === "rejected").length})
-          </TabsTrigger>
-          <TabsTrigger
-            className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
-            value="all"
-          >
-            All History ({orders.length})
-          </TabsTrigger>
-        </TabsList>
+          <TabsContent className="mt-4" value={activeTab}>
+            {filtered.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center text-muted-foreground">
+                  <Shield className="mx-auto mb-4 h-12 w-12 opacity-50" />
+                  <p className="mb-1 font-medium text-lg">No approvals found</p>
+                  <p className="text-sm">
+                    {activeTab === "pending"
+                      ? "All caught up! No purchase orders pending approval."
+                      : `No ${activeTab === "all" ? "" : activeTab} purchase orders.`}
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {filtered.map((order) => {
+                  const config =
+                    STATUS_CONFIG[order.status] || STATUS_CONFIG.draft;
+                  const Icon = config.icon;
+                  const isPending = order.status === "submitted";
+                  const isActioning = actioning === order.id;
 
-        <TabsContent className="mt-4" value={activeTab}>
-          {filtered.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                <Shield className="mx-auto mb-4 h-12 w-12 opacity-50" />
-                <p className="mb-1 font-medium text-lg">No approvals found</p>
-                <p className="text-sm">
-                  {activeTab === "pending"
-                    ? "All caught up! No purchase orders pending approval."
-                    : `No ${activeTab === "all" ? "" : activeTab} purchase orders.`}
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-3">
-              {filtered.map((order) => {
-                const config =
-                  STATUS_CONFIG[order.status] || STATUS_CONFIG.draft;
-                const Icon = config.icon;
-                const isPending = order.status === "submitted";
-                const isActioning = actioning === order.id;
-
-                return (
-                  <Card
-                    className="transition-shadow hover:border-primary/40"
-                    key={order.id}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-4">
-                        <div
-                          className={`flex h-10 w-10 items-center justify-center rounded-full ${config.color}`}
-                        >
-                          <Icon className="h-5 w-5" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="mb-1 flex items-center gap-2">
-                            <span className="font-semibold">
-                              {order.po_number}
-                            </span>
-                            <Badge className={config.color}>
-                              {config.label}
-                            </Badge>
-                            {order.vendor_name && (
-                              <span className="text-muted-foreground text-sm">
-                                • {order.vendor_name}
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="mb-1 flex items-center gap-4 text-muted-foreground text-sm">
-                            <span className="flex items-center gap-1">
-                              <FileText className="h-3.5 w-3.5" />
-                              {order.item_count} items
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <DollarSign className="h-3.5 w-3.5" />
-                              {formatCurrency(order.total)}
-                            </span>
-                            {order.submitted_at && (
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3.5 w-3.5" />
-                                Submitted: {formatDateShort(order.submitted_at)}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Approval Chain Status */}
-                          <ApprovalChainStepper
-                            approvalHistory={order.approval_history}
-                            status={order.status}
-                          />
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center gap-2">
-                          <Button
-                            onClick={() => openDetail(order)}
-                            size="sm"
-                            variant="ghost"
+                  return (
+                    <Card
+                      className="transition-shadow hover:border-primary/40"
+                      key={order.id}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-4">
+                          <div
+                            className={`flex h-10 w-10 items-center justify-center rounded-full ${config.color}`}
                           >
-                            <Eye className="mr-1 h-4 w-4" />
-                            Details
-                          </Button>
-                          {isPending && (
-                            <>
-                              <Button
-                                className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                                disabled={isActioning}
-                                onClick={() =>
-                                  handleAction(order.id, "rejected")
-                                }
-                                size="sm"
-                                variant="outline"
-                              >
-                                {isActioning ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <XCircle className="mr-1 h-4 w-4" />
-                                )}
-                                Reject
-                              </Button>
-                              <Button
-                                className="bg-green-600 hover:bg-green-700"
-                                disabled={isActioning}
-                                onClick={() =>
-                                  handleAction(order.id, "approved")
-                                }
-                                size="sm"
-                              >
-                                {isActioning ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <CheckCircle2 className="mr-1 h-4 w-4" />
-                                )}
-                                Approve
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+                            <Icon className="h-5 w-5" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="mb-1 flex items-center gap-2">
+                              <span className="font-semibold">
+                                {order.po_number}
+                              </span>
+                              <Badge className={config.color}>
+                                {config.label}
+                              </Badge>
+                              {order.vendor_name && (
+                                <span className="text-muted-foreground text-sm">
+                                  • {order.vendor_name}
+                                </span>
+                              )}
+                            </div>
 
+                            <div className="mb-1 flex items-center gap-4 text-muted-foreground text-sm">
+                              <span className="flex items-center gap-1">
+                                <FileText className="h-3.5 w-3.5" />
+                                {order.item_count} items
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <DollarSign className="h-3.5 w-3.5" />
+                                {formatCurrency(order.total)}
+                              </span>
+                              {order.submitted_at && (
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3.5 w-3.5" />
+                                  Submitted:{" "}
+                                  {formatDateShort(order.submitted_at)}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Approval Chain Status */}
+                            <ApprovalChainStepper
+                              approvalHistory={order.approval_history}
+                              status={order.status}
+                            />
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex items-center gap-2">
+                            <Button
+                              onClick={() => openDetail(order)}
+                              size="sm"
+                              variant="ghost"
+                            >
+                              <Eye className="mr-1 h-4 w-4" />
+                              Details
+                            </Button>
+                            {isPending && (
+                              <>
+                                <Button
+                                  className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                  disabled={isActioning}
+                                  onClick={() =>
+                                    handleAction(order.id, "rejected")
+                                  }
+                                  size="sm"
+                                  variant="outline"
+                                >
+                                  {isActioning ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <XCircle className="mr-1 h-4 w-4" />
+                                  )}
+                                  Reject
+                                </Button>
+                                <Button
+                                  className="bg-green-600 hover:bg-green-700"
+                                  disabled={isActioning}
+                                  onClick={() =>
+                                    handleAction(order.id, "approved")
+                                  }
+                                  size="sm"
+                                >
+                                  {isActioning ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <CheckCircle2 className="mr-1 h-4 w-4" />
+                                  )}
+                                  Approve
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </OperationalPageShell>
 
       {/* Detail Dialog */}

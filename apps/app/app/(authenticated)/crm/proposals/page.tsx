@@ -96,9 +96,9 @@ export default async function ProposalsPage() {
           client: {
             select: {
               id: true,
-              company_name: true,
-              first_name: true,
-              last_name: true,
+              companyName: true,
+              firstName: true,
+              lastName: true,
             },
           },
           lead: {
@@ -135,9 +135,9 @@ export default async function ProposalsPage() {
     return {
       ...serialized,
       clientName:
-        serialized.client?.company_name ||
+        serialized.client?.companyName ||
         (serialized.client
-          ? [serialized.client.first_name, serialized.client.last_name]
+          ? [serialized.client.firstName, serialized.client.lastName]
               .filter(Boolean)
               .join(" ")
               .trim()

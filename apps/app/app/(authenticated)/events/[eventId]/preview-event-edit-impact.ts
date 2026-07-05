@@ -6,13 +6,13 @@ import { captureException } from "@sentry/nextjs";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import {
   type AffectedEntity,
-  type EventEditImpact,
-  type EventFieldSnapshot,
-  type ImpactCategory,
   affectedCategoriesFromChanges,
   assembleEventEditImpact,
   diffEventFields,
+  type EventEditImpact,
+  type EventFieldSnapshot,
   emptyEventEditImpact,
+  type ImpactCategory,
 } from "./event-edit-impact";
 
 // ---------------------------------------------------------------------------
@@ -52,13 +52,13 @@ async function readBattleBoards(
   try {
     const boards = await database.battleBoard.findMany({
       where: { tenantId, eventId, deletedAt: null },
-      select: { id: true, board_name: true, status: true },
+      select: { id: true, boardName: true, status: true },
       take: MAX_PER_CATEGORY,
     });
     return boards.map((b) => ({
       category: "battle_boards" as const,
       entityId: b.id,
-      label: b.board_name || "Untitled board",
+      label: b.boardName || "Untitled board",
       subType: "Battle board",
       reason: `Snapshot re-syncs from this event · status ${b.status}`,
     }));

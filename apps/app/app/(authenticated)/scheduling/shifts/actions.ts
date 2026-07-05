@@ -723,8 +723,8 @@ export async function getEvents(params?: {
       select: {
         id: true,
         companyName: true,
-        first_name: true,
-        last_name: true,
+        firstName: true,
+        lastName: true,
       },
     }),
     database.location.findMany({
@@ -748,7 +748,7 @@ export async function getEvents(params?: {
     const client = event.clientId ? clientsById.get(event.clientId) : undefined;
     const clientName =
       client?.companyName ||
-      [client?.first_name, client?.last_name].filter(Boolean).join(" ");
+      [client?.firstName, client?.lastName].filter(Boolean).join(" ");
     return {
       id: event.id,
       name: event.title,

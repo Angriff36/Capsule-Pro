@@ -89,13 +89,13 @@ const GROUP_CONFIG: Record<
     icon: <Users className="size-4" />,
     href: (item) => `/crm/clients/${item.id}`,
     title: (item) =>
-      (item.company_name as string) ||
-      [item.first_name, item.last_name].filter(Boolean).join(" ") ||
+      (item.companyName as string) ||
+      [item.firstName, item.lastName].filter(Boolean).join(" ") ||
       "Unknown Client",
     description: (item) => (
       <p className="text-muted-foreground text-sm">
-        {[item.first_name, item.last_name].filter(Boolean).join(" ")}
-        {item.company_name ? ` · ${item.company_name}` : ""}
+        {[item.firstName, item.lastName].filter(Boolean).join(" ")}
+        {item.companyName ? ` · ${item.companyName}` : ""}
       </p>
     ),
   },
@@ -104,7 +104,7 @@ const GROUP_CONFIG: Record<
     icon: <User className="size-4" />,
     href: (item) => `/crm/clients/${item.clientId}`,
     title: (item) =>
-      [item.first_name, item.last_name].filter(Boolean).join(" ") ||
+      [item.firstName, item.lastName].filter(Boolean).join(" ") ||
       "Unknown Contact",
     description: (item) => (
       <p className="text-muted-foreground text-sm">

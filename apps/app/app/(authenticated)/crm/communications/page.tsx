@@ -121,7 +121,7 @@ const CrmCommunicationsPage = async () => {
       },
       deletedAt: null,
     },
-    select: { id: true, company_name: true, first_name: true, last_name: true },
+    select: { id: true, companyName: true, firstName: true, lastName: true },
   });
   const clientsById = new Map(clients.map((client) => [client.id, client]));
   const interactions: InteractionRow[] = interactionRecords.map(
@@ -130,8 +130,8 @@ const CrmCommunicationsPage = async () => {
         ? clientsById.get(interaction.clientId)
         : undefined;
       const clientName =
-        client?.company_name ||
-        [client?.first_name, client?.last_name].filter(Boolean).join(" ") ||
+        client?.companyName ||
+        [client?.firstName, client?.lastName].filter(Boolean).join(" ") ||
         null;
       return {
         id: interaction.id,

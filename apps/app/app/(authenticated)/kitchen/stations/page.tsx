@@ -8,12 +8,12 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Progress } from "@repo/design-system/components/ui/progress";
+import { getTenantIdForOrg } from "../../../lib/tenant";
+import { Header } from "../../components/header";
 import {
   OperationalPageShell,
   OperationalSection,
 } from "../../components/operational-page-shell";
-import { getTenantIdForOrg } from "../../../lib/tenant";
-import { Header } from "../../components/header";
 
 interface StationStats {
   completed_tasks: number;
@@ -74,10 +74,10 @@ const KitchenStationsPage = async () => {
     Prisma.sql`
       SELECT
         LOWER(REPLACE(tag, ' ', '-')) AS station_id,
-        COUNT(*) AS total_tasks,
-        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed_tasks,
-        SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) AS in_progress_tasks,
-        SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) AS open_tasks,
+        COUNT(*)::int AS total_tasks,
+        SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END)::int AS completed_tasks,
+        SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END)::int AS in_progress_tasks,
+        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END)::int AS open_tasks,
         0 AS team_members
       FROM tenant_kitchen.kitchen_tasks
       CROSS JOIN UNNEST(tags) AS tag
@@ -97,7 +97,7 @@ const KitchenStationsPage = async () => {
     Prisma.sql`
       SELECT
         LOWER(REPLACE(tag, ' ', '-')) AS station_id,
-        COUNT(*) AS count
+        COUNT(*)::int AS count
       FROM tenant_kitchen.task_claims tc
       JOIN tenant_kitchen.kitchen_tasks kt ON kt.id = tc.task_id
       CROSS JOIN UNNEST(kt.tags) AS tag

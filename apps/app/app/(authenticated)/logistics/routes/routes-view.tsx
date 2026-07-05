@@ -159,9 +159,11 @@ export function RoutesView() {
     try {
       const route = await logisticsRouteCreate({
         name: createForm.name,
-        scheduledDate: createForm.scheduledDate
-          ? new Date(createForm.scheduledDate).toISOString()
-          : undefined,
+        ...(createForm.scheduledDate
+          ? {
+              scheduledDate: new Date(createForm.scheduledDate).toISOString(),
+            }
+          : {}),
       });
       if (route) {
         setRoutes((prev) => [route as unknown as DeliveryRoute, ...prev]);

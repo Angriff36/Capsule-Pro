@@ -1,5 +1,6 @@
 "use client";
 
+import { NoInventoryState } from "@repo/design-system/components/blocks/illustrated-empty-states";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -41,17 +42,13 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { NoInventoryState } from "@repo/design-system/components/blocks/illustrated-empty-states";
 import { PackageIcon, PlusIcon, TrashIcon, UploadIcon } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
-  OperationalPageShell,
-  OperationalSection,
-} from "../../components/operational-page-shell";
-import { SampleDataImportButton } from "../../components/sample-data-import-button";
-import {
+  batchDeleteItems,
+  batchUpdateItems,
   deleteInventoryItem,
   FSA_STATUSES,
   type FSAStatus,
@@ -69,6 +66,11 @@ import {
   type StockStatus,
   type Supplier,
 } from "../../../lib/inventory";
+import {
+  OperationalPageShell,
+  OperationalSection,
+} from "../../components/operational-page-shell";
+import { SampleDataImportButton } from "../../components/sample-data-import-button";
 import { CreateInventoryItemModal } from "./components/create-inventory-item-modal";
 
 export const InventoryItemsPageClient = () => {
@@ -517,7 +519,9 @@ export const InventoryItemsPageClient = () => {
               <NoInventoryState
                 description="Inventory items are the ingredients and supplies you stock. Add items to track quantities on hand, costs, par levels, and reorder points across your locations."
                 onAddItem={() => setIsCreateModalOpen(true)}
-                secondaryAction={<SampleDataImportButton onSeeded={loadItems} />}
+                secondaryAction={
+                  <SampleDataImportButton onSeeded={loadItems} />
+                }
                 userRole="admin"
               />
             )

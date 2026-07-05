@@ -106,7 +106,7 @@ export default function MobileTodayPage() {
         const data = await response.json();
         setEvents(data.events || []);
       } else {
-        const errData = await response.json();
+        const errData = await response.json().catch(() => ({}));
         setError(errData.message || "Failed to load events");
       }
     } catch (err) {

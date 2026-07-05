@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -41,9 +42,7 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import {
-  OperationalPageShell,
-} from "../../../components/operational-page-shell";
+import { OperationalPageShell } from "../../../components/operational-page-shell";
 
 // ---------- Types ----------
 
@@ -336,7 +335,6 @@ export function ReceivingHistoryClient() {
       eyebrow="Warehouse / Receiving"
       title="Receiving history"
     >
-
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/30 p-4">
         <FilterIcon className="size-4 shrink-0 text-muted-foreground" />

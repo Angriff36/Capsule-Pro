@@ -28,10 +28,6 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
-  OperationalPageShell,
-  OperationalSection,
-} from "../../components/operational-page-shell";
-import {
   Tabs,
   TabsContent,
   TabsList,
@@ -42,6 +38,7 @@ import * as Sentry from "@sentry/nextjs";
 import { AlertTriangle, CheckCircle2, Loader2, SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiUrl } from "@/app/lib/api";
 import {
   allergenWarningAcknowledge,
   allergenWarningMarkResolved,
@@ -51,6 +48,10 @@ import {
   listRecipes,
 } from "@/app/lib/manifest-client.generated";
 import { AllergenMatrix } from "@/components/allergen-matrix";
+import {
+  OperationalPageShell,
+  OperationalSection,
+} from "../../components/operational-page-shell";
 import { AllergenManagementModal } from "./allergen-management-modal";
 
 const { logger, captureException } = Sentry;
@@ -226,7 +227,13 @@ export default function AllergenManagementPage() {
   const handleAcknowledgeWarning = async (warningId: string) => {
     setActionLoading(true);
     try {
-      await allergenWarningAcknowledge({ id: warningId });
+      const meRes = await fetch(apiUrl("/api/me"), { credentials: "include" });
+      const me = await meRes.json().catch(() => ({}));
+      await allergenWarningAcknowledge({
+        id: warningId,
+        acknowledgedBy: me.id,
+        notes: "",
+      });
 
       toast.success("Warning acknowledged");
 

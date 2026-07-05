@@ -40,6 +40,18 @@ const rewrites: NextConfig["rewrites"] = async () => {
   return [
     ...baseRewrites,
     {
+      source: "/api/public/:path*",
+      destination: `${apiBaseUrl}/api/public/:path*`,
+    },
+    {
+      source: "/api/smsautomationrule/:path*",
+      destination: `${apiBaseUrl}/api/smsautomationrule/:path*`,
+    },
+    {
+      source: "/api/marketing/:path*",
+      destination: `${apiBaseUrl}/api/marketing/:path*`,
+    },
+    {
       source: "/api/kitchen/:path*",
       destination: `${apiBaseUrl}/api/kitchen/:path*`,
     },

@@ -3058,9 +3058,9 @@ async function listClientsTool(
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
-        company_name: true,
-        first_name: true,
-        last_name: true,
+        companyName: true,
+        firstName: true,
+        lastName: true,
         email: true,
         phone: true,
         clientType: true,
@@ -3074,10 +3074,10 @@ async function listClientsTool(
       data: clients.map((c) => ({
         id: c.id,
         name:
-          [c.first_name, c.last_name].filter(Boolean).join(" ") ||
-          c.company_name ||
+          [c.firstName, c.lastName].filter(Boolean).join(" ") ||
+          c.companyName ||
           "Unnamed",
-        company: c.company_name,
+        company: c.companyName,
         email: c.email,
         phone: c.phone,
         type: c.clientType,

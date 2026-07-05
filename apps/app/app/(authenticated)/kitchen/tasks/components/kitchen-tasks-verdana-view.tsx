@@ -1,7 +1,4 @@
-import type {
-  KitchenTask,
-  KitchenTaskClaim,
-} from "@repo/database";
+import type { KitchenTask, KitchenTaskClaim } from "@repo/database";
 import { format } from "date-fns";
 import { Calendar, Clock, Plus, User } from "lucide-react";
 import Link from "next/link";
@@ -16,14 +13,14 @@ const PRIORITY_LABELS: Record<number, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  open: "Open",
+  pending: "Pending",
   in_progress: "In Progress",
-  completed: "Completed",
+  done: "Done",
   cancelled: "Cancelled",
 };
 
 function statusChipClass(status: string): string {
-  if (status === "completed") {
+  if (status === "done") {
     return "vh-chip vh-chip-success";
   }
   if (status === "in_progress") {
@@ -57,8 +54,10 @@ export function KitchenTasksVerdanaView({
   tasks,
   myClaims,
 }: Readonly<KitchenTasksVerdanaViewProps>) {
-  const openCount = tasks.filter((t) => t.status === "open").length;
-  const inProgressCount = tasks.filter((t) => t.status === "in_progress").length;
+  const openCount = tasks.filter((t) => t.status === "pending").length;
+  const inProgressCount = tasks.filter(
+    (t) => t.status === "in_progress"
+  ).length;
 
   return (
     <div className="vh-shell">

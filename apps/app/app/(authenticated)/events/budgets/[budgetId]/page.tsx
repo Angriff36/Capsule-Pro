@@ -95,7 +95,7 @@ export default async function BudgetDetailPage({
   const budget = await database.eventBudget.findFirst({
     where: { tenantId, id: budgetId, deletedAt: null },
     include: {
-      budgetLineItems: {
+      lineItems: {
         where: { deletedAt: null },
         orderBy: { sortOrder: "asc" },
       },
@@ -117,7 +117,7 @@ export default async function BudgetDetailPage({
   const utilizationPct =
     totalBudget > 0 ? (totalActual / totalBudget) * 100 : 0;
 
-  const lineItems = budget.budgetLineItems.map((li) => ({
+  const lineItems = budget.lineItems.map((li) => ({
     id: li.id,
     category: li.category,
     name: li.name,

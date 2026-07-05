@@ -222,7 +222,7 @@ export default function StaffingOverviewPage() {
                 <SectionHeader
                   actions={
                     <Button asChild size="sm" variant="ghost">
-                      <Link href="/staffing/coverage">
+                      <Link href="/staffing">
                         View all
                         <ArrowRight className="ml-1 h-3 w-3" />
                       </Link>
@@ -355,7 +355,7 @@ export default function StaffingOverviewPage() {
                     icon: Clock,
                   },
                   {
-                    href: "/staffing/coverage",
+                    href: "/staffing",
                     label: "Coverage report",
                     description: "Detailed staffing analytics",
                     icon: TrendingUp,

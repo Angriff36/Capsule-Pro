@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import { log } from "@repo/observability/log";
 import {
   ArrowLeft,
@@ -24,9 +25,9 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { OperationalPageShell } from "../../components/operational-page-shell";
 // NOTE: Keeping apiFetch for calendar sync OAuth endpoints (/api/calendar/sync/*) — no generated client for calendar sync operations
 import { apiFetch } from "@/app/lib/api";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 
 interface SyncStatus {
   calendarName: string | null;

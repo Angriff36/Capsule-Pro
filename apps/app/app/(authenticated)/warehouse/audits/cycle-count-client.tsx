@@ -289,7 +289,7 @@ export const CycleCountClient = () => {
     (s) => s.status === "in_progress"
   ).length;
   const totalVariance = sessions.reduce(
-    (sum, s) => sum + Math.abs(s.totalVariance ?? 0),
+    (sum, s) => sum + Math.abs(Number(s.totalVariance ?? 0)),
     0
   );
 
@@ -488,19 +488,27 @@ export const CycleCountClient = () => {
                       <TableCell className="text-right">
                         <span
                           className={
-                            (session.totalVariance ?? 0) === 0
+                            Number(session.totalVariance ?? 0) === 0
                               ? ""
-                              : (session.totalVariance ?? 0) > 0
+                              : Number(session.totalVariance ?? 0) > 0
                                 ? "text-green-600"
                                 : "text-red-600"
                           }
                         >
-                          {formatCurrency(Math.abs(session.totalVariance ?? 0))}
-                          {(session.totalVariance ?? 0) !== 0 && (
+                          {formatCurrency(
+                            Math.abs(Number(session.totalVariance ?? 0))
+                          )}
+                          {Number(session.totalVariance ?? 0) !== 0 && (
                             <span className="text-xs">
                               {" "}
-                              ({(session.totalVariance ?? 0) > 0 ? "+" : ""}
-                              {(session.variancePercentage ?? 0).toFixed(1)}%)
+                              (
+                              {Number(session.totalVariance ?? 0) > 0
+                                ? "+"
+                                : ""}
+                              {Number(session.variancePercentage ?? 0).toFixed(
+                                1
+                              )}
+                              %)
                             </span>
                           )}
                         </span>
