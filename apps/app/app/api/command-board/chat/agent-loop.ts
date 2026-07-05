@@ -1124,45 +1124,15 @@ export function buildFallbackSimulationPlan(
 
 function ensureNonEmptyCommandSequence(
   plan: SimulationPlan,
-  catalog: CommandCatalog
+  _catalog: CommandCatalog
 ): SimulationPlan {
-  if (plan.commandSequence.length > 0 || catalog.commands.length === 0) {
-    return plan;
-  }
-
-  const candidatePairs = [
-    ...plan.unfulfilledIntents.flatMap(
-      (intent) => intent.closestSupportedSequence
-    ),
-    ...(catalog.byEntityCommand.has("Event.create") ? ["Event.create"] : []),
-    ...catalog.canonicalEntityCommandPairs,
-  ];
-
-  const selectedPair = candidatePairs.find((pair) =>
-    catalog.byEntityCommand.has(pair)
-  );
-  if (!selectedPair) {
-    return plan;
-  }
-
-  const route = catalog.byEntityCommand.get(selectedPair);
-  if (!route) {
-    return plan;
-  }
-
-  const [entity, command] = selectedPair.split(".");
-  return {
-    ...plan,
-    commandSequence: [
-      {
-        entity: entity ?? "",
-        command: command ?? "",
-        route: route.path,
-        args: defaultArgsForPair(catalog, selectedPair),
-        targetRef: null,
-      },
-    ],
-  };
+  // An empty command sequence is a VALID plan (the model decided no supported
+  // command applies). This function used to fabricate a command here (first
+  // candidate, biased to Event.create) — i.e. it GUESSED a write the user
+  // never asked for, which violates the governed-AI rule that unknown or
+  // unmappable intents are surfaced, never guessed. Removed 2026-07-04;
+  // unfulfilledIntents already carries what couldn't be planned.
+  return plan;
 }
 
 async function planSimulation(

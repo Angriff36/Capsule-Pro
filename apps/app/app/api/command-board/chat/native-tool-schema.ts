@@ -225,11 +225,15 @@ function loadToolgen(): AgentSdkToolgen | null {
   }
   toolgenResolved = true;
   try {
-    const require = createRequire(import.meta.url);
+    const nodeRequire = createRequire(import.meta.url);
     const pkgRoot = dirname(
-      require.resolve("@angriff36/manifest/package.json")
+      nodeRequire.resolve("@angriff36/manifest/package.json")
     );
-    const sdkModule = require(
+    // Indirection so Turbopack cannot statically fold this require into a
+    // bundled module reference (it hard-fails the whole route otherwise);
+    // combined with serverExternalPackages: ["@angriff36/manifest"].
+    const dynamicLoad = nodeRequire as unknown as (p: string) => unknown;
+    const sdkModule = dynamicLoad(
       join(pkgRoot, "dist", "manifest", "agent-sdk", "tool-definitions.js")
     ) as AgentSdkToolgen;
     if (typeof sdkModule.commandToOpenAITool === "function") {

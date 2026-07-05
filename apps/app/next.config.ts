@@ -471,6 +471,11 @@ const baseConfig: NextConfig = withToolbar(
       // Sentry's instrumentation deps and are safe to externalize.
       "import-in-the-middle",
       "require-in-the-middle",
+      // Chat's native-tool-schema loads the agent-sdk toolgen from this
+      // package's dist via createRequire (the barrel's extensionless ESM
+      // imports fail Node's resolver); keep the whole package external so
+      // Turbopack doesn't statically fold + fail that require.
+      "@angriff36/manifest",
     ],
     // Include manifest file in Vercel deployments for command-board chat
     outputFileTracingIncludes: {
