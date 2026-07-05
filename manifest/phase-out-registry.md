@@ -139,6 +139,23 @@ Canonical handler: `apps/api/lib/manifest/execute-command.ts` → `runManifestCo
 - Zero remaining imports of deleted file
 - Status: **DONE**
 
+### AI-surface §9 direct writes — EventSummary — **RESOLVED 2026-07-04 (same day)**
+
+Documented by WS5, then closed by the orchestrator: `EventSummary.create` now accepts
+`optional generationDurationMs: int` and a governed `EventSummary.softDelete(reason)` command exists —
+`event-summary.ts` dispatches both; the raw `$executeRaw UPDATE generation_duration_ms` and the raw
+soft-delete UPDATE are GONE. (Also gave `generatedAt` a `= now()` source default + column default —
+persist-before-mutates hazard class.) Historical record below.
+
+| Path (function) | Direct write | Why no governed route | Retirement condition |
+|---|---|---|---|
+| `event-summary.ts` (`generateEventSummary`, lines ~369-373) | `$executeRaw UPDATE … SET generation_duration_ms` after `EventSummary.create` | `generationDurationMs` is not a parameter of `EventSummary.create`/`update` in the IR | Add `generationDurationMs` to `EventSummary.create` params in `.manifest` source, regenerate, then replace the raw UPDATE with the governed create body. |
+| `event-summary.ts` (`deleteEventSummary`, lines ~394-402) | `$queryRaw UPDATE … SET deleted_at = NOW()` (soft-delete) | No `softDelete` (or `delete`) command exists on `EventSummary` in the IR | Author an `EventSummary.softDelete` command in `.manifest` source, regenerate, then dispatch it instead of the raw UPDATE. |
+
+Not in `manifest/governance/bypasses.json` (that registry currently tracks a RecipeIngredient cost-timestamp batch);
+tracked here as the WS5-designated ledger. Both writes are tenant-scoped and already carry inline "IR gap"/"no
+softDelete command" comments at the call sites.
+
 ## F. Explicitly NOT for phase-out (keep)
 - The singular command dispatcher `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` (canonical write path, constitution §6).
 - `manifest/runtime/src/manifest-runtime-factory.ts` (rewire to new provider; do not delete).

@@ -2359,7 +2359,7 @@ model EventSummary {
   clientFeedback Json? @map("clientFeedback") @default("[]")
   insights Json? @default("[]")
   overallSummary String? @map("overall_summary") @default("")
-  generatedAt DateTime @map("generated_at") @db.Timestamptz(6)
+  generatedAt DateTime @map("generated_at") @db.Timestamptz(6) @default(now())
   generationDurationMs Int? @map("generation_duration_ms") @default(0)
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt

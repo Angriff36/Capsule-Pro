@@ -1,6 +1,8 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
+import { getChatCommandAccess } from "./command-policy";
+import { getNativeCommandSchema } from "./native-tool-schema";
 
 const ROUTE_SURFACE_MANIFEST_RELATIVE_PATH = join(
   "manifest",
@@ -497,7 +499,40 @@ function loadCatalogInternal(manifestPathInput?: string): CommandCatalog {
   const toolNameCollisions = new Map<string, number>();
   const toolDefinitions: CommandToolDefinition[] = [];
 
+  // Commands surfaced to the assistant. DENY-tier commands (shared three-tier
+  // policy) are dropped here so they are never advertised as tools nor resolved
+  // for execution — the tool list is thus policy-filtered at the source.
+  const exposedCommands: CommandRoute[] = [];
+
   for (const command of commands) {
+    if (
+      getChatCommandAccess(command.source.entity, command.source.command) ===
+      "DENY"
+    ) {
+      continue;
+    }
+
+    // Enrich the command from the compiled IR via the native agent-sdk: the tool
+    // parameter schema becomes IR-typed (Money→number, DateTime→date-time,
+    // typed arrays, …) and the coarse param types the planner/text-registry use
+    // are sourced from the IR instead of the flattened route surface. Falls back
+    // to the route-surface schema when the IR/agent-sdk is unavailable.
+    const nativeSchema = getNativeCommandSchema(
+      command.source.entity,
+      command.source.command
+    );
+    if (nativeSchema) {
+      const irTypeByName = new Map(
+        nativeSchema.params.map((param) => [param.name, param.type])
+      );
+      command.params = command.params.map((param) => ({
+        ...param,
+        type: irTypeByName.get(param.name) ?? param.type,
+      }));
+    }
+
+    exposedCommands.push(command);
+
     const pair = stableEntityCommandKey(
       command.source.entity,
       command.source.command
@@ -525,13 +560,17 @@ function loadCatalogInternal(manifestPathInput?: string): CommandCatalog {
     toolDefinitions.push({
       type: "function",
       name: toolName,
-      description: buildToolDescription(command),
-      parameters: buildToolParameters(command),
+      description: nativeSchema
+        ? nativeSchema.description
+        : buildToolDescription(command),
+      parameters: nativeSchema
+        ? nativeSchema.parameters
+        : buildToolParameters(command),
     });
   }
 
   const catalog: CommandCatalog = {
-    commands,
+    commands: exposedCommands,
     byEntityCommand,
     canonicalEntityCommandByNormalizedKey,
     canonicalEntityCommandByLooseNormalizedKey,

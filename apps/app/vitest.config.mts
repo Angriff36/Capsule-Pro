@@ -112,6 +112,13 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./"),
+      // Must precede the "@repo" catch-all: manifest-runtime lives at
+      // manifest/runtime (NOT packages/), so the catch-all resolves its
+      // subpath imports (e.g. routes-manifest) to a nonexistent directory.
+      "@repo/manifest-runtime": path.resolve(
+        import.meta.dirname,
+        "../../manifest/runtime/src"
+      ),
       "@repo": path.resolve(import.meta.dirname, "../../packages"),
       "server-only": path.resolve(
         import.meta.dirname,

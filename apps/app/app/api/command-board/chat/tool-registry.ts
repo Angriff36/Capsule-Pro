@@ -6,6 +6,7 @@ import { captureException } from "@sentry/nextjs";
 import { getApiBaseUrl, getDeploymentId } from "@/app/lib/api";
 import { createPendingManifestPlan } from "@/app/lib/command-board/manifest-plans";
 import { suggestManifestPlanInputSchema } from "../types/manifest-plan";
+import { getChatCommandAccess } from "./command-policy";
 import {
   loadCommandCatalog,
   resolveCanonicalEntityCommandPair,
@@ -14,6 +15,14 @@ import {
 export interface ManifestAgentContext {
   authCookie?: string | null;
   boardId?: string;
+  /**
+   * `Entity.command` pairs the USER has explicitly confirmed for this request
+   * (supplied by the UI, never by the model). A CONFIRM-tier command dispatches
+   * only if its pair is listed here; otherwise the tool returns a
+   * proposed-action payload for the UI to confirm. See the shared command policy
+   * ([[command-policy]]).
+   */
+  confirmedActions?: string[];
   correlationId: string;
   /**
    * Mints a fresh Clerk session token. Clerk session JWTs expire ~60s after
@@ -730,6 +739,28 @@ async function executeManifestCommandTool(
   const entityName = typeof args.entityName === "string" ? args.entityName : "";
   const commandName =
     typeof args.commandName === "string" ? args.commandName : "";
+
+  // DENY-tier commands are filtered out of the catalog entirely, so resolution
+  // would otherwise report them as "not supported". Return a clear governance
+  // refusal instead — and never dispatch.
+  if (
+    entityName.length > 0 &&
+    commandName.length > 0 &&
+    getChatCommandAccess(entityName, commandName) === "DENY"
+  ) {
+    return {
+      ok: false,
+      summary: `${entityName}.${commandName} is not permitted for the assistant.`,
+      error: "POLICY_DENIED",
+      data: {
+        status: "denied",
+        entity: entityName,
+        command: commandName,
+        policy: "DENY",
+      },
+    };
+  }
+
   const commandCatalog = loadCommandCatalog();
   const canonicalPair = resolveCanonicalEntityCommandPair(
     commandCatalog,
@@ -804,6 +835,217 @@ async function executeManifestCommandTool(
   );
 }
 
+/** Split an "Entity.command" key on its first dot (entities/commands have none). */
+function splitEntityCommandKey(key: string): {
+  entity: string;
+  command: string;
+} {
+  const dot = key.indexOf(".");
+  if (dot < 0) {
+    return { entity: key, command: "" };
+  }
+  return { entity: key.slice(0, dot), command: key.slice(dot + 1) };
+}
+
+/**
+ * Evaluate the three-tier command policy for a write about to be dispatched.
+ * Returns `blocked` = a tool result (and NO dispatch) for DENY (refused) and
+ * unconfirmed CONFIRM (proposed action); `blocked: null` means proceed.
+ */
+function evaluateCommandPolicyGate(
+  key: string,
+  bodyArgs: Record<string, unknown>,
+  context: ManifestAgentContext
+): { entity: string; command: string; blocked: AgentToolResult | null } {
+  const { entity, command } = splitEntityCommandKey(key);
+  const access = getChatCommandAccess(entity, command);
+  if (access === "DENY") {
+    return {
+      entity,
+      command,
+      blocked: {
+        ok: false,
+        summary: `${key} is not permitted for the assistant.`,
+        error: "POLICY_DENIED",
+        data: { status: "denied", entity, command, policy: "DENY" },
+      },
+    };
+  }
+  if (access === "CONFIRM" && !(context.confirmedActions ?? []).includes(key)) {
+    return {
+      entity,
+      command,
+      blocked: {
+        ok: true,
+        summary: `${key} needs explicit confirmation before it runs.`,
+        data: {
+          status: "confirmation_required",
+          entity,
+          command,
+          proposedArgs: bodyArgs,
+          message:
+            "Destructive action — ask the user to confirm. On approval, re-run with this action confirmed.",
+        },
+      },
+    };
+  }
+  return { entity, command, blocked: null };
+}
+
+/** Fields worth citing back to the model after a write (kept small + safe). */
+const VERIFIED_FIELD_ALLOWLIST = [
+  "id",
+  "title",
+  "name",
+  "displayName",
+  "status",
+  "eventNumber",
+  "orderNumber",
+  "invoiceNumber",
+  "number",
+  "quantity",
+  "amount",
+  "total",
+  "deletedAt",
+  "updatedAt",
+  "createdAt",
+] as const;
+
+/** Pull the mutated entity's id from the dispatcher response (shape-tolerant). */
+function extractResultId(parsed: unknown): string | null {
+  if (!parsed || typeof parsed !== "object") {
+    return null;
+  }
+  const payload = parsed as Record<string, unknown>;
+  const result = (payload.result ?? payload.data) as
+    | Record<string, unknown>
+    | undefined;
+  const candidate =
+    (result && typeof result === "object" ? result.id : undefined) ??
+    payload.id;
+  return typeof candidate === "string" && candidate.length > 0
+    ? candidate
+    : null;
+}
+
+/** Extract emitted domain-event names from the dispatcher response. */
+function extractEmittedEvents(parsed: unknown): string[] {
+  if (!parsed || typeof parsed !== "object") {
+    return [];
+  }
+  const events = (parsed as Record<string, unknown>).events;
+  if (!Array.isArray(events)) {
+    return [];
+  }
+  const names: string[] = [];
+  for (const event of events) {
+    if (typeof event === "string") {
+      names.push(event);
+      continue;
+    }
+    if (event && typeof event === "object") {
+      const record = event as Record<string, unknown>;
+      const name = record.type ?? record.name ?? record.eventType;
+      if (typeof name === "string") {
+        names.push(name);
+      }
+    }
+  }
+  return names;
+}
+
+/** A readable subset of the verified record's fields. */
+function summarizeVerifiedFields(
+  record: Record<string, unknown>
+): Record<string, unknown> {
+  const summary: Record<string, unknown> = {};
+  for (const field of VERIFIED_FIELD_ALLOWLIST) {
+    if (record[field] !== undefined) {
+      summary[field] = record[field];
+    }
+  }
+  return summary;
+}
+
+/**
+ * Read-back: GET /api/manifest/{entity}/{id} after a write and return the
+ * confirmed state, or null if the id is unknown or the read fails (best-effort;
+ * a failed read must never fail the write).
+ */
+async function verifyWrittenState(
+  entity: string,
+  parsedResponse: unknown,
+  context: ManifestAgentContext
+): Promise<{
+  id: string;
+  entity: string;
+  fields: Record<string, unknown>;
+  verifiedAt: string;
+} | null> {
+  const id = extractResultId(parsedResponse);
+  if (!id) {
+    return null;
+  }
+  try {
+    const endpoint = `${getApiBaseUrl()}/api/manifest/${encodeURIComponent(
+      entity
+    )}/${encodeURIComponent(id)}`;
+    const dpl = getDeploymentId();
+    const response = await fetch(endpoint, {
+      method: "GET",
+      headers: {
+        "x-correlation-id": context.correlationId,
+        ...(dpl ? { "x-deployment-id": dpl } : {}),
+        ...(await buildAuthHeaders(context)),
+      },
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      return null;
+    }
+    const body = (await response.json()) as Record<string, unknown>;
+    const record =
+      body.data && typeof body.data === "object"
+        ? (body.data as Record<string, unknown>)
+        : body;
+    return {
+      id,
+      entity,
+      fields: summarizeVerifiedFields(record),
+      verifiedAt: new Date().toISOString(),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Assemble the success result with read-back verification + emitted events. */
+async function buildVerifiedWriteResult(
+  key: string,
+  routePath: string,
+  parsedResponse: unknown,
+  entity: string,
+  context: ManifestAgentContext
+): Promise<AgentToolResult> {
+  const emittedEvents = extractEmittedEvents(parsedResponse);
+  const verifiedState = await verifyWrittenState(
+    entity,
+    parsedResponse,
+    context
+  );
+  return {
+    ok: true,
+    summary: `${key} executed successfully`,
+    data: redactSensitiveFields({
+      routePath,
+      status: verifiedState ? "verified" : "executed",
+      response: parsedResponse,
+      ...(emittedEvents.length > 0 ? { emittedEvents } : {}),
+      ...(verifiedState ? { verifiedState } : {}),
+    }),
+  };
+}
+
 async function executeManifestCommandRoute(
   routePath: string,
   key: string,
@@ -865,6 +1107,14 @@ async function executeManifestCommandRoute(
     bodyArgs.boardId = context.boardId;
   }
 
+  // ── Three-tier command policy gate (shared map with the MCP surface) ──
+  // Evaluated at the single write chokepoint so it covers the generic tool, the
+  // direct command tools, and the specialized multi-step tools alike.
+  const policy = evaluateCommandPolicyGate(key, bodyArgs, context);
+  if (policy.blocked) {
+    return policy.blocked;
+  }
+
   const endpoint = `${getApiBaseUrl()}${routePath}`;
   const dpl = getDeploymentId();
 
@@ -910,14 +1160,15 @@ async function executeManifestCommandRoute(
     };
   }
 
-  return {
-    ok: true,
-    summary: `${key} executed successfully`,
-    data: redactSensitiveFields({
-      routePath,
-      response: parsedResponse,
-    }),
-  };
+  // Prove the resulting state by re-fetching the entity + surfacing emitted
+  // events (read-back verification), so the model can cite what actually changed.
+  return await buildVerifiedWriteResult(
+    key,
+    routePath,
+    parsedResponse,
+    policy.entity,
+    context
+  );
 }
 
 async function suggestManifestPlanTool(

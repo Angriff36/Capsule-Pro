@@ -1,14 +1,22 @@
 /**
- * Command access policy for MCP.
+ * Command access policy — the single source of truth shared by the dev MCP
+ * surface (packages/mcp-server) and the product AI chat surface
+ * (apps/app/app/api/command-board/chat, via a thin re-export).
  *
  * Three-tier decision model:
- *   DENY (default)  → Command not in policy map → rejected
- *   ALLOW           → Command executes immediately
- *   CONFIRM         → Command returns confirmation prompt; re-invoke with
- *                     confirmation_token to execute
+ *   DENY            → Command is refused; never exposed as a tool, never dispatched.
+ *   ALLOW           → Command executes immediately.
+ *   CONFIRM         → Destructive/high-impact; executes only after explicit
+ *                     confirmation (MCP: re-invoke with confirm=true; chat: a
+ *                     confirmation flag supplied by the UI, not the model).
  *
- * Every command is in exactly ONE tier. There is no ambiguity.
- * Commands not in the map are implicitly DENY.
+ * The two surfaces differ ONLY in their DEFAULT for commands absent from the map,
+ * expressed via `getCommandAccess(entity, command, { defaultAccess })`:
+ *   - MCP dev surface (autonomous agent): default DENY — safe by allowlist.
+ *   - Chat product surface (per-user Clerk auth + RBAC already enforced at the
+ *     dispatcher): default ALLOW, so the CONFIRM/DENY tiers add a governance gate
+ *     without gutting the ~1,000 existing command capabilities. See
+ *     apps/app/app/api/command-board/chat/command-policy.ts.
  *
  * @packageDocumentation
  */
@@ -63,22 +71,45 @@ const COMMAND_POLICY = new Map<string, CommandAccess>([
   ["PrepList.cancel", "CONFIRM"],
   ["CateringOrder.cancel", "CONFIRM"],
 
-  // All other commands: implicitly DENY (not in map)
+  // ── DENY: Irreversible actions the assistant must NEVER run, even with
+  // confirmation — they belong to a dedicated human workflow. Explicit entries
+  // matter for the chat surface (whose default is ALLOW); on the MCP surface
+  // these are DENY-by-default anyway, so listing them changes nothing there.
+  // This tier is intentionally minimal — extend via PR review (product input).
+  ["VendorContract.terminate", "DENY"],
+
+  // All other commands: DENY on the MCP surface, ALLOW on the chat surface
+  // (see getCommandAccess `defaultAccess`).
 ]);
 
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
+export interface CommandAccessOptions {
+  /**
+   * Tier assigned to commands absent from the policy map.
+   * MCP dev surface uses "DENY" (the default); the chat product surface passes
+   * "ALLOW" so the map only needs to carry the CONFIRM/DENY exceptions.
+   */
+  defaultAccess?: CommandAccess;
+}
+
 /**
  * Get the access policy for a command.
- * Returns "DENY" for any command not explicitly in the policy map.
+ * Commands not explicitly in the map fall back to `options.defaultAccess`
+ * (default "DENY").
  */
 export function getCommandAccess(
   entity: string,
-  command: string
+  command: string,
+  options: CommandAccessOptions = {}
 ): CommandAccess {
-  return COMMAND_POLICY.get(`${entity}.${command}`) ?? "DENY";
+  return (
+    COMMAND_POLICY.get(`${entity}.${command}`) ??
+    options.defaultAccess ??
+    "DENY"
+  );
 }
 
 /**
@@ -97,6 +128,10 @@ export function getAllowedCommands(): Array<{
   }> = [];
 
   for (const [key, access] of COMMAND_POLICY) {
+    // "Allowed" means invokable — DENY entries are exclusions, not allowances.
+    if (access === "DENY") {
+      continue;
+    }
     const [entity, command] = key.split(".");
     if (entity && command) {
       result.push({ entity, command, access });

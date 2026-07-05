@@ -52,6 +52,13 @@ export const maxDuration = 60;
 
 interface ChatRequestBody {
   boardId?: string;
+  /**
+   * `Entity.command` pairs the user has explicitly confirmed in the UI for this
+   * request. A CONFIRM-tier command dispatches only if listed here; otherwise
+   * the tool returns a proposed action for the UI to confirm. See the shared
+   * command policy.
+   */
+  confirmations?: string[];
   messages: UIMessage[];
 }
 
@@ -116,6 +123,9 @@ export async function POST(request: Request): Promise<Response> {
         tenantId,
         userId,
         boardId: body.boardId,
+        confirmedActions: Array.isArray(body.confirmations)
+          ? body.confirmations
+          : [],
         authCookie: request.headers.get("cookie"),
         getToken: () => getToken(),
         correlationId,

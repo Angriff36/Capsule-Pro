@@ -835,9 +835,14 @@ export interface EventSummaryCreateInput {
   clientFeedback?: unknown;
   insights?: unknown;
   overallSummary?: string;
+  generationDurationMs?: number;
 }
 export interface EventSummaryRefreshInput {
   id?: string;
+}
+export interface EventSummarySoftDeleteInput {
+  id?: string;
+  reason?: string;
 }
 export interface EventSummaryUpdateInput {
   id?: string;
@@ -2085,6 +2090,10 @@ export async function eventSummaryCreate(input: EventSummaryCreateInput = {}): P
 }
 export async function eventSummaryRefresh(input: EventSummaryRefreshInput = {}): Promise<EventSummary | undefined> {
   const r = await executeCommand<EventSummary>("EventSummary", "refresh", input as Record<string, unknown>);
+  return r.result;
+}
+export async function eventSummarySoftDelete(input: EventSummarySoftDeleteInput = {}): Promise<EventSummary | undefined> {
+  const r = await executeCommand<EventSummary>("EventSummary", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventSummaryUpdate(input: EventSummaryUpdateInput = {}): Promise<EventSummary | undefined> {

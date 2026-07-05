@@ -2647,6 +2647,19 @@ export function useEventSummaryRefreshMutation(
   });
 }
 
+export function useEventSummarySoftDeleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<EventSummary>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<EventSummary>("EventSummary", "softDelete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.eventSummary.all });
+    },
+    ...options,
+  });
+}
+
 export function useEventTimelineCreateMutation(
   options?: Omit<UseMutationOptions<CommandEnvelope<EventTimeline>, Error, Record<string, unknown>>, "mutationFn">,
 ) {

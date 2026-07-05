@@ -355,6 +355,9 @@ Please provide a comprehensive executive summary following the system prompt gui
       clientFeedback: JSON.stringify(summaryData.clientFeedback),
       insights: JSON.stringify(summaryData.insights),
       overallSummary: summaryData.overallSummary,
+      // Governed as of 2026-07-04: create accepts generationDurationMs, so
+      // the former raw-SQL backfill (a registered §9 bypass) is gone.
+      generationDurationMs,
     },
     user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
@@ -363,14 +366,7 @@ Please provide a comprehensive executive summary following the system prompt gui
     throw new Error(`Failed to create EventSummary: ${createResult.message}`);
   }
 
-  // generationDurationMs is not in the EventSummary.create command's mutations
-  // (IR gap), so we backfill it via direct write.
   const summaryId = (createResult.result as { id: string }).id;
-  await database.$executeRaw`
-    UPDATE tenant_events.event_summaries
-    SET generation_duration_ms = ${generationDurationMs}
-    WHERE id = ${summaryId}
-  `;
 
   return {
     id: summaryId,
@@ -387,17 +383,17 @@ Please provide a comprehensive executive summary following the system prompt gui
 }
 
 export async function deleteEventSummary(summaryId: string): Promise<void> {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
 
-  // No softDelete command in EventSummary IR — kept as direct Prisma write
-  // until a governed softDelete command is added.
-  await database.$queryRaw(
-    Prisma.sql`
-      UPDATE tenant_events.event_summaries
-      SET deleted_at = NOW(), updated_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${summaryId}
-        AND deleted_at IS NULL
-    `
-  );
+  // Governed as of 2026-07-04: EventSummary.softDelete exists in the IR, so
+  // the former raw soft-delete (a registered §9 bypass) is gone.
+  const result = await runManifestCommand({
+    entity: "EventSummary",
+    command: "softDelete",
+    body: { id: summaryId, reason: "deleted from event summary view" },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+  if (!result.ok) {
+    throw new Error(`Failed to delete EventSummary: ${result.message}`);
+  }
 }

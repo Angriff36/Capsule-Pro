@@ -1422,6 +1422,9 @@
   "EventSummary.create": [
     "Event ID is required"
   ],
+  "EventSummary.softDelete": [
+    "Summary is already deleted"
+  ],
   "EventTimeline.create": [
     "Event ID is required",
     "Description is required",
