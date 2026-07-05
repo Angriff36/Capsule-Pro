@@ -4142,7 +4142,8 @@ projections:
   # Runtime authority: manifest-prisma-store-metadata.generated.ts via prisma-store-registry.generated.ts.
   # Options bag: manifest/scripts/prisma-store-options.generated.json (built from THIS config).
   prisma-store:
-    output: manifest/generated/runtime/
+    # Single home for generated store metadata (old twin manifest/generated/runtime deleted 2026-07-04)
+    output: manifest/runtime/src/generated/
     options:
       provider: postgresql
       naming: snake_case

@@ -2,8 +2,7 @@
 /**
  * Remove stale artifacts under manifest/generated/ that have no consumers.
  *
- * Keeps: generated/runtime/ (committed Prisma store metadata)
- *        generated/schemas/, drizzle/, kysely/, analytics/, llm-context/, materialized-views/
+ * Keeps: generated/schemas/, drizzle/, kysely/, analytics/, llm-context/, materialized-views/
  * Deletes: orphan Prisma client copy, stale hooks, legacy Zod monolith
  */
 import { existsSync, rmSync } from "node:fs";
