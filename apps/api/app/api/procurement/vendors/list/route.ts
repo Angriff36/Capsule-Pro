@@ -72,12 +72,12 @@ export async function GET(request: NextRequest) {
     // Shape to match the original raw SQL response format (snake_case)
     const shaped = vendors.map((v) => ({
       id: v.id,
-      supplierNumber: v.supplierNumber,
+      supplier_number: v.supplierNumber,
       name: v.name,
-      contactPerson: v.contactPerson,
+      contact_person: v.contactPerson,
       email: v.email,
       phone: v.phone,
-      paymentTerms: v.paymentTerms,
+      payment_terms: v.paymentTerms,
       address_line1: v.addressLine1,
       address_line2: v.addressLine2,
       city: v.city,

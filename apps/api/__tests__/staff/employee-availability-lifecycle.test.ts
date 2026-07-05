@@ -19,36 +19,45 @@
  *      `startTime`/`endTime` are `@db.Time(6)` columns and the GenericPrismaStore
  *      coerces the command's string params via `new Date(value)`. A bare "HH:MM"
  *      parses to an INVALID Date (→ NULL → NOT-NULL violation), so the call site
- *      must pass an ISO datetime string. This guards the exact bug class.
+ *      must pass a full ISO datetime string. This guards the exact bug class.
  *
- * Pattern mirrors catering-order-lifecycle.test.ts: compile the single source
- * file to IR and drive a real ManifestRuntimeEngine over an in-memory store.
+ * WHY this uses the merged IR instead of compileManifestSourceForTest:
+ * `compileManifestSourceForTest` cannot resolve `use "../_base.manifest"` mixins
+ * and the entity would be incomplete. The merged `kitchen.ir.json` is the same
+ * artifact the production runtime ships. This mirrors the approach used by
+ * facility-remove-lifecycle.test.ts and vendor-contract-lifecycle.test.ts.
+ *
+ * WHY datetime fields are epoch-ms numbers (not ISO strings):
+ * The Manifest runtime validates `datetime` entity properties with
+ * `typeof value === 'number' && Number.isFinite(value) && Math.abs(v) <= 8.64e15`
+ * (runtime-engine.js, E_TYPE_DATETIME check). ISO strings fail this check.
+ * The production HTTP route coerces ISO strings to epoch ms via
+ * `coerceBodyDatetimes` (run-manifest-command-core.ts, R1). Tests that call
+ * `runtime.runCommand` directly bypass that coercion layer and must pass
+ * epoch ms numbers themselves.
  */
 
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   createCustomBuiltins,
   ManifestRuntimeEngine,
 } from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
-import {
-  compileManifestSourceForTest,
-  inMemoryStoreProvider,
-} from "../test-helpers";
+import { inMemoryStoreProvider } from "../test-helpers";
 
-const MANIFEST_FILE = "core/employee-availability-rules.manifest";
+// Load the MERGED compiled IR (mixins resolved) — same artifact the production
+// runtime ships; single-source compileToIR cannot resolve `use "../_base.manifest"`.
+const IR_PATH = join(process.cwd(), "../../manifest/ir/kitchen.ir.json");
+// biome-ignore lint/suspicious/noExplicitAny: IR is structural JSON; engine accepts it.
+const mergedIr: any = JSON.parse(readFileSync(IR_PATH, "utf-8"));
+
 const TENANT = "test-tenant-456";
 
-// The real source opens with `use "../_base.manifest"` and mixes TenantScoped /
-// SoftDeletable; compiler 2.18.6 can't resolve `use` in a bare single-source
-// compile, so the shared helper inlines `_base.manifest` first.
-function compile() {
-  return compileManifestSourceForTest(MANIFEST_FILE);
-}
-
+// biome-ignore lint/suspicious/useAwait: async keeps `await getRuntime()` call sites valid.
 async function getRuntime(role = "manager") {
-  const ir = await compile();
   return new ManifestRuntimeEngine(
-    ir,
+    mergedIr,
     { tenantId: TENANT, user: { id: "test-user-123", tenantId: TENANT, role } },
     {
       storeProvider: inMemoryStoreProvider(),
@@ -57,21 +66,26 @@ async function getRuntime(role = "manager") {
   );
 }
 
-// The call site passes ISO datetime strings built from validated Date objects
-// (a 1970-epoch date for the time-only columns), exactly like the migrated action.
-const START_ISO = new Date(1970, 0, 1, 9, 0).toISOString();
-const END_ISO = new Date(1970, 0, 1, 17, 0).toISOString();
-const EFFECTIVE_FROM_ISO = new Date(2026, 5, 10).toISOString();
+// Epoch millisecond numbers — the only value the runtime's E_TYPE_DATETIME check
+// accepts for `datetime` entity properties. The production route coerces ISO
+// strings to these via coerceBodyDatetimes; direct runtime.runCommand calls must
+// pass them explicitly.
+const START_MS = new Date(1970, 0, 1, 9, 0).getTime(); // local 09:00 on 1970-01-01
+const END_MS = new Date(1970, 0, 1, 17, 0).getTime(); // local 17:00 on 1970-01-01
+const EFFECTIVE_FROM_MS = new Date(2026, 5, 10).getTime(); // 2026-06-10
+
+// Full ISO datetime string used by the @db.Time regression guard only (see below).
+const TIME_AS_ISO = new Date(1970, 0, 1, 9, 0).toISOString();
 
 function availabilityBody() {
   return {
     employeeId: "emp-1",
     dayOfWeek: 3,
-    startTime: START_ISO,
-    endTime: END_ISO,
+    startTime: START_MS,
+    endTime: END_MS,
     isAvailable: true,
-    effectiveFrom: EFFECTIVE_FROM_ISO,
-    effectiveUntil: "",
+    effectiveFrom: EFFECTIVE_FROM_MS,
+    effectiveUntil: null, // nullable datetime — null is valid; coercion skips it
   };
 }
 
@@ -105,7 +119,7 @@ describe("Manifest Runtime - EmployeeAvailability governed lifecycle", () => {
     const inst = await runtime.getInstance("EmployeeAvailability", "ea-1");
     expect(inst?.employeeId).toBe("emp-1");
     expect(inst?.dayOfWeek).toBe(3);
-    expect(inst?.startTime).toBe(START_ISO);
+    expect(inst?.startTime).toBe(START_MS);
     expect(inst?.isSuspended).toBe(false);
   });
 
@@ -165,7 +179,10 @@ describe("EmployeeAvailability @db.Time persistence-drift regression guard", () 
     // NOT-NULL @db.Time(6) column.
     expect(Number.isNaN(new Date("09:00").getTime())).toBe(true);
 
-    const reparsed = new Date(START_ISO);
+    // A full ISO datetime string (date + time component) yields a valid Date,
+    // which is what the @db.Time column expects. The call site must construct
+    // this string before handing values to the Prisma store.
+    const reparsed = new Date(TIME_AS_ISO);
     expect(Number.isNaN(reparsed.getTime())).toBe(false);
     // The local time-of-day survives the ISO round-trip the call site performs.
     expect(reparsed.getHours()).toBe(9);

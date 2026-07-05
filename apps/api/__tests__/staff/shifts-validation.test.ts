@@ -41,9 +41,12 @@ describe("shift validation", () => {
     const shiftEnd = new Date("2026-08-03T20:00:00.000Z");
     db.scheduleShift.findMany.mockResolvedValueOnce([
       {
+        // checkOverlappingShifts selects {id, shiftStart, shiftEnd} (camelCase
+        // Prisma field names). The map then assigns shift_start/shift_end from
+        // s.shiftStart/s.shiftEnd, so the mock must use camelCase.
         id: "shift-existing",
-        shift_start: new Date("2026-08-03T18:00:00.000Z"),
-        shift_end: new Date("2026-08-03T22:00:00.000Z"),
+        shiftStart: new Date("2026-08-03T18:00:00.000Z"),
+        shiftEnd: new Date("2026-08-03T22:00:00.000Z"),
       },
     ]);
 

@@ -312,8 +312,9 @@ describe("Conflict Detection API Route Stabilization", () => {
           id: "alert-1",
           itemId: "item-1",
           alertType: "critical",
-          threshold_value: BigInt(10),
-          triggered_at: new Date("2026-02-20"),
+          // route reads thresholdValue and triggeredAt (camelCase) from the result
+          thresholdValue: BigInt(10),
+          triggeredAt: new Date("2026-02-20"),
         },
       ]);
       mockInventoryItemFindMany.mockResolvedValueOnce([
@@ -846,8 +847,9 @@ describe("Conflict Detection API Route Stabilization", () => {
           id: "alert-1",
           itemId: "item-1",
           alertType: "critical",
-          threshold_value: BigInt(10),
-          triggered_at: new Date("2026-02-20"),
+          // route reads thresholdValue and triggeredAt (camelCase) from the result
+          thresholdValue: BigInt(10),
+          triggeredAt: new Date("2026-02-20"),
         },
       ]);
       mockInventoryItemFindMany.mockResolvedValueOnce([

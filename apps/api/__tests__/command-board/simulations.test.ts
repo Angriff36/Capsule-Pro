@@ -188,9 +188,9 @@ describe("Command Board Simulations API", () => {
           updatedAt: new Date(),
           deletedAt: null,
           _count: {
-            projections: 5,
-            groups: 2,
-            annotations: 3,
+            boardProjections: 5,
+            commandBoardGroups: 2,
+            boardAnnotations: 3,
           },
         } as any,
       ]);
@@ -261,9 +261,9 @@ describe("Command Board Simulations API", () => {
         name: "Source Board",
         status: "active",
         tags: [],
-        projections: [],
-        groups: [],
-        annotations: [],
+        boardProjections: [],
+        commandBoardGroups: [],
+        boardAnnotations: [],
       } as any);
 
       vi.mocked(runManifestCommandCore).mockResolvedValueOnce({
@@ -329,9 +329,9 @@ describe("Command Board Simulations API", () => {
         status: "draft",
         tags: ["simulation", `source:${TEST_BOARD_ID}`],
         createdAt: new Date(),
-        projections: [],
-        groups: [],
-        annotations: [],
+        boardProjections: [],
+        commandBoardGroups: [],
+        boardAnnotations: [],
       } as any);
 
       const response = await GetSimulation(
@@ -437,7 +437,7 @@ describe("Command Board Simulations API", () => {
         id: TEST_SIMULATION_ID,
         tenantId: TEST_TENANT_ID,
         tags: ["simulation", `source:${TEST_BOARD_ID}`],
-        projections: [
+        boardProjections: [
           {
             id: "p1",
             tenantId: TEST_TENANT_ID,
@@ -455,14 +455,14 @@ describe("Command Board Simulations API", () => {
             pinned: false,
           } as any,
         ],
-        groups: [],
-        annotations: [],
+        commandBoardGroups: [],
+        boardAnnotations: [],
       } as any);
 
       mockCommandBoard.findUnique.mockResolvedValueOnce({
         id: TEST_BOARD_ID,
         tenantId: TEST_TENANT_ID,
-        projections: [
+        boardProjections: [
           {
             id: "p0",
             tenantId: TEST_TENANT_ID,
@@ -480,8 +480,8 @@ describe("Command Board Simulations API", () => {
             pinned: false,
           } as any,
         ],
-        groups: [],
-        annotations: [],
+        commandBoardGroups: [],
+        boardAnnotations: [],
       } as any);
 
       const response = await GetDelta(
@@ -548,17 +548,17 @@ describe("Command Board Simulations API", () => {
         id: TEST_SIMULATION_ID,
         tenantId: TEST_TENANT_ID,
         tags: ["simulation", `source:${TEST_BOARD_ID}`],
-        projections: [],
-        groups: [],
-        annotations: [],
+        boardProjections: [],
+        commandBoardGroups: [],
+        boardAnnotations: [],
       } as any);
 
       mockCommandBoard.findUnique.mockResolvedValueOnce({
         id: TEST_BOARD_ID,
         tenantId: TEST_TENANT_ID,
-        projections: [],
-        groups: [],
-        annotations: [],
+        boardProjections: [],
+        commandBoardGroups: [],
+        boardAnnotations: [],
       } as any);
 
       const response = await ApplySimulation(

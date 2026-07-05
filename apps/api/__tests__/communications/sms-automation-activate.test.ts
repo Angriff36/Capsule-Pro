@@ -15,14 +15,14 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { POST as activateRoute } from "@/app/api/smsautomationrule/activate/route";
 import { POST as deactivateRoute } from "@/app/api/smsautomationrule/deactivate/route";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 vi.mock("@repo/database", () => ({
   database: {
-    sms_automation_rules: {
+    smsAutomationRule: {
       findFirst: vi.fn(),
     },
   },
@@ -106,7 +106,9 @@ describe("SMS automation rule activate/deactivate routes", () => {
 
   describe("POST /api/smsautomationrule/activate", () => {
     it("invokes the dedicated `activate` command (not generic `update`)", async () => {
-      const response = await activateRoute(makeRequest("/api/smsautomationrule/activate"));
+      const response = await activateRoute(
+        makeRequest("/api/smsautomationrule/activate")
+      );
 
       expect(response.status).toBe(200);
       expect(mockRunCommand).toHaveBeenCalledWith(
@@ -124,7 +126,9 @@ describe("SMS automation rule activate/deactivate routes", () => {
 
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ userId: null, orgId: null } as never);
-      const response = await activateRoute(makeRequest("/api/smsautomationrule/activate"));
+      const response = await activateRoute(
+        makeRequest("/api/smsautomationrule/activate")
+      );
       expect(response.status).toBe(401);
       expect(mockRunCommand).not.toHaveBeenCalled();
     });
@@ -143,7 +147,9 @@ describe("SMS automation rule activate/deactivate routes", () => {
       vi.mocked(database.smsAutomationRule.findFirst).mockResolvedValue(
         null as never
       );
-      const response = await activateRoute(makeRequest("/api/smsautomationrule/activate"));
+      const response = await activateRoute(
+        makeRequest("/api/smsautomationrule/activate")
+      );
       expect(response.status).toBe(404);
       expect(mockRunCommand).not.toHaveBeenCalled();
     });
@@ -153,7 +159,9 @@ describe("SMS automation rule activate/deactivate routes", () => {
         success: false,
         guardFailure: { index: 1, formatted: "Rule is already active" },
       });
-      const response = await activateRoute(makeRequest("/api/smsautomationrule/activate"));
+      const response = await activateRoute(
+        makeRequest("/api/smsautomationrule/activate")
+      );
       expect(response.status).toBe(422);
     });
   });

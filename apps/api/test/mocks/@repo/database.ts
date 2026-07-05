@@ -121,8 +121,32 @@ function createMockModel() {
   };
 }
 
+// Auto-created delegate for models NOT explicitly listed below. Unlike the
+// explicit delegates (which default to `undefined` so each test sets its own
+// return), these get graceful defaults: a route that touches a model the test
+// didn't stub returns empty results instead of crashing with "not a function".
+// vi.fn(impl) defaults survive `restoreMocks: true` (verified), and tests can
+// still override via vi.mocked(...).mockResolvedValue(...).
+function createAutoMockModel() {
+  return {
+    findMany: vi.fn(async () => []),
+    findUnique: vi.fn(async () => null),
+    findFirst: vi.fn(async () => null),
+    create: vi.fn(async () => ({})),
+    createMany: vi.fn(async () => ({ count: 0 })),
+    update: vi.fn(async () => ({})),
+    updateMany: vi.fn(async () => ({ count: 0 })),
+    upsert: vi.fn(async () => ({})),
+    delete: vi.fn(async () => ({})),
+    deleteMany: vi.fn(async () => ({ count: 0 })),
+    count: vi.fn(async () => 0),
+    aggregate: vi.fn(async () => ({})),
+    groupBy: vi.fn(async () => []),
+  };
+}
+
 // Mock database instance
-export const database: Record<string, unknown> = {
+const databaseTarget: Record<string, unknown> = {
   $queryRaw: vi.fn(),
   $executeRaw: vi.fn(),
   $transaction: vi.fn(),
@@ -271,7 +295,27 @@ export const database: Record<string, unknown> = {
   vendorContract: createMockModel(),
 };
 
-database.$transaction = vi.fn((fn: (tx: unknown) => unknown) => fn(database));
+// Lazily auto-create a delegate for any model accessed but not explicitly
+// listed above. This keeps the mock complete as routes reference new models
+// without every test having to enumerate them. The delegate is cached on the
+// target so repeated access returns the SAME object — vi.mocked() spies set by
+// a test persist. Assignment (`(database as any).x = {...}`) writes through to
+// the target unchanged. `restoreMocks`/`clearMocks` between tests still reset
+// call history on the cached delegates.
+export const database: Record<string, unknown> = new Proxy(databaseTarget, {
+  get(target, prop, receiver) {
+    if (prop in target || typeof prop === "symbol") {
+      return Reflect.get(target, prop, receiver);
+    }
+    const delegate = createAutoMockModel();
+    target[prop as string] = delegate;
+    return delegate;
+  },
+});
+
+databaseTarget.$transaction = vi.fn((fn: (tx: unknown) => unknown) =>
+  fn(database)
+);
 
 // Mock analyticsDatabase — in the real package the analytics (read-replica)
 // client falls back to the primary connection, so it shares the same models.

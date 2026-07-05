@@ -226,7 +226,7 @@ describe("AI Suggestions API", () => {
         expect.objectContaining({
           where: expect.objectContaining({
             tenantId: mockTenantId,
-            status: { not: "completed" },
+            status: { not: "done" }, // route uses "done" as the completed status sentinel
           }),
         })
       );
@@ -238,8 +238,9 @@ describe("AI Suggestions API", () => {
           id: "alert-1",
           alertType: "low_stock",
           itemId: "item-1",
-          threshold_value: BigInt(10),
-          triggered_at: new Date(),
+          // route reads thresholdValue and triggeredAt (camelCase) from the result
+          thresholdValue: BigInt(10),
+          triggeredAt: new Date(),
           notes: "Low stock alert",
           tenantId: mockTenantId,
           resolved_at: null,
@@ -259,7 +260,7 @@ describe("AI Suggestions API", () => {
         expect.objectContaining({
           where: expect.objectContaining({
             tenantId: mockTenantId,
-            resolved_at: null,
+            resolvedAt: null, // route queries with resolvedAt (camelCase), not resolved_at
           }),
         })
       );
@@ -373,8 +374,9 @@ describe("AI Suggestions API", () => {
           id: "alert-1",
           alertType: "critical",
           itemId: "item-1",
-          threshold_value: BigInt(5),
-          triggered_at: new Date(),
+          // route reads thresholdValue and triggeredAt (camelCase) from the result
+          thresholdValue: BigInt(5),
+          triggeredAt: new Date(),
           notes: "Critical shortage",
           tenantId: mockTenantId,
           resolved_at: null,

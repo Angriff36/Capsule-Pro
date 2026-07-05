@@ -25,8 +25,13 @@ const mockDocumentVersion = {
   create: vi.fn(),
 };
 
+const mockUser = {
+  findMany: vi.fn().mockResolvedValue([]),
+};
+
 const mockDb = {
   documentVersion: mockDocumentVersion,
+  user: mockUser,
 };
 
 vi.mock("@repo/auth/server", () => ({
@@ -505,6 +510,13 @@ describe("Document Versioning API Routes", () => {
     it("includes createdBy relation in list results", async () => {
       mockAuthenticated();
 
+      const creator = {
+        id: TEST_USER_ID,
+        firstName: "Test",
+        lastName: "User",
+        email: "test@example.com",
+      };
+      mockUser.findMany.mockResolvedValueOnce([creator]);
       mockDocumentVersion.findMany.mockResolvedValue([createMockVersion()]);
 
       const { GET } = await import("@/app/api/documents/versions/list/route");
@@ -514,22 +526,22 @@ describe("Document Versioning API Routes", () => {
           documentId: TEST_DOC_ID,
         })
       );
+      const data = await res.json();
 
       expect(res.status).toBe(200);
-      expect(mockDocumentVersion.findMany).toHaveBeenCalledWith(
+      // Route fetches creators via a separate database.user.findMany call (manual join)
+      expect(mockUser.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          include: {
-            createdBy: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-              },
-            },
-          },
+          where: { tenantId: TEST_TENANT_ID, id: { in: [TEST_USER_ID] } },
+          select: { id: true, firstName: true, lastName: true, email: true },
         })
       );
+      expect(data.versions[0].createdBy).toMatchObject({
+        id: TEST_USER_ID,
+        firstName: "Test",
+        lastName: "User",
+        email: "test@example.com",
+      });
     });
 
     it("returns empty array when no versions exist", async () => {

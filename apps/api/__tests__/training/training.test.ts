@@ -29,8 +29,15 @@ vi.mock("@repo/database", () => ({
       count: vi.fn(),
     },
     trainingCompletion: {
-      upsert: vi.fn(),
+      // Route was refactored from a single `upsert` to findFirst + create/update
+      // (the (tenantId, employeeId, moduleId) tuple is no longer a unique key),
+      // and the assignment list route now joins completions via a separate
+      // findMany instead of a Prisma `include`. findMany defaults to [] so the
+      // list route's `.map` doesn't crash when a test doesn't stub it.
+      findMany: vi.fn(async () => []),
       findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
     },
     user: {
       findFirst: vi.fn(),
@@ -1029,24 +1036,7 @@ describe("Training API", () => {
     });
 
     it("should include completion data when present", async () => {
-      const row = mockPrismaAssignment({
-        completions: [
-          {
-            id: "comp-001",
-            tenantId: TEST_TENANT_ID,
-            assignmentId: "assign-001",
-            employeeId: "emp-001",
-            moduleId: "mod-001",
-            startedAt: new Date("2026-01-20"),
-            completedAt: new Date("2026-01-21"),
-            score: { value: "85" },
-            passed: true,
-            notes: null,
-            createdAt: new Date("2026-01-20"),
-            updatedAt: new Date("2026-01-21"),
-          },
-        ],
-      });
+      const row = mockPrismaAssignment();
 
       vi.mocked(database.trainingAssignment.findMany).mockResolvedValue([
         row,
@@ -1054,6 +1044,24 @@ describe("Training API", () => {
       vi.mocked(database.trainingAssignment.count).mockResolvedValue(1);
       vi.mocked(database.user.findMany).mockResolvedValue([
         mockEmployee,
+      ] as never);
+      // Route now joins completions via a separate trainingCompletion.findMany
+      // keyed by assignmentId (was a Prisma `include` on the assignment).
+      vi.mocked(database.trainingCompletion.findMany).mockResolvedValue([
+        {
+          id: "comp-001",
+          tenantId: TEST_TENANT_ID,
+          assignmentId: "assign-001",
+          employeeId: "emp-001",
+          moduleId: "mod-001",
+          startedAt: new Date("2026-01-20"),
+          completedAt: new Date("2026-01-21"),
+          score: 85,
+          passed: true,
+          notes: null,
+          createdAt: new Date("2026-01-20"),
+          updatedAt: new Date("2026-01-21"),
+        },
       ] as never);
 
       const request = new NextRequest(
@@ -1078,6 +1086,10 @@ describe("Training API", () => {
       vi.mocked(database.user.findMany).mockResolvedValue([
         mockEmployee,
       ] as never);
+      // No completion rows join to this assignment.
+      vi.mocked(database.trainingCompletion.findMany).mockResolvedValue(
+        [] as never
+      );
 
       const request = new NextRequest(
         "http://localhost/api/training/assignments"
@@ -1192,8 +1204,10 @@ describe("Training API", () => {
 
       expect(database.trainingAssignment.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
+          // route now filters soft-deleted rows
           where: {
             tenantId: TEST_TENANT_ID,
+            deletedAt: null,
           },
         })
       );
@@ -1276,9 +1290,11 @@ describe("Training API", () => {
 
       expect(database.trainingAssignment.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
+          // route now filters soft-deleted rows
           where: {
             id: "assign-001",
             tenantId: TEST_TENANT_ID,
+            deletedAt: null,
           },
         })
       );
@@ -1645,7 +1661,8 @@ describe("Training API", () => {
             headers: { "Content-Type": "application/json" },
           })
         );
-        vi.mocked(database.trainingCompletion.upsert).mockResolvedValue({
+        // Route path: findFirst (no existing completion) -> create.
+        vi.mocked(database.trainingCompletion.create).mockResolvedValue({
           id: "comp-new",
           startedAt: new Date("2026-01-20"),
         } as never);
@@ -1674,8 +1691,8 @@ describe("Training API", () => {
             command: "start",
           })
         );
-        // Verify legacy completion record was upserted
-        expect(database.trainingCompletion.upsert).toHaveBeenCalled();
+        // Verify legacy completion record was persisted (create path)
+        expect(database.trainingCompletion.create).toHaveBeenCalled();
       });
 
       it("should return existing completion if already started", async () => {
@@ -1815,10 +1832,8 @@ describe("Training API", () => {
             headers: { "Content-Type": "application/json" },
           })
         );
-        vi.mocked(database.trainingCompletion.findFirst).mockResolvedValue({
-          startedAt: new Date("2026-01-20"),
-        } as never);
-        vi.mocked(database.trainingCompletion.upsert).mockResolvedValue({
+        // Route path: findFirst (no existing completion) -> create.
+        vi.mocked(database.trainingCompletion.create).mockResolvedValue({
           id: "comp-001",
           completedAt: new Date("2026-01-22"),
           score: 92,
@@ -1852,8 +1867,8 @@ describe("Training API", () => {
             command: "submitPassingAttempt",
           })
         );
-        // Verify legacy completion record was upserted
-        expect(database.trainingCompletion.upsert).toHaveBeenCalled();
+        // Verify legacy completion record was persisted (create path)
+        expect(database.trainingCompletion.create).toHaveBeenCalled();
       });
 
       it("should complete training with default passed=true when omitted", async () => {
@@ -1881,7 +1896,8 @@ describe("Training API", () => {
         vi.mocked(database.trainingCompletion.findFirst).mockResolvedValue(
           null as never
         );
-        vi.mocked(database.trainingCompletion.upsert).mockResolvedValue({
+        // Route path: findFirst (no existing completion) -> create.
+        vi.mocked(database.trainingCompletion.create).mockResolvedValue({
           id: "comp-001",
           completedAt: new Date("2026-01-22"),
           score: 0,

@@ -158,9 +158,9 @@ function makeDbShift(overrides: Record<string, unknown> = {}) {
   return {
     id: "shift-1",
     tenantId: TEST_TENANT_ID,
-    shift_start: new Date("2026-05-10T08:00:00Z"),
-    shift_end: new Date("2026-05-10T16:00:00Z"),
-    role_during_shift: "Server",
+    shiftStart: new Date("2026-05-10T08:00:00Z"),
+    shiftEnd: new Date("2026-05-10T16:00:00Z"),
+    roleDuringShift: "Server",
     employeeId: "emp-1",
     deletedAt: null,
     ...overrides,
@@ -782,8 +782,8 @@ describe("PATCH /api/calendar/reschedule", () => {
 
   it("should reschedule a shift via runManifestCommand", async () => {
     const existingShift = makeDbShift({
-      shift_start: new Date("2026-05-10T09:00:00Z"),
-      shift_end: new Date("2026-05-10T17:00:00Z"),
+      shiftStart: new Date("2026-05-10T09:00:00Z"),
+      shiftEnd: new Date("2026-05-10T17:00:00Z"),
     });
     mockScheduleShiftFindFirst.mockResolvedValue(existingShift);
     vi.mocked(runManifestCommand).mockResolvedValue(
@@ -812,8 +812,8 @@ describe("PATCH /api/calendar/reschedule", () => {
 
   it("should preserve original time-of-day when rescheduling shift", async () => {
     const existingShift = makeDbShift({
-      shift_start: new Date("2026-05-10T14:30:00Z"),
-      shift_end: new Date("2026-05-10T22:30:00Z"),
+      shiftStart: new Date("2026-05-10T14:30:00Z"),
+      shiftEnd: new Date("2026-05-10T22:30:00Z"),
     });
     mockScheduleShiftFindFirst.mockResolvedValue(existingShift);
     vi.mocked(runManifestCommand).mockResolvedValue(
@@ -845,7 +845,7 @@ describe("PATCH /api/calendar/reschedule", () => {
 
     // Duration should be preserved: 8 hours (28800000ms)
     const originalDuration =
-      existingShift.shift_end.getTime() - existingShift.shift_start.getTime();
+      existingShift.shiftEnd.getTime() - existingShift.shiftStart.getTime();
     expect(newEnd - newStart).toBe(originalDuration);
   });
 

@@ -16,7 +16,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockSupplierFindFirst = vi.fn();
 const mockUserFindFirst = vi.fn();
-const mockVendorCatalogFindUnique = vi.fn();
+// route uses vendorCatalog.findFirst (not findUnique) to allow multi-field where filters
+const mockVendorCatalogFindFirst = vi.fn();
 
 vi.mock("@repo/database", () => ({
   database: {
@@ -27,7 +28,7 @@ vi.mock("@repo/database", () => ({
       findFirst: (...args: unknown[]) => mockUserFindFirst(...args),
     },
     vendorCatalog: {
-      findUnique: (...args: unknown[]) => mockVendorCatalogFindUnique(...args),
+      findFirst: (...args: unknown[]) => mockVendorCatalogFindFirst(...args),
     },
   },
 }));
@@ -40,7 +41,7 @@ vi.mock("@/lib/database", () => ({
       findFirst: (...args: unknown[]) => mockUserFindFirst(...args),
     },
     vendorCatalog: {
-      findUnique: (...args: unknown[]) => mockVendorCatalogFindUnique(...args),
+      findFirst: (...args: unknown[]) => mockVendorCatalogFindFirst(...args),
     },
   },
 }));
@@ -162,7 +163,7 @@ function setupSupplierAndUser() {
     tenantId: TENANT_ID,
   });
   mockUserFindFirst.mockResolvedValue({ id: "admin-user", role: "admin" });
-  mockVendorCatalogFindUnique.mockResolvedValue(null); // no existing catalog entry → create
+  mockVendorCatalogFindFirst.mockResolvedValue(null); // no existing catalog entry → create
   vi.mocked(runManifestCommand).mockResolvedValue(
     new Response(JSON.stringify({ success: true }), {
       status: 200,
@@ -357,7 +358,7 @@ describe("Supplier Catalog Webhook", () => {
 
     it("calls runManifestCommand update for existing catalog entries", async () => {
       setupSupplierAndUser();
-      mockVendorCatalogFindUnique.mockResolvedValue({ id: "catalog-001" });
+      mockVendorCatalogFindFirst.mockResolvedValue({ id: "catalog-001" });
       const request = createPostRequest(createValidPayload());
       await POST(request);
 

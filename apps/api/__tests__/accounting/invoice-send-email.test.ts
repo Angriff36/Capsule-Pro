@@ -138,9 +138,10 @@ const sentInvoiceWithClient = {
   sentAt: new Date(),
   client: {
     id: CLIENT_ID,
-    company_name: "Acme Catering",
-    first_name: "Jane",
-    last_name: "Smith",
+    // route reads invoice.client?.companyName and invoice.client?.firstName (camelCase)
+    companyName: "Acme Catering",
+    firstName: "Jane",
+    lastName: "Smith",
     email: "jane@acme.example.com",
     defaultPaymentTerms: 30,
   },
@@ -235,7 +236,7 @@ describe("POST /api/accounting/invoices/[id] — email dispatch", () => {
   it("falls back to company_name when client has no first_name", async () => {
     await makeRequestWithClient({
       ...sentInvoiceWithClient.client,
-      first_name: null,
+      firstName: null, // route reads client?.firstName (camelCase)
     });
 
     const sendArgs = mocks.resendSendMock.mock.calls[0]![0];
@@ -245,8 +246,8 @@ describe("POST /api/accounting/invoices/[id] — email dispatch", () => {
   it("falls back to a generic greeting when client has no name fields", async () => {
     await makeRequestWithClient({
       ...sentInvoiceWithClient.client,
-      first_name: null,
-      company_name: null,
+      firstName: null, // route reads client?.firstName (camelCase)
+      companyName: null, // route reads client?.companyName (camelCase)
     });
 
     const sendArgs = mocks.resendSendMock.mock.calls[0]![0];

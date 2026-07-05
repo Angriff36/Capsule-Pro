@@ -726,7 +726,7 @@ describe("Inventory Transfers API", () => {
           }),
           take: 50,
           skip: 0,
-          include: { items: true },
+          include: { lineItems: true }, // route uses lineItems (Prisma relation name)
           orderBy: { requestedAt: "desc" },
         })
       );

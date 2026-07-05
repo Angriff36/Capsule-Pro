@@ -989,7 +989,7 @@ describe("Timecards API", () => {
       expect(body.timecardEditRequests).toHaveLength(2);
     });
 
-    it("should filter by tenantId only (no soft-delete filter)", async () => {
+    it("should filter by tenantId and exclude soft-deleted rows", async () => {
       db.timecardEditRequest.findMany.mockResolvedValue([]);
 
       const request = new NextRequest(
@@ -997,10 +997,12 @@ describe("Timecards API", () => {
       );
       await listEditRequests(request);
 
+      // route now filters soft-deleted rows
       expect(db.timecardEditRequest.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             tenantId: TEST_TENANT_ID,
+            deletedAt: null,
           },
         })
       );
@@ -1082,11 +1084,13 @@ describe("Timecards API", () => {
         params: Promise.resolve({ id: "edit-001" }),
       });
 
+      // route now filters soft-deleted rows
       expect(db.timecardEditRequest.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             id: "edit-001",
             tenantId: TEST_TENANT_ID,
+            deletedAt: null,
           },
         })
       );

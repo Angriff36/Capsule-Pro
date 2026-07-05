@@ -59,7 +59,7 @@ vi.mock("@repo/database", () => ({
       delete: vi.fn(),
       deleteMany: vi.fn(),
     },
-    sms_automation_rules: {
+    smsAutomationRule: {
       count: vi.fn(),
       findMany: vi.fn(),
       findFirst: vi.fn(),
@@ -183,20 +183,20 @@ function createMockEmailWorkflow(overrides: Record<string, unknown> = {}) {
 function createMockSmsRule(overrides: Record<string, unknown> = {}) {
   return {
     id: "rule-001",
-    tenant_id: TEST_TENANT_ID,
+    tenantId: TEST_TENANT_ID,
     name: "Shift Reminder SMS",
     description: "Sends a reminder before a shift",
-    trigger_type: "shift_scheduled",
-    trigger_config: { hoursBefore: 2 },
-    template_id: null,
-    custom_message: "Your shift starts in {{hours}} hours.",
-    recipient_type: "employee",
-    recipient_config: {},
-    is_active: true,
+    triggerType: "shift_scheduled",
+    triggerConfig: { hoursBefore: 2 },
+    templateId: null,
+    customMessage: "Your shift starts in {{hours}} hours.",
+    recipientType: "employee",
+    recipientConfig: {},
+    isActive: true,
     priority: 10,
-    created_at: new Date("2026-01-15"),
-    updated_at: new Date("2026-01-15"),
-    deleted_at: null,
+    createdAt: new Date("2026-01-15"),
+    updatedAt: new Date("2026-01-15"),
+    deletedAt: null,
     ...overrides,
   };
 }
@@ -1437,9 +1437,10 @@ describe("Communications - SMS Automation Rules", () => {
       );
       await listSmsRules(request);
 
+      // route uses camelCase Prisma accessors; filters soft-deleted rows
       const expectedWhere = {
-        tenant_id: TEST_TENANT_ID,
-        deleted_at: null,
+        tenantId: TEST_TENANT_ID,
+        deletedAt: null,
       };
 
       expect(database.smsAutomationRule.findMany).toHaveBeenCalledWith(
@@ -1463,7 +1464,8 @@ describe("Communications - SMS Automation Rules", () => {
 
       expect(database.smsAutomationRule.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({ is_active: true }),
+          // route uses camelCase Prisma accessor
+          where: expect.objectContaining({ isActive: true }),
         })
       );
     });
@@ -1481,7 +1483,8 @@ describe("Communications - SMS Automation Rules", () => {
 
       expect(database.smsAutomationRule.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({ trigger_type: "shift_scheduled" }),
+          // route uses camelCase Prisma accessor
+          where: expect.objectContaining({ triggerType: "shift_scheduled" }),
         })
       );
     });
@@ -1525,7 +1528,8 @@ describe("Communications - SMS Automation Rules", () => {
 
       expect(database.smsAutomationRule.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          orderBy: [{ priority: "asc" }, { created_at: "desc" }],
+          // route uses camelCase Prisma accessor
+          orderBy: [{ priority: "asc" }, { createdAt: "desc" }],
         })
       );
     });
@@ -1601,12 +1605,13 @@ describe("Communications - SMS Automation Rules", () => {
         params: Promise.resolve({ id: "rule-001" }),
       });
 
+      // route uses camelCase Prisma accessors; filters soft-deleted rows
       expect(database.smsAutomationRule.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             id: "rule-001",
-            tenant_id: TEST_TENANT_ID,
-            deleted_at: null,
+            tenantId: TEST_TENANT_ID,
+            deletedAt: null,
           },
         })
       );

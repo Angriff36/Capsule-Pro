@@ -229,7 +229,8 @@ entity VendorContract mixin TenantScoped, SoftDeletable {
 
   // State transitions
   transition status from "draft" to ["pending_approval", "cancelled"]
-  transition status from "pending_approval" to ["pending_activation", "rejected", "cancelled"]
+  // "active" included: approve() goes straight to active when startDate has already passed
+  transition status from "pending_approval" to ["pending_activation", "active", "rejected", "cancelled"]
   transition status from "pending_activation" to ["active", "cancelled"]
   transition status from "active" to ["terminated", "renewed"]
   transition status from "renewed" to ["active", "terminated"]

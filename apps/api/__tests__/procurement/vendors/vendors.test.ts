@@ -258,12 +258,13 @@ function makeVendor(overrides: Record<string, unknown> = {}) {
   return {
     id: VENDOR_ID,
     tenantId: TEST_TENANT_ID,
-    supplier_number: "VND-0001",
+    // Prisma camelCase field names (DB columns are snake_case via @@map)
+    supplierNumber: "VND-0001",
     name: "Acme Foods",
-    contact_person: "Jane Doe",
+    contactPerson: "Jane Doe",
     email: "jane@acme.test",
     phone: "555-0100",
-    payment_terms: "NET_30",
+    paymentTerms: "NET_30",
     addressLine1: "1 Acme Way",
     addressLine2: null,
     city: "Townsville",
@@ -278,7 +279,8 @@ function makeVendor(overrides: Record<string, unknown> = {}) {
     createdAt: new Date("2026-01-15"),
     updatedAt: new Date("2026-01-15"),
     deletedAt: null,
-    _count: { vendorContacts: 2, vendorCatalogs: 7 },
+    // Relation names from InventorySupplier schema: contacts / catalogs
+    _count: { contacts: 2, catalogs: 7 },
     ...overrides,
   };
 }
@@ -349,6 +351,8 @@ describe("Procurement Vendors API", () => {
       expect(body.vendors).toHaveLength(1);
       expect(body.vendors[0]).toMatchObject({
         id: VENDOR_ID,
+        // Route shapes legacy snake_case output (UI contract); supplierNumber/contactPerson/paymentTerms
+        // are outputted as snake_case by the route's shaping function
         supplier_number: "VND-0001",
         name: "Acme Foods",
         contact_person: "Jane Doe",
@@ -447,11 +451,12 @@ describe("Procurement Vendors API", () => {
       const call = vi.mocked(database.inventorySupplier.findMany).mock
         .calls[0]?.[0];
       expect(call?.orderBy).toEqual({ name: "asc" });
+      // Route uses the Prisma relation names: contacts / catalogs
       expect(call?.include).toEqual({
         _count: {
           select: {
-            vendorContacts: { where: { deletedAt: null } },
-            vendorCatalogs: {
+            contacts: { where: { deletedAt: null } },
+            catalogs: {
               where: { deletedAt: null, isActive: true },
             },
           },
@@ -517,11 +522,12 @@ describe("Procurement Vendors API", () => {
       authOk();
       const vendor = {
         ...makeVendor(),
-        vendorContacts: [
+        // Prisma relation names on InventorySupplier: contacts / ratings
+        contacts: [
           { id: "c1", contactName: "Primary", isPrimary: true },
           { id: "c2", contactName: "Other", isPrimary: false },
         ],
-        vendorRatings: [
+        ratings: [
           { id: "r1", category: "overall", rating: 5, createdAt: new Date() },
         ],
       };

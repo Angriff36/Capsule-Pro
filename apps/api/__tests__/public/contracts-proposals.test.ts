@@ -1179,11 +1179,15 @@ describe("POST /api/public/proposals/[token]/respond", () => {
     expect(json.message).toBe("This proposal has been expired");
   });
 
-  it("returns 400 when proposal status is 'canceled'", async () => {
+  it("returns 400 when proposal status is 'withdrawn'", async () => {
+    // 'canceled' is not in the ProposalStatus enum (valid values: draft, sent,
+    // viewed, accepted, rejected, withdrawn, expired). The route checks for
+    // "expired" || "withdrawn" and returns 400 with a template message. Use
+    // "withdrawn" which IS in the enum and triggers the same guard path.
     vi.mocked(database.proposal.findFirst).mockResolvedValueOnce({
       id: PROPOSAL_ID,
       tenantId: TENANT_ID,
-      status: "canceled",
+      status: "withdrawn",
       validUntil: FUTURE_DATE,
     } as never);
 
@@ -1198,7 +1202,7 @@ describe("POST /api/public/proposals/[token]/respond", () => {
 
     expect(res.status).toBe(400);
     const json = await res.json();
-    expect(json.message).toBe("This proposal has been canceled");
+    expect(json.message).toBe("This proposal has been withdrawn");
   });
 
   it("creates an audit log entry on accept", async () => {

@@ -219,6 +219,8 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     body: {
       id: boardId,
       tenantId: user.tenantId,
+      reason: "deactivated",
+      userId: user.id,
     },
     user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });

@@ -113,7 +113,8 @@ const baseSchedule = {
   description: "Annual subscription",
   notes: null,
   completedAt: null,
-  lines: [],
+  // route include/reads revenueRecognitionLines (not lines)
+  revenueRecognitionLines: [],
   createdAt: new Date(),
   updatedAt: new Date(),
   deletedAt: null,
@@ -258,7 +259,8 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
         recognizedAmount: 2000,
         remainingAmount: 8000,
         completedMilestones: 1,
-        lines: [
+        // route accesses existing.revenueRecognitionLines (from the findFirst include)
+        revenueRecognitionLines: [
           {
             id: "line-existing",
             sequence: 1,
@@ -275,8 +277,8 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
           recognizedAmount: 4500,
           remainingAmount: 5500,
           completedMilestones: 2,
-          lines: [
-            ...scheduleInProgress.lines,
+          revenueRecognitionLines: [
+            ...scheduleInProgress.revenueRecognitionLines,
             { id: LINE_ID, amount: 2500, sequence: 2, status: "RECOGNIZED" },
           ],
         });

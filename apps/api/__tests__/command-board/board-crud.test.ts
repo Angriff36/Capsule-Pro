@@ -186,6 +186,12 @@ describe("Command Board CRUD Tests", () => {
           body: JSON.stringify({
             name: "New Board from Template",
             templateId: TEMPLATE_BOARD_ID,
+            description: "",
+            eventId: "",
+            isTemplate: false,
+            tags: [],
+            autoPopulate: true,
+            scope: null,
           }),
         });
 
@@ -237,6 +243,12 @@ describe("Command Board CRUD Tests", () => {
           body: JSON.stringify({
             name: "Cloned Board",
             templateId: TEMPLATE_BOARD_ID,
+            description: "",
+            eventId: "",
+            isTemplate: false,
+            tags: [],
+            autoPopulate: true,
+            scope: null,
           }),
         });
 
@@ -287,6 +299,12 @@ describe("Command Board CRUD Tests", () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: "New Board",
+            description: "",
+            eventId: "",
+            isTemplate: false,
+            tags: [],
+            autoPopulate: true,
+            scope: null,
           }),
         });
 
@@ -334,7 +352,15 @@ describe("Command Board CRUD Tests", () => {
         const request = new Request("http://localhost/api/command-board", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: "Board" }),
+          body: JSON.stringify({
+            name: "Board",
+            description: "",
+            eventId: "",
+            isTemplate: false,
+            tags: [],
+            autoPopulate: true,
+            scope: null,
+          }),
         });
 
         await POST(request as any);
@@ -382,6 +408,12 @@ describe("Command Board CRUD Tests", () => {
           body: JSON.stringify({
             name: "Event Board",
             event_id: "event_123",
+            description: "",
+            eventId: "",
+            isTemplate: false,
+            tags: [],
+            autoPopulate: true,
+            scope: null,
           }),
         });
 
@@ -619,7 +651,7 @@ describe("Command Board CRUD Tests", () => {
 
       const mockBoard = {
         ...createMockBoard(),
-        cards: [
+        commandBoardCards: [
           {
             id: "card_1",
             tenantId: TEST_TENANT_ID,

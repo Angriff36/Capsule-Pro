@@ -296,7 +296,9 @@ describe("Auto-Assignment Service", () => {
       // Availability depends on timezone matching (formatTime uses UTC, checkAvailabilityMatch uses local)
       const suggestion = result.suggestions[0];
       expect(suggestion).toBeDefined();
-      if (!suggestion) throw new Error("expected a suggestion");
+      if (!suggestion) {
+        throw new Error("expected a suggestion");
+      }
       expect(suggestion.score).toBeGreaterThanOrEqual(50);
       expect(suggestion.matchDetails.skillsMatch).toBe(true);
       expect(suggestion.matchDetails.hasConflicts).toBe(false);
@@ -451,7 +453,8 @@ describe("Auto-Assignment Service", () => {
       );
 
       // Reasoning should mention skills and seniority
-      const reasoning = result.suggestions[0]!.reasoning.join(" ").toLowerCase();
+      const reasoning =
+        result.suggestions[0]!.reasoning.join(" ").toLowerCase();
       expect(reasoning).toContain("skill");
       expect(reasoning).toContain("seniority");
     });
@@ -515,10 +518,12 @@ describe("Auto-Assignment Service", () => {
     it("should successfully assign an employee to a shift", async () => {
       vi.mocked(database.scheduleShift.findFirst)
         .mockResolvedValueOnce({
+          // Service queries with select:{locationId,shiftStart,shiftEnd,roleDuringShift,notes}
+          // so mock must use camelCase Prisma field names, not snake_case.
           locationId: mockLocationId,
-          shift_start: shiftStart,
-          shift_end: shiftEnd,
-          role_during_shift: "server",
+          shiftStart,
+          shiftEnd,
+          roleDuringShift: "server",
           notes: "",
         } as never)
         // Third findFirst call: system user lookup (returns an admin)
