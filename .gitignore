@@ -393,6 +393,8 @@ apps/storybook/storybook-static/
 
 # AI agent files and local documentation
 .playwright-mcp/
+.playwright-cli/
+**/.next-build-check/
 findings.md
 learnings.json
 notes.md
