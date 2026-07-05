@@ -179,6 +179,7 @@ describe("Conformance: LogisticsDispatch reassign reaches 'assigned' from every 
       id,
       driverId: "driver-new",
       vehicleId: "vehicle-new",
+      estimatedDeliveryTime: new Date(1_700_000_000_000).toISOString(),
       notes: "swap to backup driver",
     });
 
@@ -204,6 +205,7 @@ describe("Conformance: LogisticsDispatch reassign reaches 'assigned' from every 
       id,
       driverId: "driver-recovery",
       vehicleId: "vehicle-recovery",
+      estimatedDeliveryTime: new Date(1_700_000_000_000).toISOString(),
       notes: "re-driven after breakdown",
     });
 
@@ -230,6 +232,7 @@ describe("Conformance: LogisticsDispatch reassign reaches 'assigned' from every 
       id,
       driverId: "driver-first",
       vehicleId: "vehicle-first",
+      estimatedDeliveryTime: new Date(1_700_000_000_000).toISOString(),
       notes: "first assignment",
     });
 

@@ -112,7 +112,7 @@
     "commands": 1065,
     "events": 1040,
     "sagas": 2,
-    "reactions": 7
+    "reactions": 10
   },
   "warnings": [
     "[C:\\Projects\\capsule-pro\\manifest\\source\\_base.manifest] Entity 'TenantScoped' is declared but unused: no store, no entity-scoped commands, and not referenced by any relationship. Remove it or wire it into the domain.",

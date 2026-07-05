@@ -69,7 +69,8 @@ entity PrepTaskPlanWorkflow mixin TenantScoped, SoftDeletable {
   // State transitions
   transition status from "created" to ["generating", "cancelled"]
   transition status from "generating" to ["awaiting_review", "failed"]
-  transition status from "awaiting_review" to ["reviewing", "cancelled"]
+  // instantiating added: quickApprove jumps awaiting_review -> instantiating directly
+  transition status from "awaiting_review" to ["reviewing", "instantiating", "cancelled"]
   transition status from "reviewing" to ["awaiting_approval", "failed"]
   transition status from "awaiting_approval" to ["approving", "cancelled"]
   transition status from "approving" to ["instantiating", "cancelled"]

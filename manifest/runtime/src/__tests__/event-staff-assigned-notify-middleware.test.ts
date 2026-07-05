@@ -164,7 +164,13 @@ async function assign(
     {
       entity: "EventStaff",
       command: "assign",
-      body: { tenantId: TENANT, ...body },
+      body: {
+        tenantId: TENANT,
+        notes: "",
+        shiftStart: new Date(1_700_000_000_000).toISOString(),
+        shiftEnd: new Date(1_700_000_000_000).toISOString(),
+        ...body,
+      },
       user: { ...actor },
     }
   );

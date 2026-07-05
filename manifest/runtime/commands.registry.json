@@ -1976,6 +1976,11 @@
   },
   {
     "entity": "EventSummary",
+    "command": "softDelete",
+    "commandId": "EventSummary.softDelete"
+  },
+  {
+    "entity": "EventSummary",
     "command": "update",
     "commandId": "EventSummary.update"
   },

@@ -172,6 +172,9 @@ describe("Middleware conformance: EventStaff.assign requires an active StaffMemb
       eventId: EVENT,
       staffMemberId: STAFF,
       role: "Server",
+      notes: "",
+      shiftStart: new Date(1_700_000_000_000).toISOString(),
+      shiftEnd: new Date(1_700_000_000_000).toISOString(),
     });
 
     // The short-circuit returns success:false; the assign never runs.
@@ -194,6 +197,9 @@ describe("Middleware conformance: EventStaff.assign requires an active StaffMemb
       eventId: EVENT,
       staffMemberId: STAFF,
       role: "Server",
+      notes: "",
+      shiftStart: new Date(1_700_000_000_000).toISOString(),
+      shiftEnd: new Date(1_700_000_000_000).toISOString(),
     });
 
     expect(result.ok).toBe(false);
@@ -215,6 +221,9 @@ describe("Middleware conformance: EventStaff.assign requires an active StaffMemb
       eventId: EVENT,
       staffMemberId: STAFF,
       role: "Server",
+      notes: "",
+      shiftStart: new Date(1_700_000_000_000).toISOString(),
+      shiftEnd: new Date(1_700_000_000_000).toISOString(),
     });
 
     // Active staff → the middleware is a no-op and the command runs to success.

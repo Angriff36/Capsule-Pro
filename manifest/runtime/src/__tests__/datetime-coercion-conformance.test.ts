@@ -26,8 +26,8 @@
 import type { Store } from "@angriff36/manifest";
 import { RuntimeEngine } from "@angriff36/manifest";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
-import { beforeEach, describe, expect, it } from "vitest";
 import { Temporal } from "@js-temporal/polyfill";
+import { beforeEach, describe, expect, it } from "vitest";
 import { createCustomBuiltins } from "../manifest-builtins.js";
 import {
   refreshParentContext,
@@ -280,6 +280,10 @@ describe("R2 — parent-context Date→epoch-ms coercion", () => {
           boardName: "Test Board",
           boardType: "event-specific",
           eventId: "e1",
+          description: "",
+          isTemplate: false,
+          notes: "",
+          tags: [],
         },
         user: { id: "u1", tenantId: "t1", role: "manager" },
       }
@@ -497,6 +501,10 @@ describe("R1 — boundary datetime coercion (ISO string → epoch-ms)", () => {
           boardName: "Num Test",
           boardType: "event-specific",
           eventId: "e1",
+          description: "",
+          isTemplate: false,
+          notes: "",
+          tags: [],
         },
         user: { id: "u1", tenantId: "t1", role: "manager" },
       }
@@ -558,9 +566,10 @@ describe("R1 — boundary datetime coercion (ISO string → epoch-ms)", () => {
 
   it("create coerces date-only strings for datetime properties to UTC midnight", async () => {
     const dateOnly = "2026-06-18";
-    const expectedUtcMidnight = Temporal.PlainDate.from(dateOnly)
-      .toZonedDateTime("UTC")
-      .epochMilliseconds;
+    const expectedUtcMidnight =
+      Temporal.PlainDate.from(dateOnly).toZonedDateTime(
+        "UTC"
+      ).epochMilliseconds;
     const engine = new RuntimeEngine(ir, {
       user: { id: "u1", tenantId: "t1" },
     });

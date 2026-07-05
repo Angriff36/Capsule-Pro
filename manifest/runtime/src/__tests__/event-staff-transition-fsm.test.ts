@@ -170,6 +170,10 @@ describe("Conformance: EventStaff status FSM transitions match the command set",
       eventId: "event-fsm-001",
       staffMemberId: "staff-fsm-001",
       role: "Lead Server",
+      // required since the param schemas began tracking source truth (2026-07-04)
+      notes: "",
+      shiftStart: new Date("2026-07-06T15:00:00Z").toISOString(),
+      shiftEnd: new Date("2026-07-06T23:00:00Z").toISOString(),
     });
 
     expect(result.ok).toBe(true);

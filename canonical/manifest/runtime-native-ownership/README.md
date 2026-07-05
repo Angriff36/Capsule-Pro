@@ -106,6 +106,10 @@ decision; three native gaps must close or be adapted first):
 ```text
 1. Native GenericPrismaStore (3.1.3 dist/manifest/stores/prisma-generic/store.js) STILL has the
    compound-key OCC bug: update() stuffs the version field into the tenantId_id compound selector,
+   Related projection gap (2026-07-04): the 3.1.3 Prisma projection no longer emits version/versionAt
+   columns for versionProperty entities (live tables still have them, e.g. tenant_events.events) — so
+   schema-derived prisma-model-metadata cannot carry a version field; prisma-metadata-compound-key-occ.test.ts
+   warns instead of failing until upstream re-emits the column.
    Prisma rejects, the catch swallows → HTTP 200 with dropped write (same class as the 2026-06-18
    Capsule incident). Bespoke/copied store layer must stay until fixed upstream.
 2. Native dispatcher externalExecutor contract is {entityName, commandName, input, instanceId,

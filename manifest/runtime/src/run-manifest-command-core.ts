@@ -358,7 +358,13 @@ export async function runManifestCommandCore(
     // the gate only fails on missing required params / wrong primitive types — a
     // strict subset of what the engine itself enforces. Commands with no
     // generated schema skip the gate; the runtime remains the authority.
-    const paramSchema = getCommandParamSchema(entity, command);
+    // syncFromEvent is exempt: its required params (eventDate/clientId/…) are
+    // filled by refreshParentContext AFTER this gate — callers legitimately
+    // send {id} only, so pre-validating the bare body would 400 every sync.
+    const paramSchema =
+      command === "syncFromEvent"
+        ? undefined
+        : getCommandParamSchema(entity, command);
     if (paramSchema) {
       const parsed = paramSchema.safeParse(body);
       if (!parsed.success) {

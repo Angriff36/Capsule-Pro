@@ -718,3 +718,11 @@ event AdminChatThreadLastMessageRecorded: "admin.chat_thread.last_message_record
   tenantId: string
   lastMessageAt: datetime
 }
+
+
+// Restored 2026-07-04 (dropped in the 2.18 relocation): keeps thread
+// lastMessageAt current when a message lands. Co-located with
+// AdminChatMessage.create (emits AdminChatMessageSent).
+on AdminChatMessageSent run AdminChatThread.recordLastMessage
+  resolve payload.threadId
+  params {}

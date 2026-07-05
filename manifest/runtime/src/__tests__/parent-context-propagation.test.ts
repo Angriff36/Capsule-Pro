@@ -237,6 +237,10 @@ describe("run-manifest-command-core — create inherits parent context end-to-en
           boardName: "Smith Wedding Board",
           boardType: "event-specific",
           eventId: "e1",
+          description: "",
+          isTemplate: false,
+          notes: "",
+          tags: [],
         },
         user: { id: "u1", tenantId: "t1", role: "manager" },
       }

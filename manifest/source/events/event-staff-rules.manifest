@@ -132,10 +132,15 @@ entity EventStaff mixin TenantScoped, SoftDeletable {
   }
 
   // State transitions
-  transition status from "assigned" to ["confirmed", "cancelled", "unassigned"]
-  transition status from "confirmed" to ["checked_in", "cancelled", "no_show", "unassigned"]
-  transition status from "checked_in" to ["completed", "no_show"]
-  // "completed", "no_show", "cancelled", "unassigned" are terminal states
+  // checked_in (checkIn admits assigned), no_show (markNoShow admits assigned), assigned self-loop (re-assign updates)
+  // cancelled dropped everywhere: no EventStaff command mutates to it (phantom state)
+  transition status from "assigned" to ["assigned", "confirmed", "checked_in", "no_show", "unassigned"]
+  transition status from "confirmed" to ["checked_in", "no_show", "unassigned"]
+  // checked_out added: checkOut was fully dead (no inbound edge to its target anywhere).
+  // completed/no_show dropped: NO command mutates checked_in to either (markNoShow admits
+  // only assigned|confirmed; no complete command exists) — phantom edges.
+  transition status from "checked_in" to ["checked_out"]
+  // "checked_out", "no_show", "unassigned" are terminal states
 
   store EventStaff in durable
 }

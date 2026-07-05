@@ -183,6 +183,7 @@ async function createWorkOrder(
         category: "repair",
         requestedBy: "",
         estimatedCost: 0,
+        scheduledDate: new Date(FIXED_NOW).toISOString(),
         notes: "",
         ...overrides,
       },
@@ -314,7 +315,9 @@ describe("Middleware conformance: FacilityWorkOrder lifecycle → FacilityAsset 
     expect(result.ok).toBe(true);
     // Asset untouched; the work order still opens (guard-safe).
     expect(await statusOf(provider)).toBe("operational");
-    expect(eventNamesOf(result)).not.toContain("FacilityAssetSentToMaintenance");
+    expect(eventNamesOf(result)).not.toContain(
+      "FacilityAssetSentToMaintenance"
+    );
   });
 
   it("completing a work order whose asset is operational is a clean no-op", async () => {

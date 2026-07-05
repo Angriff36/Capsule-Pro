@@ -236,10 +236,12 @@ entity CollectionCase mixin TenantScoped, SoftDeletable {
   // engine rejected every call ("Invalid state transition ... -> WRITTEN_OFF") before the
   // mutate ran, even though the route at accounting/collections/cases/[id] exposes it.
   // Same dead-target class already fixed for Invoice (VOIDED/WRITTEN_OFF -> VOID/WRITE_OFF).
-  transition status from "ACTIVE" to ["IN_PROGRESS", "LEGAL", "RESOLVED", "WRITTEN_OFF", "DEFAULTED", "CANCELLED"]
-  transition status from "IN_PROGRESS" to ["LEGAL", "RESOLVED", "WRITTEN_OFF", "DEFAULTED", "CANCELLED"]
+  // DISPUTED added: markDisputed guards only isDisputed==false, so ACTIVE/IN_PROGRESS cases can dispute
+  transition status from "ACTIVE" to ["IN_PROGRESS", "LEGAL", "RESOLVED", "WRITTEN_OFF", "DEFAULTED", "CANCELLED", "DISPUTED"]
+  transition status from "IN_PROGRESS" to ["LEGAL", "RESOLVED", "WRITTEN_OFF", "DEFAULTED", "CANCELLED", "DISPUTED"]
   transition status from "LEGAL" to ["RESOLVED", "WRITTEN_OFF", "DISPUTED"]
-  transition status from "DISPUTED" to ["IN_PROGRESS", "RESOLVED"]
+  // ACTIVE added: resolveDispute mutates status = "ACTIVE" (un-dispute path)
+  transition status from "DISPUTED" to ["ACTIVE", "IN_PROGRESS", "RESOLVED"]
   // "RESOLVED", "WRITTEN_OFF", "DEFAULTED", "CANCELLED" are terminal states
 
   store CollectionCase in durable

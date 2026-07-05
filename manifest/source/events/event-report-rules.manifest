@@ -33,7 +33,8 @@ entity EventReport mixin TenantScoped, SoftDeletable {
   computed isReviewed: boolean = self.reviewedBy != "" and self.reviewedBy != null
 
   transition status from "draft" to ["in_progress", "completed"]
-  transition status from "in_progress" to ["completed"]
+  // self-loop added: updateProgress admits in_progress and re-mutates status = "in_progress"
+  transition status from "in_progress" to ["in_progress", "completed"]
   transition status from "completed" to ["approved", "rejected"]
   transition status from "rejected" to ["draft", "in_progress"]
 

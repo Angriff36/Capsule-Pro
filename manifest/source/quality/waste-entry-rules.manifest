@@ -188,3 +188,16 @@ event WasteEntryVoided: "kitchen.waste-entry.voided" {
   reason: string
   voidedAt: datetime
 }
+
+
+// Restored 2026-07-04 (dropped in the 2.18 relocation): logging waste must
+// deduct the wasted quantity from governed stock. Co-located with
+// WasteEntry.create (emits WasteEntryCreated; payload carries the command input).
+on WasteEntryCreated run InventoryItem.waste
+  resolve payload.inventoryItemId
+  params {
+    quantity: payload.quantity
+    reason: "waste entry"
+    lotId: ""
+    userId: payload.loggedBy
+  }

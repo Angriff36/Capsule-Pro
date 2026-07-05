@@ -131,9 +131,12 @@ async function createWarning(
 ): Promise<string> {
   const res = await run(engine, "create", {
     eventId: "e1",
+    dishId: "",
     warningType: "allergen_conflict",
-    allergens: "peanut",
+    allergens: ["peanut"],
+    affectedGuests: [],
     severity: "warning",
+    notes: "",
     ...overrides,
   });
   expect(res.ok, `create failed: ${JSON.stringify(res)}`).toBe(true);
@@ -153,7 +156,12 @@ describe("AllergenWarning.acknowledge — idempotent no-op", () => {
     const engine = newEngine();
     const id = await createWarning(engine);
 
-    const res = await run(engine, "acknowledge", { acknowledgedBy: "u1" }, id);
+    const res = await run(
+      engine,
+      "acknowledge",
+      { acknowledgedBy: "u1", notes: "" },
+      id
+    );
 
     expect(res.ok).toBe(true);
     expect((res as { noop?: boolean }).noop).toBeFalsy();
@@ -166,11 +174,11 @@ describe("AllergenWarning.acknowledge — idempotent no-op", () => {
     const engine = newEngine();
     const id = await createWarning(engine);
 
-    await run(engine, "acknowledge", { acknowledgedBy: "u1" }, id);
+    await run(engine, "acknowledge", { acknowledgedBy: "u1", notes: "" }, id);
     const second = await run(
       engine,
       "acknowledge",
-      { acknowledgedBy: "u1" },
+      { acknowledgedBy: "u1", notes: "" },
       id
     );
 
@@ -188,7 +196,7 @@ describe("AllergenWarning.acknowledge — idempotent no-op", () => {
   it("does NOT rescue a genuine invalid transition (escalate after acknowledge → 422)", async () => {
     const engine = newEngine();
     const id = await createWarning(engine, { severity: "critical" });
-    await run(engine, "acknowledge", { acknowledgedBy: "u1" }, id);
+    await run(engine, "acknowledge", { acknowledgedBy: "u1", notes: "" }, id);
 
     // escalate is NOT an idempotent action; escalating an acknowledged warning
     // is a real disallowed transition and must still be blocked.
@@ -211,7 +219,12 @@ describe("AllergenWarning.acknowledge — idempotent no-op", () => {
     // markResolved IS idempotent on resolved===true, but here resolved is false
     // and the warning is not acknowledged, so the guard genuinely fails and the
     // completion predicate is false → still 422.
-    const res = await run(engine, "markResolved", { resolvedBy: "u1" }, id);
+    const res = await run(
+      engine,
+      "markResolved",
+      { resolvedBy: "u1", notes: "" },
+      id
+    );
 
     expect(res.ok).toBe(false);
     expect((res as { kind: string }).kind).toBe("guard_failed");

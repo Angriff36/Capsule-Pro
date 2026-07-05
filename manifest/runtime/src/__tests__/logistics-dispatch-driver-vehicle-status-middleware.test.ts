@@ -137,7 +137,10 @@ async function seedDriver(provider: (entity: string) => Store, status: string) {
   } as never);
 }
 
-async function seedVehicle(provider: (entity: string) => Store, status: string) {
+async function seedVehicle(
+  provider: (entity: string) => Store,
+  status: string
+) {
   await provider("Vehicle").create({
     id: VEHICLE,
     tenantId: TENANT,
@@ -205,6 +208,7 @@ describe("Middleware conformance: LogisticsDispatch lifecycle → Driver/Vehicle
           driverId: DRIVER,
           vehicleId: VEHICLE,
           priority: "high",
+          estimatedDeliveryTime: new Date(FIXED_NOW).toISOString(),
           notes: "to venue",
         },
         user: { ...USER },
@@ -322,6 +326,7 @@ describe("Middleware conformance: LogisticsDispatch lifecycle → Driver/Vehicle
           driverId: DRIVER,
           vehicleId: VEHICLE,
           priority: "normal",
+          estimatedDeliveryTime: new Date(FIXED_NOW).toISOString(),
           notes: "",
         },
         user: { ...USER },

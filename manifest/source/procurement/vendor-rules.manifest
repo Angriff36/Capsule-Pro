@@ -38,8 +38,9 @@ entity Vendor mixin TenantScoped {
   constraint validStatus: self.status in ["active", "inactive", "blacklisted"] "Invalid vendor status"
   constraint validPaymentTerms: self.paymentTerms in ["net15", "net30", "net60", "due_on_receipt", "prepaid"] "Invalid payment terms"
 
-  transition status from "active" to ["inactive", "blacklisted"]
-  transition status from "inactive" to ["active", "blacklisted"]
+  // self-loops: approve/remove guard only !=blacklisted, so re-approving an active vendor (or re-removing an inactive one) must be an idempotent self-transition
+  transition status from "active" to ["active", "inactive", "blacklisted"]
+  transition status from "inactive" to ["inactive", "active", "blacklisted"]
 
   // Back-relations (U11): inverse hasMany for children that belongTo Vendor
   hasMany contracts: VendorContract

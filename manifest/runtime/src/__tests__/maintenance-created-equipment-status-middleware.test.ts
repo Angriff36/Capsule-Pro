@@ -166,6 +166,7 @@ async function createWorkOrder(
         equipmentId: EQUIP,
         assignedTo: "",
         reportedBy: "",
+        scheduledDate: new Date(FIXED_NOW).toISOString(),
         notes: "",
         ...overrides,
       },

@@ -269,7 +269,8 @@ entity Event mixin TenantScoped, SoftDeletable {
   // State transitions (self-transitions allowed for idempotent mutations)
   transition status from "draft" to ["draft", "confirmed", "cancelled"]
   transition status from "confirmed" to ["confirmed", "completed", "cancelled"]
-  transition status from "completed" to ["completed", "archived"]
+  // confirmed added: unfinalize (completed -> confirmed) was silently rejected
+  transition status from "completed" to ["completed", "confirmed", "archived"]
   // "cancelled" and "archived" are terminal states
 
   store Event in durable

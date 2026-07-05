@@ -184,7 +184,8 @@ entity InventoryAlert mixin TenantScoped, SoftDeletable {
   constraint validAlertType: self.alertType in ["low_stock", "out_of_stock", "expiry_warning", "expiry_critical", "overstock"] "Invalid alert type"
 
   // State transitions
-  transition status from "active" to ["acknowledged"]
+  // resolved added: markResolved guards only status!=resolved, so active alerts resolve without acknowledge
+  transition status from "active" to ["acknowledged", "resolved"]
   transition status from "acknowledged" to ["resolved"]
 
   default policy InventoryAlertDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"

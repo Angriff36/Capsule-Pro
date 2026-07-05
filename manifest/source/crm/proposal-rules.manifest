@@ -534,3 +534,28 @@ event ProposalLineItemRemoved: "crm.proposal_line_item.removed" {
   userId: string
   removedAt: datetime
 }
+
+
+// Restored 2026-07-04: dropped during the 2.18 per-file reaction-completeness
+// relocation (cc9d03c75) but the public proposal respond route still supplies
+// the pass-through params for it — accepting a proposal silently created no
+// Event without this. Co-located with Proposal.accept (emits ProposalAccepted).
+on ProposalAccepted run Event.create
+  resolve null
+  params {
+    clientId: payload.clientId
+    eventNumber: payload.proposalNumber
+    title: payload.title
+    eventType: payload.eventType
+    eventDate: now()
+    guestCount: 1
+    venueName: ""
+    venueAddress: ""
+    notes: "Auto-created from accepted proposal"
+    tags: []
+    status: "draft"
+    budget: payload.total
+    ticketPrice: 0
+    ticketTier: ""
+    eventFormat: ""
+  }
