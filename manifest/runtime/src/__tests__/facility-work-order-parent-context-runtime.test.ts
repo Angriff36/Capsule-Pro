@@ -34,7 +34,9 @@ const irPath = join(here, "..", "..", "..", "ir", "kitchen.ir.json");
 const ir: any = JSON.parse(readFileSync(irPath, "utf8"));
 
 const TENANT = "t-fwo-ctx";
-const ASSET_ID = "asset-fwo-1";
+// UUID-shaped: the resolver skips lookups for FK values that cannot match a
+// uuid-typed parent id column (P2007 guard), mirroring production data.
+const ASSET_ID = "2b11e0aa-5555-4a55-a555-555555555555";
 
 // Minimal persistent in-memory store (mirrors the upstream MemoryStore contract).
 // Every IR entity is `durable`, so RuntimeEngine REQUIRES a storeProvider.

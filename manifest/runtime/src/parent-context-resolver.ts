@@ -82,7 +82,11 @@ function scalarTypeName(
   if (!name || name === "array" || name === "list") {
     return;
   }
-  return name;
+  // Compiler 3.2+ types id-shaped properties as `uuid` on some entities and
+  // `string` on others (e.g. FacilityAsset.facilityId is uuid, the child
+  // FacilityWorkOrder.facilityId is string). Both hold the same copyable id
+  // strings — a strict mismatch here silently kills inheritance.
+  return name === "uuid" ? "string" : name;
 }
 
 /**

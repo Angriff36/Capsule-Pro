@@ -65,7 +65,10 @@ function scalarTypeName(type) {
   if (!name || name === "array" || name === "list") {
     return null;
   }
-  return name;
+  // Compiler 3.2+ types id-shaped entity properties as `uuid` while command
+  // parameters stay `string`; treat them as the same scalar or every id-like
+  // violation silently disappears (allowlist entries then read as "dead").
+  return name === "uuid" ? "string" : name;
 }
 
 /**

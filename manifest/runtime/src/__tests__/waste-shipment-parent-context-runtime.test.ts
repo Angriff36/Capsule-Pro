@@ -28,7 +28,9 @@ const irPath = join(here, "..", "..", "..", "ir", "kitchen.ir.json");
 const ir: any = JSON.parse(readFileSync(irPath, "utf8"));
 
 const TENANT = "t-loc-ctx";
-const EVENT_ID = "evt-loc-1";
+// UUID-shaped: the resolver skips lookups for FK values that cannot match a
+// uuid-typed parent id column (P2007 guard), mirroring production data.
+const EVENT_ID = "0e11e0aa-2222-4a22-a222-222222222222";
 const LOCATION_ID = "loc-abc-123";
 
 // Minimal persistent in-memory store (mirrors the upstream MemoryStore contract).
