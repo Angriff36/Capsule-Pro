@@ -21,7 +21,10 @@ entity PrepList mixin TenantScoped, SoftDeletable {
   property totalItems: int = 0
   property totalEstimatedTime: int = 0
   searchable property notes: string? = ""
-  property generatedAt: datetime
+  // Default now() (2026-07-04): commands re-set this via mutate, but the engine
+  // persists the auto-created instance BEFORE mutates run — a required datetime
+  // with no default is invalid at the store on the live Prisma path.
+  property generatedAt: datetime = now()
   property finalizedAt: datetime?
   property isActive: boolean? = true
 

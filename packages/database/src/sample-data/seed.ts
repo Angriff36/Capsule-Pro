@@ -1,4 +1,7 @@
-import { Prisma, type PrismaClient } from "@repo/database";
+// Import from the generated client directly (NOT the "@repo/database" index):
+// the index carries the Next.js server-only guard, and this module is pulled
+// into non-Next runtimes (manifest runtime factory middleware, seed scripts).
+import { Prisma, type PrismaClient } from "../../generated/client";
 
 const decimal = (value: number) => new Prisma.Decimal(value);
 

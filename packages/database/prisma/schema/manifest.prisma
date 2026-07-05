@@ -4022,7 +4022,7 @@ model PrepList {
   totalItems Int @map("total_items") @default(0)
   totalEstimatedTime Int @map("total_estimated_time") @default(0)
   notes String? @default("")
-  generatedAt DateTime @map("generated_at") @db.Timestamptz(6)
+  generatedAt DateTime @map("generated_at") @db.Timestamptz(6) @default(now())
   finalizedAt DateTime? @map("finalized_at") @db.Timestamptz(6)
   isActive Boolean? @map("is_active") @default(true)
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())

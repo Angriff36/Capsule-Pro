@@ -356,7 +356,9 @@ describe("Prep list finalization derives inventory demand", () => {
     );
     expect(usFoodsDraft).toMatchObject({
       tenantId: TEST_TENANT_ID,
-      requestedBy: "system:prep-demand",
+      // WHY: the FINALIZING USER is the requester (also keeps the live
+      // requested_by uuid column valid — a synthetic system string is not a uuid).
+      requestedBy: "kitchen-lead-001",
       itemCategory: "prep-list-demand",
       sourceType: "prep_demand",
       status: "draft",

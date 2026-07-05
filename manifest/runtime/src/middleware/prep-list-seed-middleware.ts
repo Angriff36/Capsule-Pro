@@ -577,9 +577,25 @@ function asNonEmptyString(value: unknown): string | undefined {
 }
 
 function asFiniteNumber(value: unknown): number | undefined {
-  return typeof value === "number" && Number.isFinite(value)
-    ? value
-    : undefined;
+  // Live Prisma stores surface numeric columns as Decimal objects (and raw
+  // reads may surface numeric strings) — in-memory tests surface plain
+  // numbers. Coerce all three, or every Decimal quantity silently drops.
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : undefined;
+  }
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  if (
+    value &&
+    typeof value === "object" &&
+    typeof (value as { toNumber?: unknown }).toNumber === "function"
+  ) {
+    const parsed = (value as { toNumber: () => number }).toNumber();
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  return;
 }
 
 function round3(value: number): number {

@@ -102,6 +102,8 @@ interface PrepListLike {
 interface InventoryItemLike {
   id?: unknown;
   item_number?: unknown;
+  /** IR property name (live typed store) and legacy raw column name. */
+  itemNumber?: unknown;
   name?: unknown;
   quantityOnHand?: unknown;
   quantityReserved?: unknown;
@@ -893,7 +895,13 @@ async function upsertSupplierDraft(args: {
         requisitionNumber: `${requisitionPrefix}-${requisitionId.slice(0, 8).toUpperCase()}`,
         locationId: eventId,
         department: "kitchen",
-        requestedBy: systemUserId,
+        // The finalizing user is the requester — also keeps the live
+        // requested_by uuid column valid (a synthetic "system:*" string is
+        // not a uuid).
+        requestedBy:
+          asNonEmptyString(
+            (ctx.runtimeContext.user as { id?: unknown } | undefined)?.id
+          ) ?? systemUserId,
         requiredBy: Date.now() + 2 * 24 * 60 * 60 * 1000,
         justification,
         priority: "normal",
@@ -1128,7 +1136,8 @@ function findCatalogEntry(
   prepItem: PrepListItemLike
 ): VendorCatalogLike | undefined {
   const inventoryNumber = normalizeSku(
-    asNonEmptyString(inventoryItem?.item_number)
+    asNonEmptyString(inventoryItem?.itemNumber) ??
+      asNonEmptyString(inventoryItem?.item_number)
   );
   const inventoryName = normalizeName(asNonEmptyString(inventoryItem?.name));
   const prepName = normalizeName(asNonEmptyString(prepItem.ingredientName));
@@ -1164,18 +1173,38 @@ function asNonEmptyString(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
 }
 
-function asPositiveNumber(value: unknown): number | undefined {
-  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
-    return;
+/**
+ * Live Prisma stores surface numeric columns as Decimal objects (and raw
+ * reads may surface numeric strings) — in-memory tests surface plain numbers.
+ * Coerce all three, or every Decimal quantity silently drops.
+ */
+function coerceFiniteNumber(value: unknown): number | undefined {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : undefined;
   }
-  return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  if (
+    value &&
+    typeof value === "object" &&
+    typeof (value as { toNumber?: unknown }).toNumber === "function"
+  ) {
+    const parsed = (value as { toNumber: () => number }).toNumber();
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  return;
+}
+
+function asPositiveNumber(value: unknown): number | undefined {
+  const parsed = coerceFiniteNumber(value);
+  return parsed !== undefined && parsed > 0 ? parsed : undefined;
 }
 
 function asNonNegativeNumber(value: unknown): number | undefined {
-  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
-    return;
-  }
-  return value;
+  const parsed = coerceFiniteNumber(value);
+  return parsed !== undefined && parsed >= 0 ? parsed : undefined;
 }
 
 function normalizeSku(value: string | undefined): string {

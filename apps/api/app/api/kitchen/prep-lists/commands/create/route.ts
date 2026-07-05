@@ -141,7 +141,7 @@ export async function POST(request: NextRequest): Promise<Response> {
             eventId: input.eventId,
             name,
             batchMultiplier: input.batchMultiplier ?? 1,
-            dietaryRestrictions: input.dietaryRestrictions?.join(",") ?? "",
+            dietaryRestrictions: input.dietaryRestrictions ?? [],
             totalItems: input.totalItems ?? items.length,
             totalEstimatedTime: totalEstimatedTimeMinutes,
             notes: input.notes ?? "",
