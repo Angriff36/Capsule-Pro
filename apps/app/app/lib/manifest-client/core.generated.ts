@@ -768,7 +768,7 @@ export async function getWorkflow(id: string): Promise<Workflow | undefined> {
   const res = await apiFetch(`/api/collaboration/workflows/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Workflow (${res.status})`);
   const json = await res.json();
-  return (json.workflow ?? json.data) as Workflow | undefined;
+  return (json.workflow ?? json.data ?? (json.id ? json : undefined)) as Workflow | undefined;
 }
 export async function listNotifications(query?: Record<string, string | number>): Promise<PaginatedResponse<Notification>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -783,7 +783,7 @@ export async function getNotification(id: string): Promise<Notification | undefi
   const res = await apiFetch(`/api/collaboration/notifications/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Notification (${res.status})`);
   const json = await res.json();
-  return (json.notification ?? json.data) as Notification | undefined;
+  return (json.notification ?? json.data ?? (json.id ? json : undefined)) as Notification | undefined;
 }
 export async function listEmailTemplates(query?: Record<string, string | number>): Promise<PaginatedResponse<EmailTemplate>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -798,7 +798,7 @@ export async function getEmailTemplate(id: string): Promise<EmailTemplate | unde
   const res = await apiFetch(`/api/communications/email-templates/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EmailTemplate (${res.status})`);
   const json = await res.json();
-  return (json.emailTemplate ?? json.data) as EmailTemplate | undefined;
+  return (json.emailTemplate ?? json.data ?? (json.id ? json : undefined)) as EmailTemplate | undefined;
 }
 export async function listEmailWorkflows(query?: Record<string, string | number>): Promise<PaginatedResponse<EmailWorkflow>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -813,7 +813,7 @@ export async function getEmailWorkflow(id: string): Promise<EmailWorkflow | unde
   const res = await apiFetch(`/api/communications/email-workflows/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EmailWorkflow (${res.status})`);
   const json = await res.json();
-  return (json.emailWorkflow ?? json.data) as EmailWorkflow | undefined;
+  return (json.emailWorkflow ?? json.data ?? (json.id ? json : undefined)) as EmailWorkflow | undefined;
 }
 export async function listAdminTasks(query?: Record<string, string | number>): Promise<PaginatedResponse<AdminTask>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -828,7 +828,7 @@ export async function getAdminTask(id: string): Promise<AdminTask | undefined> {
   const res = await apiFetch(`/api/administrative/tasks/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get AdminTask (${res.status})`);
   const json = await res.json();
-  return (json.adminTask ?? json.data) as AdminTask | undefined;
+  return (json.adminTask ?? json.data ?? (json.id ? json : undefined)) as AdminTask | undefined;
 }
 export async function listAdminChatParticipants(query?: Record<string, string | number>): Promise<PaginatedResponse<AdminChatParticipant>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -843,7 +843,7 @@ export async function getAdminChatParticipant(id: string): Promise<AdminChatPart
   const res = await apiFetch(`/api/administrative/chat/participants/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get AdminChatParticipant (${res.status})`);
   const json = await res.json();
-  return (json.adminChatParticipant ?? json.data) as AdminChatParticipant | undefined;
+  return (json.adminChatParticipant ?? json.data ?? (json.id ? json : undefined)) as AdminChatParticipant | undefined;
 }
 export async function listApiKeies(query?: Record<string, string | number>): Promise<PaginatedResponse<ApiKey>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -858,7 +858,7 @@ export async function getApiKey(id: string): Promise<ApiKey | undefined> {
   const res = await apiFetch(`/api/settings/api-keys/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get ApiKey (${res.status})`);
   const json = await res.json();
-  return (json.apiKey ?? json.data) as ApiKey | undefined;
+  return (json.apiKey ?? json.data ?? (json.id ? json : undefined)) as ApiKey | undefined;
 }
 export async function listRateLimitConfigs(query?: Record<string, string | number>): Promise<PaginatedResponse<RateLimitConfig>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -873,7 +873,7 @@ export async function getRateLimitConfig(id: string): Promise<RateLimitConfig | 
   const res = await apiFetch(`/api/administrative/rate-limits/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get RateLimitConfig (${res.status})`);
   const json = await res.json();
-  return (json.rateLimitConfig ?? json.data) as RateLimitConfig | undefined;
+  return (json.rateLimitConfig ?? json.data ?? (json.id ? json : undefined)) as RateLimitConfig | undefined;
 }
 export async function listRolePolicies(query?: Record<string, string | number>): Promise<PaginatedResponse<RolePolicy>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -888,7 +888,7 @@ export async function getRolePolicy(id: string): Promise<RolePolicy | undefined>
   const res = await apiFetch(`/api/rolepolicy/policies/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get RolePolicy (${res.status})`);
   const json = await res.json();
-  return (json.rolePolicy ?? json.data) as RolePolicy | undefined;
+  return (json.rolePolicy ?? json.data ?? (json.id ? json : undefined)) as RolePolicy | undefined;
 }
 export async function listReports(query?: Record<string, string | number>): Promise<PaginatedResponse<Report>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -903,7 +903,7 @@ export async function getReport(id: string): Promise<Report | undefined> {
   const res = await apiFetch(`/api/administrative/reports/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Report (${res.status})`);
   const json = await res.json();
-  return (json.report ?? json.data) as Report | undefined;
+  return (json.report ?? json.data ?? (json.id ? json : undefined)) as Report | undefined;
 }
 export async function listDocuments(query?: Record<string, string | number>): Promise<PaginatedResponse<Document>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -918,7 +918,7 @@ export async function getDocument(id: string): Promise<Document | undefined> {
   const res = await apiFetch(`/api/administrative/documents/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Document (${res.status})`);
   const json = await res.json();
-  return (json.document ?? json.data) as Document | undefined;
+  return (json.document ?? json.data ?? (json.id ? json : undefined)) as Document | undefined;
 }
 export async function listDocumentVersions(query?: Record<string, string | number>): Promise<PaginatedResponse<DocumentVersion>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -933,7 +933,7 @@ export async function getDocumentVersion(id: string): Promise<DocumentVersion | 
   const res = await apiFetch(`/api/administrative/document-versions/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get DocumentVersion (${res.status})`);
   const json = await res.json();
-  return (json.documentVersion ?? json.data) as DocumentVersion | undefined;
+  return (json.documentVersion ?? json.data ?? (json.id ? json : undefined)) as DocumentVersion | undefined;
 }
 export async function listAdminChatThreads(query?: Record<string, string | number>): Promise<PaginatedResponse<AdminChatThread>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -948,7 +948,7 @@ export async function getAdminChatThread(id: string): Promise<AdminChatThread | 
   const res = await apiFetch(`/api/administrative/chat/threads/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get AdminChatThread (${res.status})`);
   const json = await res.json();
-  return (json.adminChatThread ?? json.data) as AdminChatThread | undefined;
+  return (json.adminChatThread ?? json.data ?? (json.id ? json : undefined)) as AdminChatThread | undefined;
 }
 export async function listAdminChatMessages(query?: Record<string, string | number>): Promise<PaginatedResponse<AdminChatMessage>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -963,7 +963,7 @@ export async function getAdminChatMessage(id: string): Promise<AdminChatMessage 
   const res = await apiFetch(`/api/administrative/chat/messages/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get AdminChatMessage (${res.status})`);
   const json = await res.json();
-  return (json.adminChatMessage ?? json.data) as AdminChatMessage | undefined;
+  return (json.adminChatMessage ?? json.data ?? (json.id ? json : undefined)) as AdminChatMessage | undefined;
 }
 export async function listNotes(query?: Record<string, string | number>): Promise<PaginatedResponse<Note>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -978,7 +978,7 @@ export async function getNote(id: string): Promise<Note | undefined> {
   const res = await apiFetch(`/api/administrative/notes/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Note (${res.status})`);
   const json = await res.json();
-  return (json.note ?? json.data) as Note | undefined;
+  return (json.note ?? json.data ?? (json.id ? json : undefined)) as Note | undefined;
 }
 export async function listKnowledgeBaseEntries(query?: Record<string, string | number>): Promise<PaginatedResponse<KnowledgeBaseEntry>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -993,7 +993,7 @@ export async function getKnowledgeBaseEntry(id: string): Promise<KnowledgeBaseEn
   const res = await apiFetch(`/api/administrative/knowledge-base/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get KnowledgeBaseEntry (${res.status})`);
   const json = await res.json();
-  return (json.knowledgeBaseEntry ?? json.data) as KnowledgeBaseEntry | undefined;
+  return (json.knowledgeBaseEntry ?? json.data ?? (json.id ? json : undefined)) as KnowledgeBaseEntry | undefined;
 }
 export async function listSampleDatas(query?: Record<string, string | number>): Promise<PaginatedResponse<SampleData>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1008,7 +1008,7 @@ export async function getSampleData(id: string): Promise<SampleData | undefined>
   const res = await apiFetch(`/api/administrative/sample-data/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get SampleData (${res.status})`);
   const json = await res.json();
-  return (json.sampleData ?? json.data) as SampleData | undefined;
+  return (json.sampleData ?? json.data ?? (json.id ? json : undefined)) as SampleData | undefined;
 }
 export async function listSmsAutomationRules(query?: Record<string, string | number>): Promise<PaginatedResponse<SmsAutomationRule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1023,7 +1023,7 @@ export async function getSmsAutomationRule(id: string): Promise<SmsAutomationRul
   const res = await apiFetch(`/api/administrative/sms-automation-rules/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get SmsAutomationRule (${res.status})`);
   const json = await res.json();
-  return (json.smsAutomationRule ?? json.data) as SmsAutomationRule | undefined;
+  return (json.smsAutomationRule ?? json.data ?? (json.id ? json : undefined)) as SmsAutomationRule | undefined;
 }
 export async function listVersionedEntities(query?: Record<string, string | number>): Promise<PaginatedResponse<VersionedEntity>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1038,7 +1038,7 @@ export async function getVersionedEntity(id: string): Promise<VersionedEntity | 
   const res = await apiFetch(`/api/administrative/versioned-entities/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get VersionedEntity (${res.status})`);
   const json = await res.json();
-  return (json.versionedEntity ?? json.data) as VersionedEntity | undefined;
+  return (json.versionedEntity ?? json.data ?? (json.id ? json : undefined)) as VersionedEntity | undefined;
 }
 export async function listEntityVersions(query?: Record<string, string | number>): Promise<PaginatedResponse<EntityVersion>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1053,7 +1053,7 @@ export async function getEntityVersion(id: string): Promise<EntityVersion | unde
   const res = await apiFetch(`/api/administrative/entity-versions/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EntityVersion (${res.status})`);
   const json = await res.json();
-  return (json.entityVersion ?? json.data) as EntityVersion | undefined;
+  return (json.entityVersion ?? json.data ?? (json.id ? json : undefined)) as EntityVersion | undefined;
 }
 export async function listVersionApprovals(query?: Record<string, string | number>): Promise<PaginatedResponse<VersionApproval>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1068,7 +1068,7 @@ export async function getVersionApproval(id: string): Promise<VersionApproval | 
   const res = await apiFetch(`/api/administrative/version-approvals/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get VersionApproval (${res.status})`);
   const json = await res.json();
-  return (json.versionApproval ?? json.data) as VersionApproval | undefined;
+  return (json.versionApproval ?? json.data ?? (json.id ? json : undefined)) as VersionApproval | undefined;
 }
 export async function adminChatMessageCreate(input: AdminChatMessageCreateInput = {}): Promise<AdminChatMessage | undefined> {
   const r = await executeCommand<AdminChatMessage>("AdminChatMessage", "create", input as Record<string, unknown>);

@@ -1043,7 +1043,7 @@ export async function getEvent(id: string): Promise<Event | undefined> {
   const res = await apiFetch(`/api/events/event/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Event (${res.status})`);
   const json = await res.json();
-  return (json.event ?? json.data) as Event | undefined;
+  return (json.event ?? json.data ?? (json.id ? json : undefined)) as Event | undefined;
 }
 export async function listEventProfitabilities(query?: Record<string, string | number>): Promise<PaginatedResponse<EventProfitability>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1058,7 +1058,7 @@ export async function getEventProfitability(id: string): Promise<EventProfitabil
   const res = await apiFetch(`/api/events/profitability/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EventProfitability (${res.status})`);
   const json = await res.json();
-  return (json.eventProfitability ?? json.data) as EventProfitability | undefined;
+  return (json.eventProfitability ?? json.data ?? (json.id ? json : undefined)) as EventProfitability | undefined;
 }
 export async function listEventSummaries(query?: Record<string, string | number>): Promise<PaginatedResponse<EventSummary>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1073,7 +1073,7 @@ export async function getEventSummary(id: string): Promise<EventSummary | undefi
   const res = await apiFetch(`/api/events/summaries/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EventSummary (${res.status})`);
   const json = await res.json();
-  return (json.eventSummary ?? json.data) as EventSummary | undefined;
+  return (json.eventSummary ?? json.data ?? (json.id ? json : undefined)) as EventSummary | undefined;
 }
 export async function listEventReports(query?: Record<string, string | number>): Promise<PaginatedResponse<EventReport>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1088,7 +1088,7 @@ export async function getEventReport(id: string): Promise<EventReport | undefine
   const res = await apiFetch(`/api/events/reports/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EventReport (${res.status})`);
   const json = await res.json();
-  return (json.eventReport ?? json.data) as EventReport | undefined;
+  return (json.eventReport ?? json.data ?? (json.id ? json : undefined)) as EventReport | undefined;
 }
 export async function listEventBudgets(query?: Record<string, string | number>): Promise<PaginatedResponse<EventBudget>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1103,7 +1103,7 @@ export async function getEventBudget(id: string): Promise<EventBudget | undefine
   const res = await apiFetch(`/api/events/budgets/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EventBudget (${res.status})`);
   const json = await res.json();
-  return (json.eventBudget ?? json.data) as EventBudget | undefined;
+  return (json.eventBudget ?? json.data ?? (json.id ? json : undefined)) as EventBudget | undefined;
 }
 export async function listBudgetLineItems(query?: Record<string, string | number>): Promise<PaginatedResponse<BudgetLineItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1118,7 +1118,7 @@ export async function getBudgetLineItem(id: string): Promise<BudgetLineItem | un
   const res = await apiFetch(`/api/events/budget-line-items/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get BudgetLineItem (${res.status})`);
   const json = await res.json();
-  return (json.budgetLineItem ?? json.data) as BudgetLineItem | undefined;
+  return (json.budgetLineItem ?? json.data ?? (json.id ? json : undefined)) as BudgetLineItem | undefined;
 }
 export async function listBudgetAlerts(query?: Record<string, string | number>): Promise<PaginatedResponse<BudgetAlert>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1133,7 +1133,7 @@ export async function getBudgetAlert(id: string): Promise<BudgetAlert | undefine
   const res = await apiFetch(`/api/events/budget-alerts/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get BudgetAlert (${res.status})`);
   const json = await res.json();
-  return (json.budgetAlert ?? json.data) as BudgetAlert | undefined;
+  return (json.budgetAlert ?? json.data ?? (json.id ? json : undefined)) as BudgetAlert | undefined;
 }
 export async function listCateringOrders(query?: Record<string, string | number>): Promise<PaginatedResponse<CateringOrder>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1148,7 +1148,7 @@ export async function getCateringOrder(id: string): Promise<CateringOrder | unde
   const res = await apiFetch(`/api/events/catering-orders/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get CateringOrder (${res.status})`);
   const json = await res.json();
-  return (json.cateringOrder ?? json.data) as CateringOrder | undefined;
+  return (json.cateringOrder ?? json.data ?? (json.id ? json : undefined)) as CateringOrder | undefined;
 }
 export async function listBattleBoards(query?: Record<string, string | number>): Promise<PaginatedResponse<BattleBoard>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1163,7 +1163,7 @@ export async function getBattleBoard(id: string): Promise<BattleBoard | undefine
   const res = await apiFetch(`/api/events/battle-boards/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get BattleBoard (${res.status})`);
   const json = await res.json();
-  return (json.battleBoard ?? json.data) as BattleBoard | undefined;
+  return (json.battleBoard ?? json.data ?? (json.id ? json : undefined)) as BattleBoard | undefined;
 }
 export async function listEventGuests(query?: Record<string, string | number>): Promise<PaginatedResponse<EventGuest>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1178,7 +1178,7 @@ export async function getEventGuest(id: string): Promise<EventGuest | undefined>
   const res = await apiFetch(`/api/events/guests/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EventGuest (${res.status})`);
   const json = await res.json();
-  return (json.eventGuest ?? json.data) as EventGuest | undefined;
+  return (json.eventGuest ?? json.data ?? (json.id ? json : undefined)) as EventGuest | undefined;
 }
 export async function listEventContracts(query?: Record<string, string | number>): Promise<PaginatedResponse<EventContract>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1193,7 +1193,7 @@ export async function getEventContract(id: string): Promise<EventContract | unde
   const res = await apiFetch(`/api/events/contracts/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EventContract (${res.status})`);
   const json = await res.json();
-  return (json.eventContract ?? json.data) as EventContract | undefined;
+  return (json.eventContract ?? json.data ?? (json.id ? json : undefined)) as EventContract | undefined;
 }
 export async function listContractSignatures(query?: Record<string, string | number>): Promise<PaginatedResponse<ContractSignature>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1208,7 +1208,7 @@ export async function getContractSignature(id: string): Promise<ContractSignatur
   const res = await apiFetch(`/api/events/contract-signatures/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get ContractSignature (${res.status})`);
   const json = await res.json();
-  return (json.contractSignature ?? json.data) as ContractSignature | undefined;
+  return (json.contractSignature ?? json.data ?? (json.id ? json : undefined)) as ContractSignature | undefined;
 }
 export async function listEventDishes(query?: Record<string, string | number>): Promise<PaginatedResponse<EventDish>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1223,7 +1223,7 @@ export async function getEventDish(id: string): Promise<EventDish | undefined> {
   const res = await apiFetch(`/api/events/event-dishes/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EventDish (${res.status})`);
   const json = await res.json();
-  return (json.eventDish ?? json.data) as EventDish | undefined;
+  return (json.eventDish ?? json.data ?? (json.id ? json : undefined)) as EventDish | undefined;
 }
 export async function listEventStaffs(query?: Record<string, string | number>): Promise<PaginatedResponse<EventStaff>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1238,7 +1238,7 @@ export async function getEventStaff(id: string): Promise<EventStaff | undefined>
   const res = await apiFetch(`/api/events/staff/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EventStaff (${res.status})`);
   const json = await res.json();
-  return (json.eventStaff ?? json.data) as EventStaff | undefined;
+  return (json.eventStaff ?? json.data ?? (json.id ? json : undefined)) as EventStaff | undefined;
 }
 export async function listEventImportWorkflows(query?: Record<string, string | number>): Promise<PaginatedResponse<EventImportWorkflow>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1253,7 +1253,7 @@ export async function getEventImportWorkflow(id: string): Promise<EventImportWor
   const res = await apiFetch(`/api/events/import-workflows/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EventImportWorkflow (${res.status})`);
   const json = await res.json();
-  return (json.eventImportWorkflow ?? json.data) as EventImportWorkflow | undefined;
+  return (json.eventImportWorkflow ?? json.data ?? (json.id ? json : undefined)) as EventImportWorkflow | undefined;
 }
 export async function listCommandBoards(query?: Record<string, string | number>): Promise<PaginatedResponse<CommandBoard>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1268,7 +1268,7 @@ export async function getCommandBoard(id: string): Promise<CommandBoard | undefi
   const res = await apiFetch(`/api/command-board/boards/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get CommandBoard (${res.status})`);
   const json = await res.json();
-  return (json.commandBoard ?? json.data) as CommandBoard | undefined;
+  return (json.commandBoard ?? json.data ?? (json.id ? json : undefined)) as CommandBoard | undefined;
 }
 export async function listCommandBoardCards(query?: Record<string, string | number>): Promise<PaginatedResponse<CommandBoardCard>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1283,7 +1283,7 @@ export async function getCommandBoardCard(id: string): Promise<CommandBoardCard 
   const res = await apiFetch(`/api/command-board/cards/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get CommandBoardCard (${res.status})`);
   const json = await res.json();
-  return (json.commandBoardCard ?? json.data) as CommandBoardCard | undefined;
+  return (json.commandBoardCard ?? json.data ?? (json.id ? json : undefined)) as CommandBoardCard | undefined;
 }
 export async function listCommandBoardGroups(query?: Record<string, string | number>): Promise<PaginatedResponse<CommandBoardGroup>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1298,7 +1298,7 @@ export async function getCommandBoardGroup(id: string): Promise<CommandBoardGrou
   const res = await apiFetch(`/api/command-board/groups/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get CommandBoardGroup (${res.status})`);
   const json = await res.json();
-  return (json.commandBoardGroup ?? json.data) as CommandBoardGroup | undefined;
+  return (json.commandBoardGroup ?? json.data ?? (json.id ? json : undefined)) as CommandBoardGroup | undefined;
 }
 export async function listCommandBoardConnections(query?: Record<string, string | number>): Promise<PaginatedResponse<CommandBoardConnection>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1313,7 +1313,7 @@ export async function getCommandBoardConnection(id: string): Promise<CommandBoar
   const res = await apiFetch(`/api/command-board/connections/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get CommandBoardConnection (${res.status})`);
   const json = await res.json();
-  return (json.commandBoardConnection ?? json.data) as CommandBoardConnection | undefined;
+  return (json.commandBoardConnection ?? json.data ?? (json.id ? json : undefined)) as CommandBoardConnection | undefined;
 }
 export async function listCommandBoardLayouts(query?: Record<string, string | number>): Promise<PaginatedResponse<CommandBoardLayout>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1328,7 +1328,7 @@ export async function getCommandBoardLayout(id: string): Promise<CommandBoardLay
   const res = await apiFetch(`/api/command-board/layouts/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get CommandBoardLayout (${res.status})`);
   const json = await res.json();
-  return (json.commandBoardLayout ?? json.data) as CommandBoardLayout | undefined;
+  return (json.commandBoardLayout ?? json.data ?? (json.id ? json : undefined)) as CommandBoardLayout | undefined;
 }
 export async function listVenues(query?: Record<string, string | number>): Promise<PaginatedResponse<Venue>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1343,7 +1343,7 @@ export async function getVenue(id: string): Promise<Venue | undefined> {
   const res = await apiFetch(`/api/events/venues/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Venue (${res.status})`);
   const json = await res.json();
-  return (json.venue ?? json.data) as Venue | undefined;
+  return (json.venue ?? json.data ?? (json.id ? json : undefined)) as Venue | undefined;
 }
 export async function listEventTimelines(query?: Record<string, string | number>): Promise<PaginatedResponse<EventTimeline>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1358,7 +1358,7 @@ export async function getEventTimeline(id: string): Promise<EventTimeline | unde
   const res = await apiFetch(`/api/events/timelines/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EventTimeline (${res.status})`);
   const json = await res.json();
-  return (json.eventTimeline ?? json.data) as EventTimeline | undefined;
+  return (json.eventTimeline ?? json.data ?? (json.id ? json : undefined)) as EventTimeline | undefined;
 }
 export async function listTimelineTasks(query?: Record<string, string | number>): Promise<PaginatedResponse<TimelineTask>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1373,7 +1373,7 @@ export async function getTimelineTask(id: string): Promise<TimelineTask | undefi
   const res = await apiFetch(`/api/events/timeline-tasks/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get TimelineTask (${res.status})`);
   const json = await res.json();
-  return (json.timelineTask ?? json.data) as TimelineTask | undefined;
+  return (json.timelineTask ?? json.data ?? (json.id ? json : undefined)) as TimelineTask | undefined;
 }
 export async function listEventImports(query?: Record<string, string | number>): Promise<PaginatedResponse<EventImport>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1388,7 +1388,7 @@ export async function getEventImport(id: string): Promise<EventImport | undefine
   const res = await apiFetch(`/api/events/imports/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EventImport (${res.status})`);
   const json = await res.json();
-  return (json.eventImport ?? json.data) as EventImport | undefined;
+  return (json.eventImport ?? json.data ?? (json.id ? json : undefined)) as EventImport | undefined;
 }
 export async function listEventFollowups(query?: Record<string, string | number>): Promise<PaginatedResponse<EventFollowup>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1403,7 +1403,7 @@ export async function getEventFollowup(id: string): Promise<EventFollowup | unde
   const res = await apiFetch(`/api/events/followups/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EventFollowup (${res.status})`);
   const json = await res.json();
-  return (json.eventFollowup ?? json.data) as EventFollowup | undefined;
+  return (json.eventFollowup ?? json.data ?? (json.id ? json : undefined)) as EventFollowup | undefined;
 }
 export async function listEventTimelineItems(query?: Record<string, string | number>): Promise<PaginatedResponse<EventTimelineItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1418,7 +1418,7 @@ export async function getEventTimelineItem(id: string): Promise<EventTimelineIte
   const res = await apiFetch(`/api/events/timeline-items/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EventTimelineItem (${res.status})`);
   const json = await res.json();
-  return (json.eventTimelineItem ?? json.data) as EventTimelineItem | undefined;
+  return (json.eventTimelineItem ?? json.data ?? (json.id ? json : undefined)) as EventTimelineItem | undefined;
 }
 export async function listEventWaitlistEntries(query?: Record<string, string | number>): Promise<PaginatedResponse<EventWaitlistEntry>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1433,7 +1433,7 @@ export async function getEventWaitlistEntry(id: string): Promise<EventWaitlistEn
   const res = await apiFetch(`/api/events/waitlist-entries/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EventWaitlistEntry (${res.status})`);
   const json = await res.json();
-  return (json.eventWaitlistEntry ?? json.data) as EventWaitlistEntry | undefined;
+  return (json.eventWaitlistEntry ?? json.data ?? (json.id ? json : undefined)) as EventWaitlistEntry | undefined;
 }
 export async function listBoardProjections(query?: Record<string, string | number>): Promise<PaginatedResponse<BoardProjection>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1448,7 +1448,7 @@ export async function getBoardProjection(id: string): Promise<BoardProjection | 
   const res = await apiFetch(`/api/command-board/projections/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get BoardProjection (${res.status})`);
   const json = await res.json();
-  return (json.boardProjection ?? json.data) as BoardProjection | undefined;
+  return (json.boardProjection ?? json.data ?? (json.id ? json : undefined)) as BoardProjection | undefined;
 }
 export async function listBoardAnnotations(query?: Record<string, string | number>): Promise<PaginatedResponse<BoardAnnotation>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1463,7 +1463,7 @@ export async function getBoardAnnotation(id: string): Promise<BoardAnnotation | 
   const res = await apiFetch(`/api/command-board/annotations/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get BoardAnnotation (${res.status})`);
   const json = await res.json();
-  return (json.boardAnnotation ?? json.data) as BoardAnnotation | undefined;
+  return (json.boardAnnotation ?? json.data ?? (json.id ? json : undefined)) as BoardAnnotation | undefined;
 }
 export async function listAiEventSetupSessions(query?: Record<string, string | number>): Promise<PaginatedResponse<AiEventSetupSession>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1478,7 +1478,7 @@ export async function getAiEventSetupSession(id: string): Promise<AiEventSetupSe
   const res = await apiFetch(`/api/events/ai-setup-sessions/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get AiEventSetupSession (${res.status})`);
   const json = await res.json();
-  return (json.aiEventSetupSession ?? json.data) as AiEventSetupSession | undefined;
+  return (json.aiEventSetupSession ?? json.data ?? (json.id ? json : undefined)) as AiEventSetupSession | undefined;
 }
 export async function listAutomatedFollowups(query?: Record<string, string | number>): Promise<PaginatedResponse<AutomatedFollowup>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1493,7 +1493,7 @@ export async function getAutomatedFollowup(id: string): Promise<AutomatedFollowu
   const res = await apiFetch(`/api/events/automated-followups/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get AutomatedFollowup (${res.status})`);
   const json = await res.json();
-  return (json.automatedFollowup ?? json.data) as AutomatedFollowup | undefined;
+  return (json.automatedFollowup ?? json.data ?? (json.id ? json : undefined)) as AutomatedFollowup | undefined;
 }
 export async function aiEventSetupSessionCancel(input: AiEventSetupSessionCancelInput = {}): Promise<AiEventSetupSession | undefined> {
   const r = await executeCommand<AiEventSetupSession>("AiEventSetupSession", "cancel", input as Record<string, unknown>);

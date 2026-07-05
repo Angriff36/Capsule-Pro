@@ -635,7 +635,7 @@ export async function getUser(id: string): Promise<User | undefined> {
   const res = await apiFetch(`/api/staff/employees/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get User (${res.status})`);
   const json = await res.json();
-  return (json.user ?? json.data) as User | undefined;
+  return (json.user ?? json.data ?? (json.id ? json : undefined)) as User | undefined;
 }
 export async function listStaffMembers(query?: Record<string, string | number>): Promise<PaginatedResponse<StaffMember>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -650,7 +650,7 @@ export async function getStaffMember(id: string): Promise<StaffMember | undefine
   const res = await apiFetch(`/api/staff/members/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get StaffMember (${res.status})`);
   const json = await res.json();
-  return (json.staffMember ?? json.data) as StaffMember | undefined;
+  return (json.staffMember ?? json.data ?? (json.id ? json : undefined)) as StaffMember | undefined;
 }
 export async function listSchedules(query?: Record<string, string | number>): Promise<PaginatedResponse<Schedule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -665,7 +665,7 @@ export async function getSchedule(id: string): Promise<Schedule | undefined> {
   const res = await apiFetch(`/api/staff/schedules/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Schedule (${res.status})`);
   const json = await res.json();
-  return (json.schedule ?? json.data) as Schedule | undefined;
+  return (json.schedule ?? json.data ?? (json.id ? json : undefined)) as Schedule | undefined;
 }
 export async function listScheduleShifts(query?: Record<string, string | number>): Promise<PaginatedResponse<ScheduleShift>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -680,7 +680,7 @@ export async function getScheduleShift(id: string): Promise<ScheduleShift | unde
   const res = await apiFetch(`/api/staff/shifts/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get ScheduleShift (${res.status})`);
   const json = await res.json();
-  return (json.scheduleShift ?? json.data) as ScheduleShift | undefined;
+  return (json.scheduleShift ?? json.data ?? (json.id ? json : undefined)) as ScheduleShift | undefined;
 }
 export async function listTimeEntries(query?: Record<string, string | number>): Promise<PaginatedResponse<TimeEntry>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -695,7 +695,7 @@ export async function getTimeEntry(id: string): Promise<TimeEntry | undefined> {
   const res = await apiFetch(`/api/timecards/entries/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get TimeEntry (${res.status})`);
   const json = await res.json();
-  return (json.timeEntry ?? json.data) as TimeEntry | undefined;
+  return (json.timeEntry ?? json.data ?? (json.id ? json : undefined)) as TimeEntry | undefined;
 }
 export async function listTimecardEditRequests(query?: Record<string, string | number>): Promise<PaginatedResponse<TimecardEditRequest>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -710,7 +710,7 @@ export async function getTimecardEditRequest(id: string): Promise<TimecardEditRe
   const res = await apiFetch(`/api/timecards/edit-requests/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get TimecardEditRequest (${res.status})`);
   const json = await res.json();
-  return (json.timecardEditRequest ?? json.data) as TimecardEditRequest | undefined;
+  return (json.timecardEditRequest ?? json.data ?? (json.id ? json : undefined)) as TimecardEditRequest | undefined;
 }
 export async function listTimeOffRequests(query?: Record<string, string | number>): Promise<PaginatedResponse<TimeOffRequest>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -725,7 +725,7 @@ export async function getTimeOffRequest(id: string): Promise<TimeOffRequest | un
   const res = await apiFetch(`/api/timecards/time-off-requests/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get TimeOffRequest (${res.status})`);
   const json = await res.json();
-  return (json.timeOffRequest ?? json.data) as TimeOffRequest | undefined;
+  return (json.timeOffRequest ?? json.data ?? (json.id ? json : undefined)) as TimeOffRequest | undefined;
 }
 export async function listEmployeeAvailabilities(query?: Record<string, string | number>): Promise<PaginatedResponse<EmployeeAvailability>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -740,7 +740,7 @@ export async function getEmployeeAvailability(id: string): Promise<EmployeeAvail
   const res = await apiFetch(`/api/staff/availability/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EmployeeAvailability (${res.status})`);
   const json = await res.json();
-  return (json.employeeAvailability ?? json.data) as EmployeeAvailability | undefined;
+  return (json.employeeAvailability ?? json.data ?? (json.id ? json : undefined)) as EmployeeAvailability | undefined;
 }
 export async function listEmployeeCertifications(query?: Record<string, string | number>): Promise<PaginatedResponse<EmployeeCertification>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -755,7 +755,7 @@ export async function getEmployeeCertification(id: string): Promise<EmployeeCert
   const res = await apiFetch(`/api/staff/certifications/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EmployeeCertification (${res.status})`);
   const json = await res.json();
-  return (json.employeeCertification ?? json.data) as EmployeeCertification | undefined;
+  return (json.employeeCertification ?? json.data ?? (json.id ? json : undefined)) as EmployeeCertification | undefined;
 }
 export async function listTrainingAssignments(query?: Record<string, string | number>): Promise<PaginatedResponse<TrainingAssignment>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -770,7 +770,7 @@ export async function getTrainingAssignment(id: string): Promise<TrainingAssignm
   const res = await apiFetch(`/api/training/assignments/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get TrainingAssignment (${res.status})`);
   const json = await res.json();
-  return (json.trainingAssignment ?? json.data) as TrainingAssignment | undefined;
+  return (json.trainingAssignment ?? json.data ?? (json.id ? json : undefined)) as TrainingAssignment | undefined;
 }
 export async function listTrainingModules(query?: Record<string, string | number>): Promise<PaginatedResponse<TrainingModule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -785,7 +785,7 @@ export async function getTrainingModule(id: string): Promise<TrainingModule | un
   const res = await apiFetch(`/api/training/modules/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get TrainingModule (${res.status})`);
   const json = await res.json();
-  return (json.trainingModule ?? json.data) as TrainingModule | undefined;
+  return (json.trainingModule ?? json.data ?? (json.id ? json : undefined)) as TrainingModule | undefined;
 }
 export async function listTimecardApprovals(query?: Record<string, string | number>): Promise<PaginatedResponse<TimecardApproval>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -800,7 +800,7 @@ export async function getTimecardApproval(id: string): Promise<TimecardApproval 
   const res = await apiFetch(`/api/staff/timecard-approvals/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get TimecardApproval (${res.status})`);
   const json = await res.json();
-  return (json.timecardApproval ?? json.data) as TimecardApproval | undefined;
+  return (json.timecardApproval ?? json.data ?? (json.id ? json : undefined)) as TimecardApproval | undefined;
 }
 export async function listPayrollLineItems(query?: Record<string, string | number>): Promise<PaginatedResponse<PayrollLineItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -815,7 +815,7 @@ export async function getPayrollLineItem(id: string): Promise<PayrollLineItem | 
   const res = await apiFetch(`/api/staff/payroll-line-items/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PayrollLineItem (${res.status})`);
   const json = await res.json();
-  return (json.payrollLineItem ?? json.data) as PayrollLineItem | undefined;
+  return (json.payrollLineItem ?? json.data ?? (json.id ? json : undefined)) as PayrollLineItem | undefined;
 }
 export async function listTipPools(query?: Record<string, string | number>): Promise<PaginatedResponse<TipPool>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -830,7 +830,7 @@ export async function getTipPool(id: string): Promise<TipPool | undefined> {
   const res = await apiFetch(`/api/staff/tip-pools/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get TipPool (${res.status})`);
   const json = await res.json();
-  return (json.tipPool ?? json.data) as TipPool | undefined;
+  return (json.tipPool ?? json.data ?? (json.id ? json : undefined)) as TipPool | undefined;
 }
 export async function listDisciplinaryActions(query?: Record<string, string | number>): Promise<PaginatedResponse<DisciplinaryAction>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -845,7 +845,7 @@ export async function getDisciplinaryAction(id: string): Promise<DisciplinaryAct
   const res = await apiFetch(`/api/staff/disciplinary-actions/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get DisciplinaryAction (${res.status})`);
   const json = await res.json();
-  return (json.disciplinaryAction ?? json.data) as DisciplinaryAction | undefined;
+  return (json.disciplinaryAction ?? json.data ?? (json.id ? json : undefined)) as DisciplinaryAction | undefined;
 }
 export async function listActionMilestones(query?: Record<string, string | number>): Promise<PaginatedResponse<ActionMilestone>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -860,7 +860,7 @@ export async function getActionMilestone(id: string): Promise<ActionMilestone | 
   const res = await apiFetch(`/api/staff/action-milestones/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get ActionMilestone (${res.status})`);
   const json = await res.json();
-  return (json.actionMilestone ?? json.data) as ActionMilestone | undefined;
+  return (json.actionMilestone ?? json.data ?? (json.id ? json : undefined)) as ActionMilestone | undefined;
 }
 export async function listPerformanceReviews(query?: Record<string, string | number>): Promise<PaginatedResponse<PerformanceReview>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -875,7 +875,7 @@ export async function getPerformanceReview(id: string): Promise<PerformanceRevie
   const res = await apiFetch(`/api/staff/performance-reviews/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PerformanceReview (${res.status})`);
   const json = await res.json();
-  return (json.performanceReview ?? json.data) as PerformanceReview | undefined;
+  return (json.performanceReview ?? json.data ?? (json.id ? json : undefined)) as PerformanceReview | undefined;
 }
 export async function listTrainingCompletions(query?: Record<string, string | number>): Promise<PaginatedResponse<TrainingCompletion>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -890,7 +890,7 @@ export async function getTrainingCompletion(id: string): Promise<TrainingComplet
   const res = await apiFetch(`/api/staff/training-completions/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get TrainingCompletion (${res.status})`);
   const json = await res.json();
-  return (json.trainingCompletion ?? json.data) as TrainingCompletion | undefined;
+  return (json.trainingCompletion ?? json.data ?? (json.id ? json : undefined)) as TrainingCompletion | undefined;
 }
 export async function listOnboardingTasks(query?: Record<string, string | number>): Promise<PaginatedResponse<OnboardingTask>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -905,7 +905,7 @@ export async function getOnboardingTask(id: string): Promise<OnboardingTask | un
   const res = await apiFetch(`/api/staff/onboarding-tasks/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get OnboardingTask (${res.status})`);
   const json = await res.json();
-  return (json.onboardingTask ?? json.data) as OnboardingTask | undefined;
+  return (json.onboardingTask ?? json.data ?? (json.id ? json : undefined)) as OnboardingTask | undefined;
 }
 export async function listOnboardingCompletions(query?: Record<string, string | number>): Promise<PaginatedResponse<OnboardingCompletion>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -920,7 +920,7 @@ export async function getOnboardingCompletion(id: string): Promise<OnboardingCom
   const res = await apiFetch(`/api/staff/onboarding-completions/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get OnboardingCompletion (${res.status})`);
   const json = await res.json();
-  return (json.onboardingCompletion ?? json.data) as OnboardingCompletion | undefined;
+  return (json.onboardingCompletion ?? json.data ?? (json.id ? json : undefined)) as OnboardingCompletion | undefined;
 }
 export async function listOpenShifts(query?: Record<string, string | number>): Promise<PaginatedResponse<OpenShift>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -935,7 +935,7 @@ export async function getOpenShift(id: string): Promise<OpenShift | undefined> {
   const res = await apiFetch(`/api/staff/open-shifts/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get OpenShift (${res.status})`);
   const json = await res.json();
-  return (json.openShift ?? json.data) as OpenShift | undefined;
+  return (json.openShift ?? json.data ?? (json.id ? json : undefined)) as OpenShift | undefined;
 }
 export async function listStaffPerformances(query?: Record<string, string | number>): Promise<PaginatedResponse<StaffPerformance>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -950,7 +950,7 @@ export async function getStaffPerformance(id: string): Promise<StaffPerformance 
   const res = await apiFetch(`/api/staff/performance/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get StaffPerformance (${res.status})`);
   const json = await res.json();
-  return (json.staffPerformance ?? json.data) as StaffPerformance | undefined;
+  return (json.staffPerformance ?? json.data ?? (json.id ? json : undefined)) as StaffPerformance | undefined;
 }
 export async function listWorkforceOptimizations(query?: Record<string, string | number>): Promise<PaginatedResponse<WorkforceOptimization>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -965,7 +965,7 @@ export async function getWorkforceOptimization(id: string): Promise<WorkforceOpt
   const res = await apiFetch(`/api/staff/workforce-optimization/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get WorkforceOptimization (${res.status})`);
   const json = await res.json();
-  return (json.workforceOptimization ?? json.data) as WorkforceOptimization | undefined;
+  return (json.workforceOptimization ?? json.data ?? (json.id ? json : undefined)) as WorkforceOptimization | undefined;
 }
 export async function listPerformancePredictions(query?: Record<string, string | number>): Promise<PaginatedResponse<PerformancePrediction>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -980,7 +980,7 @@ export async function getPerformancePrediction(id: string): Promise<PerformanceP
   const res = await apiFetch(`/api/staff/performance-predictions/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PerformancePrediction (${res.status})`);
   const json = await res.json();
-  return (json.performancePrediction ?? json.data) as PerformancePrediction | undefined;
+  return (json.performancePrediction ?? json.data ?? (json.id ? json : undefined)) as PerformancePrediction | undefined;
 }
 export async function actionMilestoneComplete(input: ActionMilestoneCompleteInput = {}): Promise<ActionMilestone | undefined> {
   const r = await executeCommand<ActionMilestone>("ActionMilestone", "complete", input as Record<string, unknown>);

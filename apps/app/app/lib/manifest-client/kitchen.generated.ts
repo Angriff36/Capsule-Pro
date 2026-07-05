@@ -1231,7 +1231,7 @@ export async function getPrepTask(id: string): Promise<PrepTask | undefined> {
   const res = await apiFetch(`/api/kitchen/prep-tasks/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PrepTask (${res.status})`);
   const json = await res.json();
-  return (json.prepTask ?? json.data) as PrepTask | undefined;
+  return (json.prepTask ?? json.data ?? (json.id ? json : undefined)) as PrepTask | undefined;
 }
 export async function listPrepTaskPlanWorkflows(query?: Record<string, string | number>): Promise<PaginatedResponse<PrepTaskPlanWorkflow>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1246,7 +1246,7 @@ export async function getPrepTaskPlanWorkflow(id: string): Promise<PrepTaskPlanW
   const res = await apiFetch(`/api/kitchen/prep-task-plan-workflows/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PrepTaskPlanWorkflow (${res.status})`);
   const json = await res.json();
-  return (json.prepTaskPlanWorkflow ?? json.data) as PrepTaskPlanWorkflow | undefined;
+  return (json.prepTaskPlanWorkflow ?? json.data ?? (json.id ? json : undefined)) as PrepTaskPlanWorkflow | undefined;
 }
 export async function listKitchenTasks(query?: Record<string, string | number>): Promise<PaginatedResponse<KitchenTask>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1261,7 +1261,7 @@ export async function getKitchenTask(id: string): Promise<KitchenTask | undefine
   const res = await apiFetch(`/api/kitchen/kitchen-tasks/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get KitchenTask (${res.status})`);
   const json = await res.json();
-  return (json.kitchenTask ?? json.data) as KitchenTask | undefined;
+  return (json.kitchenTask ?? json.data ?? (json.id ? json : undefined)) as KitchenTask | undefined;
 }
 export async function listRecipes(query?: Record<string, string | number>): Promise<PaginatedResponse<Recipe>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1276,7 +1276,7 @@ export async function getRecipe(id: string): Promise<Recipe | undefined> {
   const res = await apiFetch(`/api/kitchen/recipes/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Recipe (${res.status})`);
   const json = await res.json();
-  return (json.recipe ?? json.data) as Recipe | undefined;
+  return (json.recipe ?? json.data ?? (json.id ? json : undefined)) as Recipe | undefined;
 }
 export async function listRecipeVersions(query?: Record<string, string | number>): Promise<PaginatedResponse<RecipeVersion>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1291,7 +1291,7 @@ export async function getRecipeVersion(id: string): Promise<RecipeVersion | unde
   const res = await apiFetch(`/api/kitchen/recipe-versions/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get RecipeVersion (${res.status})`);
   const json = await res.json();
-  return (json.recipeVersion ?? json.data) as RecipeVersion | undefined;
+  return (json.recipeVersion ?? json.data ?? (json.id ? json : undefined)) as RecipeVersion | undefined;
 }
 export async function listRecipeIngredients(query?: Record<string, string | number>): Promise<PaginatedResponse<RecipeIngredient>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1306,7 +1306,7 @@ export async function getRecipeIngredient(id: string): Promise<RecipeIngredient 
   const res = await apiFetch(`/api/kitchen/recipe-ingredients/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get RecipeIngredient (${res.status})`);
   const json = await res.json();
-  return (json.recipeIngredient ?? json.data) as RecipeIngredient | undefined;
+  return (json.recipeIngredient ?? json.data ?? (json.id ? json : undefined)) as RecipeIngredient | undefined;
 }
 export async function listRecipeSteps(query?: Record<string, string | number>): Promise<PaginatedResponse<RecipeStep>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1321,7 +1321,7 @@ export async function getRecipeStep(id: string): Promise<RecipeStep | undefined>
   const res = await apiFetch(`/api/kitchen/recipe-steps/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get RecipeStep (${res.status})`);
   const json = await res.json();
-  return (json.recipeStep ?? json.data) as RecipeStep | undefined;
+  return (json.recipeStep ?? json.data ?? (json.id ? json : undefined)) as RecipeStep | undefined;
 }
 export async function listIngredients(query?: Record<string, string | number>): Promise<PaginatedResponse<Ingredient>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1336,7 +1336,7 @@ export async function getIngredient(id: string): Promise<Ingredient | undefined>
   const res = await apiFetch(`/api/kitchen/ingredients/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Ingredient (${res.status})`);
   const json = await res.json();
-  return (json.ingredient ?? json.data) as Ingredient | undefined;
+  return (json.ingredient ?? json.data ?? (json.id ? json : undefined)) as Ingredient | undefined;
 }
 export async function listDishes(query?: Record<string, string | number>): Promise<PaginatedResponse<Dish>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1351,7 +1351,7 @@ export async function getDish(id: string): Promise<Dish | undefined> {
   const res = await apiFetch(`/api/kitchen/dishes/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Dish (${res.status})`);
   const json = await res.json();
-  return (json.dish ?? json.data) as Dish | undefined;
+  return (json.dish ?? json.data ?? (json.id ? json : undefined)) as Dish | undefined;
 }
 export async function listMenus(query?: Record<string, string | number>): Promise<PaginatedResponse<Menu>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1366,7 +1366,7 @@ export async function getMenu(id: string): Promise<Menu | undefined> {
   const res = await apiFetch(`/api/kitchen/menus/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Menu (${res.status})`);
   const json = await res.json();
-  return (json.menu ?? json.data) as Menu | undefined;
+  return (json.menu ?? json.data ?? (json.id ? json : undefined)) as Menu | undefined;
 }
 export async function listMenuDishes(query?: Record<string, string | number>): Promise<PaginatedResponse<MenuDish>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1381,7 +1381,7 @@ export async function getMenuDish(id: string): Promise<MenuDish | undefined> {
   const res = await apiFetch(`/api/kitchen/menu-dishes/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get MenuDish (${res.status})`);
   const json = await res.json();
-  return (json.menuDish ?? json.data) as MenuDish | undefined;
+  return (json.menuDish ?? json.data ?? (json.id ? json : undefined)) as MenuDish | undefined;
 }
 export async function listPrepLists(query?: Record<string, string | number>): Promise<PaginatedResponse<PrepList>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1396,7 +1396,7 @@ export async function getPrepList(id: string): Promise<PrepList | undefined> {
   const res = await apiFetch(`/api/kitchen/prep-lists/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PrepList (${res.status})`);
   const json = await res.json();
-  return (json.prepList ?? json.data) as PrepList | undefined;
+  return (json.prepList ?? json.data ?? (json.id ? json : undefined)) as PrepList | undefined;
 }
 export async function listPrepListItems(query?: Record<string, string | number>): Promise<PaginatedResponse<PrepListItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1411,7 +1411,7 @@ export async function getPrepListItem(id: string): Promise<PrepListItem | undefi
   const res = await apiFetch(`/api/kitchen/prep-list-items/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PrepListItem (${res.status})`);
   const json = await res.json();
-  return (json.prepListItem ?? json.data) as PrepListItem | undefined;
+  return (json.prepListItem ?? json.data ?? (json.id ? json : undefined)) as PrepListItem | undefined;
 }
 export async function listStations(query?: Record<string, string | number>): Promise<PaginatedResponse<Station>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1426,7 +1426,7 @@ export async function getStation(id: string): Promise<Station | undefined> {
   const res = await apiFetch(`/api/kitchen/stations/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Station (${res.status})`);
   const json = await res.json();
-  return (json.station ?? json.data) as Station | undefined;
+  return (json.station ?? json.data ?? (json.id ? json : undefined)) as Station | undefined;
 }
 export async function listInventoryItems(query?: Record<string, string | number>): Promise<PaginatedResponse<InventoryItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1441,7 +1441,7 @@ export async function getInventoryItem(id: string): Promise<InventoryItem | unde
   const res = await apiFetch(`/api/kitchen/inventory/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get InventoryItem (${res.status})`);
   const json = await res.json();
-  return (json.inventoryItem ?? json.data) as InventoryItem | undefined;
+  return (json.inventoryItem ?? json.data ?? (json.id ? json : undefined)) as InventoryItem | undefined;
 }
 export async function listPrepComments(query?: Record<string, string | number>): Promise<PaginatedResponse<PrepComment>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1456,7 +1456,7 @@ export async function getPrepComment(id: string): Promise<PrepComment | undefine
   const res = await apiFetch(`/api/kitchen/prep-comments/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PrepComment (${res.status})`);
   const json = await res.json();
-  return (json.prepComment ?? json.data) as PrepComment | undefined;
+  return (json.prepComment ?? json.data ?? (json.id ? json : undefined)) as PrepComment | undefined;
 }
 export async function listContainers(query?: Record<string, string | number>): Promise<PaginatedResponse<Container>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1471,7 +1471,7 @@ export async function getContainer(id: string): Promise<Container | undefined> {
   const res = await apiFetch(`/api/kitchen/containers/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Container (${res.status})`);
   const json = await res.json();
-  return (json.container ?? json.data) as Container | undefined;
+  return (json.container ?? json.data ?? (json.id ? json : undefined)) as Container | undefined;
 }
 export async function listPrepMethods(query?: Record<string, string | number>): Promise<PaginatedResponse<PrepMethod>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1486,7 +1486,7 @@ export async function getPrepMethod(id: string): Promise<PrepMethod | undefined>
   const res = await apiFetch(`/api/kitchen/prep-methods/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PrepMethod (${res.status})`);
   const json = await res.json();
-  return (json.prepMethod ?? json.data) as PrepMethod | undefined;
+  return (json.prepMethod ?? json.data ?? (json.id ? json : undefined)) as PrepMethod | undefined;
 }
 export async function listWasteEntries(query?: Record<string, string | number>): Promise<PaginatedResponse<WasteEntry>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1501,7 +1501,7 @@ export async function getWasteEntry(id: string): Promise<WasteEntry | undefined>
   const res = await apiFetch(`/api/kitchen/waste-entries/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get WasteEntry (${res.status})`);
   const json = await res.json();
-  return (json.wasteEntry ?? json.data) as WasteEntry | undefined;
+  return (json.wasteEntry ?? json.data ?? (json.id ? json : undefined)) as WasteEntry | undefined;
 }
 export async function listAllergenWarnings(query?: Record<string, string | number>): Promise<PaginatedResponse<AllergenWarning>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1516,7 +1516,7 @@ export async function getAllergenWarning(id: string): Promise<AllergenWarning | 
   const res = await apiFetch(`/api/kitchen/allergen-warnings/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get AllergenWarning (${res.status})`);
   const json = await res.json();
-  return (json.allergenWarning ?? json.data) as AllergenWarning | undefined;
+  return (json.allergenWarning ?? json.data ?? (json.id ? json : undefined)) as AllergenWarning | undefined;
 }
 export async function listAlertsConfigs(query?: Record<string, string | number>): Promise<PaginatedResponse<AlertsConfig>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1531,7 +1531,7 @@ export async function getAlertsConfig(id: string): Promise<AlertsConfig | undefi
   const res = await apiFetch(`/api/kitchen/alerts-config/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get AlertsConfig (${res.status})`);
   const json = await res.json();
-  return (json.alertsConfig ?? json.data) as AlertsConfig | undefined;
+  return (json.alertsConfig ?? json.data ?? (json.id ? json : undefined)) as AlertsConfig | undefined;
 }
 export async function listOverrideAudits(query?: Record<string, string | number>): Promise<PaginatedResponse<OverrideAudit>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1546,7 +1546,7 @@ export async function getOverrideAudit(id: string): Promise<OverrideAudit | unde
   const res = await apiFetch(`/api/kitchen/override-audits/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get OverrideAudit (${res.status})`);
   const json = await res.json();
-  return (json.overrideAudit ?? json.data) as OverrideAudit | undefined;
+  return (json.overrideAudit ?? json.data ?? (json.id ? json : undefined)) as OverrideAudit | undefined;
 }
 export async function listTemperatureProbes(query?: Record<string, string | number>): Promise<PaginatedResponse<TemperatureProbe>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1561,7 +1561,7 @@ export async function getTemperatureProbe(id: string): Promise<TemperatureProbe 
   const res = await apiFetch(`/api/kitchen/temperature-probes/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get TemperatureProbe (${res.status})`);
   const json = await res.json();
-  return (json.temperatureProbe ?? json.data) as TemperatureProbe | undefined;
+  return (json.temperatureProbe ?? json.data ?? (json.id ? json : undefined)) as TemperatureProbe | undefined;
 }
 export async function listTemperatureLogs(query?: Record<string, string | number>): Promise<PaginatedResponse<TemperatureLog>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1576,7 +1576,7 @@ export async function getTemperatureLog(id: string): Promise<TemperatureLog | un
   const res = await apiFetch(`/api/kitchen/temperature-logs/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get TemperatureLog (${res.status})`);
   const json = await res.json();
-  return (json.temperatureLog ?? json.data) as TemperatureLog | undefined;
+  return (json.temperatureLog ?? json.data ?? (json.id ? json : undefined)) as TemperatureLog | undefined;
 }
 export async function listTemperatureReadings(query?: Record<string, string | number>): Promise<PaginatedResponse<TemperatureReading>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1591,7 +1591,7 @@ export async function getTemperatureReading(id: string): Promise<TemperatureRead
   const res = await apiFetch(`/api/kitchen/temperature-readings/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get TemperatureReading (${res.status})`);
   const json = await res.json();
-  return (json.temperatureReading ?? json.data) as TemperatureReading | undefined;
+  return (json.temperatureReading ?? json.data ?? (json.id ? json : undefined)) as TemperatureReading | undefined;
 }
 export async function listIotAlertRules(query?: Record<string, string | number>): Promise<PaginatedResponse<IotAlertRule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1606,7 +1606,7 @@ export async function getIotAlertRule(id: string): Promise<IotAlertRule | undefi
   const res = await apiFetch(`/api/kitchen/iot-alert-rules/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get IotAlertRule (${res.status})`);
   const json = await res.json();
-  return (json.iotAlertRule ?? json.data) as IotAlertRule | undefined;
+  return (json.iotAlertRule ?? json.data ?? (json.id ? json : undefined)) as IotAlertRule | undefined;
 }
 export async function listIoTAlerts(query?: Record<string, string | number>): Promise<PaginatedResponse<IoTAlert>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1621,7 +1621,7 @@ export async function getIoTAlert(id: string): Promise<IoTAlert | undefined> {
   const res = await apiFetch(`/api/kitchen/iot-alerts/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get IoTAlert (${res.status})`);
   const json = await res.json();
-  return (json.ioTAlert ?? json.data) as IoTAlert | undefined;
+  return (json.ioTAlert ?? json.data ?? (json.id ? json : undefined)) as IoTAlert | undefined;
 }
 export async function listCorrectiveActions(query?: Record<string, string | number>): Promise<PaginatedResponse<CorrectiveAction>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1636,7 +1636,7 @@ export async function getCorrectiveAction(id: string): Promise<CorrectiveAction 
   const res = await apiFetch(`/api/kitchen/corrective-actions/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get CorrectiveAction (${res.status})`);
   const json = await res.json();
-  return (json.correctiveAction ?? json.data) as CorrectiveAction | undefined;
+  return (json.correctiveAction ?? json.data ?? (json.id ? json : undefined)) as CorrectiveAction | undefined;
 }
 export async function listQualityChecks(query?: Record<string, string | number>): Promise<PaginatedResponse<QualityCheck>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1651,7 +1651,7 @@ export async function getQualityCheck(id: string): Promise<QualityCheck | undefi
   const res = await apiFetch(`/api/kitchen/quality-checks/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get QualityCheck (${res.status})`);
   const json = await res.json();
-  return (json.qualityCheck ?? json.data) as QualityCheck | undefined;
+  return (json.qualityCheck ?? json.data ?? (json.id ? json : undefined)) as QualityCheck | undefined;
 }
 export async function listQualityCheckItems(query?: Record<string, string | number>): Promise<PaginatedResponse<QualityCheckItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1666,7 +1666,7 @@ export async function getQualityCheckItem(id: string): Promise<QualityCheckItem 
   const res = await apiFetch(`/api/kitchen/quality-check-items/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get QualityCheckItem (${res.status})`);
   const json = await res.json();
-  return (json.qualityCheckItem ?? json.data) as QualityCheckItem | undefined;
+  return (json.qualityCheckItem ?? json.data ?? (json.id ? json : undefined)) as QualityCheckItem | undefined;
 }
 export async function listKitchenTaskClaims(query?: Record<string, string | number>): Promise<PaginatedResponse<KitchenTaskClaim>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1681,7 +1681,7 @@ export async function getKitchenTaskClaim(id: string): Promise<KitchenTaskClaim 
   const res = await apiFetch(`/api/kitchen/task-claims/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get KitchenTaskClaim (${res.status})`);
   const json = await res.json();
-  return (json.kitchenTaskClaim ?? json.data) as KitchenTaskClaim | undefined;
+  return (json.kitchenTaskClaim ?? json.data ?? (json.id ? json : undefined)) as KitchenTaskClaim | undefined;
 }
 export async function listKitchenTaskProgresses(query?: Record<string, string | number>): Promise<PaginatedResponse<KitchenTaskProgress>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1696,7 +1696,7 @@ export async function getKitchenTaskProgress(id: string): Promise<KitchenTaskPro
   const res = await apiFetch(`/api/kitchen/task-progress/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get KitchenTaskProgress (${res.status})`);
   const json = await res.json();
-  return (json.kitchenTaskProgress ?? json.data) as KitchenTaskProgress | undefined;
+  return (json.kitchenTaskProgress ?? json.data ?? (json.id ? json : undefined)) as KitchenTaskProgress | undefined;
 }
 export async function listTaskBundles(query?: Record<string, string | number>): Promise<PaginatedResponse<TaskBundle>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1711,7 +1711,7 @@ export async function getTaskBundle(id: string): Promise<TaskBundle | undefined>
   const res = await apiFetch(`/api/kitchen/task-bundles/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get TaskBundle (${res.status})`);
   const json = await res.json();
-  return (json.taskBundle ?? json.data) as TaskBundle | undefined;
+  return (json.taskBundle ?? json.data ?? (json.id ? json : undefined)) as TaskBundle | undefined;
 }
 export async function listTaskBundleItems(query?: Record<string, string | number>): Promise<PaginatedResponse<TaskBundleItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1726,7 +1726,7 @@ export async function getTaskBundleItem(id: string): Promise<TaskBundleItem | un
   const res = await apiFetch(`/api/kitchen/task-bundle-items/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get TaskBundleItem (${res.status})`);
   const json = await res.json();
-  return (json.taskBundleItem ?? json.data) as TaskBundleItem | undefined;
+  return (json.taskBundleItem ?? json.data ?? (json.id ? json : undefined)) as TaskBundleItem | undefined;
 }
 export async function listBulkCombineRules(query?: Record<string, string | number>): Promise<PaginatedResponse<BulkCombineRule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1741,7 +1741,7 @@ export async function getBulkCombineRule(id: string): Promise<BulkCombineRule | 
   const res = await apiFetch(`/api/kitchen/bulk-combine-rules/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get BulkCombineRule (${res.status})`);
   const json = await res.json();
-  return (json.bulkCombineRule ?? json.data) as BulkCombineRule | undefined;
+  return (json.bulkCombineRule ?? json.data ?? (json.id ? json : undefined)) as BulkCombineRule | undefined;
 }
 export async function listMethodVideos(query?: Record<string, string | number>): Promise<PaginatedResponse<MethodVideo>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1756,7 +1756,7 @@ export async function getMethodVideo(id: string): Promise<MethodVideo | undefine
   const res = await apiFetch(`/api/kitchen/method-videos/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get MethodVideo (${res.status})`);
   const json = await res.json();
-  return (json.methodVideo ?? json.data) as MethodVideo | undefined;
+  return (json.methodVideo ?? json.data ?? (json.id ? json : undefined)) as MethodVideo | undefined;
 }
 export async function listPrepListImports(query?: Record<string, string | number>): Promise<PaginatedResponse<PrepListImport>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1771,7 +1771,7 @@ export async function getPrepListImport(id: string): Promise<PrepListImport | un
   const res = await apiFetch(`/api/kitchen/prep-list-imports/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PrepListImport (${res.status})`);
   const json = await res.json();
-  return (json.prepListImport ?? json.data) as PrepListImport | undefined;
+  return (json.prepListImport ?? json.data ?? (json.id ? json : undefined)) as PrepListImport | undefined;
 }
 export async function listQAChecks(query?: Record<string, string | number>): Promise<PaginatedResponse<QACheck>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1786,7 +1786,7 @@ export async function getQACheck(id: string): Promise<QACheck | undefined> {
   const res = await apiFetch(`/api/kitchen/qa-checks/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get QACheck (${res.status})`);
   const json = await res.json();
-  return (json.qACheck ?? json.data) as QACheck | undefined;
+  return (json.qACheck ?? json.data ?? (json.id ? json : undefined)) as QACheck | undefined;
 }
 export async function listQACorrectiveActions(query?: Record<string, string | number>): Promise<PaginatedResponse<QACorrectiveAction>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1801,7 +1801,7 @@ export async function getQACorrectiveAction(id: string): Promise<QACorrectiveAct
   const res = await apiFetch(`/api/kitchen/qa-corrective-actions/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get QACorrectiveAction (${res.status})`);
   const json = await res.json();
-  return (json.qACorrectiveAction ?? json.data) as QACorrectiveAction | undefined;
+  return (json.qACorrectiveAction ?? json.data ?? (json.id ? json : undefined)) as QACorrectiveAction | undefined;
 }
 export async function listQATemperatureLogs(query?: Record<string, string | number>): Promise<PaginatedResponse<QATemperatureLog>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1816,7 +1816,7 @@ export async function getQATemperatureLog(id: string): Promise<QATemperatureLog 
   const res = await apiFetch(`/api/kitchen/qa-temperature-logs/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get QATemperatureLog (${res.status})`);
   const json = await res.json();
-  return (json.qATemperatureLog ?? json.data) as QATemperatureLog | undefined;
+  return (json.qATemperatureLog ?? json.data ?? (json.id ? json : undefined)) as QATemperatureLog | undefined;
 }
 export async function alertsConfigCreate(input: AlertsConfigCreateInput = {}): Promise<AlertsConfig | undefined> {
   const r = await executeCommand<AlertsConfig>("AlertsConfig", "create", input as Record<string, unknown>);

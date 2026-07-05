@@ -149,10 +149,41 @@ export default function RequisitionDetailPage() {
           toast.error("Could not resolve your user identity");
           return;
         }
+        // approveManager is gated by the IR approval chain `procurementChain`
+        // — grant the matching stage first (the engine validates the
+        // approver's role against the stage policy), then run the command.
+        const APPROVAL_STAGES: Record<string, string> = {
+          "approve-manager": "manager",
+          "approve-finance": "finance",
+        };
+        const stageName = APPROVAL_STAGES[command];
+        if (stageName) {
+          const approvalResponse = await fetch(apiUrl("/api/manifest/approvals"), {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              entity: "PurchaseRequisition",
+              instanceId: requisition.id,
+              approvalName: "procurementChain",
+              stageName,
+              action: "approve",
+            }),
+          });
+          const approvalBody = (await approvalResponse.json()) as {
+            error?: string;
+            success: boolean;
+          };
+          if (!approvalBody.success) {
+            toast.error(approvalBody.error ?? "Approval was rejected");
+            return;
+          }
+        }
         await executeCommand("PurchaseRequisition", camelCommand, {
           id: requisition.id,
           userId: me.id,
         });
+        toast.success("Done");
       }
       await loadRequisition();
     } catch (error) {

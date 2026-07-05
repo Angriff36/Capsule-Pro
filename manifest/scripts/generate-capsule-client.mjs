@@ -160,7 +160,12 @@ for (const [entity, base] of Object.entries(ENTITY_DOMAIN_MAP)) {
     `  if (!res.ok) throw new Error(\`Failed to get ${entity} (\${res.status})\`);`
   );
   st.out.push("  const json = await res.json();");
-  st.out.push(`  return (json.${detailKey} ?? json.data) as ${T} | undefined;`);
+  // Hand-written detail routes return the entity at TOP LEVEL (no wrapper
+  // key) — e.g. /api/kitchen/prep-lists/[id], /api/inventory/purchase-orders/[id].
+  // Fall back to the whole payload when it looks like an entity (has an id).
+  st.out.push(
+    `  return (json.${detailKey} ?? json.data ?? (json.id ? json : undefined)) as ${T} | undefined;`
+  );
   st.out.push("}");
 }
 

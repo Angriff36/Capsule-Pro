@@ -1425,7 +1425,7 @@ export async function getPurchaseOrder(id: string): Promise<PurchaseOrder | unde
   const res = await apiFetch(`/api/inventory/purchase-orders/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PurchaseOrder (${res.status})`);
   const json = await res.json();
-  return (json.purchaseOrder ?? json.data) as PurchaseOrder | undefined;
+  return (json.purchaseOrder ?? json.data ?? (json.id ? json : undefined)) as PurchaseOrder | undefined;
 }
 export async function listPurchaseOrderItems(query?: Record<string, string | number>): Promise<PaginatedResponse<PurchaseOrderItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1440,7 +1440,7 @@ export async function getPurchaseOrderItem(id: string): Promise<PurchaseOrderIte
   const res = await apiFetch(`/api/inventory/purchase-order-items/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PurchaseOrderItem (${res.status})`);
   const json = await res.json();
-  return (json.purchaseOrderItem ?? json.data) as PurchaseOrderItem | undefined;
+  return (json.purchaseOrderItem ?? json.data ?? (json.id ? json : undefined)) as PurchaseOrderItem | undefined;
 }
 export async function listPurchaseRequisitions(query?: Record<string, string | number>): Promise<PaginatedResponse<PurchaseRequisition>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1455,7 +1455,7 @@ export async function getPurchaseRequisition(id: string): Promise<PurchaseRequis
   const res = await apiFetch(`/api/procurement/requisitions/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PurchaseRequisition (${res.status})`);
   const json = await res.json();
-  return (json.purchaseRequisition ?? json.data) as PurchaseRequisition | undefined;
+  return (json.purchaseRequisition ?? json.data ?? (json.id ? json : undefined)) as PurchaseRequisition | undefined;
 }
 export async function listPurchaseRequisitionItems(query?: Record<string, string | number>): Promise<PaginatedResponse<PurchaseRequisitionItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1470,7 +1470,7 @@ export async function getPurchaseRequisitionItem(id: string): Promise<PurchaseRe
   const res = await apiFetch(`/api/procurement/requisition-items/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PurchaseRequisitionItem (${res.status})`);
   const json = await res.json();
-  return (json.purchaseRequisitionItem ?? json.data) as PurchaseRequisitionItem | undefined;
+  return (json.purchaseRequisitionItem ?? json.data ?? (json.id ? json : undefined)) as PurchaseRequisitionItem | undefined;
 }
 export async function listVendorContracts(query?: Record<string, string | number>): Promise<PaginatedResponse<VendorContract>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1485,7 +1485,7 @@ export async function getVendorContract(id: string): Promise<VendorContract | un
   const res = await apiFetch(`/api/procurement/vendor-contracts/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get VendorContract (${res.status})`);
   const json = await res.json();
-  return (json.vendorContract ?? json.data) as VendorContract | undefined;
+  return (json.vendorContract ?? json.data ?? (json.id ? json : undefined)) as VendorContract | undefined;
 }
 export async function listShipments(query?: Record<string, string | number>): Promise<PaginatedResponse<Shipment>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1500,7 +1500,7 @@ export async function getShipment(id: string): Promise<Shipment | undefined> {
   const res = await apiFetch(`/api/shipments/shipment/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Shipment (${res.status})`);
   const json = await res.json();
-  return (json.shipment ?? json.data) as Shipment | undefined;
+  return (json.shipment ?? json.data ?? (json.id ? json : undefined)) as Shipment | undefined;
 }
 export async function listShipmentItems(query?: Record<string, string | number>): Promise<PaginatedResponse<ShipmentItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1515,7 +1515,7 @@ export async function getShipmentItem(id: string): Promise<ShipmentItem | undefi
   const res = await apiFetch(`/api/shipments/shipment-items/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get ShipmentItem (${res.status})`);
   const json = await res.json();
-  return (json.shipmentItem ?? json.data) as ShipmentItem | undefined;
+  return (json.shipmentItem ?? json.data ?? (json.id ? json : undefined)) as ShipmentItem | undefined;
 }
 export async function listInventoryTransactions(query?: Record<string, string | number>): Promise<PaginatedResponse<InventoryTransaction>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1530,7 +1530,7 @@ export async function getInventoryTransaction(id: string): Promise<InventoryTran
   const res = await apiFetch(`/api/inventory/transactions/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get InventoryTransaction (${res.status})`);
   const json = await res.json();
-  return (json.inventoryTransaction ?? json.data) as InventoryTransaction | undefined;
+  return (json.inventoryTransaction ?? json.data ?? (json.id ? json : undefined)) as InventoryTransaction | undefined;
 }
 export async function listInventorySuppliers(query?: Record<string, string | number>): Promise<PaginatedResponse<InventorySupplier>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1545,7 +1545,7 @@ export async function getInventorySupplier(id: string): Promise<InventorySupplie
   const res = await apiFetch(`/api/inventory/suppliers/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get InventorySupplier (${res.status})`);
   const json = await res.json();
-  return (json.inventorySupplier ?? json.data) as InventorySupplier | undefined;
+  return (json.inventorySupplier ?? json.data ?? (json.id ? json : undefined)) as InventorySupplier | undefined;
 }
 export async function listCycleCountSessions(query?: Record<string, string | number>): Promise<PaginatedResponse<CycleCountSession>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1560,7 +1560,7 @@ export async function getCycleCountSession(id: string): Promise<CycleCountSessio
   const res = await apiFetch(`/api/inventory/cycle-count/sessions/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get CycleCountSession (${res.status})`);
   const json = await res.json();
-  return (json.cycleCountSession ?? json.data) as CycleCountSession | undefined;
+  return (json.cycleCountSession ?? json.data ?? (json.id ? json : undefined)) as CycleCountSession | undefined;
 }
 export async function listCycleCountRecords(query?: Record<string, string | number>): Promise<PaginatedResponse<CycleCountRecord>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1575,7 +1575,7 @@ export async function getCycleCountRecord(id: string): Promise<CycleCountRecord 
   const res = await apiFetch(`/api/inventory/cycle-count/records/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get CycleCountRecord (${res.status})`);
   const json = await res.json();
-  return (json.cycleCountRecord ?? json.data) as CycleCountRecord | undefined;
+  return (json.cycleCountRecord ?? json.data ?? (json.id ? json : undefined)) as CycleCountRecord | undefined;
 }
 export async function listVarianceReports(query?: Record<string, string | number>): Promise<PaginatedResponse<VarianceReport>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1590,7 +1590,7 @@ export async function getVarianceReport(id: string): Promise<VarianceReport | un
   const res = await apiFetch(`/api/inventory/cycle-count/variance-reports/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get VarianceReport (${res.status})`);
   const json = await res.json();
-  return (json.varianceReport ?? json.data) as VarianceReport | undefined;
+  return (json.varianceReport ?? json.data ?? (json.id ? json : undefined)) as VarianceReport | undefined;
 }
 export async function listBulkOrderRules(query?: Record<string, string | number>): Promise<PaginatedResponse<BulkOrderRule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1605,7 +1605,7 @@ export async function getBulkOrderRule(id: string): Promise<BulkOrderRule | unde
   const res = await apiFetch(`/api/inventory/bulk-order-rules/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get BulkOrderRule (${res.status})`);
   const json = await res.json();
-  return (json.bulkOrderRule ?? json.data) as BulkOrderRule | undefined;
+  return (json.bulkOrderRule ?? json.data ?? (json.id ? json : undefined)) as BulkOrderRule | undefined;
 }
 export async function listPricingTiers(query?: Record<string, string | number>): Promise<PaginatedResponse<PricingTier>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1620,7 +1620,7 @@ export async function getPricingTier(id: string): Promise<PricingTier | undefine
   const res = await apiFetch(`/api/inventory/pricing-tiers/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PricingTier (${res.status})`);
   const json = await res.json();
-  return (json.pricingTier ?? json.data) as PricingTier | undefined;
+  return (json.pricingTier ?? json.data ?? (json.id ? json : undefined)) as PricingTier | undefined;
 }
 export async function listVendorCatalogs(query?: Record<string, string | number>): Promise<PaginatedResponse<VendorCatalog>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1635,7 +1635,7 @@ export async function getVendorCatalog(id: string): Promise<VendorCatalog | unde
   const res = await apiFetch(`/api/inventory/vendor-catalogs/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get VendorCatalog (${res.status})`);
   const json = await res.json();
-  return (json.vendorCatalog ?? json.data) as VendorCatalog | undefined;
+  return (json.vendorCatalog ?? json.data ?? (json.id ? json : undefined)) as VendorCatalog | undefined;
 }
 export async function listStorageLocations(query?: Record<string, string | number>): Promise<PaginatedResponse<StorageLocation>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1650,7 +1650,7 @@ export async function getStorageLocation(id: string): Promise<StorageLocation | 
   const res = await apiFetch(`/api/inventory/storage-locations/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get StorageLocation (${res.status})`);
   const json = await res.json();
-  return (json.storageLocation ?? json.data) as StorageLocation | undefined;
+  return (json.storageLocation ?? json.data ?? (json.id ? json : undefined)) as StorageLocation | undefined;
 }
 export async function listInventoryStocks(query?: Record<string, string | number>): Promise<PaginatedResponse<InventoryStock>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1665,7 +1665,7 @@ export async function getInventoryStock(id: string): Promise<InventoryStock | un
   const res = await apiFetch(`/api/inventory/stock/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get InventoryStock (${res.status})`);
   const json = await res.json();
-  return (json.inventoryStock ?? json.data) as InventoryStock | undefined;
+  return (json.inventoryStock ?? json.data ?? (json.id ? json : undefined)) as InventoryStock | undefined;
 }
 export async function listInventoryAlerts(query?: Record<string, string | number>): Promise<PaginatedResponse<InventoryAlert>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1680,7 +1680,7 @@ export async function getInventoryAlert(id: string): Promise<InventoryAlert | un
   const res = await apiFetch(`/api/inventory/alerts/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get InventoryAlert (${res.status})`);
   const json = await res.json();
-  return (json.inventoryAlert ?? json.data) as InventoryAlert | undefined;
+  return (json.inventoryAlert ?? json.data ?? (json.id ? json : undefined)) as InventoryAlert | undefined;
 }
 export async function listInventoryForecasts(query?: Record<string, string | number>): Promise<PaginatedResponse<InventoryForecast>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1695,7 +1695,7 @@ export async function getInventoryForecast(id: string): Promise<InventoryForecas
   const res = await apiFetch(`/api/inventory/forecasts/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get InventoryForecast (${res.status})`);
   const json = await res.json();
-  return (json.inventoryForecast ?? json.data) as InventoryForecast | undefined;
+  return (json.inventoryForecast ?? json.data ?? (json.id ? json : undefined)) as InventoryForecast | undefined;
 }
 export async function listForecastInputs(query?: Record<string, string | number>): Promise<PaginatedResponse<ForecastInput>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1710,7 +1710,7 @@ export async function getForecastInput(id: string): Promise<ForecastInput | unde
   const res = await apiFetch(`/api/inventory/forecast-inputs/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get ForecastInput (${res.status})`);
   const json = await res.json();
-  return (json.forecastInput ?? json.data) as ForecastInput | undefined;
+  return (json.forecastInput ?? json.data ?? (json.id ? json : undefined)) as ForecastInput | undefined;
 }
 export async function listReorderSuggestions(query?: Record<string, string | number>): Promise<PaginatedResponse<ReorderSuggestion>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1725,7 +1725,7 @@ export async function getReorderSuggestion(id: string): Promise<ReorderSuggestio
   const res = await apiFetch(`/api/inventory/reorder-suggestions/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get ReorderSuggestion (${res.status})`);
   const json = await res.json();
-  return (json.reorderSuggestion ?? json.data) as ReorderSuggestion | undefined;
+  return (json.reorderSuggestion ?? json.data ?? (json.id ? json : undefined)) as ReorderSuggestion | undefined;
 }
 export async function listVendorContacts(query?: Record<string, string | number>): Promise<PaginatedResponse<VendorContact>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1740,7 +1740,7 @@ export async function getVendorContact(id: string): Promise<VendorContact | unde
   const res = await apiFetch(`/api/inventory/vendor-contacts/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get VendorContact (${res.status})`);
   const json = await res.json();
-  return (json.vendorContact ?? json.data) as VendorContact | undefined;
+  return (json.vendorContact ?? json.data ?? (json.id ? json : undefined)) as VendorContact | undefined;
 }
 export async function listVendorRatings(query?: Record<string, string | number>): Promise<PaginatedResponse<VendorRating>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1755,7 +1755,7 @@ export async function getVendorRating(id: string): Promise<VendorRating | undefi
   const res = await apiFetch(`/api/inventory/vendor-ratings/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get VendorRating (${res.status})`);
   const json = await res.json();
-  return (json.vendorRating ?? json.data) as VendorRating | undefined;
+  return (json.vendorRating ?? json.data ?? (json.id ? json : undefined)) as VendorRating | undefined;
 }
 export async function listInventoryTransferItems(query?: Record<string, string | number>): Promise<PaginatedResponse<InventoryTransferItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1770,7 +1770,7 @@ export async function getInventoryTransferItem(id: string): Promise<InventoryTra
   const res = await apiFetch(`/api/inventory/transfer-items/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get InventoryTransferItem (${res.status})`);
   const json = await res.json();
-  return (json.inventoryTransferItem ?? json.data) as InventoryTransferItem | undefined;
+  return (json.inventoryTransferItem ?? json.data ?? (json.id ? json : undefined)) as InventoryTransferItem | undefined;
 }
 export async function listInventoryTransfers(query?: Record<string, string | number>): Promise<PaginatedResponse<InventoryTransfer>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1785,7 +1785,7 @@ export async function getInventoryTransfer(id: string): Promise<InventoryTransfe
   const res = await apiFetch(`/api/inventory/transfers/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get InventoryTransfer (${res.status})`);
   const json = await res.json();
-  return (json.inventoryTransfer ?? json.data) as InventoryTransfer | undefined;
+  return (json.inventoryTransfer ?? json.data ?? (json.id ? json : undefined)) as InventoryTransfer | undefined;
 }
 export async function listProcurementBudgets(query?: Record<string, string | number>): Promise<PaginatedResponse<ProcurementBudget>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1800,7 +1800,7 @@ export async function getProcurementBudget(id: string): Promise<ProcurementBudge
   const res = await apiFetch(`/api/procurement/budgets/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get ProcurementBudget (${res.status})`);
   const json = await res.json();
-  return (json.procurementBudget ?? json.data) as ProcurementBudget | undefined;
+  return (json.procurementBudget ?? json.data ?? (json.id ? json : undefined)) as ProcurementBudget | undefined;
 }
 export async function listProcurementBudgetAlerts(query?: Record<string, string | number>): Promise<PaginatedResponse<ProcurementBudgetAlert>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1815,7 +1815,7 @@ export async function getProcurementBudgetAlert(id: string): Promise<Procurement
   const res = await apiFetch(`/api/procurement/budget-alerts/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get ProcurementBudgetAlert (${res.status})`);
   const json = await res.json();
-  return (json.procurementBudgetAlert ?? json.data) as ProcurementBudgetAlert | undefined;
+  return (json.procurementBudgetAlert ?? json.data ?? (json.id ? json : undefined)) as ProcurementBudgetAlert | undefined;
 }
 export async function listAuditSchedules(query?: Record<string, string | number>): Promise<PaginatedResponse<AuditSchedule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1830,7 +1830,7 @@ export async function getAuditSchedule(id: string): Promise<AuditSchedule | unde
   const res = await apiFetch(`/api/inventory/audit-schedules/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get AuditSchedule (${res.status})`);
   const json = await res.json();
-  return (json.auditSchedule ?? json.data) as AuditSchedule | undefined;
+  return (json.auditSchedule ?? json.data ?? (json.id ? json : undefined)) as AuditSchedule | undefined;
 }
 export async function listVendors(query?: Record<string, string | number>): Promise<PaginatedResponse<Vendor>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1845,7 +1845,7 @@ export async function getVendor(id: string): Promise<Vendor | undefined> {
   const res = await apiFetch(`/api/inventory/vendors/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Vendor (${res.status})`);
   const json = await res.json();
-  return (json.vendor ?? json.data) as Vendor | undefined;
+  return (json.vendor ?? json.data ?? (json.id ? json : undefined)) as Vendor | undefined;
 }
 export async function listEquipments(query?: Record<string, string | number>): Promise<PaginatedResponse<Equipment>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1860,7 +1860,7 @@ export async function getEquipment(id: string): Promise<Equipment | undefined> {
   const res = await apiFetch(`/api/facilities/equipment/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Equipment (${res.status})`);
   const json = await res.json();
-  return (json.equipment ?? json.data) as Equipment | undefined;
+  return (json.equipment ?? json.data ?? (json.id ? json : undefined)) as Equipment | undefined;
 }
 export async function listMaintenanceWorkOrders(query?: Record<string, string | number>): Promise<PaginatedResponse<MaintenanceWorkOrder>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1875,7 +1875,7 @@ export async function getMaintenanceWorkOrder(id: string): Promise<MaintenanceWo
   const res = await apiFetch(`/api/facilities/maintenance-work-orders/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get MaintenanceWorkOrder (${res.status})`);
   const json = await res.json();
-  return (json.maintenanceWorkOrder ?? json.data) as MaintenanceWorkOrder | undefined;
+  return (json.maintenanceWorkOrder ?? json.data ?? (json.id ? json : undefined)) as MaintenanceWorkOrder | undefined;
 }
 export async function listFacilities(query?: Record<string, string | number>): Promise<PaginatedResponse<Facility>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1890,7 +1890,7 @@ export async function getFacility(id: string): Promise<Facility | undefined> {
   const res = await apiFetch(`/api/facilities/facilities/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Facility (${res.status})`);
   const json = await res.json();
-  return (json.facility ?? json.data) as Facility | undefined;
+  return (json.facility ?? json.data ?? (json.id ? json : undefined)) as Facility | undefined;
 }
 export async function listFacilityAreas(query?: Record<string, string | number>): Promise<PaginatedResponse<FacilityArea>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1905,7 +1905,7 @@ export async function getFacilityArea(id: string): Promise<FacilityArea | undefi
   const res = await apiFetch(`/api/facilities/areas/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get FacilityArea (${res.status})`);
   const json = await res.json();
-  return (json.facilityArea ?? json.data) as FacilityArea | undefined;
+  return (json.facilityArea ?? json.data ?? (json.id ? json : undefined)) as FacilityArea | undefined;
 }
 export async function listFacilityAssets(query?: Record<string, string | number>): Promise<PaginatedResponse<FacilityAsset>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1920,7 +1920,7 @@ export async function getFacilityAsset(id: string): Promise<FacilityAsset | unde
   const res = await apiFetch(`/api/facilities/assets/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get FacilityAsset (${res.status})`);
   const json = await res.json();
-  return (json.facilityAsset ?? json.data) as FacilityAsset | undefined;
+  return (json.facilityAsset ?? json.data ?? (json.id ? json : undefined)) as FacilityAsset | undefined;
 }
 export async function listFacilitySchedules(query?: Record<string, string | number>): Promise<PaginatedResponse<FacilitySchedule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1935,7 +1935,7 @@ export async function getFacilitySchedule(id: string): Promise<FacilitySchedule 
   const res = await apiFetch(`/api/facilities/schedules/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get FacilitySchedule (${res.status})`);
   const json = await res.json();
-  return (json.facilitySchedule ?? json.data) as FacilitySchedule | undefined;
+  return (json.facilitySchedule ?? json.data ?? (json.id ? json : undefined)) as FacilitySchedule | undefined;
 }
 export async function listFacilityWorkOrders(query?: Record<string, string | number>): Promise<PaginatedResponse<FacilityWorkOrder>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1950,7 +1950,7 @@ export async function getFacilityWorkOrder(id: string): Promise<FacilityWorkOrde
   const res = await apiFetch(`/api/facilities/work-orders/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get FacilityWorkOrder (${res.status})`);
   const json = await res.json();
-  return (json.facilityWorkOrder ?? json.data) as FacilityWorkOrder | undefined;
+  return (json.facilityWorkOrder ?? json.data ?? (json.id ? json : undefined)) as FacilityWorkOrder | undefined;
 }
 export async function listPreventiveMaintenanceSchedules(query?: Record<string, string | number>): Promise<PaginatedResponse<PreventiveMaintenanceSchedule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1965,7 +1965,7 @@ export async function getPreventiveMaintenanceSchedule(id: string): Promise<Prev
   const res = await apiFetch(`/api/facilities/preventive-maintenance/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PreventiveMaintenanceSchedule (${res.status})`);
   const json = await res.json();
-  return (json.preventiveMaintenanceSchedule ?? json.data) as PreventiveMaintenanceSchedule | undefined;
+  return (json.preventiveMaintenanceSchedule ?? json.data ?? (json.id ? json : undefined)) as PreventiveMaintenanceSchedule | undefined;
 }
 export async function listWorkOrders(query?: Record<string, string | number>): Promise<PaginatedResponse<WorkOrder>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1980,7 +1980,7 @@ export async function getWorkOrder(id: string): Promise<WorkOrder | undefined> {
   const res = await apiFetch(`/api/facilities/general-work-orders/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get WorkOrder (${res.status})`);
   const json = await res.json();
-  return (json.workOrder ?? json.data) as WorkOrder | undefined;
+  return (json.workOrder ?? json.data ?? (json.id ? json : undefined)) as WorkOrder | undefined;
 }
 export async function listDrivers(query?: Record<string, string | number>): Promise<PaginatedResponse<Driver>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1995,7 +1995,7 @@ export async function getDriver(id: string): Promise<Driver | undefined> {
   const res = await apiFetch(`/api/logistics/drivers/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Driver (${res.status})`);
   const json = await res.json();
-  return (json.driver ?? json.data) as Driver | undefined;
+  return (json.driver ?? json.data ?? (json.id ? json : undefined)) as Driver | undefined;
 }
 export async function listVehicles(query?: Record<string, string | number>): Promise<PaginatedResponse<Vehicle>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -2010,7 +2010,7 @@ export async function getVehicle(id: string): Promise<Vehicle | undefined> {
   const res = await apiFetch(`/api/logistics/vehicles/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Vehicle (${res.status})`);
   const json = await res.json();
-  return (json.vehicle ?? json.data) as Vehicle | undefined;
+  return (json.vehicle ?? json.data ?? (json.id ? json : undefined)) as Vehicle | undefined;
 }
 export async function listLogisticsRoutes(query?: Record<string, string | number>): Promise<PaginatedResponse<LogisticsRoute>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -2025,7 +2025,7 @@ export async function getLogisticsRoute(id: string): Promise<LogisticsRoute | un
   const res = await apiFetch(`/api/logistics/routes/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get LogisticsRoute (${res.status})`);
   const json = await res.json();
-  return (json.logisticsRoute ?? json.data) as LogisticsRoute | undefined;
+  return (json.logisticsRoute ?? json.data ?? (json.id ? json : undefined)) as LogisticsRoute | undefined;
 }
 export async function listLogisticsDispatches(query?: Record<string, string | number>): Promise<PaginatedResponse<LogisticsDispatch>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -2040,7 +2040,7 @@ export async function getLogisticsDispatch(id: string): Promise<LogisticsDispatc
   const res = await apiFetch(`/api/logistics/dispatches/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get LogisticsDispatch (${res.status})`);
   const json = await res.json();
-  return (json.logisticsDispatch ?? json.data) as LogisticsDispatch | undefined;
+  return (json.logisticsDispatch ?? json.data ?? (json.id ? json : undefined)) as LogisticsDispatch | undefined;
 }
 export async function listDeliveryRoutes(query?: Record<string, string | number>): Promise<PaginatedResponse<DeliveryRoute>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -2055,7 +2055,7 @@ export async function getDeliveryRoute(id: string): Promise<DeliveryRoute | unde
   const res = await apiFetch(`/api/logistics/delivery-routes/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get DeliveryRoute (${res.status})`);
   const json = await res.json();
-  return (json.deliveryRoute ?? json.data) as DeliveryRoute | undefined;
+  return (json.deliveryRoute ?? json.data ?? (json.id ? json : undefined)) as DeliveryRoute | undefined;
 }
 export async function listRouteStops(query?: Record<string, string | number>): Promise<PaginatedResponse<RouteStop>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -2070,7 +2070,7 @@ export async function getRouteStop(id: string): Promise<RouteStop | undefined> {
   const res = await apiFetch(`/api/logistics/route-stops/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get RouteStop (${res.status})`);
   const json = await res.json();
-  return (json.routeStop ?? json.data) as RouteStop | undefined;
+  return (json.routeStop ?? json.data ?? (json.id ? json : undefined)) as RouteStop | undefined;
 }
 export async function auditScheduleActivate(input: AuditScheduleActivateInput = {}): Promise<AuditSchedule | undefined> {
   const r = await executeCommand<AuditSchedule>("AuditSchedule", "activate", input as Record<string, unknown>);

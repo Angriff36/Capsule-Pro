@@ -581,7 +581,7 @@ export async function getPayrollPeriod(id: string): Promise<PayrollPeriod | unde
   const res = await apiFetch(`/api/payroll/periods/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PayrollPeriod (${res.status})`);
   const json = await res.json();
-  return (json.payrollPeriod ?? json.data) as PayrollPeriod | undefined;
+  return (json.payrollPeriod ?? json.data ?? (json.id ? json : undefined)) as PayrollPeriod | undefined;
 }
 export async function listPayrollRuns(query?: Record<string, string | number>): Promise<PaginatedResponse<PayrollRun>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -596,7 +596,7 @@ export async function getPayrollRun(id: string): Promise<PayrollRun | undefined>
   const res = await apiFetch(`/api/payroll/runs/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PayrollRun (${res.status})`);
   const json = await res.json();
-  return (json.payrollRun ?? json.data) as PayrollRun | undefined;
+  return (json.payrollRun ?? json.data ?? (json.id ? json : undefined)) as PayrollRun | undefined;
 }
 export async function listPayrollApprovalHistories(query?: Record<string, string | number>): Promise<PaginatedResponse<PayrollApprovalHistory>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -611,7 +611,7 @@ export async function getPayrollApprovalHistory(id: string): Promise<PayrollAppr
   const res = await apiFetch(`/api/payroll/approval-history/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PayrollApprovalHistory (${res.status})`);
   const json = await res.json();
-  return (json.payrollApprovalHistory ?? json.data) as PayrollApprovalHistory | undefined;
+  return (json.payrollApprovalHistory ?? json.data ?? (json.id ? json : undefined)) as PayrollApprovalHistory | undefined;
 }
 export async function listEmployeeDeductions(query?: Record<string, string | number>): Promise<PaginatedResponse<EmployeeDeduction>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -626,7 +626,7 @@ export async function getEmployeeDeduction(id: string): Promise<EmployeeDeductio
   const res = await apiFetch(`/api/payroll/deductions/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get EmployeeDeduction (${res.status})`);
   const json = await res.json();
-  return (json.employeeDeduction ?? json.data) as EmployeeDeduction | undefined;
+  return (json.employeeDeduction ?? json.data ?? (json.id ? json : undefined)) as EmployeeDeduction | undefined;
 }
 export async function listLaborBudgets(query?: Record<string, string | number>): Promise<PaginatedResponse<LaborBudget>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -641,7 +641,7 @@ export async function getLaborBudget(id: string): Promise<LaborBudget | undefine
   const res = await apiFetch(`/api/payroll/labor-budgets/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get LaborBudget (${res.status})`);
   const json = await res.json();
-  return (json.laborBudget ?? json.data) as LaborBudget | undefined;
+  return (json.laborBudget ?? json.data ?? (json.id ? json : undefined)) as LaborBudget | undefined;
 }
 export async function listChartOfAccounts(query?: Record<string, string | number>): Promise<PaginatedResponse<ChartOfAccount>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -656,7 +656,7 @@ export async function getChartOfAccount(id: string): Promise<ChartOfAccount | un
   const res = await apiFetch(`/api/accounting/chart-of-accounts/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get ChartOfAccount (${res.status})`);
   const json = await res.json();
-  return (json.chartOfAccount ?? json.data) as ChartOfAccount | undefined;
+  return (json.chartOfAccount ?? json.data ?? (json.id ? json : undefined)) as ChartOfAccount | undefined;
 }
 export async function listBankAccounts(query?: Record<string, string | number>): Promise<PaginatedResponse<BankAccount>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -671,7 +671,7 @@ export async function getBankAccount(id: string): Promise<BankAccount | undefine
   const res = await apiFetch(`/api/accounting/bank-accounts/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get BankAccount (${res.status})`);
   const json = await res.json();
-  return (json.bankAccount ?? json.data) as BankAccount | undefined;
+  return (json.bankAccount ?? json.data ?? (json.id ? json : undefined)) as BankAccount | undefined;
 }
 export async function listBudgets(query?: Record<string, string | number>): Promise<PaginatedResponse<Budget>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -686,7 +686,7 @@ export async function getBudget(id: string): Promise<Budget | undefined> {
   const res = await apiFetch(`/api/accounting/budgets/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Budget (${res.status})`);
   const json = await res.json();
-  return (json.budget ?? json.data) as Budget | undefined;
+  return (json.budget ?? json.data ?? (json.id ? json : undefined)) as Budget | undefined;
 }
 export async function listCollectionCases(query?: Record<string, string | number>): Promise<PaginatedResponse<CollectionCase>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -701,7 +701,7 @@ export async function getCollectionCase(id: string): Promise<CollectionCase | un
   const res = await apiFetch(`/api/accounting/collections/cases/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get CollectionCase (${res.status})`);
   const json = await res.json();
-  return (json.collectionCase ?? json.data) as CollectionCase | undefined;
+  return (json.collectionCase ?? json.data ?? (json.id ? json : undefined)) as CollectionCase | undefined;
 }
 export async function listCollectionActions(query?: Record<string, string | number>): Promise<PaginatedResponse<CollectionAction>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -716,7 +716,7 @@ export async function getCollectionAction(id: string): Promise<CollectionAction 
   const res = await apiFetch(`/api/accounting/collections/actions/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get CollectionAction (${res.status})`);
   const json = await res.json();
-  return (json.collectionAction ?? json.data) as CollectionAction | undefined;
+  return (json.collectionAction ?? json.data ?? (json.id ? json : undefined)) as CollectionAction | undefined;
 }
 export async function listCollectionPaymentPlans(query?: Record<string, string | number>): Promise<PaginatedResponse<CollectionPaymentPlan>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -731,7 +731,7 @@ export async function getCollectionPaymentPlan(id: string): Promise<CollectionPa
   const res = await apiFetch(`/api/accounting/collections/payment-plans/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get CollectionPaymentPlan (${res.status})`);
   const json = await res.json();
-  return (json.collectionPaymentPlan ?? json.data) as CollectionPaymentPlan | undefined;
+  return (json.collectionPaymentPlan ?? json.data ?? (json.id ? json : undefined)) as CollectionPaymentPlan | undefined;
 }
 export async function listInvoices(query?: Record<string, string | number>): Promise<PaginatedResponse<Invoice>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -746,7 +746,7 @@ export async function getInvoice(id: string): Promise<Invoice | undefined> {
   const res = await apiFetch(`/api/accounting/invoices/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Invoice (${res.status})`);
   const json = await res.json();
-  return (json.invoice ?? json.data) as Invoice | undefined;
+  return (json.invoice ?? json.data ?? (json.id ? json : undefined)) as Invoice | undefined;
 }
 export async function listPaymentMethods(query?: Record<string, string | number>): Promise<PaginatedResponse<PaymentMethod>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -761,7 +761,7 @@ export async function getPaymentMethod(id: string): Promise<PaymentMethod | unde
   const res = await apiFetch(`/api/accounting/payment-methods/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PaymentMethod (${res.status})`);
   const json = await res.json();
-  return (json.paymentMethod ?? json.data) as PaymentMethod | undefined;
+  return (json.paymentMethod ?? json.data ?? (json.id ? json : undefined)) as PaymentMethod | undefined;
 }
 export async function listPayments(query?: Record<string, string | number>): Promise<PaginatedResponse<Payment>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -776,7 +776,7 @@ export async function getPayment(id: string): Promise<Payment | undefined> {
   const res = await apiFetch(`/api/accounting/payments/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Payment (${res.status})`);
   const json = await res.json();
-  return (json.payment ?? json.data) as Payment | undefined;
+  return (json.payment ?? json.data ?? (json.id ? json : undefined)) as Payment | undefined;
 }
 export async function listPaymentRefundAttempts(query?: Record<string, string | number>): Promise<PaginatedResponse<PaymentRefundAttempt>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -791,7 +791,7 @@ export async function getPaymentRefundAttempt(id: string): Promise<PaymentRefund
   const res = await apiFetch(`/api/accounting/payment-refund-attempts/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get PaymentRefundAttempt (${res.status})`);
   const json = await res.json();
-  return (json.paymentRefundAttempt ?? json.data) as PaymentRefundAttempt | undefined;
+  return (json.paymentRefundAttempt ?? json.data ?? (json.id ? json : undefined)) as PaymentRefundAttempt | undefined;
 }
 export async function listRevenueRecognitionSchedules(query?: Record<string, string | number>): Promise<PaginatedResponse<RevenueRecognitionSchedule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -806,7 +806,7 @@ export async function getRevenueRecognitionSchedule(id: string): Promise<Revenue
   const res = await apiFetch(`/api/accounting/revenue-recognition/schedules/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get RevenueRecognitionSchedule (${res.status})`);
   const json = await res.json();
-  return (json.revenueRecognitionSchedule ?? json.data) as RevenueRecognitionSchedule | undefined;
+  return (json.revenueRecognitionSchedule ?? json.data ?? (json.id ? json : undefined)) as RevenueRecognitionSchedule | undefined;
 }
 export async function listRevenueRecognitionLines(query?: Record<string, string | number>): Promise<PaginatedResponse<RevenueRecognitionLine>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -821,7 +821,7 @@ export async function getRevenueRecognitionLine(id: string): Promise<RevenueReco
   const res = await apiFetch(`/api/accounting/revenue-recognition/lines/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get RevenueRecognitionLine (${res.status})`);
   const json = await res.json();
-  return (json.revenueRecognitionLine ?? json.data) as RevenueRecognitionLine | undefined;
+  return (json.revenueRecognitionLine ?? json.data ?? (json.id ? json : undefined)) as RevenueRecognitionLine | undefined;
 }
 export async function bankAccountCreate(input: BankAccountCreateInput = {}): Promise<BankAccount | undefined> {
   const r = await executeCommand<BankAccount>("BankAccount", "create", input as Record<string, unknown>);

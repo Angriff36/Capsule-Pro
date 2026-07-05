@@ -421,7 +421,7 @@ export async function getClient(id: string): Promise<Client | undefined> {
   const res = await apiFetch(`/api/crm/clients/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Client (${res.status})`);
   const json = await res.json();
-  return (json.client ?? json.data) as Client | undefined;
+  return (json.client ?? json.data ?? (json.id ? json : undefined)) as Client | undefined;
 }
 export async function listClientContacts(query?: Record<string, string | number>): Promise<PaginatedResponse<ClientContact>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -436,7 +436,7 @@ export async function getClientContact(id: string): Promise<ClientContact | unde
   const res = await apiFetch(`/api/crm/client-contacts/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get ClientContact (${res.status})`);
   const json = await res.json();
-  return (json.clientContact ?? json.data) as ClientContact | undefined;
+  return (json.clientContact ?? json.data ?? (json.id ? json : undefined)) as ClientContact | undefined;
 }
 export async function listClientPreferences(query?: Record<string, string | number>): Promise<PaginatedResponse<ClientPreference>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -451,7 +451,7 @@ export async function getClientPreference(id: string): Promise<ClientPreference 
   const res = await apiFetch(`/api/crm/client-preferences/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get ClientPreference (${res.status})`);
   const json = await res.json();
-  return (json.clientPreference ?? json.data) as ClientPreference | undefined;
+  return (json.clientPreference ?? json.data ?? (json.id ? json : undefined)) as ClientPreference | undefined;
 }
 export async function listLeads(query?: Record<string, string | number>): Promise<PaginatedResponse<Lead>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -466,7 +466,7 @@ export async function getLead(id: string): Promise<Lead | undefined> {
   const res = await apiFetch(`/api/crm/leads/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Lead (${res.status})`);
   const json = await res.json();
-  return (json.lead ?? json.data) as Lead | undefined;
+  return (json.lead ?? json.data ?? (json.id ? json : undefined)) as Lead | undefined;
 }
 export async function listProposals(query?: Record<string, string | number>): Promise<PaginatedResponse<Proposal>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -481,7 +481,7 @@ export async function getProposal(id: string): Promise<Proposal | undefined> {
   const res = await apiFetch(`/api/crm/proposals/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Proposal (${res.status})`);
   const json = await res.json();
-  return (json.proposal ?? json.data) as Proposal | undefined;
+  return (json.proposal ?? json.data ?? (json.id ? json : undefined)) as Proposal | undefined;
 }
 export async function listProposalLineItems(query?: Record<string, string | number>): Promise<PaginatedResponse<ProposalLineItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -496,7 +496,7 @@ export async function getProposalLineItem(id: string): Promise<ProposalLineItem 
   const res = await apiFetch(`/api/crm/proposal-line-items/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get ProposalLineItem (${res.status})`);
   const json = await res.json();
-  return (json.proposalLineItem ?? json.data) as ProposalLineItem | undefined;
+  return (json.proposalLineItem ?? json.data ?? (json.id ? json : undefined)) as ProposalLineItem | undefined;
 }
 export async function listClientInteractions(query?: Record<string, string | number>): Promise<PaginatedResponse<ClientInteraction>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -511,7 +511,7 @@ export async function getClientInteraction(id: string): Promise<ClientInteractio
   const res = await apiFetch(`/api/crm/client-interactions/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get ClientInteraction (${res.status})`);
   const json = await res.json();
-  return (json.clientInteraction ?? json.data) as ClientInteraction | undefined;
+  return (json.clientInteraction ?? json.data ?? (json.id ? json : undefined)) as ClientInteraction | undefined;
 }
 export async function listProposalTemplates(query?: Record<string, string | number>): Promise<PaginatedResponse<ProposalTemplate>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -526,7 +526,7 @@ export async function getProposalTemplate(id: string): Promise<ProposalTemplate 
   const res = await apiFetch(`/api/crm/proposal-templates/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get ProposalTemplate (${res.status})`);
   const json = await res.json();
-  return (json.proposalTemplate ?? json.data) as ProposalTemplate | undefined;
+  return (json.proposalTemplate ?? json.data ?? (json.id ? json : undefined)) as ProposalTemplate | undefined;
 }
 export async function listInteractionAttachments(query?: Record<string, string | number>): Promise<PaginatedResponse<InteractionAttachment>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -541,7 +541,7 @@ export async function getInteractionAttachment(id: string): Promise<InteractionA
   const res = await apiFetch(`/api/crm/interaction-attachments/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get InteractionAttachment (${res.status})`);
   const json = await res.json();
-  return (json.interactionAttachment ?? json.data) as InteractionAttachment | undefined;
+  return (json.interactionAttachment ?? json.data ?? (json.id ? json : undefined)) as InteractionAttachment | undefined;
 }
 export async function listCrmScoringRules(query?: Record<string, string | number>): Promise<PaginatedResponse<CrmScoringRule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -556,7 +556,7 @@ export async function getCrmScoringRule(id: string): Promise<CrmScoringRule | un
   const res = await apiFetch(`/api/crm/scoring-rules/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get CrmScoringRule (${res.status})`);
   const json = await res.json();
-  return (json.crmScoringRule ?? json.data) as CrmScoringRule | undefined;
+  return (json.crmScoringRule ?? json.data ?? (json.id ? json : undefined)) as CrmScoringRule | undefined;
 }
 export async function listDeals(query?: Record<string, string | number>): Promise<PaginatedResponse<Deal>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -571,7 +571,7 @@ export async function getDeal(id: string): Promise<Deal | undefined> {
   const res = await apiFetch(`/api/crm/deals/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error(`Failed to get Deal (${res.status})`);
   const json = await res.json();
-  return (json.deal ?? json.data) as Deal | undefined;
+  return (json.deal ?? json.data ?? (json.id ? json : undefined)) as Deal | undefined;
 }
 export async function clientArchive(input: ClientArchiveInput = {}): Promise<Client | undefined> {
   const r = await executeCommand<Client>("Client", "archive", input as Record<string, unknown>);
