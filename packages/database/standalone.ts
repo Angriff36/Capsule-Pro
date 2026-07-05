@@ -66,7 +66,12 @@ const adapter = connectionString
 export const database =
   globalForPrisma.prisma ||
   (adapter
-    ? new PrismaClient({ adapter })
+    ? // Same transaction budget as index.ts — remote Neon latency makes the
+      // 5s default expire mid-write in multi-command transactions.
+      new PrismaClient({
+        adapter,
+        transactionOptions: { maxWait: 10_000, timeout: 30_000 },
+      })
     : (undefined as unknown as PrismaClient));
 /** Read-replica client for analytics/reporting; falls back to `database` when unset. */
 export const analyticsDatabase = database

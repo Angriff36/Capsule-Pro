@@ -46,7 +46,14 @@ if (process.env.NODE_ENV !== "production" && typeof process !== "undefined") {
 }
 const adapter = new PrismaNeon({ connectionString });
 
-const baseClient = new PrismaClient({ adapter });
+// Composite routes (recipe update-with-version, prep-list save, simulations…)
+// run multiple Manifest commands inside one interactive transaction over a
+// remote Neon connection; Prisma's 5s default expires mid-write and poisons
+// the transaction ("A query cannot be executed on an expired transaction").
+const baseClient = new PrismaClient({
+  adapter,
+  transactionOptions: { maxWait: 10_000, timeout: 30_000 },
+});
 export const database =
   globalForPrisma.prisma || withManifestIssueLog(baseClient);
 /** Read-replica client for analytics/reporting; falls back to `database` when unset. */
