@@ -2382,3 +2382,12 @@ Also: live uuid columns reject synthetic actor strings ("system:*") — prefer t
 - **Chat agent fabrication bug (fixed)**: agent-loop's `ensureNonEmptyCommandSequence` FABRICATED a command (biased Event.create) whenever the plan was empty — guessed writes for non-write asks. Removed. Also: chat route 500'd under Turbopack because the agent-sdk `createRequire` shim was statically folded — fixed with callee indirection + `serverExternalPackages: ["@angriff36/manifest"]`.
 - **Generated client detail getters** now tolerate top-level (unwrapped) detail payloads — hand-written detail routes (prep-lists/[id], inventory/purchase-orders/[id]) return the entity at top level and previously parsed as `undefined` on HTTP 200.
 - **COMMAND_BOARD_AI_MODEL**: default gpt-4o-mini cannot plan governed actions reliably (hallucinates command sequences; all rejected by validation = governance held). Dev .env.local now sets gpt-4o; flagship AI run (finalize 2 prep lists by name → supplier drafts) succeeded with it.
+
+
+## 2026-07-05 stabilization pass (click-through hardening)
+
+- **Enum NAMESPACE class**: matching a pg enum by NAME is not enough — Prisma maps types via the enum block's `@@map`/`@@schema` (e.g. ActionType -> core.action_type). The 2026-07-04 alignment migration created public.* duplicates for 4 columns (corrected in 20260705120000, wrong types dropped); shipments.status had the same pre-existing core-vs-public mismatch. Audit recipe: join pg_attribute type namespace against the enum's declared @@schema+@@map, never typname alone.
+- **Live-only NOT NULL columns**: 23 legacy columns the 3.x projection no longer declares were NOT NULL without defaults — every Prisma INSERT into those 13 tables failed 23502. DROP NOT NULL applied (20260705120000). task_bundle_items PK members can't be fixed this way (composite-PK insert limitation stands).
+- **Persist-before-mutates strikes again**: Event.eventDate joins PrepList.generatedAt/EventSummary.generatedAt in the `= now()` default club. Pattern: any REQUIRED datetime property whose value is set in mutates needs a source default, or auto-create inserts NULL.
+- **Chat AI numeric params**: routes.manifest.json types every param "string"; the chat catalog's IR enrichment must be loadable at runtime or numeric args dispatch as strings and fail the zod gate (Event.updateGuestCount "45"). Watch native-tool-schema's loader.
+- **toTsTypes is NOT retired**: 3.1.3's stock types surface emits bare `json` as a TS type; scalar-type-map.mjs maps it to `unknown` again (upstream gap).
