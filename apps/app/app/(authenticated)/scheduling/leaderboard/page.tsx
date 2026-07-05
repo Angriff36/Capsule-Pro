@@ -62,7 +62,7 @@ export default async function LeaderboardPage() {
     where: {
       tenantId,
       deletedAt: null,
-      shift_start: { gte: start, lt: end },
+      shiftStart: { gte: start, lt: end },
     },
     _count: { _all: true },
     orderBy: { _count: { employeeId: "desc" } },

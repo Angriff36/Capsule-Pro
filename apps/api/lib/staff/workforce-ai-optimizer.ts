@@ -851,7 +851,6 @@ async function identifyTopPerformers(
       ) es ON es.employee_id = e.id
       LEFT JOIN tenant_staff.employee_skills eskill ON eskill.employee_id = e.id
         AND eskill.tenant_id = ${tenantId}
-        AND eskill.deleted_at IS NULL
       WHERE e.tenant_id = ${tenantId}
         AND e.deleted_at IS NULL
         AND e.is_active = true
