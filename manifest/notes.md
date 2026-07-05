@@ -2358,3 +2358,17 @@ requisition into PurchaseOrder + items + updateTotals + convertToPo in one tx-bo
 Vendor resolved via the InventorySupplier.vendorId bridge (fails actionably if unlinked).
 generate.mjs now emits `_request` when the handler never reads it (regen had reverted the old
 biome safe-fix and tripped noUnusedParameters 160×; fix at the generator seam, not the files).
+
+## 2026-07-04 — Live-path store truths (found by flagship chain on real DB)
+Three classes of bug that in-memory middleware tests CANNOT catch (all fixed 388a68145):
+1. **Decimal coercion**: live GenericPrismaStore surfaces numeric columns as Prisma Decimal
+   objects; any `typeof value === "number"` check silently drops them. Middlewares must coerce
+   number|string|Decimal (see coerceFiniteNumber in prep-inventory-demand-middleware).
+2. **Engine persists BEFORE mutates on auto-create**: `runCommand` create persists
+   defaults+params first, then applies mutates. A required datetime property with no default and
+   no matching param (e.g. PrepList.generatedAt, set only via `mutate = now()`) is NULL at the
+   store create → live Prisma rejects. Give such properties a source default (`= now()`).
+3. **Middleware reads use IR property names**: mapToManifestEntity keys rows by irName
+   (camelCase, e.g. itemNumber) — middleware written against raw column names (item_number)
+   reads undefined on the live store while passing on in-memory fixtures seeded with raw names.
+Also: live uuid columns reject synthetic actor strings ("system:*") — prefer the runtime user id.
