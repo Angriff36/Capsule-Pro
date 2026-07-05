@@ -640,9 +640,9 @@ entity OpenShift mixin TenantScoped {
 entity DeliveryRoute mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property description: string?
-  property eventId: string?
+  property eventId: uuid?
   property totalDuration: int?
-  property vehicleId: string?
+  property vehicleId: uuid?
   searchable property name: string = ""
   property routeNumber: string = ""
   property driverId: uuid? = ""

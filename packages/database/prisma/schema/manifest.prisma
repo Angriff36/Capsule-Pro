@@ -17,10 +17,10 @@ generator client {
 
 model ActionMilestone {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  tenantId String @map("tenant_id")
+  tenantId String @map("tenant_id") @db.Uuid
   description String?
   notes String?
-  disciplinaryActionId String @map("disciplinary_action_id")
+  disciplinaryActionId String @map("disciplinary_action_id") @db.Uuid
   title String @default("")
   dueDate DateTime @map("due_date")
   status String @default("pending")
@@ -647,7 +647,7 @@ model BudgetLineItem {
 
 model BulkCombineRule {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  tenantId String @map("tenant_id")
+  tenantId String @map("tenant_id") @db.Uuid
   name String
   matchCriteria Json @map("match_criteria")
   isActive Boolean @map("is_active") @default(true)
@@ -725,7 +725,7 @@ model CateringOrder {
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   orderNumber String @map("order_number")
-  customerId String @map("customer_id") @default("")
+  customerId String @map("customer_id") @db.Uuid @default("")
   eventId String? @map("event_id") @db.Uuid @default("")
   orderStatus String @map("order_status") @default("draft")
   orderDate DateTime @map("order_date") @default(now())
@@ -1297,15 +1297,15 @@ model CorrectiveAction {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at")
-  eventId String? @map("event_id")
+  eventId String? @map("event_id") @db.Uuid
   immediateAction String? @map("immediate_action")
   preventiveAction String? @map("preventive_action")
   resolutionNotes String? @map("resolution_notes")
-  resolvedBy String? @map("resolved_by")
+  resolvedBy String? @map("resolved_by") @db.Uuid
   rootCause String? @map("root_cause")
   severity String @default("medium")
   verificationMethod String? @map("verification_method")
-  verifiedBy String? @map("verified_by")
+  verifiedBy String? @map("verified_by") @db.Uuid
   actionNumber String @map("action_number")
   title String
   sourceType String @map("source_type")
@@ -1468,9 +1468,9 @@ model DeliveryRoute {
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at")
   description String?
-  eventId String? @map("event_id")
+  eventId String? @map("event_id") @db.Uuid
   totalDuration Int? @map("total_duration")
-  vehicleId String? @map("vehicle_id")
+  vehicleId String? @map("vehicle_id") @db.Uuid
   name String @default("")
   routeNumber String @map("route_number") @default("")
   driverId String? @map("driver_id") @db.Uuid @default("")
@@ -1498,16 +1498,16 @@ model DeliveryRoute {
 
 model DisciplinaryAction {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  tenantId String @map("tenant_id")
+  tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at")
   description String?
-  employeeId String @map("employee_id")
+  employeeId String @map("employee_id") @db.Uuid
   actionType String @map("action_type") @default("")
   reason String @default("")
   severity String? @default("low")
   status String @default("open")
-  issuedBy String @map("issued_by") @default("")
-  escalatedTo String? @map("escalated_to") @default("")
+  issuedBy String @map("issued_by") @db.Uuid @default("")
+  escalatedTo String? @map("escalated_to") @db.Uuid @default("")
   escalationReason String? @map("escalation_reason") @default("")
   escalatedAt DateTime? @map("escalated_at")
   issuedDate DateTime @map("issued_date") @default(now())
@@ -1577,7 +1577,7 @@ model Dish {
 
 model Document {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  tenantId String @map("tenant_id")
+  tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at")
   name String @default("")
   documentType String @map("document_type") @default("")
@@ -2006,7 +2006,7 @@ model EventContract {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
-  signingToken String? @map("signing_token")
+  signingToken String? @map("signing_token") @db.Uuid
   eventId String @map("event_id") @db.Uuid
   clientId String @map("client_id") @db.Uuid
   contractNumber String? @map("contract_number") @default("")
@@ -2071,14 +2071,14 @@ model EventDish {
 
 model EventFollowup {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  tenantId String @map("tenant_id")
+  tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at")
-  eventId String @map("event_id")
+  eventId String @map("event_id") @db.Uuid
   taskType String @map("task_type") @default("")
   description String @default("")
   dueDate DateTime? @map("due_date")
   status String @default("pending")
-  assignedTo String? @map("assigned_to") @default("")
+  assignedTo String? @map("assigned_to") @db.Uuid @default("")
   notes String? @default("")
   completedAt DateTime? @map("completed_at")
   createdAt DateTime @map("created_at") @default(now())
@@ -2139,7 +2139,7 @@ model EventImport {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
-  eventId String? @map("event_id")
+  eventId String? @map("event_id") @db.Uuid
   fileType String @map("file_type") @default("")
   fileName String @map("file_name") @default("")
   mimeType String @map("mime_type") @default("")
@@ -2318,9 +2318,9 @@ model EventReport {
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model EventStaff {
+  deletedAt DateTime? @map("deletedAt")
   id String
   tenantId String @map("tenantId")
-  deletedAt DateTime? @map("deletedAt")
   eventId String @map("eventId")
   staffMemberId String @map("staffMemberId")
   role String? @default("")
@@ -2948,8 +2948,8 @@ model InventoryTransaction {
   referenceId String? @map("reference_id") @db.Uuid @default("")
   notes String? @default("")
   reason String @default("")
-  employeeId String? @map("employee_id") @default("")
-  storageLocationId String? @map("storage_location_id") @default("")
+  employeeId String? @map("employee_id") @db.Uuid @default("")
+  storageLocationId String? @map("storage_location_id") @db.Uuid @default("")
   transactionDate DateTime @map("transaction_date")
   reversedAt DateTime? @map("reversed_at") @db.Timestamptz(6)
   reversedBy String? @map("reversed_by") @default("")
@@ -3097,7 +3097,7 @@ model IoTAlert {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   acknowledgedAt DateTime? @map("acknowledged_at")
-  eventId String? @map("event_id")
+  eventId String? @map("event_id") @db.Uuid
   resolutionNotes String? @map("resolution_notes")
   resolvedAt DateTime? @map("resolved_at")
   probeId String? @map("probe_id") @db.Uuid
@@ -3289,7 +3289,7 @@ model LaborBudget {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
-  eventId String? @map("event_id")
+  eventId String? @map("event_id") @db.Uuid
   name String
   locationId String? @map("location_id") @db.Uuid @default("")
   periodStart DateTime? @map("period_start") @db.Date
@@ -3528,7 +3528,7 @@ model MenuDish {
 
 model MethodVideo {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  tenantId String @map("tenant_id")
+  tenantId String @map("tenant_id") @db.Uuid
   prepMethodId String @map("prep_method_id")
   title String
   url String
@@ -3575,7 +3575,7 @@ model Notification {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
-  recipientEmployeeId String @map("recipient_employee_id")
+  recipientEmployeeId String @map("recipient_employee_id") @db.Uuid
   notificationType String @map("notification_type") @default("")
   title String @default("")
   body String? @default("")
@@ -3599,10 +3599,10 @@ model Notification {
 
 model OnboardingCompletion {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  tenantId String @map("tenant_id")
+  tenantId String @map("tenant_id") @db.Uuid
   notes String?
-  employeeId String @map("employee_id")
-  taskId String @map("task_id")
+  employeeId String @map("employee_id") @db.Uuid
+  taskId String @map("task_id") @db.Uuid
   completedAt DateTime @map("completed_at") @default(now())
   createdAt DateTime @map("created_at") @default(now())
   updatedAt DateTime @map("updated_at") @updatedAt
@@ -3623,7 +3623,7 @@ model OnboardingCompletion {
 
 model OnboardingTask {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  tenantId String @map("tenant_id")
+  tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at")
   title String @default("")
   description String? @default("")
@@ -3647,13 +3647,13 @@ model OnboardingTask {
 
 model OpenShift {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  tenantId String @map("tenant_id")
-  scheduleId String @map("schedule_id")
+  tenantId String @map("tenant_id") @db.Uuid
+  scheduleId String @map("schedule_id") @db.Uuid
   role String @default("")
   shiftStart DateTime @map("shift_start")
   shiftEnd DateTime @map("shift_end")
   status String @default("open")
-  claimedBy String? @map("claimed_by") @default("")
+  claimedBy String? @map("claimed_by") @db.Uuid @default("")
   createdAt DateTime @map("created_at") @default(now())
   updatedAt DateTime @map("updated_at") @updatedAt
 
@@ -3955,11 +3955,11 @@ model PerformancePrediction {
 
 model PerformanceReview {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  tenantId String @map("tenant_id")
+  tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at")
   strengths String?
-  employeeId String @map("employee_id")
-  reviewerId String @map("reviewer_id")
+  employeeId String @map("employee_id") @db.Uuid
+  reviewerId String @map("reviewer_id") @db.Uuid
   reviewType String @map("review_type") @default("")
   scheduledDate DateTime @map("scheduled_date")
   rating Decimal? @db.Decimal(3, 2) @default(0)
@@ -4047,7 +4047,7 @@ model PrepList {
 
 model PrepListImport {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  tenantId String @map("tenant_id")
+  tenantId String @map("tenant_id") @db.Uuid
   source String
   fileName String @map("file_name")
   status String @default("pending")
@@ -4364,7 +4364,7 @@ model Proposal {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
-  templateId String? @map("template_id")
+  templateId String? @map("template_id") @db.Uuid
   proposalNumber String @map("proposal_number") @default("")
   clientId String? @map("client_id") @db.Uuid @default("")
   leadId String? @map("lead_id") @db.Uuid @default("")
@@ -4771,7 +4771,7 @@ model QualityCheck {
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at")
   description String?
-  eventId String? @map("event_id")
+  eventId String? @map("event_id") @db.Uuid
   scheduledAt DateTime? @map("scheduled_at")
   checkNumber String @map("check_number")
   title String
@@ -5022,7 +5022,7 @@ model Report {
   queryConfig Json @map("query_config") @default("{}")
   displayConfig Json @map("display_config") @default("{}")
   isShared Boolean? @map("is_shared") @default(false)
-  createdBy String? @map("created_by") @default("")
+  createdBy String? @map("created_by") @db.Uuid @default("")
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -5208,7 +5208,7 @@ model Schedule {
   scheduleDate DateTime @map("schedule_date")
   status ScheduleStatus @default(draft)
   publishedAt DateTime? @map("published_at")
-  publishedBy String? @map("published_by") @default("")
+  publishedBy String? @map("published_by") @db.Uuid @default("")
   approvedBy String? @map("approved_by") @db.Uuid @default("")
   approvedAt DateTime? @map("approved_at") @db.Timestamptz(6)
   notes String? @default("")
@@ -5670,13 +5670,13 @@ model ShipmentItem {
 
 model SmsAutomationRule {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  tenantId String @map("tenant_id")
+  tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at")
   name String @default("")
   description String? @db.Text @default("")
   triggerType String @map("trigger_type") @default("custom_event")
   triggerConfig Json @map("trigger_config") @default("{}")
-  templateId String? @map("template_id") @default("")
+  templateId String? @map("template_id") @db.Uuid @default("")
   customMessage String? @map("custom_message") @default("")
   recipientType String @map("recipient_type") @default("employee")
   recipientConfig Json @map("recipient_config") @default("{}")
@@ -5701,9 +5701,9 @@ model SmsAutomationRule {
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model StaffMember {
+  deletedAt DateTime? @map("deletedAt")
   id String
   tenantId String @map("tenantId")
-  deletedAt DateTime? @map("deletedAt")
   displayName String @map("displayName") @default("Unnamed")
   email String? @default("")
   phone String? @default("")
@@ -5762,11 +5762,11 @@ model StaffPerformance {
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model StaffTrainingSignal {
-  id String
-  tenantId String @map("tenant_id")
-  staffMemberId String @map("staff_member_id")
-  moduleId String @map("module_id")
-  assignmentId String @map("assignment_id")
+  id String @db.Uuid
+  tenantId String @map("tenant_id") @db.Uuid
+  staffMemberId String @map("staff_member_id") @db.Uuid
+  moduleId String @map("module_id") @db.Uuid
+  assignmentId String @map("assignment_id") @db.Uuid
   signalType String @map("signal_type") @default("")
   reason String @default("")
   createdAt DateTime @map("created_at") @default(now())
@@ -5822,9 +5822,9 @@ model Station {
 
 model StorageLocation {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  tenantId String @map("tenant_id")
+  tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at")
-  locationId String @map("location_id")
+  locationId String @map("location_id") @db.Uuid
   name String
   storageType String @map("storage_type")
   temperatureZone String @map("temperature_zone") @default("")
@@ -5851,9 +5851,9 @@ model StorageLocation {
 
 model TaskBundle {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  tenantId String @map("tenant_id")
+  tenantId String @map("tenant_id") @db.Uuid
   name String
-  eventId String? @map("event_id") @default("")
+  eventId String? @map("event_id") @db.Uuid @default("")
   description String? @default("")
   status String @default("active")
   createdAt DateTime @map("created_at") @default(now())
@@ -5874,8 +5874,8 @@ model TaskBundle {
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model TaskBundleItem {
+  tenantId String @map("tenant_id") @db.Uuid
   id String
-  tenantId String @map("tenant_id")
   taskBundleId String @map("task_bundle_id")
   kitchenTaskId String @map("kitchen_task_id")
   sortOrder Int @map("sort_order") @default(0)
@@ -5899,7 +5899,7 @@ model TemperatureLog {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at")
-  eventId String? @map("event_id")
+  eventId String? @map("event_id") @db.Uuid
   itemName String? @map("item_name")
   unit String @default("F")
   equipmentId String? @map("equipment_id") @db.Uuid
@@ -5960,7 +5960,7 @@ model TemperatureProbe {
 model TemperatureReading {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
-  eventId String? @map("event_id")
+  eventId String? @map("event_id") @db.Uuid
   unit String @default("F")
   probeId String @map("probe_id") @db.Uuid
   temperature Decimal @db.Decimal(6, 2)
@@ -6166,7 +6166,7 @@ model TrainingAssignment {
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at")
   assignedAt DateTime @map("assigned_at") @default(now())
-  assignedBy String @map("assigned_by")
+  assignedBy String @map("assigned_by") @db.Uuid
   assignedToAll Boolean @map("assigned_to_all") @default(false)
   moduleId String @map("module_id") @db.Uuid
   moduleCode String? @map("module_code") @default("")
@@ -6210,11 +6210,11 @@ model TrainingAssignment {
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model TrainingAttempt {
-  id String
-  tenantId String @map("tenant_id")
-  assignmentId String @map("assignment_id")
-  moduleId String @map("module_id")
-  staffMemberId String @map("staff_member_id")
+  id String @db.Uuid
+  tenantId String @map("tenant_id") @db.Uuid
+  assignmentId String @map("assignment_id") @db.Uuid
+  moduleId String @map("module_id") @db.Uuid
+  staffMemberId String @map("staff_member_id") @db.Uuid
   attemptNumber Int @map("attempt_number") @default(1)
   scorePercent Int @map("score_percent") @default(0)
   passThresholdPercent Int @map("pass_threshold_percent") @default(80)
@@ -6311,9 +6311,9 @@ model TrainingModule {
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model TrainingQuestion {
-  id String
-  tenantId String @map("tenant_id")
-  moduleId String @map("module_id")
+  id String @db.Uuid
+  tenantId String @map("tenant_id") @db.Uuid
+  moduleId String @map("module_id") @db.Uuid
   code String @default("")
   sectionTitle String @map("section_title") @default("")
   displayOrder Int @map("display_order") @default(0)
