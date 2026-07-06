@@ -205,9 +205,11 @@ export function PrepListClient({
 
     setIsDownloadingPdf(true);
     try {
-      // NOTE: Using raw fetch (not apiFetch) for binary PDF download
+      // NOTE: Using raw fetch (not apiFetch) for binary PDF download.
+      // download=true makes the API return the raw PDF blob instead of the
+      // base64 JSON envelope (which would save as a corrupt .pdf).
       const response = await fetch(
-        `/api/kitchen/prep-lists/${savedPrepListId}/pdf`,
+        `/api/kitchen/prep-lists/${savedPrepListId}/pdf?download=true`,
         {
           method: "GET",
           credentials: "include",

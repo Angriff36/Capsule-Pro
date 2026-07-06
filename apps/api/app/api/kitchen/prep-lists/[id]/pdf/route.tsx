@@ -192,6 +192,123 @@ function determineStation(ingredientName: string, category?: string): string {
   return "prep-station";
 }
 
+/**
+ * Build PDF data from a SAVED prep list's persisted items. The saved list is
+ * the operational truth the kitchen reviewed — the PDF must match it, not a
+ * fresh regeneration from live event data (which can drift).
+ */
+async function preparePdfDataFromSaved(
+  prepList: {
+    id: string;
+    eventId: string;
+    batchMultiplier: unknown;
+  },
+  tenantId: string,
+  user: {
+    firstName: string | null;
+    lastName: string | null;
+    email: string | null;
+  }
+): Promise<{ pdfData: PrepListPDFData; eventTitle: string; eventDate: Date }> {
+  const event = await database.event.findFirst({
+    where: { id: prepList.eventId, tenantId },
+  });
+
+  if (!event) {
+    throw new Error("Event not found");
+  }
+
+  const items = await database.prepListItem.findMany({
+    where: { prepListId: prepList.id, tenantId, deletedAt: null },
+    orderBy: { sortOrder: "asc" },
+  });
+
+  const stationColors: Record<string, string> = {
+    "hot-line": "bg-red-500",
+    "cold-prep": "bg-blue-500",
+    bakery: "bg-amber-500",
+    "prep-station": "bg-emerald-500",
+    garnish: "bg-purple-500",
+  };
+
+  const stationMap = new Map<
+    string,
+    PrepListPDFData["prepList"]["stationLists"][number]
+  >();
+
+  for (const item of items) {
+    const stationId = item.stationId || "prep-station";
+    if (!stationMap.has(stationId)) {
+      stationMap.set(stationId, {
+        stationId,
+        stationName: item.stationName || stationId,
+        totalIngredients: 0,
+        estimatedTime: 0,
+        color: stationColors[stationId] || "bg-gray-500",
+        ingredients: [],
+        tasks: [],
+      });
+    }
+    const station = stationMap.get(stationId)!;
+    station.ingredients.push({
+      ingredientId: item.ingredientId,
+      ingredientName: item.ingredientName,
+      scaledQuantity: Number(item.scaledQuantity),
+      scaledUnit: item.scaledUnit || "ea",
+      category: item.category || undefined,
+      isOptional: item.isOptional,
+      preparationNotes: item.preparationNotes || undefined,
+      allergens: item.allergens,
+      dietarySubstitutions: item.dietarySubstitutions,
+    });
+    station.totalIngredients++;
+  }
+
+  const stationLists = Array.from(stationMap.values()).map((station) => ({
+    ...station,
+    estimatedTime: Math.ceil(station.totalIngredients * 0.15),
+  }));
+
+  const totalIngredients = stationLists.reduce(
+    (sum, s) => sum + s.totalIngredients,
+    0
+  );
+  const totalEstimatedTime = stationLists.reduce(
+    (sum, s) => sum + s.estimatedTime,
+    0
+  );
+
+  const pdfData: PrepListPDFData = {
+    event: {
+      id: event.id,
+      title: event.title || "Untitled Event",
+      eventDate: event.eventDate || new Date(),
+      guestCount: event.guestCount || 0,
+    },
+    prepList: {
+      eventId: event.id,
+      eventTitle: event.title || "Untitled Event",
+      eventDate: event.eventDate || new Date(),
+      guestCount: event.guestCount || 0,
+      batchMultiplier: Number(prepList.batchMultiplier) || 1,
+      totalIngredients,
+      totalEstimatedTime,
+      stationLists,
+    },
+    metadata: {
+      generatedAt: new Date(),
+      generatedBy: user.email || `${user.firstName} ${user.lastName}`,
+      version: "1.0.0",
+    },
+  };
+
+  return {
+    pdfData,
+    eventTitle: event.title || "Prep List",
+    eventDate: event.eventDate || new Date(),
+  };
+}
+
 async function preparePdfData(
   eventId: string,
   tenantId: string,
@@ -411,8 +528,10 @@ export async function GET(
     let eventDate: Date;
 
     if (result.type === "saved") {
-      const prepared = await preparePdfData(
-        result.data.eventId,
+      // Render the persisted items — the PDF must match what was saved, not a
+      // fresh regeneration that can drift from the reviewed list.
+      const prepared = await preparePdfDataFromSaved(
+        result.data,
         authContext.tenantId,
         user
       );
