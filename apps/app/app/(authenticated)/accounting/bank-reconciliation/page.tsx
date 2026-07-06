@@ -33,41 +33,33 @@ export default async function BankReconciliationPage() {
     redirect("/");
   }
 
-  // Fetch summary metrics server-side
-  const [bankAccountCount, reconciledCount, recentReconciledPayments] =
-    await Promise.all([
-      database.chartOfAccount.count({
-        where: {
-          tenantId,
-          accountType: "ASSET",
-          accountName: { contains: "bank", mode: "insensitive" },
-          isActive: true,
-        },
-      }),
-      // Approximate reconciled count: bank accounts with zero difference
-      // (exact reconciliation status requires the full computation in the API route)
-      database.chartOfAccount.count({
-        where: {
-          tenantId,
-          accountType: "ASSET",
-          accountName: { contains: "bank", mode: "insensitive" },
-          isActive: true,
-        },
-      }),
-      // Most recent completed payment as proxy for last reconciliation date
-      database.payment.findFirst({
-        where: {
-          tenantId,
-          status: "COMPLETED",
-          deletedAt: null,
-        },
-        orderBy: { completedAt: "desc" },
-        select: { completedAt: true },
-      }),
-    ]);
+  // Real, verifiable metrics only. There is no reconciliation model yet, so
+  // no reconciled/unreconciled counts are shown — earlier versions fabricated
+  // them from duplicate account queries.
+  const [bankAccountCount, paymentAggregate, lastPayment] = await Promise.all([
+    database.chartOfAccount.count({
+      where: {
+        tenantId,
+        accountType: "ASSET",
+        accountName: { contains: "bank", mode: "insensitive" },
+        isActive: true,
+      },
+    }),
+    database.payment.aggregate({
+      where: { tenantId, status: "COMPLETED", deletedAt: null },
+      _count: { id: true },
+      _sum: { amount: true },
+    }),
+    database.payment.findFirst({
+      where: { tenantId, status: "COMPLETED", deletedAt: null },
+      orderBy: { completedAt: "desc" },
+      select: { completedAt: true },
+    }),
+  ]);
 
-  const unreconciledCount = bankAccountCount - reconciledCount;
-  const lastReconciledDate = recentReconciledPayments?.completedAt ?? null;
+  const completedPaymentCount = paymentAggregate._count.id;
+  const completedPaymentTotal = Number(paymentAggregate._sum.amount ?? 0);
+  const lastPaymentDate = lastPayment?.completedAt ?? null;
 
   const formatDate = (d: Date | null) => {
     if (!d) {
@@ -88,9 +80,9 @@ export default async function BankReconciliationPage() {
             <MonoLabel tone="dark">Operations / Accounting</MonoLabel>
             <DisplayHeading>Bank Reconciliation</DisplayHeading>
             <CommandBandLede>
-              Match bank statement balances with internal book records. Identify
-              discrepancies, track outstanding items, and confirm that every
-              transaction is accounted for.
+              Review your bank accounts and completed payment activity.
+              Statement import and per-account matching are coming; nothing on
+              this page is simulated.
             </CommandBandLede>
           </div>
           <CommandBandActions>
@@ -117,31 +109,33 @@ export default async function BankReconciliationPage() {
         <CommandBandBody>
           <MetricBand cols={4}>
             <MetricCell>
-              <MetricLabel>Total accounts</MetricLabel>
+              <MetricLabel>Bank accounts</MetricLabel>
               <MetricValue>{bankAccountCount}</MetricValue>
               <p className="text-sm text-white/70">
                 Active bank accounts on file
               </p>
             </MetricCell>
             <MetricCell>
-              <MetricLabel>Reconciled</MetricLabel>
-              <MetricValue>{reconciledCount}</MetricValue>
-              <p className="text-sm text-white/70">
-                Accounts balanced and confirmed
-              </p>
+              <MetricLabel>Completed payments</MetricLabel>
+              <MetricValue>{completedPaymentCount}</MetricValue>
+              <p className="text-sm text-white/70">All time, tenant-wide</p>
             </MetricCell>
             <MetricCell>
-              <MetricLabel>Unreconciled items</MetricLabel>
-              <MetricValue>{unreconciledCount}</MetricValue>
-              <p className="text-sm text-white/70">
-                Accounts with open discrepancies
-              </p>
+              <MetricLabel>Payments total</MetricLabel>
+              <MetricValue>
+                {new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "USD",
+                  maximumFractionDigits: 0,
+                }).format(completedPaymentTotal)}
+              </MetricValue>
+              <p className="text-sm text-white/70">Sum of completed payments</p>
             </MetricCell>
             <MetricCell>
-              <MetricLabel>Last reconciled</MetricLabel>
-              <MetricValue>{formatDate(lastReconciledDate)}</MetricValue>
+              <MetricLabel>Last payment</MetricLabel>
+              <MetricValue>{formatDate(lastPaymentDate)}</MetricValue>
               <p className="text-sm text-white/70">
-                Most recent reconciliation date
+                Most recent completed payment
               </p>
             </MetricCell>
           </MetricBand>
@@ -152,19 +146,12 @@ export default async function BankReconciliationPage() {
         <section className="space-y-4">
           <SectionHeader
             count={`${bankAccountCount} account${bankAccountCount === 1 ? "" : "s"}`}
-            description="Bank accounts with book balance, statement balance, and reconciliation status."
+            description="Bank-type accounts from your chart of accounts."
             eyebrow="Reconciliation"
             title="Bank accounts"
           />
 
-          <BankReconciliationClient
-            initialMetrics={{
-              totalAccounts: bankAccountCount,
-              reconciledCount,
-              unreconciledCount,
-              lastReconciledDate: lastReconciledDate?.toISOString() ?? null,
-            }}
-          />
+          <BankReconciliationClient />
         </section>
       </OperationalColumn>
     </PageCanvas>

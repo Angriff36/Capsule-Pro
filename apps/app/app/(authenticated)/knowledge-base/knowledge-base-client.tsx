@@ -57,7 +57,9 @@ interface KnowledgeBaseEntry {
 }
 
 export default function KnowledgeBaseClient() {
-  const [entries, setEntries] = useState<KnowledgeBaseEntry[]>([]);
+  // The generated list route returns every entry and ignores query params, so
+  // all status/search/category filtering happens client-side.
+  const [allEntries, setAllEntries] = useState<KnowledgeBaseEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -74,21 +76,13 @@ export default function KnowledgeBaseClient() {
 
   useEffect(() => {
     fetchEntries();
-  }, [search, selectedCategory]);
+  }, []);
 
   const fetchEntries = async () => {
     setLoading(true);
     try {
-      const query: Record<string, string | number> = { status: "published" };
-      if (search) {
-        query.search = search;
-      }
-      if (selectedCategory) {
-        query.category = selectedCategory;
-      }
-
-      const result = await listKnowledgeBaseEntries(query);
-      setEntries(result.data as unknown as KnowledgeBaseEntry[]);
+      const result = await listKnowledgeBaseEntries();
+      setAllEntries(result.data as unknown as KnowledgeBaseEntry[]);
     } catch (error) {
       console.error("Failed to fetch entries:", error);
       toast.error("Failed to load knowledge base articles");
@@ -97,8 +91,26 @@ export default function KnowledgeBaseClient() {
     }
   };
 
+  const publishedEntries = allEntries.filter((e) => e.status === "published");
+  const draftCount = allEntries.length - publishedEntries.length;
+
+  const searchLower = search.trim().toLowerCase();
+  const entries = publishedEntries.filter((e) => {
+    if (selectedCategory && e.category !== selectedCategory) {
+      return false;
+    }
+    if (!searchLower) {
+      return true;
+    }
+    return (
+      e.title.toLowerCase().includes(searchLower) ||
+      (e.content?.toLowerCase().includes(searchLower) ?? false) ||
+      (e.tags?.some((t) => t.toLowerCase().includes(searchLower)) ?? false)
+    );
+  });
+
   const categories = [
-    ...new Set(entries.map((e) => e.category).filter(Boolean)),
+    ...new Set(publishedEntries.map((e) => e.category).filter(Boolean)),
   ] as string[];
 
   const generateSlug = (title: string) =>
@@ -127,11 +139,12 @@ export default function KnowledgeBaseClient() {
           : undefined,
       });
       // Entries are created as drafts; honor the form's status choice with the
-      // governed publish command, then refetch (the list shows published only).
+      // governed publish command. Always refetch so both the published list
+      // and the draft count stay current.
       if (createForm.status === "published" && created?.id) {
         await knowledgeBaseEntryPublishEntry({ id: created.id });
-        await fetchEntries();
       }
+      await fetchEntries();
       setShowCreateDialog(false);
       setCreateForm({
         title: "",
@@ -154,7 +167,6 @@ export default function KnowledgeBaseClient() {
   const taggedEntries = entries.filter(
     (e) => e.tags && e.tags.length > 0
   ).length;
-  const draftCount = entries.filter((e) => e.status !== "published").length;
 
   const stats = [
     {

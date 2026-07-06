@@ -1,20 +1,17 @@
 import {
   CommandBand,
-  CommandBandBody,
   CommandBandHeader,
   CommandBandLede,
   DisplayHeading,
-  MetricBand,
-  MetricCell,
-  MetricLabel,
-  MetricValue,
   MonoLabel,
   OperationalColumn,
   PageCanvas,
 } from "@repo/design-system/components/blocks/page-shell";
-import { FileSpreadsheet } from "lucide-react";
 import { AutofillReportsClient } from "./autofill-reports-client";
 
+// No metric band here on purpose: this page has no computed stats, and the
+// previous band dressed static marketing labels ("Active", "Autofill") as
+// metric values.
 const ToolsAutofillReportsPage = () => (
   <PageCanvas>
     <CommandBand>
@@ -28,28 +25,6 @@ const ToolsAutofillReportsPage = () => (
           </CommandBandLede>
         </div>
       </CommandBandHeader>
-      <CommandBandBody>
-        <MetricBand cols={3}>
-          <MetricCell>
-            <MetricLabel>Report engine</MetricLabel>
-            <MetricValue>
-              <FileSpreadsheet className="mr-2 inline h-5 w-5" />
-              Active
-            </MetricValue>
-            <p className="text-sm text-white/70">Structured reports</p>
-          </MetricCell>
-          <MetricCell>
-            <MetricLabel>Document parsing</MetricLabel>
-            <MetricValue>Autofill</MetricValue>
-            <p className="text-sm text-white/70">Extract & populate</p>
-          </MetricCell>
-          <MetricCell>
-            <MetricLabel>Analytics</MetricLabel>
-            <MetricValue>Waste tracking</MetricValue>
-            <p className="text-sm text-white/70">Kitchen analytics</p>
-          </MetricCell>
-        </MetricBand>
-      </CommandBandBody>
     </CommandBand>
 
     <OperationalColumn>

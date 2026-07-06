@@ -1882,7 +1882,7 @@ export async function listFacilities(query?: Record<string, string | number>): P
   const res = await apiFetch(`/api/facilities/facilities/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Facility (${res.status})`);
   const json = await res.json();
-  const data = (json.facilities ?? json.data ?? []) as Facility[];
+  const data = (json.facilities ?? json.facilitys ?? json.data ?? []) as Facility[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }
@@ -2032,7 +2032,7 @@ export async function listLogisticsDispatches(query?: Record<string, string | nu
   const res = await apiFetch(`/api/logistics/dispatches/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list LogisticsDispatch (${res.status})`);
   const json = await res.json();
-  const data = (json.logisticsDispatches ?? json.data ?? []) as LogisticsDispatch[];
+  const data = (json.logisticsDispatches ?? json.logisticsDispatchs ?? json.data ?? []) as LogisticsDispatch[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }

@@ -603,7 +603,7 @@ export async function listPayrollApprovalHistories(query?: Record<string, string
   const res = await apiFetch(`/api/payroll/approval-history/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PayrollApprovalHistory (${res.status})`);
   const json = await res.json();
-  const data = (json.payrollApprovalHistories ?? json.data ?? []) as PayrollApprovalHistory[];
+  const data = (json.payrollApprovalHistories ?? json.payrollApprovalHistorys ?? json.data ?? []) as PayrollApprovalHistory[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }

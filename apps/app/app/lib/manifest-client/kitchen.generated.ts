@@ -127,6 +127,10 @@ export interface CorrectiveActionStartProgressInput {
 export interface DishActivateInput {
   id?: string;
 }
+export interface DishChangeRecipeInput {
+  id?: string;
+  recipeId?: string;
+}
 export interface DishClearDefaultContainerInput {
   id?: string;
   userId?: string;
@@ -1343,7 +1347,7 @@ export async function listDishes(query?: Record<string, string | number>): Promi
   const res = await apiFetch(`/api/kitchen/dishes/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Dish (${res.status})`);
   const json = await res.json();
-  const data = (json.dishes ?? json.data ?? []) as Dish[];
+  const data = (json.dishes ?? json.dishs ?? json.data ?? []) as Dish[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }
@@ -1373,7 +1377,7 @@ export async function listMenuDishes(query?: Record<string, string | number>): P
   const res = await apiFetch(`/api/kitchen/menu-dishes/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list MenuDish (${res.status})`);
   const json = await res.json();
-  const data = (json.menuDishes ?? json.data ?? []) as MenuDish[];
+  const data = (json.menuDishes ?? json.menuDishs ?? json.data ?? []) as MenuDish[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }
@@ -1493,7 +1497,7 @@ export async function listWasteEntries(query?: Record<string, string | number>):
   const res = await apiFetch(`/api/kitchen/waste-entries/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list WasteEntry (${res.status})`);
   const json = await res.json();
-  const data = (json.wasteEntries ?? json.data ?? []) as WasteEntry[];
+  const data = (json.wasteEntries ?? json.wasteEntrys ?? json.data ?? []) as WasteEntry[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }
@@ -1688,7 +1692,7 @@ export async function listKitchenTaskProgresses(query?: Record<string, string | 
   const res = await apiFetch(`/api/kitchen/task-progress/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list KitchenTaskProgress (${res.status})`);
   const json = await res.json();
-  const data = (json.kitchenTaskProgresses ?? json.data ?? []) as KitchenTaskProgress[];
+  const data = (json.kitchenTaskProgresses ?? json.kitchenTaskProgresss ?? json.data ?? []) as KitchenTaskProgress[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }
@@ -1904,6 +1908,10 @@ export async function correctiveActionStartProgress(input: CorrectiveActionStart
 }
 export async function dishActivate(input: DishActivateInput = {}): Promise<Dish | undefined> {
   const r = await executeCommand<Dish>("Dish", "activate", input as Record<string, unknown>);
+  return r.result;
+}
+export async function dishChangeRecipe(input: DishChangeRecipeInput = {}): Promise<Dish | undefined> {
+  const r = await executeCommand<Dish>("Dish", "changeRecipe", input as Record<string, unknown>);
   return r.result;
 }
 export async function dishClearDefaultContainer(input: DishClearDefaultContainerInput = {}): Promise<Dish | undefined> {

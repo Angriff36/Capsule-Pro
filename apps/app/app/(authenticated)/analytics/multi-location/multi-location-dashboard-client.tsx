@@ -431,18 +431,10 @@ function MultiLocationDashboardClient({
                   <CardTitle className="text-2xl">{kpi.formatted}</CardTitle>
                 </CardHeader>
                 <CardContent>
+                  {/* Context label, not a computed delta — no period-over-period
+                      math exists yet, so no red/green change styling. */}
                   <div className="flex items-center gap-1.5">
-                    <span
-                      className={`font-medium text-xs ${
-                        kpi.change >= 0
-                          ? kpi.trend === "up"
-                            ? "text-green-600"
-                            : "text-red-600"
-                          : kpi.trend === "down"
-                            ? "text-green-600"
-                            : "text-red-600"
-                      }`}
-                    >
+                    <span className="font-medium text-muted-foreground text-xs">
                       {kpi.changeFormatted}
                     </span>
                   </div>

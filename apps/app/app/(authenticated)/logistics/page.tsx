@@ -22,11 +22,11 @@ const LogisticsPage = () => (
         icon: LayoutGrid,
       },
       {
-        title: "Live tracking",
+        title: "Delivery tracking",
         description:
-          "Real-time GPS tracking for active deliveries and arrival ETAs.",
+          "Status, driver assignments, and arrival ETAs for active deliveries.",
         href: "/logistics/tracking",
-        actionLabel: "Track now",
+        actionLabel: "Track deliveries",
         icon: MapPin,
       },
       {

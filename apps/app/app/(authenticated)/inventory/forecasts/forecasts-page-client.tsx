@@ -63,6 +63,7 @@ import {
   OperationalPageShell,
   OperationalSection,
 } from "../../components/operational-page-shell";
+import { listInventoryItems } from "../../../lib/inventory";
 import {
   type DepletionForecast,
   type ForecastAlert,
@@ -78,23 +79,16 @@ import {
   type ReorderSuggestion,
 } from "../../../lib/use-forecasts";
 
-// Get all inventory items (simplified - in production would use real API)
-const COMMON_SKUS = [
-  "SKU001", // Example: Chicken Breast
-  "SKU002", // Example: Ground Beef
-  "SKU003", // Example: Salmon Fillet
-  "SKU004", // Example: Pasta
-  "SKU005", // Example: Rice
-  "SKU006", // Example: Olive Oil
-  "SKU007", // Example: Tomatoes
-  "SKU008", // Example: Lettuce
-  "SKU009", // Example: Butter
-  "SKU010", // Example: Flour
-];
+interface SkuOption {
+  itemNumber: string;
+  name: string;
+}
 
 export const ForecastsPageClient = () => {
   // Search state
   const [selectedSku, setSelectedSku] = useState<string>("");
+  // Real tenant inventory items (forecast SKU = InventoryItem.item_number)
+  const [skuOptions, setSkuOptions] = useState<SkuOption[]>([]);
   const [horizonDays, setHorizonDays] = useState<number>(30);
   const [leadTimeDays, setLeadTimeDays] = useState<number>(7);
   const [safetyStockDays, setSafetyStockDays] = useState<number>(3);
@@ -215,6 +209,29 @@ export const ForecastsPageClient = () => {
     fetchAlerts();
   }, [fetchAllSuggestions, fetchAlerts]);
 
+  // Load tenant inventory items for the SKU picker (manual input still works
+  // if this fails or the item is not listed).
+  useEffect(() => {
+    let cancelled = false;
+    listInventoryItems({ limit: 100 })
+      .then((res) => {
+        if (!cancelled) {
+          setSkuOptions(
+            res.data.map((item) => ({
+              itemNumber: item.item_number,
+              name: item.name,
+            }))
+          );
+        }
+      })
+      .catch(() => {
+        // Non-fatal: the free-text SKU input remains usable.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Calculate summary stats
   const criticalCount = allSuggestions.filter(
     (s) => s.urgency === "critical"
@@ -317,12 +334,21 @@ export const ForecastsPageClient = () => {
                         value={selectedSku}
                       >
                         <SelectTrigger className="flex-1" id="sku">
-                          <SelectValue placeholder="Select SKU" />
+                          <SelectValue
+                            placeholder={
+                              skuOptions.length > 0
+                                ? "Select item"
+                                : "No inventory items"
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          {COMMON_SKUS.map((sku) => (
-                            <SelectItem key={sku} value={sku}>
-                              {sku}
+                          {skuOptions.map((option) => (
+                            <SelectItem
+                              key={option.itemNumber}
+                              value={option.itemNumber}
+                            >
+                              {option.itemNumber} — {option.name}
                             </SelectItem>
                           ))}
                         </SelectContent>

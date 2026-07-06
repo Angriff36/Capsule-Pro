@@ -1,5 +1,7 @@
-// Real-time tracking data for active deliveries
-// Returns shipments with route/driver/vehicle info and simulated positions
+// Tracking data for active deliveries
+// Returns shipments with route/driver/vehicle info, status timelines, and ETAs.
+// No GPS positions: there is no telematics integration, and fabricating
+// coordinates (as an earlier version did with Math.random) misleads users.
 
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
@@ -232,36 +234,6 @@ export async function GET(_request: NextRequest) {
         },
       ];
 
-      // Simulated position based on status and timestamps
-      // In production, this would come from GPS tracking hardware/SDK
-      const baseLat = 34.052; // LA default
-      const baseLng = -118.243;
-      const jitter = (Math.random() - 0.5) * 0.01;
-
-      const position = {
-        lat:
-          shipment.status === "delivered"
-            ? baseLat + 0.05
-            : shipment.status === "in_transit"
-              ? baseLat + jitter
-              : baseLat - 0.02,
-        lng:
-          shipment.status === "delivered"
-            ? baseLng + 0.03
-            : shipment.status === "in_transit"
-              ? baseLng + jitter
-              : baseLng - 0.01,
-        heading:
-          shipment.status === "in_transit"
-            ? Math.floor(Math.random() * 360)
-            : 0,
-        speed:
-          shipment.status === "in_transit"
-            ? 20 + Math.floor(Math.random() * 20)
-            : 0,
-        updatedAt: new Date().toISOString(),
-      };
-
       return {
         id: shipment.id,
         shipmentNumber: shipment.shipmentNumber,
@@ -277,7 +249,6 @@ export async function GET(_request: NextRequest) {
           shipment.estimatedDeliveryDate?.toISOString() ||
           shipment.scheduledDate?.toISOString() ||
           "",
-        position,
         timeline,
         items: shipment.totalItems,
         carrier: shipment.carrier || null,

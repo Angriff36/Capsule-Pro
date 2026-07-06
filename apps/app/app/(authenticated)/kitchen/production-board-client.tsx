@@ -32,7 +32,6 @@ import {
   Search,
   Snowflake,
   Sparkles,
-  Sun,
   TrendingUp,
   User as UserIcon,
   UtensilsCrossed,
@@ -99,20 +98,6 @@ function KitchenClock() {
     <div className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
       <Clock className="h-4 w-4 shrink-0" />
       <span suppressHydrationWarning>{format(time, "h:mm:ss a")}</span>
-    </div>
-  );
-}
-
-function WeatherWidget() {
-  return (
-    <div className="flex items-center gap-3 rounded-lg border border-hairline bg-card px-3 py-2">
-      <div className="flex items-center gap-1.5 text-foreground">
-        <Sun className="h-5 w-5" />
-      </div>
-      <div className="hidden sm:block">
-        <div className="font-medium text-ink text-xs">Production Board</div>
-        <div className="text-muted-foreground text-xs">Kitchen operations</div>
-      </div>
     </div>
   );
 }
@@ -399,7 +384,6 @@ export function ProductionBoardClient({
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <WeatherWidget />
               <Button
                 className="gap-2"
                 onClick={() => setShowSuggestions((prev) => !prev)}

@@ -25,14 +25,6 @@ import { OperationalPageShell } from "../../components/operational-page-shell";
 import { apiFetch } from "@/app/lib/api";
 
 // Types
-interface DeliveryPosition {
-  heading: number;
-  lat: number;
-  lng: number;
-  speed: number;
-  updatedAt: string;
-}
-
 interface ActiveDelivery {
   carrier: string | null;
   destination: string;
@@ -42,7 +34,6 @@ interface ActiveDelivery {
   id: string;
   items: number;
   origin: string;
-  position: DeliveryPosition;
   shipmentNumber: string;
   shippingMethod: string | null;
   status: "dispatched" | "in_transit" | "arriving" | "delivered";
@@ -68,7 +59,7 @@ interface TrackingResponse {
 }
 
 const STATUS_CONFIG: Record<
-  string,
+  ActiveDelivery["status"],
   {
     label: string;
     color: string;
@@ -96,140 +87,6 @@ const STATUS_CONFIG: Record<
     icon: CheckCircle2,
   },
 };
-
-// Simple SVG map visualization
-function MiniMap({ deliveries }: { deliveries: ActiveDelivery[] }) {
-  const activeDeliveries = deliveries.filter((d) => d.status !== "delivered");
-
-  // Auto-compute bounds from delivery positions
-  if (deliveries.length === 0) {
-    return (
-      <div className="flex h-full items-center justify-center rounded-lg bg-muted/30 text-muted-foreground">
-        No deliveries to display
-      </div>
-    );
-  }
-
-  const lats = deliveries.map((d) => d.position.lat);
-  const lngs = deliveries.map((d) => d.position.lng);
-  const padFactor = 0.3;
-  const bounds = {
-    minLat: Math.min(...lats) - padFactor,
-    maxLat: Math.max(...lats) + padFactor,
-    minLng: Math.min(...lngs) - padFactor,
-    maxLng: Math.max(...lngs) + padFactor,
-  };
-
-  const toX = (lng: number) =>
-    ((lng - bounds.minLng) / (bounds.maxLng - bounds.minLng)) * 100;
-  const toY = (lat: number) =>
-    (1 - (lat - bounds.minLat) / (bounds.maxLat - bounds.minLat)) * 100;
-
-  return (
-    <div className="relative h-full w-full overflow-hidden rounded-lg bg-gradient-to-br from-muted/20 to-muted/50 dark:from-slate-900 dark:to-slate-800">
-      <svg
-        className="absolute inset-0 h-full w-full"
-        preserveAspectRatio="none"
-      >
-        {Array.from({ length: 8 }).map((_, i) => (
-          <line
-            key={`h-${i}`}
-            stroke="currentColor"
-            strokeOpacity="0.05"
-            x1="0"
-            x2="100%"
-            y1={`${(i / 7) * 100}%`}
-            y2={`${(i / 7) * 100}%`}
-          />
-        ))}
-        {Array.from({ length: 8 }).map((_, i) => (
-          <line
-            key={`v-${i}`}
-            stroke="currentColor"
-            strokeOpacity="0.05"
-            x1={`${(i / 7) * 100}%`}
-            x2={`${(i / 7) * 100}%`}
-            y1="0"
-            y2="100%"
-          />
-        ))}
-
-        {deliveries.map((delivery) => {
-          const x = toX(delivery.position.lng);
-          const y = toY(delivery.position.lat);
-          const isActive = delivery.status !== "delivered";
-          const isPulsing = delivery.status === "in_transit";
-
-          return (
-            <g key={delivery.id}>
-              {isPulsing && (
-                <circle
-                  cx={`${x}%`}
-                  cy={`${y}%`}
-                  fill="none"
-                  r="12"
-                  stroke="currentColor"
-                  strokeOpacity="0.15"
-                  strokeWidth="1"
-                >
-                  <animate
-                    attributeName="r"
-                    dur="2s"
-                    from="8"
-                    repeatCount="indefinite"
-                    to="20"
-                  />
-                  <animate
-                    attributeName="stroke-opacity"
-                    dur="2s"
-                    from="0.2"
-                    repeatCount="indefinite"
-                    to="0"
-                  />
-                </circle>
-              )}
-
-              <circle
-                cx={`${x}%`}
-                cy={`${y}%`}
-                fill={isActive ? "#3b82f6" : "#22c55e"}
-                r={isActive ? "6" : "4"}
-                stroke="white"
-                strokeWidth="2"
-              />
-
-              <text
-                fill="currentColor"
-                fillOpacity="0.7"
-                fontFamily="monospace"
-                fontSize="9"
-                x={`${x + 2}%`}
-                y={`${y - 3}%`}
-              >
-                {delivery.shipmentNumber.slice(-4)}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
-
-      <div className="absolute right-3 bottom-3 space-y-1 rounded-md border border-hairline bg-white p-2 text-xs dark:bg-slate-800">
-        <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-blue-500" />
-          <span>In Transit ({activeDeliveries.length})</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-green-500" />
-          <span>Delivered ({deliveries.length - activeDeliveries.length})</span>
-        </div>
-      </div>
-
-      <div className="absolute bottom-3 left-3 rounded bg-white/80 px-2 py-1 text-muted-foreground text-xs dark:bg-slate-800/80">
-        Delivery Area
-      </div>
-    </div>
-  );
-}
 
 function DeliveryTimeline({ timeline }: { timeline: TimelineEvent[] }) {
   return (
@@ -351,23 +208,14 @@ export default function TrackingPage() {
       }
       description={
         <>
-          Tracking for active deliveries (map positions are simulated).
+          Status, ETAs, and driver assignments for active deliveries. GPS
+          positions are not available — no telematics integration is connected.
           {deliveries.length === 0 &&
             " No active shipments found — create shipments and assign them to routes to see tracking data here."}
         </>
       }
       eyebrow="Logistics / Tracking"
-      title={
-        <>
-          Delivery tracking
-          <Badge
-            className="ml-2 font-normal text-muted-foreground text-xs"
-            variant="outline"
-          >
-            Simulated Positions
-          </Badge>
-        </>
-      }
+      title="Delivery tracking"
     >
 
       {/* Summary */}
@@ -416,35 +264,23 @@ export default function TrackingPage() {
               No deliveries to track
             </h3>
             <p className="mx-auto max-w-md text-muted-foreground text-sm">
-              Create shipments and assign them to delivery routes to see
-              real-time tracking here. Go to Shipments to create a new shipment,
+              Create shipments and assign them to delivery routes to see their
+              status and ETAs here. Go to Shipments to create a new shipment,
               then use Dispatch to assign drivers and vehicles.
             </p>
           </CardContent>
         </Card>
       ) : (
         <>
-          {/* Map + List Layout */}
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
-            {/* Map */}
-            <Card className="overflow-hidden" tone="canvas">
-              <CardContent className="p-0">
-                <div className="h-[500px]">
-                  <MiniMap deliveries={deliveries} />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Delivery List */}
-            <Card className="max-h-[500px] overflow-auto" tone="canvas">
+          {/* Delivery List */}
+          <Card tone="canvas">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">Active Deliveries</CardTitle>
                 <CardDescription>Click a delivery for details</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
                 {deliveries.map((delivery) => {
-                  const config =
-                    STATUS_CONFIG[delivery.status] || STATUS_CONFIG.dispatched;
+                  const config = STATUS_CONFIG[delivery.status];
                   const Icon = config.icon;
                   const isSelected = selectedId === delivery.id;
 
@@ -503,7 +339,6 @@ export default function TrackingPage() {
                 })}
               </CardContent>
             </Card>
-          </div>
 
           {/* Selected Delivery Detail */}
           {selected && (
@@ -555,28 +390,6 @@ export default function TrackingPage() {
                           <span className="font-medium">
                             {selected.destination}
                           </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                      <h3 className="mb-3 font-semibold">Live Data</h3>
-                      <div className="space-y-1 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Speed</span>
-                          <span>{selected.position.speed.toFixed(0)} mph</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Heading</span>
-                          <span>{selected.position.heading}°</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">
-                            Last update
-                          </span>
-                          <span>{formatTime(selected.position.updatedAt)}</span>
                         </div>
                       </div>
                     </div>

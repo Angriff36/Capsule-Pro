@@ -850,7 +850,7 @@ export async function listApiKeies(query?: Record<string, string | number>): Pro
   const res = await apiFetch(`/api/settings/api-keys/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list ApiKey (${res.status})`);
   const json = await res.json();
-  const data = (json.apiKeies ?? json.data ?? []) as ApiKey[];
+  const data = (json.apiKeies ?? json.apiKeys ?? json.data ?? []) as ApiKey[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }
@@ -880,7 +880,7 @@ export async function listRolePolicies(query?: Record<string, string | number>):
   const res = await apiFetch(`/api/rolepolicy/policies/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list RolePolicy (${res.status})`);
   const json = await res.json();
-  const data = (json.rolePolicies ?? json.data ?? []) as RolePolicy[];
+  const data = (json.rolePolicies ?? json.rolePolicys ?? json.data ?? []) as RolePolicy[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }
@@ -985,7 +985,7 @@ export async function listKnowledgeBaseEntries(query?: Record<string, string | n
   const res = await apiFetch(`/api/administrative/knowledge-base/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list KnowledgeBaseEntry (${res.status})`);
   const json = await res.json();
-  const data = (json.knowledgeBaseEntries ?? json.data ?? []) as KnowledgeBaseEntry[];
+  const data = (json.knowledgeBaseEntries ?? json.knowledgeBaseEntrys ?? json.data ?? []) as KnowledgeBaseEntry[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }
@@ -1030,7 +1030,7 @@ export async function listVersionedEntities(query?: Record<string, string | numb
   const res = await apiFetch(`/api/administrative/versioned-entities/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list VersionedEntity (${res.status})`);
   const json = await res.json();
-  const data = (json.versionedEntities ?? json.data ?? []) as VersionedEntity[];
+  const data = (json.versionedEntities ?? json.versionedEntitys ?? json.data ?? []) as VersionedEntity[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }

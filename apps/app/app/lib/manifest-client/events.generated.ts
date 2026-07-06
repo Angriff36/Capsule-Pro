@@ -1055,7 +1055,7 @@ export async function listEventProfitabilities(query?: Record<string, string | n
   const res = await apiFetch(`/api/events/profitability/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EventProfitability (${res.status})`);
   const json = await res.json();
-  const data = (json.eventProfitabilities ?? json.data ?? []) as EventProfitability[];
+  const data = (json.eventProfitabilities ?? json.eventProfitabilitys ?? json.data ?? []) as EventProfitability[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }
@@ -1070,7 +1070,7 @@ export async function listEventSummaries(query?: Record<string, string | number>
   const res = await apiFetch(`/api/events/summaries/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EventSummary (${res.status})`);
   const json = await res.json();
-  const data = (json.eventSummaries ?? json.data ?? []) as EventSummary[];
+  const data = (json.eventSummaries ?? json.eventSummarys ?? json.data ?? []) as EventSummary[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }
@@ -1220,7 +1220,7 @@ export async function listEventDishes(query?: Record<string, string | number>): 
   const res = await apiFetch(`/api/events/event-dishes/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EventDish (${res.status})`);
   const json = await res.json();
-  const data = (json.eventDishes ?? json.data ?? []) as EventDish[];
+  const data = (json.eventDishes ?? json.eventDishs ?? json.data ?? []) as EventDish[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }
@@ -1430,7 +1430,7 @@ export async function listEventWaitlistEntries(query?: Record<string, string | n
   const res = await apiFetch(`/api/events/waitlist-entries/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EventWaitlistEntry (${res.status})`);
   const json = await res.json();
-  const data = (json.eventWaitlistEntries ?? json.data ?? []) as EventWaitlistEntry[];
+  const data = (json.eventWaitlistEntries ?? json.eventWaitlistEntrys ?? json.data ?? []) as EventWaitlistEntry[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }

@@ -132,6 +132,15 @@ for (const [entity, base] of Object.entries(ENTITY_DOMAIN_MAP)) {
     st.usedTypes.add(entity);
   }
   const listKey = plural(camel(entity));
+  // The upstream nextjs projection pluralizes route payload keys naively
+  // (`${camel}s`, e.g. "knowledgeBaseEntrys", "facilitys"), which diverges
+  // from grammatical plurals for -y/-s endings. Read the naive key too or
+  // those list functions silently return [] forever.
+  const naiveListKey = `${camel(entity)}s`;
+  const listKeyExpr =
+    naiveListKey === listKey
+      ? `json.${listKey}`
+      : `json.${listKey} ?? json.${naiveListKey}`;
   const detailKey = camel(entity);
   st.out.push(
     `export async function list${plural(entity)}(query?: Record<string, string | number>): Promise<PaginatedResponse<${T}>> {`
@@ -144,7 +153,7 @@ for (const [entity, base] of Object.entries(ENTITY_DOMAIN_MAP)) {
     `  if (!res.ok) throw new Error(\`Failed to list ${entity} (\${res.status})\`);`
   );
   st.out.push("  const json = await res.json();");
-  st.out.push(`  const data = (json.${listKey} ?? json.data ?? []) as ${T}[];`);
+  st.out.push(`  const data = (${listKeyExpr} ?? json.data ?? []) as ${T}[];`);
   st.out.push(
     "  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };"
   );

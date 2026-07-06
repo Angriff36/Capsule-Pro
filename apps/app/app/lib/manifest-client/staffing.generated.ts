@@ -687,7 +687,7 @@ export async function listTimeEntries(query?: Record<string, string | number>): 
   const res = await apiFetch(`/api/timecards/entries/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list TimeEntry (${res.status})`);
   const json = await res.json();
-  const data = (json.timeEntries ?? json.data ?? []) as TimeEntry[];
+  const data = (json.timeEntries ?? json.timeEntrys ?? json.data ?? []) as TimeEntry[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }
@@ -732,7 +732,7 @@ export async function listEmployeeAvailabilities(query?: Record<string, string |
   const res = await apiFetch(`/api/staff/availability/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EmployeeAvailability (${res.status})`);
   const json = await res.json();
-  const data = (json.employeeAvailabilities ?? json.data ?? []) as EmployeeAvailability[];
+  const data = (json.employeeAvailabilities ?? json.employeeAvailabilitys ?? json.data ?? []) as EmployeeAvailability[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }

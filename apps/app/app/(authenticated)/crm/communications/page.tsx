@@ -11,7 +11,9 @@ import {
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -153,8 +155,9 @@ const CrmCommunicationsPage = async () => {
           <MonoLabel tone="dark">Operations / CRM</MonoLabel>
           <DisplayHeading size="md">Communications Timeline</DisplayHeading>
           <CommandBandLede>
-            Maintain a single source of truth for client, venue, and command
-            updates.
+            A read-only feed of logged client interactions. Log new
+            interactions from a client&apos;s detail page under the
+            Communications tab.
           </CommandBandLede>
         </CommandBandHeader>
       </CommandBand>
@@ -164,9 +167,15 @@ const CrmCommunicationsPage = async () => {
         <Card tone="canvas">
           <CardContent className="space-y-4 pt-6">
             {interactions.length === 0 ? (
-              <p className="text-muted-foreground text-sm">
-                No communications recorded yet
-              </p>
+              <div className="space-y-3">
+                <p className="text-muted-foreground text-sm">
+                  No communications recorded yet. Interactions are logged from
+                  a client&apos;s detail page (Communications tab).
+                </p>
+                <Button asChild size="sm" variant="outline">
+                  <Link href="/crm/clients">Go to clients</Link>
+                </Button>
+              </div>
             ) : (
               interactions.map((record) => {
                 const status = deriveStatus(
