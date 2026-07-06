@@ -41,12 +41,13 @@ export function buildUpdatePayload(formData: FormData) {
     // Ignore parse errors
   }
 
-  // Convert ingredients to raw format (name + unit code) for server resolution
+  // Convert ingredients to raw format (name + unit code) for server resolution.
+  // sortOrder is 1-based: RecipeIngredient's validOrder constraint requires > 0.
   const formattedIngredients = ingredients.map((ing, idx) => ({
     name: ing.name,
     quantity: Number.parseFloat(ing.quantity) || 0,
     unit: ing.unit || null,
-    sortOrder: idx,
+    sortOrder: idx + 1,
   }));
 
   // Convert steps to route format

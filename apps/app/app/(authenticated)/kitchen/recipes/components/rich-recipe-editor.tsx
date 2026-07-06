@@ -509,7 +509,8 @@ export function RichRecipeEditor({
         isSubRecipe: false,
         subRecipeId: null,
         subRecipeName: null,
-        sortOrder: ingredients.length,
+        // 1-based: RecipeIngredient validOrder constraint requires > 0
+        sortOrder: ingredients.length + 1,
         costPerIngredient: 0,
         hasCostData: false,
       },
@@ -546,9 +547,8 @@ export function RichRecipeEditor({
       return;
     }
     [updated[index], updated[newIndex]] = [b, a];
-    // Update sort orders
-    updated.forEach((ing, idx) => ({ ...ing, sortOrder: idx }));
-    setIngredients(updated);
+    // Reindex 1-based (validOrder constraint requires > 0)
+    setIngredients(updated.map((ing, idx) => ({ ...ing, sortOrder: idx + 1 })));
   };
 
   const handleScale = (factor: number) => {

@@ -169,7 +169,9 @@ export const parseIngredientInput = (
 };
 
 /**
- * Load a map of unit codes to database IDs.
+ * Load a map of unit tokens to database IDs.
+ * Matches user-typed tokens against unit code ("ea"), name ("each"),
+ * and plural name ("cups") so free-text units resolve correctly.
  */
 export const loadUnitMap = async (
   tx: TxClient,
@@ -178,19 +180,28 @@ export const loadUnitMap = async (
   if (codes.length === 0) {
     return new Map<string, number>();
   }
-  const rows = await tx.$queryRaw<{ id: number; code: string }[]>(
+  const tokens = codes.map((code) => code.toLowerCase());
+  const rows = await tx.$queryRaw<
+    { id: number; code: string; name: string; name_plural: string | null }[]
+  >(
     PrismaNamespace.sql`
-      SELECT id, code
+      SELECT id, code, name, name_plural
       FROM core.units
-      WHERE code IN (${PrismaNamespace.join(codes)})
+      WHERE LOWER(code) IN (${PrismaNamespace.join(tokens)})
+         OR LOWER(name) IN (${PrismaNamespace.join(tokens)})
+         OR LOWER(COALESCE(name_plural, '')) IN (${PrismaNamespace.join(tokens)})
     `
   );
-  return new Map(
-    rows.map((row: { id: number; code: string }) => [
-      row.code.toLowerCase(),
-      row.id,
-    ])
-  );
+  const map = new Map<string, number>();
+  for (const row of rows) {
+    // Register every alias so any of the user's tokens can hit.
+    map.set(row.code.toLowerCase(), row.id);
+    map.set(row.name.toLowerCase(), row.id);
+    if (row.name_plural) {
+      map.set(row.name_plural.toLowerCase(), row.id);
+    }
+  }
+  return map;
 };
 
 /**
@@ -246,14 +257,17 @@ export const getEachUnitId = async (tx: TxClient): Promise<number> => {
     return cachedEachUnitId;
   }
 
+  // Canonical row is code='ea' / name='each' (see seed-units-waste-reasons.ts).
   const [row] = await tx.$queryRaw<{ id: number }[]>(
     PrismaNamespace.sql`
-      SELECT id FROM core.units WHERE code = 'each' LIMIT 1
+      SELECT id FROM core.units WHERE code = 'ea' OR name = 'each' LIMIT 1
     `
   );
 
   if (!row) {
-    throw new Error("Default 'each' unit not found in database");
+    throw new Error(
+      "Default 'each' unit (code 'ea') not found in core.units — run the units seed script"
+    );
   }
 
   cachedEachUnitId = row.id;

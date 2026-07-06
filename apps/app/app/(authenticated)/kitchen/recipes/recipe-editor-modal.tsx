@@ -154,7 +154,8 @@ export const RecipeEditorModal = ({
             name: ing.name,
             quantity: Number.parseFloat(ing.quantity) || 1,
             unit: ing.unit || null,
-            sortOrder: idx,
+            // 1-based: RecipeIngredient validOrder constraint requires > 0
+            sortOrder: idx + 1,
           }))
         )
       );

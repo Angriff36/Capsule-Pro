@@ -309,6 +309,7 @@ export async function POST(request: NextRequest) {
               unit: item.unit ?? null,
               preparationNotes: item.preparationNotes ?? null,
               isOptional: item.isOptional ?? false,
+              sortOrder: item.sortOrder,
             });
           }
         }
@@ -335,7 +336,8 @@ export async function POST(request: NextRequest) {
             unitId: r.unitId,
             preparationNotes: r.preparationNotes,
             isOptional: r.isOptional,
-            sortOrder: rawIngredients[idx]?.sortOrder ?? idx,
+            // 1-based fallback: RecipeIngredient validOrder requires sortOrder > 0
+            sortOrder: rawIngredients[idx]?.sortOrder || idx + 1,
           })),
         ];
 

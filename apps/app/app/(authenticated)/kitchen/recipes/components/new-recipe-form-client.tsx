@@ -59,7 +59,8 @@ function parseIngredientsText(text: string): Array<{
           name: name.trim(),
           quantity: Number.parseFloat(qty ?? ""),
           unit: unit || null,
-          sortOrder: idx,
+          // 1-based: RecipeIngredient validOrder constraint requires > 0
+          sortOrder: idx + 1,
         };
       }
     }
@@ -67,7 +68,7 @@ function parseIngredientsText(text: string): Array<{
       name: trimmed,
       quantity: 1,
       unit: null,
-      sortOrder: idx,
+      sortOrder: idx + 1,
     };
   });
 }
@@ -131,13 +132,12 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
   ) => {
     const yieldUnitCode =
       getString(formData, "yieldUnit").toLowerCase() || "servings";
-    // Prefer servings, then each, then first unit, then fallback to 1
+    // Prefer servings, then each (DB code is "ea"), then first unit
     const yieldUnitId =
       unitCodeToId.get(yieldUnitCode) ??
       unitCodeToId.get("servings") ??
-      unitCodeToId.get("each") ??
-      units.find((u) => u.code.toLowerCase() === "servings")?.id ??
-      units.find((u) => u.code.toLowerCase() === "each")?.id ??
+      unitCodeToId.get("ea") ??
+      units.find((u) => u.name.toLowerCase() === "each")?.id ??
       units[0]?.id ??
       1;
 

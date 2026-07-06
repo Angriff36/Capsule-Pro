@@ -332,6 +332,7 @@ async function resolveRecipeIngredients(
       unit: item.unit ?? null,
       preparationNotes: item.preparationNotes ?? null,
       isOptional: item.isOptional ?? false,
+      sortOrder: item.sortOrder,
     });
   }
 
@@ -355,7 +356,8 @@ async function resolveRecipeIngredients(
       unitId: ingredient.unitId,
       preparationNotes: ingredient.preparationNotes,
       isOptional: ingredient.isOptional,
-      sortOrder: rawIngredients[index]?.sortOrder ?? index,
+      // 1-based fallback: RecipeIngredient validOrder requires sortOrder > 0
+      sortOrder: rawIngredients[index]?.sortOrder || index + 1,
     })),
   ];
 }
