@@ -227,6 +227,7 @@ export function ContractDetailClient({
   const [showSignatureDialog, setShowSignatureDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showSendDialog, setShowSendDialog] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
@@ -414,6 +415,39 @@ export function ContractDetailClient({
     }
   }, [contract.documentUrl]);
 
+  const handleExportPdf = useCallback(async () => {
+    setIsExportingPdf(true);
+    try {
+      // download=true returns the raw PDF blob (otherwise the endpoint
+      // returns a base64 JSON envelope).
+      const response = await apiFetch(
+        `/api/events/contracts/${contract.id}/pdf?download=true`
+      );
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        throw new Error(
+          body?.error ?? `Failed to generate PDF (${response.status})`
+        );
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `contract-${contract.title.replaceAll(/\s+/g, "-").toLowerCase()}.pdf`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      toast.success("Contract PDF downloaded");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to export PDF"
+      );
+    } finally {
+      setIsExportingPdf(false);
+    }
+  }, [contract.id, contract.title]);
+
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -479,6 +513,15 @@ export function ContractDetailClient({
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+            <Button
+              disabled={isExportingPdf}
+              onClick={handleExportPdf}
+              size="sm"
+              variant="outline"
+            >
+              <DownloadIcon className="mr-2 size-4" />
+              {isExportingPdf ? "Exporting…" : "Export PDF"}
+            </Button>
             <Button onClick={() => setShowSendDialog(true)} size="sm" variant="default">
               <SendIcon className="mr-2 size-4" />
               Send to Client
