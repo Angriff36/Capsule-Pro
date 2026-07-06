@@ -237,7 +237,12 @@ async function findOrCreateVenue(
 }
 
 /**
- * Helper to find or create a recipe/dish
+ * Helper to find or create a recipe/dish.
+ *
+ * dishes.recipe_id is NOT NULL, so every dish needs a recipe. We find or
+ * create a same-named recipe and keep the dish linked to it. On dish reuse we
+ * re-align a stale recipe link (historical imports left dishes pointing at
+ * unrelated recipes, which broke prep-list generation).
  */
 async function findOrCreateDish(
   tenantId: string,
@@ -245,6 +250,28 @@ async function findOrCreateDish(
 ): Promise<string | null> {
   if (!menuItem.name) {
     return null;
+  }
+
+  // Find or create the recipe this dish is made from.
+  const [existingRecipe] = await database.$queryRaw<Array<{ id: string }>>(
+    Prisma.sql`
+      SELECT id
+      FROM tenant_kitchen.recipes
+      WHERE tenant_id = ${tenantId}
+        AND name = ${menuItem.name}
+        AND deleted_at IS NULL
+      LIMIT 1
+    `
+  );
+  let recipeId = existingRecipe?.id;
+  if (!recipeId) {
+    recipeId = randomUUID();
+    await database.$executeRaw(
+      Prisma.sql`
+        INSERT INTO tenant_kitchen.recipes (tenant_id, id, name, category, is_active, updated_at)
+        VALUES (${tenantId}, ${recipeId}, ${menuItem.name}, ${menuItem.category || "Imported"}, true, NOW())
+      `
+    );
   }
 
   // Try to find existing dish
@@ -260,6 +287,15 @@ async function findOrCreateDish(
   );
 
   if (existing?.id) {
+    await database.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.dishes
+        SET recipe_id = ${recipeId}, updated_at = NOW()
+        WHERE tenant_id = ${tenantId}
+          AND id = ${existing.id}
+          AND recipe_id != ${recipeId}
+      `
+    );
     return existing.id;
   }
 
@@ -267,8 +303,8 @@ async function findOrCreateDish(
   const dishId = randomUUID();
   await database.$executeRaw(
     Prisma.sql`
-      INSERT INTO tenant_kitchen.dishes (tenant_id, id, name, category, is_active, updated_at)
-      VALUES (${tenantId}, ${dishId}, ${menuItem.name}, ${menuItem.category || "Imported"}, true, NOW())
+      INSERT INTO tenant_kitchen.dishes (tenant_id, id, recipe_id, name, category, is_active, updated_at)
+      VALUES (${tenantId}, ${dishId}, ${recipeId}, ${menuItem.name}, ${menuItem.category || "Imported"}, true, NOW())
     `
   );
 

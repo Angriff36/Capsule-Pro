@@ -5,8 +5,9 @@ import { database, Prisma } from "@repo/database";
 import { put } from "@repo/storage";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { runManifestCommand } from "@/lib/manifest-command";
 import { invariant } from "../../../lib/invariant";
-import { requireTenantId } from "../../../lib/tenant";
+import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
 
 const parseList = (value: FormDataEntryValue | null) =>
   typeof value === "string"
@@ -755,6 +756,53 @@ export const updateDish = async (dishId: string, formData: FormData) => {
 
   revalidatePath("/kitchen/recipes");
   revalidatePath(`/kitchen/recipes/dishes/${dishId}`);
+};
+
+/**
+ * Relink a dish to a different recipe via the governed Dish.changeRecipe
+ * command. Prep-list generation resolves ingredients through this link, so
+ * corrections must go through the Manifest runtime (audit + events).
+ */
+export const changeDishRecipe = async (dishId: string, recipeId: string) => {
+  const tenantId = await requireTenantId();
+  invariant(recipeId.trim().length > 0, "Recipe is required");
+
+  const [recipe] = await database.$queryRaw<{ id: string }[]>`
+    SELECT id
+    FROM tenant_kitchen.recipes
+    WHERE tenant_id = ${tenantId} AND id = ${recipeId}::uuid AND deleted_at IS NULL
+    LIMIT 1
+  `;
+  if (!recipe) {
+    throw new Error("Recipe not found.");
+  }
+
+  const user = await requireCurrentUser();
+  const result = await runManifestCommand({
+    entity: "Dish",
+    command: "changeRecipe",
+    instanceId: dishId,
+    body: { recipeId },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to change recipe");
+  }
+
+  revalidatePath("/kitchen/recipes");
+  revalidatePath(`/kitchen/recipes/dishes/${dishId}`);
+};
+
+/** Active recipes for pickers (id + name only). */
+export const listRecipeOptions = async () => {
+  const tenantId = await requireTenantId();
+  return await database.$queryRaw<{ id: string; name: string }[]>`
+    SELECT id, name
+    FROM tenant_kitchen.recipes
+    WHERE tenant_id = ${tenantId} AND deleted_at IS NULL
+    ORDER BY name
+  `;
 };
 
 export const updateRecipeName = async (recipeId: string, name: string) => {

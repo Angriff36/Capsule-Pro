@@ -21,9 +21,9 @@ import {
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { PencilIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { updateDish } from "../../actions";
+import { changeDishRecipe, listRecipeOptions, updateDish } from "../../actions";
 
 interface EditDishDialogProps {
   dish: {
@@ -40,6 +40,8 @@ interface EditDishDialogProps {
     min_prep_lead_days: number;
     max_prep_lead_days: number | null;
     is_active: boolean;
+    recipe_id: string;
+    recipe_name: string | null;
   };
 }
 
@@ -91,6 +93,9 @@ export function EditDishDialog({ dish }: EditDishDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [recipeOptions, setRecipeOptions] = useState<
+    { id: string; name: string }[]
+  >([]);
 
   const [formData, setFormData] = useState({
     name: dish.name,
@@ -105,7 +110,19 @@ export function EditDishDialog({ dish }: EditDishDialogProps) {
     minPrepLeadDays: dish.min_prep_lead_days.toString(),
     maxPrepLeadDays: dish.max_prep_lead_days?.toString() ?? "",
     isActive: dish.is_active,
+    recipeId: dish.recipe_id,
   });
+
+  useEffect(() => {
+    if (!open || recipeOptions.length > 0) {
+      return;
+    }
+    listRecipeOptions()
+      .then(setRecipeOptions)
+      .catch(() => {
+        toast.error("Failed to load recipes for the recipe picker.");
+      });
+  }, [open, recipeOptions.length]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,6 +144,9 @@ export function EditDishDialog({ dish }: EditDishDialogProps) {
         fd.set("isActive", formData.isActive ? "true" : "false");
 
         await updateDish(dish.id, fd);
+        if (formData.recipeId && formData.recipeId !== dish.recipe_id) {
+          await changeDishRecipe(dish.id, formData.recipeId);
+        }
         toast.success("Dish updated successfully.");
         setOpen(false);
         router.refresh();
@@ -204,6 +224,39 @@ export function EditDishDialog({ dish }: EditDishDialogProps) {
                 rows={2}
                 value={formData.description}
               />
+            </div>
+
+            {/* Recipe link — prep lists resolve ingredients through this */}
+            <div className="space-y-2">
+              <Label htmlFor="recipe">Recipe</Label>
+              <Select
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, recipeId: value }))
+                }
+                value={formData.recipeId}
+              >
+                <SelectTrigger id="recipe">
+                  <SelectValue
+                    placeholder={dish.recipe_name ?? "Select recipe"}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {recipeOptions.length === 0 && (
+                    <SelectItem disabled value={dish.recipe_id}>
+                      {dish.recipe_name ?? "Loading recipes..."}
+                    </SelectItem>
+                  )}
+                  {recipeOptions.map((recipe) => (
+                    <SelectItem key={recipe.id} value={recipe.id}>
+                      {recipe.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-muted-foreground text-xs">
+                Prep lists expand this dish into ingredients through the
+                linked recipe.
+              </p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">

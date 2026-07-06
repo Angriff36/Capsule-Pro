@@ -963,11 +963,15 @@
     },
     "command:Dish.activate": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 139
+      "line": 152
+    },
+    "command:Dish.changeRecipe": {
+      "file": "kitchen/dish-rules.manifest",
+      "line": 126
     },
     "command:Dish.clearDefaultContainer": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 272
+      "line": 285
     },
     "command:Dish.create": {
       "file": "kitchen/dish-rules.manifest",
@@ -975,35 +979,35 @@
     },
     "command:Dish.deactivate": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 147
+      "line": 160
     },
     "command:Dish.eightySix": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 242
+      "line": 255
     },
     "command:Dish.markSeasonal": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 215
+      "line": 228
     },
     "command:Dish.reinstate": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 255
+      "line": 268
     },
     "command:Dish.unmarkSeasonal": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 230
+      "line": 243
     },
     "command:Dish.update": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 122
+      "line": 135
     },
     "command:Dish.updateLeadTime": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 202
+      "line": 215
     },
     "command:Dish.updatePricing": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 164
+      "line": 177
     },
     "command:Document.create": {
       "file": "core/crm-admin-extended-rules.manifest",
@@ -4947,7 +4951,7 @@
     },
     "constraint:Dish.warnActiveMenu": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 150
+      "line": 163
     },
     "constraint:Dish.warnCostExceedsPrice": {
       "file": "kitchen/dish-rules.manifest",
@@ -4963,7 +4967,7 @@
     },
     "constraint:Dish.warnMarginBelowThreshold": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 177
+      "line": 190
     },
     "constraint:Dish.warnNoPrice": {
       "file": "kitchen/dish-rules.manifest",
@@ -4971,7 +4975,7 @@
     },
     "constraint:Dish.warnPriceDecrease": {
       "file": "kitchen/dish-rules.manifest",
-      "line": 169
+      "line": 182
     },
     "constraint:Document.positiveFileSize": {
       "file": "core/crm-admin-extended-rules.manifest",

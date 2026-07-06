@@ -1206,6 +1206,11 @@
   },
   {
     "entity": "Dish",
+    "command": "changeRecipe",
+    "commandId": "Dish.changeRecipe"
+  },
+  {
+    "entity": "Dish",
     "command": "clearDefaultContainer",
     "commandId": "Dish.clearDefaultContainer"
   },

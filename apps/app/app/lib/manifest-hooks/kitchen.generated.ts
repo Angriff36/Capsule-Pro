@@ -1212,6 +1212,19 @@ export function useDishCreateMutation(
   });
 }
 
+export function useDishChangeRecipeMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Dish>("Dish", "changeRecipe", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
+    },
+    ...options,
+  });
+}
+
 export function useDishUpdateMutation(
   options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
 ) {

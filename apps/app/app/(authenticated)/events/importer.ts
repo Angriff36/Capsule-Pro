@@ -269,6 +269,18 @@ const insertDish = async (
 ) => {
   const existingId = await findDishId(tenantId, name);
   if (existingId) {
+    // Re-align the recipe link on reuse. Historical imports left dishes
+    // pointing at unrelated recipes; the import row is authoritative for
+    // "dish <name> is made by recipe <name>", so correct stale links here.
+    await database.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.dishes
+        SET recipe_id = ${recipeId}, updated_at = NOW()
+        WHERE tenant_id = ${tenantId}
+          AND id = ${existingId}
+          AND recipe_id != ${recipeId}
+      `
+    );
     return existingId;
   }
 

@@ -119,6 +119,19 @@ entity Dish mixin TenantScoped, SoftDeletable {
     emit DishCreated
   }
 
+  // Relink this dish to a different recipe. Dishes are menu presentations of
+  // recipes; imports historically mislinked them, and prep-list generation
+  // resolves ingredients through this link — so users need a governed way to
+  // correct it.
+  command changeRecipe(recipeId: string) {
+    guard recipeId != null and recipeId != "" "Recipe ID is required"
+    guard self.recipeId != recipeId "Dish is already linked to this recipe"
+
+    mutate recipeId = recipeId
+
+    emit DishRecipeChanged
+  }
+
   command update(name: string, description: string, category: string, serviceStyle: string, defaultContainerId: string, presentationImageUrl: string, portionSizeDescription: string, dietaryTags: array<string>, allergens: array<string>) {
     guard name != null and name != "" "Dish name is required"
     guard self.isActive "Cannot update a deactivated dish"
@@ -298,6 +311,14 @@ event DishUpdated: "kitchen.dish.updated" {
   dishId: string
   name: string
   category: string
+  updatedAt: datetime
+}
+
+event DishRecipeChanged: "kitchen.dish.recipe-changed" {
+  dishId: string
+  tenantId: string
+  recipeId: string
+  name: string
   updatedAt: datetime
 }
 

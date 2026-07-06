@@ -3346,6 +3346,11 @@ export function dishActivatePath(): string {
   return "/api/manifest/Dish/commands/activate";
 }
 
+/** POST /api/manifest/Dish/commands/changeRecipe */
+export function dishChangeRecipePath(): string {
+  return "/api/manifest/Dish/commands/changeRecipe";
+}
+
 /** POST /api/manifest/Dish/commands/clearDefaultContainer */
 export function dishClearDefaultContainerPath(): string {
   return "/api/manifest/Dish/commands/clearDefaultContainer";
@@ -8147,6 +8152,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "DisciplinaryAction.create", path: "/api/manifest/DisciplinaryAction/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "DisciplinaryAction.escalate", path: "/api/manifest/DisciplinaryAction/commands/escalate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.activate", path: "/api/manifest/Dish/commands/activate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Dish.changeRecipe", path: "/api/manifest/Dish/commands/changeRecipe", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.clearDefaultContainer", path: "/api/manifest/Dish/commands/clearDefaultContainer", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.create", path: "/api/manifest/Dish/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.deactivate", path: "/api/manifest/Dish/commands/deactivate", method: "POST", source: "command", auth: true, tenant: true },
