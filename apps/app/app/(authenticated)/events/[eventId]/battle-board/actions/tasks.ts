@@ -317,6 +317,32 @@ export async function deleteTimelineTask(taskId: string, eventId: string) {
   return { success: true };
 }
 
+/** Reverse a soft delete — used by the timeline undo stack. */
+export async function restoreTimelineTask(taskId: string, eventId: string) {
+  const { orgId } = await auth();
+
+  if (!orgId) {
+    throw new Error("Unauthorized");
+  }
+
+  const tenantId = await getTenantIdForOrg(orgId);
+
+  await database.$executeRawUnsafe(
+    `UPDATE tenant_events.timeline_tasks
+     SET deleted_at = NULL
+     WHERE tenant_id = $1
+       AND id = $2
+       AND event_id = $3`,
+    tenantId,
+    taskId,
+    eventId
+  );
+
+  revalidatePath(`/events/${eventId}/battle-board`);
+
+  return { success: true };
+}
+
 export async function getEventStaff(eventId: string) {
   const { orgId } = await auth();
 

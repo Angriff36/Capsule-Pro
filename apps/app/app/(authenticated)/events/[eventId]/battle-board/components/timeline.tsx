@@ -53,6 +53,7 @@ import {
   calculateCriticalPath,
   deleteTimelineTask,
   getAvailableEmployees,
+  restoreTimelineTask,
   updateTimelineTask,
 } from "../actions/tasks";
 import {
@@ -354,7 +355,14 @@ export function Timeline({
 
     const deletedTask = tasks.find((t) => t.id === taskToDelete);
 
-    await deleteTimelineTask(taskToDelete, eventId);
+    try {
+      await deleteTimelineTask(taskToDelete, eventId);
+    } catch {
+      toast.error("Failed to delete task");
+      setDeleteDialogOpen(false);
+      setTaskToDelete(null);
+      return;
+    }
 
     setTasks((prev) => prev.filter((t) => t.id !== taskToDelete));
     setSelectedTaskIds((prev) => prev.filter((id) => id !== taskToDelete));
@@ -381,47 +389,62 @@ export function Timeline({
     setTaskToDelete(null);
   }, []);
 
-  const handleUndo = useCallback(() => {
-    if (undoStack.length === 0) {
-      return;
-    }
-
+  const handleUndo = useCallback(async () => {
     const action = undoStack[0];
     if (!action) {
       return;
     }
-    const newUndoStack = undoStack.slice(1);
-    const previousState = action.previousState;
 
-    if (action.type === "delete" && previousState) {
-      setTasks((prev) => [...prev, previousState]);
-      setRedoStack((prev) => [action, ...prev]);
-    }
-
-    setUndoStack(newUndoStack);
-    toast.info("Undo successful");
-  }, [undoStack]);
-
-  const handleRedo = useCallback(() => {
-    if (redoStack.length === 0) {
+    try {
+      if (action.type === "delete" && action.previousState) {
+        // Deletes are soft (deleted_at) — restore server-side, then in the UI.
+        const restored = action.previousState;
+        await restoreTimelineTask(restored.id, eventId);
+        setTasks((prev) => [...prev, restored]);
+      } else if (action.type === "create" && action.newState) {
+        const created = action.newState;
+        await deleteTimelineTask(created.id, eventId);
+        setTasks((prev) => prev.filter((t) => t.id !== created.id));
+      } else {
+        return;
+      }
+    } catch {
+      toast.error("Undo failed — the change was not reverted");
       return;
     }
 
+    setUndoStack((prev) => prev.slice(1));
+    setRedoStack((prev) => [action, ...prev]);
+    toast.info("Undo successful");
+  }, [undoStack, eventId]);
+
+  const handleRedo = useCallback(async () => {
     const action = redoStack[0];
     if (!action) {
       return;
     }
-    const newRedoStack = redoStack.slice(1);
-    const previousState = action.previousState;
 
-    if (action.type === "delete" && previousState) {
-      setTasks((prev) => prev.filter((t) => t.id !== previousState.id));
-      setUndoStack((prev) => [action, ...prev]);
+    try {
+      if (action.type === "delete" && action.previousState) {
+        const deleted = action.previousState;
+        await deleteTimelineTask(deleted.id, eventId);
+        setTasks((prev) => prev.filter((t) => t.id !== deleted.id));
+      } else if (action.type === "create" && action.newState) {
+        const recreated = action.newState;
+        await restoreTimelineTask(recreated.id, eventId);
+        setTasks((prev) => [...prev, recreated]);
+      } else {
+        return;
+      }
+    } catch {
+      toast.error("Redo failed — the change was not re-applied");
+      return;
     }
 
-    setRedoStack(newRedoStack);
+    setRedoStack((prev) => prev.slice(1));
+    setUndoStack((prev) => [action, ...prev]);
     toast.info("Redo successful");
-  }, [redoStack]);
+  }, [redoStack, eventId]);
 
   const handleTaskCreated = useCallback((newTask: TimelineTask) => {
     setTasks((prev) => [...prev, newTask]);
