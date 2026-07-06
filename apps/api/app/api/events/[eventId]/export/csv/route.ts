@@ -127,6 +127,7 @@ async function buildStaffSection(
 ): Promise<string[]> {
   const rows: string[] = [];
 
+  // timeline_tasks has no priority column — don't fabricate one.
   const tasks = await database.$queryRaw<
     Array<{
       title: string;
@@ -134,15 +135,13 @@ async function buildStaffSection(
       start_time: string;
       end_time: string;
       status: string;
-      priority: string;
     }>
   >`SELECT
       t.title,
       u.first_name || ' ' || u.last_name as assignee_name,
       t.start_time,
       t.end_time,
-      t.status,
-      t.priority
+      t.status
     FROM tenant_events.timeline_tasks t
     LEFT JOIN tenant_staff.employees u ON u.tenant_id = t.tenant_id AND u.id = t.assignee_id
     WHERE t.tenant_id = ${tenantId}
@@ -152,10 +151,10 @@ async function buildStaffSection(
 
   if (tasks.length > 0) {
     rows.push("Staff Assignments");
-    rows.push("Task,Assigned To,Start Time,End Time,Status,Priority");
+    rows.push("Task,Assigned To,Start Time,End Time,Status");
     for (const task of tasks) {
       rows.push(
-        `${escapeCSV(task.title)},${escapeCSV(task.assignee_name || "")},${escapeCSV(task.start_time)},${escapeCSV(task.end_time)},${escapeCSV(task.status)},${escapeCSV(task.priority)}`
+        `${escapeCSV(task.title)},${escapeCSV(task.assignee_name || "")},${escapeCSV(task.start_time)},${escapeCSV(task.end_time)},${escapeCSV(task.status)}`
       );
     }
     rows.push("");
@@ -182,15 +181,15 @@ async function buildGuestsSection(
       table_number: string | null;
     }>
   >`SELECT
-      name as guest_name,
-      dietary_restrictions,
-      meal_choice,
-      table_number
+      guest_name,
+      array_to_string(dietary_restrictions, ', ') as dietary_restrictions,
+      meal_preference as meal_choice,
+      table_assignment as table_number
     FROM tenant_events.event_guests
     WHERE tenant_id = ${tenantId}
       AND event_id = ${eventId}
       AND deleted_at IS NULL
-    ORDER BY table_number NULLS LAST, name`;
+    ORDER BY table_assignment NULLS LAST, guest_name`;
 
   if (guests.length > 0) {
     rows.push("Guest List");

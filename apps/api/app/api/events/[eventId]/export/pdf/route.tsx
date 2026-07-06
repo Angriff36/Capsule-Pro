@@ -82,6 +82,7 @@ async function fetchDishes(tenantId: string, eventId: string) {
 
 // Helper function to fetch tasks data
 async function fetchTasks(tenantId: string, eventId: string) {
+  // timeline_tasks has no priority column — don't fabricate one.
   const tasks = await database.$queryRaw<
     Array<{
       title: string;
@@ -89,7 +90,6 @@ async function fetchTasks(tenantId: string, eventId: string) {
       start_time: string;
       end_time: string;
       status: string;
-      priority: string;
       notes: string | null;
     }>
   >`SELECT
@@ -98,7 +98,6 @@ async function fetchTasks(tenantId: string, eventId: string) {
       t.start_time,
       t.end_time,
       t.status,
-      t.priority,
       t.notes
     FROM tenant_events.timeline_tasks t
     LEFT JOIN tenant_staff.employees u ON u.tenant_id = t.tenant_id AND u.id = t.assignee_id
@@ -113,7 +112,7 @@ async function fetchTasks(tenantId: string, eventId: string) {
     startTime: t.start_time,
     endTime: t.end_time,
     status: t.status,
-    priority: t.priority,
+    priority: "",
     notes: t.notes,
   }));
 }
@@ -128,15 +127,15 @@ async function fetchGuests(tenantId: string, eventId: string) {
       table_number: string | null;
     }>
   >`SELECT
-      name as guest_name,
-      dietary_restrictions,
-      meal_choice,
-      table_number
+      guest_name,
+      array_to_string(dietary_restrictions, ', ') as dietary_restrictions,
+      meal_preference as meal_choice,
+      table_assignment as table_number
     FROM tenant_events.event_guests
     WHERE tenant_id = ${tenantId}
       AND event_id = ${eventId}
       AND deleted_at IS NULL
-    ORDER BY table_number NULLS LAST, name`;
+    ORDER BY table_assignment NULLS LAST, guest_name`;
 
   return guests.map((g) => ({
     name: g.guest_name,
