@@ -24,7 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, FileDown, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -120,6 +120,37 @@ export default function PrepListDetailPage() {
     }
   };
 
+  const downloadPdf = async () => {
+    setBusy(true);
+    try {
+      // download=true returns the raw PDF blob (otherwise the API returns a
+      // base64 JSON envelope, which would save as a corrupt file).
+      const response = await fetch(
+        apiUrl(`/api/kitchen/prep-lists/${prepListId}/pdf?download=true`),
+        { credentials: "include" }
+      );
+      if (!response.ok) {
+        throw new Error(`PDF generation failed (HTTP ${response.status})`);
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `prep-list-${prepListId.slice(0, 8)}.pdf`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      toast.success("PDF downloaded");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to download PDF"
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -166,6 +197,14 @@ export default function PrepListDetailPage() {
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Finalize"}
             </Button>
           )}
+          <Button
+            disabled={busy}
+            onClick={downloadPdf}
+            size="sm"
+            variant="outline"
+          >
+            <FileDown className="mr-1 h-4 w-4" /> PDF
+          </Button>
           <Button asChild size="sm" variant="outline">
             <Link href="/procurement/weekly-ordering">Weekly ordering</Link>
           </Button>

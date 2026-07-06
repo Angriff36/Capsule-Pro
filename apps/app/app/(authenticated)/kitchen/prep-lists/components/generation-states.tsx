@@ -17,6 +17,7 @@ import {
   UtensilsCrossed,
   XCircle,
 } from "lucide-react";
+import Link from "next/link";
 import type { UnresolvedDish, UnresolvedDishReason } from "../actions";
 
 const REASON_LABELS: Record<UnresolvedDishReason, string> = {
@@ -25,6 +26,22 @@ const REASON_LABELS: Record<UnresolvedDishReason, string> = {
   no_ingredients: "Recipe version has no ingredients",
 };
 
+/** Where the user can actually fix each unresolved reason. */
+function fixTarget(dish: UnresolvedDish): { href: string; label: string } {
+  if (dish.reason === "no_recipe" || !dish.recipeId) {
+    // Dish page hosts the Edit dialog with the recipe picker.
+    return {
+      href: `/kitchen/recipes/dishes/${dish.dishId}`,
+      label: "Link recipe",
+    };
+  }
+  // Missing version or ingredients are fixed on the recipe itself.
+  return {
+    href: `/kitchen/recipes/${dish.recipeId}`,
+    label: "Edit recipe",
+  };
+}
+
 export function UnresolvedDishList({
   unresolvedDishes,
 }: {
@@ -32,20 +49,34 @@ export function UnresolvedDishList({
 }) {
   return (
     <ul className="space-y-2">
-      {unresolvedDishes.map((dish) => (
-        <li
-          className="flex flex-wrap items-center gap-2 rounded-lg border p-3 text-sm"
-          key={dish.dishId}
-        >
-          <span className="font-medium">{dish.dishName}</span>
-          {dish.recipeName && (
-            <span className="text-muted-foreground">
-              (recipe: {dish.recipeName})
-            </span>
-          )}
-          <Badge variant="outline">{REASON_LABELS[dish.reason]}</Badge>
-        </li>
-      ))}
+      {unresolvedDishes.map((dish) => {
+        const fix = fixTarget(dish);
+        return (
+          <li
+            className="flex flex-wrap items-center gap-2 rounded-lg border p-3 text-sm"
+            key={dish.dishId}
+          >
+            <Link
+              className="font-medium underline-offset-4 hover:underline"
+              href={`/kitchen/recipes/dishes/${dish.dishId}`}
+            >
+              {dish.dishName}
+            </Link>
+            {dish.recipeName && dish.recipeId && (
+              <Link
+                className="text-muted-foreground underline-offset-4 hover:underline"
+                href={`/kitchen/recipes/${dish.recipeId}`}
+              >
+                (recipe: {dish.recipeName})
+              </Link>
+            )}
+            <Badge variant="outline">{REASON_LABELS[dish.reason]}</Badge>
+            <Button asChild className="ml-auto" size="sm" variant="outline">
+              <Link href={fix.href}>{fix.label}</Link>
+            </Button>
+          </li>
+        );
+      })}
     </ul>
   );
 }
