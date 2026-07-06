@@ -161,7 +161,7 @@ describe("createLead server action — spec enforcement + governance", () => {
 
   it("encodes eventDate as epoch-ms and lets the command own status", async () => {
     await createLead({ contactName: "Jane", eventDate: "2026-06-20" });
-    const body = runCommand.mock.calls[0][0].body;
+    const body = runCommand.mock.calls[0]?.[0].body;
     expect(typeof body.eventDate).toBe("number");
     expect(body.eventDate).toBe(new Date("2026-06-20").getTime());
     expect(body).not.toHaveProperty("status");
@@ -169,7 +169,7 @@ describe("createLead server action — spec enforcement + governance", () => {
 
   it("sends eventDate=null when no date is supplied", async () => {
     await createLead({ contactName: "Jane" });
-    expect(runCommand.mock.calls[0][0].body.eventDate).toBeNull();
+    expect(runCommand.mock.calls[0]?.[0].body.eventDate).toBeNull();
   });
 
   it("flags possibleDuplicate when an existing Client owns the email (FR-129)", async () => {

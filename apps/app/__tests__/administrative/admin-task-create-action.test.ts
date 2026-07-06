@@ -68,7 +68,8 @@ const form = (fields: Record<string, string>): FormData => {
   return fd;
 };
 
-const body = () => runCommand.mock.calls[0][0].body as Record<string, unknown>;
+const body = () =>
+  (runCommand.mock.calls[0]?.[0] as { body: Record<string, unknown> }).body;
 
 describe("createAdminTask server action — governance + spec enforcement", () => {
   beforeEach(() => {

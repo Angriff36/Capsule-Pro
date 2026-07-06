@@ -150,12 +150,12 @@ const writeDomainChunk = (chunkName, chunkEntityList, clientFns, isCore) => {
     // Domain chunks import queryKeys from the core hook chunk.
     lines.push(`import { queryKeys } from "./core.generated";`);
   }
-  const types = [...chunkTypes[chunkName]].sort();
-  if (types.length > 0) {
-    lines.push(
-      `import type { ${types.join(", ")} } from "../manifest-types.generated";`
-    );
-  }
+  // Type-import line is filled in after emission — only types actually
+  // referenced by an emitted hook are imported (mixin "entities" like
+  // SoftDeletable/TenantScoped have no hooks and would be unused imports).
+  const typeImportIndex = lines.length;
+  lines.push(null);
+  const usedTypes = new Set();
   lines.push("");
 
   if (isCore) {
@@ -181,6 +181,7 @@ const writeDomainChunk = (chunkName, chunkEntityList, clientFns, isCore) => {
       continue;
     }
     listCount++;
+    usedTypes.add(name);
     lines.push(`export function use${name}List(`);
     lines.push(
       `  options?: Omit<UseQueryOptions<PaginatedResponse<${name}>, Error>, "queryKey" | "queryFn">,`
@@ -207,6 +208,7 @@ const writeDomainChunk = (chunkName, chunkEntityList, clientFns, isCore) => {
       continue;
     }
     detailCount++;
+    usedTypes.add(name);
     lines.push(`export function use${name}Detail(`);
     lines.push("  id: string,");
     lines.push(
@@ -235,6 +237,7 @@ const writeDomainChunk = (chunkName, chunkEntityList, clientFns, isCore) => {
       const cmdPascal = cmdName[0].toUpperCase() + cmdName.slice(1);
       const hookName = `use${entityName}${cmdPascal}Mutation`;
       mutationCount++;
+      usedTypes.add(entityName);
       lines.push(`export function ${hookName}(`);
       lines.push(
         `  options?: Omit<UseMutationOptions<CommandEnvelope<${entityName}>, Error, Record<string, unknown>>, "mutationFn">,`
@@ -260,6 +263,15 @@ const writeDomainChunk = (chunkName, chunkEntityList, clientFns, isCore) => {
   summary.list += listCount;
   summary.detail += detailCount;
   summary.mutation += mutationCount;
+  const importableTypes = [...chunkTypes[chunkName]]
+    .filter((t) => usedTypes.has(t))
+    .sort();
+  if (importableTypes.length > 0) {
+    lines[typeImportIndex] =
+      `import type { ${importableTypes.join(", ")} } from "../manifest-types.generated";`;
+  } else {
+    lines.splice(typeImportIndex, 1);
+  }
   writeFileSync(join(hooksDir, `${chunkName}.generated.ts`), lines.join("\n"));
   return { listCount, detailCount, mutationCount, skippedList, skippedDetail };
 };

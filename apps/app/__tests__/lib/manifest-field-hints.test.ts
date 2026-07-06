@@ -61,7 +61,7 @@ describe("manifest-field-hints", () => {
       const map = getFieldHints("TrainingModule");
       expect(Object.keys(map).length).toBeGreaterThan(0);
       expect(map).toHaveProperty("title");
-      expect(map.title.some((h) => h.message.includes("required"))).toBe(true);
+      expect(map.title?.some((h) => h.message.includes("required"))).toBe(true);
     });
 
     it("returns an empty object for an unknown entity", () => {

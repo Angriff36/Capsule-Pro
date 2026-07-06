@@ -65,7 +65,7 @@ describe("computeStaffImpact", () => {
 
   it("does not flag back-to-back (touching, non-overlapping) intervals", () => {
     const r = computeStaffImpact({
-      drafts: [drafts[0]],
+      drafts: drafts.slice(0, 1),
       rates: {},
       busyIntervals: {
         u1: [

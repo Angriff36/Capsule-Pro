@@ -100,7 +100,7 @@ describe("createFacility server action — governance migration", () => {
 
   it("maps every form field to its reconciled Prisma column in the command body", async () => {
     await createFacility(form(FULL));
-    const body = runCommand.mock.calls[0][0].body;
+    const body = runCommand.mock.calls[0]?.[0].body;
     expect(body).toMatchObject({
       name: "Main Kitchen",
       code: "MAIN-KIT",
@@ -119,12 +119,12 @@ describe("createFacility server action — governance migration", () => {
 
   it("lets the command own status (never sent in the body)", async () => {
     await createFacility(form(FULL));
-    expect(runCommand.mock.calls[0][0].body).not.toHaveProperty("status");
+    expect(runCommand.mock.calls[0]?.[0].body).not.toHaveProperty("status");
   });
 
   it("defaults a blank name to 'Untitled Facility' and missing type to 'kitchen'", async () => {
     await createFacility(form({ name: "   " }));
-    const body = runCommand.mock.calls[0][0].body;
+    const body = runCommand.mock.calls[0]?.[0].body;
     expect(body.name).toBe("Untitled Facility");
     expect(body.facilityType).toBe("kitchen");
     // Blank optional code is forwarded as "" so the store NULLs it (unique-safe).

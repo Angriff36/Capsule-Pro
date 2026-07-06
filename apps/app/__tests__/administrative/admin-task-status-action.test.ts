@@ -126,7 +126,7 @@ describe("updateAdminTaskStatus server action — governance + state machine", (
       await updateAdminTaskStatus(form({ taskId: TASK_ID, status }));
 
       expect(runCommand).toHaveBeenCalledTimes(1);
-      expect(runCommand.mock.calls[0][0]).toMatchObject({
+      expect(runCommand.mock.calls[0]?.[0]).toMatchObject({
         entity: "AdminTask",
         command,
         instanceId: TASK_ID,

@@ -66,7 +66,7 @@ describe("per-call auth headers", () => {
     await registry.executeToolCall({ ...CALL, callId: "call-auth-2" });
 
     const headersOf = (i: number) =>
-      (mockFetch.mock.calls[i][1] as { headers: Record<string, string> })
+      (mockFetch.mock.calls[i]?.[1] as { headers: Record<string, string> })
         .headers;
     expect(headersOf(0).Authorization).toBe("Bearer jwt-1");
     expect(headersOf(1).Authorization).toBe("Bearer jwt-2");
@@ -86,7 +86,7 @@ describe("per-call auth headers", () => {
     await registry.executeToolCall(CALL);
 
     const headers = (
-      mockFetch.mock.calls[0][1] as { headers: Record<string, string> }
+      mockFetch.mock.calls[0]?.[1] as { headers: Record<string, string> }
     ).headers;
     expect(headers.Authorization).toBeUndefined();
     expect(headers.Cookie).toBe("__session=only-cookie");
@@ -105,7 +105,7 @@ describe("per-call auth headers", () => {
 
     expect(result.ok).toBe(true);
     const headers = (
-      mockFetch.mock.calls[0][1] as { headers: Record<string, string> }
+      mockFetch.mock.calls[0]?.[1] as { headers: Record<string, string> }
     ).headers;
     expect(headers.Authorization).toBeUndefined();
     expect(headers.Cookie).toBe("__session=fallback");

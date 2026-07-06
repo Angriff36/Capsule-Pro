@@ -522,7 +522,7 @@ describe("command board chat tool registry - detect_conflicts tool", () => {
     });
 
     const fetchCall = mockFetch.mock.calls[0];
-    const body = JSON.parse(fetchCall[1].body as string);
+    const body = JSON.parse(fetchCall?.[1].body as string);
     expect(body.timeRange).toEqual({ start: "2026-02-20", end: "2026-02-21" });
     expect(body.entityTypes).toEqual(["scheduling", "inventory"]);
   });
@@ -630,7 +630,7 @@ describe("command board chat tool registry - detect_conflicts tool", () => {
     });
 
     const fetchCall = mockFetch.mock.calls[0];
-    const body = JSON.parse(fetchCall[1].body as string);
+    const body = JSON.parse(fetchCall?.[1].body as string);
     expect(body.userId).toBe("context-user-123");
   });
 
@@ -662,7 +662,7 @@ describe("command board chat tool registry - detect_conflicts tool", () => {
     });
 
     const fetchCall = mockFetch.mock.calls[0];
-    expect(fetchCall[1].headers["x-idempotency-key"]).toBe(
+    expect(fetchCall?.[1].headers["x-idempotency-key"]).toBe(
       "custom-idempotency-key-123"
     );
   });

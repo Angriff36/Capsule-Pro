@@ -180,7 +180,7 @@ describe("idempotency key integration via executeToolCall", () => {
     });
 
     const firstKey = (
-      mockFetch.mock.calls[0][1] as { headers: Record<string, string> }
+      mockFetch.mock.calls[0]?.[1] as { headers: Record<string, string> }
     ).headers["x-idempotency-key"];
 
     // Reset and replay with identical inputs
@@ -201,7 +201,7 @@ describe("idempotency key integration via executeToolCall", () => {
     });
 
     const secondKey = (
-      mockFetch.mock.calls[1][1] as { headers: Record<string, string> }
+      mockFetch.mock.calls[1]?.[1] as { headers: Record<string, string> }
     ).headers["x-idempotency-key"];
 
     expect(firstKey).toBe(secondKey);
