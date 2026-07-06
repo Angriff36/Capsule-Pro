@@ -75,7 +75,8 @@ interface Transfer {
   approvedAt?: string;
   fromLocationId: string;
   id: string;
-  items: TransferItem[];
+  // API list route includes the Prisma relation as `lineItems`
+  lineItems?: TransferItem[];
   notes?: string;
   receivedAt?: string;
   requestedAt: string;
@@ -85,17 +86,21 @@ interface Transfer {
   transferNumber: string;
 }
 
-const statusColors: Record<string, string> = {
-  pending: "bg-muted/50 text-foreground",
-  approved: "bg-muted/50 text-foreground",
-  in_transit: "bg-muted/50 text-foreground",
-  completed: "bg-muted/50 text-foreground",
-  cancelled: "bg-muted/50 text-foreground",
+// Must match the Manifest transfer status vocabulary:
+// draft → pending_approval → approved → in_transit → received (or cancelled)
+const STATUS_LABELS: Record<string, string> = {
+  draft: "Draft",
+  pending_approval: "Pending approval",
+  approved: "Approved",
+  in_transit: "In transit",
+  received: "Received",
+  cancelled: "Cancelled",
 };
 
 export function InventoryTransfersClient() {
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [_selectedTransfer, _setSelectedTransfer] = useState<Transfer | null>(
@@ -116,6 +121,7 @@ export function InventoryTransfersClient() {
 
   const fetchTransfers = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const query: Record<string, string | number> = {};
       if (statusFilter !== "all") {
@@ -127,6 +133,9 @@ export function InventoryTransfersClient() {
       setTransfers(result.data as unknown as Transfer[]);
     } catch (error) {
       console.error("Failed to fetch transfers:", error);
+      setLoadError(
+        "Could not load transfers. Check your connection and try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -189,7 +198,11 @@ export function InventoryTransfersClient() {
 
   const updateItemRow = (index: number, field: string, value: string) => {
     const updated = [...transferItems];
-    updated[index] = { ...updated[index], [field]: value };
+    const current = updated[index];
+    if (!current) {
+      return;
+    }
+    updated[index] = { ...current, [field]: value };
     setTransferItems(updated);
   };
 
@@ -308,10 +321,11 @@ export function InventoryTransfersClient() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="pending_approval">Pending approval</SelectItem>
                 <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="in_transit">In Transit</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="in_transit">In transit</SelectItem>
+                <SelectItem value="received">Received</SelectItem>
                 <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
@@ -322,6 +336,21 @@ export function InventoryTransfersClient() {
             <div className="flex items-center justify-center py-12">
               <Loader2Icon className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
+          ) : loadError ? (
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <ArrowRightLeft />
+                </EmptyMedia>
+                <EmptyTitle>Failed to load transfers</EmptyTitle>
+                <EmptyDescription>{loadError}</EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button onClick={fetchTransfers} size="sm" variant="outline">
+                  Retry
+                </Button>
+              </EmptyContent>
+            </Empty>
           ) : transfers.length === 0 ? (
             <Empty>
               <EmptyHeader>
@@ -374,17 +403,17 @@ export function InventoryTransfersClient() {
                       {transfer.toLocationId.slice(0, 8)}...
                     </TableCell>
                     <TableCell>
-                      <Badge className={statusColors[transfer.status]}>
-                        {transfer.status}
+                      <Badge className="bg-muted/50 text-foreground">
+                        {STATUS_LABELS[transfer.status] ?? transfer.status}
                       </Badge>
                     </TableCell>
-                    <TableCell>{transfer.items?.length || 0}</TableCell>
+                    <TableCell>{transfer.lineItems?.length || 0}</TableCell>
                     <TableCell>
                       {new Date(transfer.requestedAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        {transfer.status === "pending" && (
+                        {transfer.status === "pending_approval" && (
                           <>
                             <Button
                               onClick={() =>
@@ -409,14 +438,26 @@ export function InventoryTransfersClient() {
                           </>
                         )}
                         {transfer.status === "approved" && (
-                          <Button
-                            onClick={() => handleAction("ship", transfer.id)}
-                            size="sm"
-                            title="Ship"
-                            variant="outline"
-                          >
-                            <Truck className="h-4 w-4" />
-                          </Button>
+                          <>
+                            <Button
+                              onClick={() => handleAction("ship", transfer.id)}
+                              size="sm"
+                              title="Ship"
+                              variant="outline"
+                            >
+                              <Truck className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              onClick={() =>
+                                handleAction("cancel", transfer.id)
+                              }
+                              size="sm"
+                              title="Cancel"
+                              variant="outline"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </>
                         )}
                         {transfer.status === "in_transit" && (
                           <Button

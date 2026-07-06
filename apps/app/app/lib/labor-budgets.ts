@@ -5,17 +5,22 @@ import { apiFetch } from "@/app/lib/api";
 import {
   getLaborBudget as _getLaborBudget,
   listLaborBudgets as _listLaborBudgets,
+  laborBudgetApprove,
+  laborBudgetClose,
   laborBudgetCreate,
   laborBudgetSoftDelete,
   laborBudgetUpdate,
 } from "@/app/lib/manifest-client.generated";
 import type { LaborBudget as GeneratedLaborBudget } from "@/app/lib/manifest-types.generated";
 
-// Type definitions and API client functions for Labor Budget Management
+// Type definitions and API client functions for Labor Budget Management.
+// Field names and status values mirror the LaborBudget Manifest entity /
+// Prisma model (camelCase, statuses draft → approved → closed) — earlier
+// versions used a snake_case shape with active/paused/archived statuses that
+// never matched the API, so every row rendered blank.
 
-export type BudgetType = "event" | "week" | "month";
-export type BudgetUnit = "hours" | "cost";
-export type BudgetStatus = "active" | "paused" | "archived";
+export type BudgetType = "event" | "weekly" | "monthly";
+export type BudgetStatus = "draft" | "approved" | "closed";
 export type AlertType =
   | "threshold_80"
   | "threshold_90"
@@ -23,39 +28,23 @@ export type AlertType =
   | "exceeded";
 
 export interface LaborBudget {
-  actual_spend: number | null;
-  budget_target: number;
-  budget_type: BudgetType;
-  budget_unit: BudgetUnit;
-  created_at: Date;
-  description: string | null;
-  event_id: string | null;
-  id: string;
-  location_id: string | null;
-  name: string;
-  override_reason: string | null;
-  period_end: Date | null;
-  period_start: Date | null;
-  status: BudgetStatus;
-  tenant_id: string;
-  threshold_80_pct: boolean;
-  threshold_90_pct: boolean;
-  threshold_100_pct: boolean;
-  updated_at: Date;
-}
-
-export interface BudgetUtilization {
-  actualSpend: number;
-  budgetId: string;
-  budgetName: string;
-  budgetTarget: number;
+  /** Prisma Decimal serialized as string; null when no actuals recorded */
+  actualSpend: string | null;
+  approvedAt: string | null;
+  approvedBy: string | null;
+  budgetTarget: string;
   budgetType: string;
-  budgetUnit: string;
-  periodEnd?: Date;
-  periodStart?: Date;
-  remainingBudget: number;
+  createdAt: string;
+  description: string | null;
+  eventId: string | null;
+  id: string;
+  locationId: string | null;
+  name: string;
+  periodEnd: string | null;
+  periodStart: string | null;
   status: BudgetStatus;
-  utilizationPct: number;
+  tenantId: string;
+  updatedAt: string;
 }
 
 export interface BudgetAlert {
@@ -73,34 +62,24 @@ export interface BudgetAlert {
   utilization: number;
 }
 
-export interface BudgetWithUtilization extends LaborBudget {
-  utilization?: BudgetUtilization;
-}
-
 export interface CreateBudgetInput {
   budgetTarget: number;
   budgetType: BudgetType;
-  budgetUnit: BudgetUnit;
   description?: string;
   eventId?: string;
   locationId?: string;
   name: string;
   periodEnd?: string;
   periodStart?: string;
-  threshold80Pct?: boolean;
-  threshold90Pct?: boolean;
-  threshold100Pct?: boolean;
 }
 
 export interface UpdateBudgetInput {
   budgetTarget?: number;
+  budgetType?: BudgetType;
   description?: string;
-  name?: string;
-  overrideReason?: string;
-  status?: BudgetStatus;
-  threshold80Pct?: boolean;
-  threshold90Pct?: boolean;
-  threshold100Pct?: boolean;
+  locationId?: string;
+  periodEnd?: string;
+  periodStart?: string;
 }
 
 export interface BudgetFilters {
@@ -120,56 +99,62 @@ export interface AlertFilters {
 const API_BASE = "/api/staff/budgets";
 
 /**
- * Get all labor budgets with optional filters
+ * Get all labor budgets with optional filters.
+ * The generated list route ignores query params, so filters are applied
+ * client-side after fetching the full tenant list.
  */
 export async function getBudgets(
   filters?: BudgetFilters
 ): Promise<LaborBudget[]> {
-  const query: Record<string, string | number> = {};
-  if (filters?.locationId) {
-    query.locationId = filters.locationId;
-  }
-  if (filters?.eventId) {
-    query.eventId = filters.eventId;
+  const result = await _listLaborBudgets();
+  let budgets = result.data as unknown as LaborBudget[];
+
+  if (filters?.status) {
+    budgets = budgets.filter((b) => b.status === filters.status);
   }
   if (filters?.budgetType) {
-    query.budgetType = filters.budgetType;
+    budgets = budgets.filter((b) => b.budgetType === filters.budgetType);
   }
-  if (filters?.status) {
-    query.status = filters.status;
+  if (filters?.locationId) {
+    budgets = budgets.filter((b) => b.locationId === filters.locationId);
   }
-
-  const result = await _listLaborBudgets(query);
-  return result.data as unknown as LaborBudget[];
+  if (filters?.eventId) {
+    budgets = budgets.filter((b) => b.eventId === filters.eventId);
+  }
+  return budgets;
 }
 
 /**
- * Get a single budget by ID with utilization
+ * Get a single budget by ID
  */
-export async function getBudgetById(
-  id: string
-): Promise<BudgetWithUtilization> {
+export async function getBudgetById(id: string): Promise<LaborBudget> {
   const result = await _getLaborBudget(id);
   if (!result) {
     throw new Error("Failed to fetch budget");
   }
-  return result as unknown as BudgetWithUtilization;
+  return result as unknown as LaborBudget;
 }
 
 /**
- * Create a new labor budget
+ * Create a new labor budget.
+ * `name` and `eventId` are not declared command params, but the runtime seeds
+ * new instances from the full command body, so they persist.
  */
 export async function createBudget(
   input: CreateBudgetInput
 ): Promise<GeneratedLaborBudget> {
+  // name/eventId are not declared command params (hence the cast), but the
+  // runtime seeds new instances from the full body, so they persist.
   const result = await laborBudgetCreate({
+    name: input.name,
+    eventId: input.eventId,
     locationId: input.locationId,
     periodStart: input.periodStart,
     periodEnd: input.periodEnd,
     budgetTarget: input.budgetTarget,
     budgetType: input.budgetType,
     description: input.description,
-  });
+  } as Parameters<typeof laborBudgetCreate>[0]);
   if (!result) {
     throw new Error("Failed to create budget");
   }
@@ -177,7 +162,7 @@ export async function createBudget(
 }
 
 /**
- * Update a labor budget
+ * Update a labor budget (fields the Manifest update command accepts)
  */
 export async function updateBudget(
   id: string,
@@ -185,10 +170,41 @@ export async function updateBudget(
 ): Promise<GeneratedLaborBudget> {
   const result = await laborBudgetUpdate({
     id,
+    locationId: updates.locationId,
+    periodStart: updates.periodStart,
+    periodEnd: updates.periodEnd,
+    budgetTarget: updates.budgetTarget,
+    budgetType: updates.budgetType,
     description: updates.description,
   });
   if (!result) {
     throw new Error("Failed to update budget");
+  }
+  return result;
+}
+
+/**
+ * Approve a draft budget. `approvedBy` must be the tenant employee id
+ * (resolve via GET /api/me).
+ */
+export async function approveBudget(
+  id: string,
+  approvedBy: string
+): Promise<GeneratedLaborBudget> {
+  const result = await laborBudgetApprove({ id, approvedBy });
+  if (!result) {
+    throw new Error("Failed to approve budget");
+  }
+  return result;
+}
+
+/**
+ * Close an approved budget
+ */
+export async function closeBudget(id: string): Promise<GeneratedLaborBudget> {
+  const result = await laborBudgetClose({ id });
+  if (!result) {
+    throw new Error("Failed to close budget");
   }
   return result;
 }
@@ -273,9 +289,12 @@ export async function resolveAlert(
 /**
  * Get budget type display name
  */
-export function getBudgetTypeName(type: BudgetType): string {
-  const names: Record<BudgetType, string> = {
+export function getBudgetTypeName(type: string): string {
+  const names: Record<string, string> = {
     event: "Event",
+    weekly: "Weekly",
+    monthly: "Monthly",
+    // Legacy values written before the vocabulary was aligned
     week: "Weekly",
     month: "Monthly",
   };
@@ -283,20 +302,13 @@ export function getBudgetTypeName(type: BudgetType): string {
 }
 
 /**
- * Get budget unit display symbol
- */
-export function getBudgetUnitSymbol(unit: BudgetUnit): string {
-  return unit === "cost" ? "$" : "hrs";
-}
-
-/**
  * Get status badge color
  */
 export function getStatusColor(status: BudgetStatus): string {
   const colors: Record<BudgetStatus, string> = {
-    active: "bg-green-100 text-green-800 hover:bg-green-200",
-    paused: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
-    archived: "bg-gray-100 text-gray-800 hover:bg-gray-200",
+    draft: "bg-gray-100 text-gray-800 hover:bg-gray-200",
+    approved: "bg-green-100 text-green-800 hover:bg-green-200",
+    closed: "bg-blue-100 text-blue-800 hover:bg-blue-200",
   };
   return colors[status] || "";
 }
@@ -347,13 +359,11 @@ export function getProgressBarColor(utilizationPct: number): string {
 }
 
 /**
- * Format utilization for display
+ * Format actual vs target for display (budgets are money-denominated)
  */
 export function formatUtilization(
   actualSpend: number,
-  budgetTarget: number,
-  budgetUnit: BudgetUnit
+  budgetTarget: number
 ): string {
-  const symbol = budgetUnit === "cost" ? "$" : "";
-  return `${symbol}${actualSpend.toFixed(2)} / ${symbol}${budgetTarget.toFixed(2)}`;
+  return `$${actualSpend.toFixed(2)} / $${budgetTarget.toFixed(2)}`;
 }

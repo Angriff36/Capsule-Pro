@@ -41,6 +41,8 @@ import {
   listCateringOrders,
 } from "@/app/lib/manifest-client.generated";
 
+// Field names match the CateringOrder Prisma model returned verbatim by the
+// generated list route (orderStatus/totalAmount — NOT status/total).
 interface CateringOrder {
   createdAt: string;
   customerId: string;
@@ -50,32 +52,22 @@ interface CateringOrder {
   depositPaid: boolean;
   depositRequired: boolean;
   dietaryRestrictions: string | null;
-  discount: string;
   eventId: string | null;
   guestCount: number;
   id: string;
   orderDate: string;
   orderNumber: string;
-  serviceCharge: string;
+  orderStatus: string;
+  serviceChargeAmount: string;
   staffAssigned: number | null;
   staffRequired: number | null;
-  status: string;
-  subtotal: string;
-  tax: string;
-  total: string;
+  subtotalAmount: string;
+  taxAmount: string;
+  totalAmount: string;
   updatedAt: string;
   venueCity: string | null;
   venueName: string | null;
   venueState: string | null;
-}
-
-interface InitialMetrics {
-  cancelled: number;
-  completed: number;
-  confirmed: number;
-  draft: number;
-  inProgress: number;
-  total: number;
 }
 
 const STATUS_CONFIG: Record<
@@ -123,16 +115,12 @@ function formatDate(iso: string): string {
   });
 }
 
-interface CateringClientProps {
-  initialMetrics: InitialMetrics;
-}
+const PAGE_SIZE = 25;
 
-export function CateringClient({ initialMetrics }: CateringClientProps) {
-  const [orders, setOrders] = useState<CateringOrder[]>([]);
+export function CateringClient() {
+  const [allOrders, setAllOrders] = useState<CateringOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(initialMetrics.total);
-  const [totalPages, setTotalPages] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -159,24 +147,13 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
     serviceCharge: "0.00",
   });
 
+  // The generated list route ignores query params (status/search/pagination),
+  // so fetch everything once and filter/paginate client-side.
   const loadOrders = useCallback(async () => {
     setIsLoading(true);
     try {
-      const query: Record<string, string | number> = {
-        page,
-        limit: 25,
-      };
-      if (statusFilter !== "all") {
-        query.status = statusFilter;
-      }
-      if (searchQuery) {
-        query.search = searchQuery;
-      }
-
-      const result = await listCateringOrders(query);
-      setOrders(result.data as unknown as CateringOrder[]);
-      setTotalCount(result.pagination.total);
-      setTotalPages(result.pagination.totalPages);
+      const result = await listCateringOrders();
+      setAllOrders(result.data as unknown as CateringOrder[]);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Failed to load catering orders"
@@ -184,11 +161,33 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [page, statusFilter, searchQuery]);
+  }, []);
 
   useEffect(() => {
     loadOrders();
   }, [loadOrders]);
+
+  const filteredOrders = allOrders.filter((order) => {
+    if (statusFilter !== "all" && order.orderStatus !== statusFilter) {
+      return false;
+    }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      return (
+        order.orderNumber.toLowerCase().includes(q) ||
+        (order.venueName ?? "").toLowerCase().includes(q) ||
+        (order.venueCity ?? "").toLowerCase().includes(q)
+      );
+    }
+    return true;
+  });
+  const totalCount = filteredOrders.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const orders = filteredOrders.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE
+  );
 
   const handleSearch = () => {
     setSearchQuery(searchInput);
@@ -196,7 +195,7 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
   };
 
   const handleStatusAction = async (order: CateringOrder) => {
-    const action = NEXT_ACTION[order.status];
+    const action = NEXT_ACTION[order.orderStatus];
     if (!action) {
       return;
     }
@@ -342,7 +341,9 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
 
       {!isLoading && orders.length === 0 && (
         <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-8 text-muted-foreground text-sm">
-          No catering orders found. Create your first order to get started.
+          {allOrders.length === 0
+            ? "No catering orders found. Create your first order to get started."
+            : "No orders match the current filters. Adjust the status filter or search."}
         </div>
       )}
 
@@ -357,12 +358,12 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
             <span className="text-right">Actions</span>
           </div>
           {orders.map((order) => {
-            const statusCfg = STATUS_CONFIG[order.status] ?? {
-              label: order.status,
+            const statusCfg = STATUS_CONFIG[order.orderStatus] ?? {
+              label: order.orderStatus,
               icon: null,
               variant: "neutral",
             };
-            const nextAction = NEXT_ACTION[order.status];
+            const nextAction = NEXT_ACTION[order.orderStatus];
             return (
               <div
                 className="grid grid-cols-[1fr_120px_120px_100px_110px_140px] gap-3 border-hairline border-b px-5 py-4 text-sm last:border-b-0"
@@ -379,7 +380,7 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
                   {formatDate(order.deliveryDate)}
                 </span>
                 <span className="text-right font-mono">
-                  {formatCurrency(order.total)}
+                  {formatCurrency(order.totalAmount)}
                 </span>
                 <span className="text-muted-foreground">
                   {order.guestCount}
@@ -400,7 +401,7 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
                       {nextAction.label}
                     </Button>
                   )}
-                  {canCancel(order.status) && !nextAction && (
+                  {canCancel(order.orderStatus) && !nextAction && (
                     <Button
                       disabled={actioning === order.id}
                       onClick={() => setCancelTarget(order)}
@@ -420,24 +421,24 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
       {!isLoading && totalPages > 1 && (
         <div className="flex items-center justify-between px-1 pt-2 text-sm">
           <span className="text-muted-foreground">
-            Showing {(page - 1) * 25 + 1}-{Math.min(page * 25, totalCount)} of{" "}
-            {totalCount}
+            Showing {(safePage - 1) * PAGE_SIZE + 1}-
+            {Math.min(safePage * PAGE_SIZE, totalCount)} of {totalCount}
           </span>
           <div className="flex gap-2">
             <Button
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
+              disabled={safePage === 1}
+              onClick={() => setPage(safePage - 1)}
               size="sm"
               variant="outline"
             >
               Previous
             </Button>
             <span className="flex items-center px-2 text-muted-foreground">
-              {page} / {totalPages}
+              {safePage} / {totalPages}
             </span>
             <Button
-              disabled={page === totalPages}
-              onClick={() => setPage(page + 1)}
+              disabled={safePage === totalPages}
+              onClick={() => setPage(safePage + 1)}
               size="sm"
               variant="outline"
             >

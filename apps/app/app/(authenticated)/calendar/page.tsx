@@ -53,7 +53,9 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
     Date.UTC(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59, 999)
   );
 
-  // Fetch all three data sources in parallel
+  // Fetch all three data sources in parallel. A failed source resolves to
+  // null (NOT []) so the page can tell "nothing scheduled" apart from
+  // "query failed" and show a warning instead of a silently empty calendar.
   const [dbEvents, shiftsResult, timeOffResult] = await Promise.all([
     database.event
       .findMany({
@@ -77,7 +79,7 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
         },
         orderBy: { eventDate: "asc" },
       })
-      .catch(() => []),
+      .catch(() => null),
     database.scheduleShift
       .findMany({
         where: {
@@ -98,7 +100,7 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
         orderBy: { shiftStart: "asc" },
         take: 100,
       })
-      .catch(() => []),
+      .catch(() => null),
     database.timeOffRequest
       .findMany({
         where: {
@@ -121,13 +123,24 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
         orderBy: { startDate: "asc" },
         take: 50,
       })
-      .catch(() => []),
+      .catch(() => null),
   ]);
+
+  const failedSources: string[] = [];
+  if (dbEvents === null) {
+    failedSources.push("events");
+  }
+  if (shiftsResult === null) {
+    failedSources.push("shifts");
+  }
+  if (timeOffResult === null) {
+    failedSources.push("time off");
+  }
 
   const events: CalendarEvent[] = [];
 
   events.push(
-    ...dbEvents.map((e) => ({
+    ...(dbEvents ?? []).map((e) => ({
       id: e.id,
       title: e.title || `${e.eventType} Event`,
       start: e.eventDate,
@@ -158,7 +171,7 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
     events.push(
       ...timeOffResult.map((t) => ({
         id: t.id,
-        title: `${t.requestType?.replace(/_/g, " ") || "Time Off"}`,
+        title: `${t.requestType?.replaceAll("_", " ") || "Time Off"}`,
         start: new Date(t.startDate),
         end: t.endDate ? new Date(t.endDate) : undefined,
         type: "timeoff" as const,
@@ -168,7 +181,7 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
     );
   }
 
-  return events;
+  return { events, failedSources };
 }
 
 const CalendarPage = async () => {
@@ -186,7 +199,11 @@ const CalendarPage = async () => {
   const end = endOfMonth(addMonths(today, 1));
 
   // Fetch calendar data
-  const events = await getCalendarData(tenantId, start, end);
+  const { events, failedSources } = await getCalendarData(
+    tenantId,
+    start,
+    end
+  );
 
   // Calculate summary stats
   const eventCount = events.filter((e) => e.type === "event").length;
@@ -276,6 +293,13 @@ const CalendarPage = async () => {
             eyebrow="Unified view"
             title="Calendar"
           />
+
+          {failedSources.length > 0 && (
+            <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-900 text-sm">
+              Some calendar data failed to load ({failedSources.join(", ")}).
+              The calendar below may be incomplete — reload the page to retry.
+            </div>
+          )}
 
           <CalendarViewSwitcher events={events} tenantId={tenantId} />
         </section>

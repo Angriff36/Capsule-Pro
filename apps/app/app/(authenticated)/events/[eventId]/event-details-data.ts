@@ -237,20 +237,29 @@ interface PrepListRow {
  */
 export const getEventPrepLists = cache(
   async (tenantId: string, eventId: string) => {
+    // totalItems is computed live from prep_list_items rather than read from
+    // the denormalized total_items column, which drifts when items are
+    // added/removed without the parent row being updated.
     const prepLists = await database.$queryRaw<PrepListRow[]>(
       Prisma.sql`
-        SELECT id,
-               name,
-               status,
-               total_items AS "totalItems",
-               batch_multiplier AS "batchMultiplier",
-               generated_at AS "generatedAt",
-               finalized_at AS "finalizedAt"
-        FROM tenant_kitchen.prep_lists
-        WHERE tenant_id = ${tenantId}
-          AND event_id = ${eventId}
-          AND deleted_at IS NULL
-        ORDER BY generated_at DESC
+        SELECT pl.id,
+               pl.name,
+               pl.status,
+               (
+                 SELECT COUNT(*)::int
+                 FROM tenant_kitchen.prep_list_items pli
+                 WHERE pli.tenant_id = pl.tenant_id
+                   AND pli.prep_list_id = pl.id
+                   AND pli.deleted_at IS NULL
+               ) AS "totalItems",
+               pl.batch_multiplier AS "batchMultiplier",
+               pl.generated_at AS "generatedAt",
+               pl.finalized_at AS "finalizedAt"
+        FROM tenant_kitchen.prep_lists pl
+        WHERE pl.tenant_id = ${tenantId}
+          AND pl.event_id = ${eventId}
+          AND pl.deleted_at IS NULL
+        ORDER BY pl.generated_at DESC
       `
     );
 

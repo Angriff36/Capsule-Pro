@@ -19,18 +19,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Switch } from "@repo/design-system/components/ui/switch";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import type {
-  BudgetStatus,
   BudgetType,
-  BudgetUnit,
   CreateBudgetInput,
   LaborBudget,
   UpdateBudgetInput,
 } from "@/app/lib/labor-budgets";
+
+// Fields mirror what the Manifest LaborBudget create/update commands accept.
+// Status changes go through dedicated approve/close actions on the list, not
+// this form. (Earlier versions offered unit/threshold/status fields that no
+// command persisted.)
 
 interface BudgetFormModalProps {
   budget?: LaborBudget;
@@ -51,22 +53,16 @@ export function BudgetFormModal({
   const [formData, setFormData] = useState({
     name: budget?.name || "",
     description: budget?.description || "",
-    budgetType: (budget?.budget_type || "week") as BudgetType,
-    budgetTarget: budget?.budget_target || 0,
-    budgetUnit: (budget?.budget_unit || "hours") as BudgetUnit,
-    locationId: budget?.location_id || "",
-    eventId: budget?.event_id || "",
-    periodStart: budget?.period_start
-      ? new Date(budget.period_start).toISOString().split("T")[0]
+    budgetType: (budget?.budgetType || "weekly") as BudgetType,
+    budgetTarget: Number(budget?.budgetTarget ?? 0),
+    locationId: budget?.locationId || "",
+    eventId: budget?.eventId || "",
+    periodStart: budget?.periodStart
+      ? new Date(budget.periodStart).toISOString().split("T")[0]
       : "",
-    periodEnd: budget?.period_end
-      ? new Date(budget.period_end).toISOString().split("T")[0]
+    periodEnd: budget?.periodEnd
+      ? new Date(budget.periodEnd).toISOString().split("T")[0]
       : "",
-    status: (budget?.status || "active") as BudgetStatus,
-    overrideReason: budget?.override_reason || "",
-    threshold80Pct: budget?.threshold_80_pct ?? true,
-    threshold90Pct: budget?.threshold_90_pct ?? true,
-    threshold100Pct: budget?.threshold_100_pct ?? true,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -74,17 +70,18 @@ export function BudgetFormModal({
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
+    if (!(isEditing || formData.name.trim())) {
       newErrors.name = "Name is required";
     }
     if (formData.budgetTarget <= 0) {
       newErrors.budgetTarget = "Target must be greater than 0";
     }
-    if (formData.budgetType === "event" && !formData.eventId) {
+    if (formData.budgetType === "event" && !(isEditing || formData.eventId)) {
       newErrors.eventId = "Event ID is required for event budgets";
     }
     if (
-      (formData.budgetType === "week" || formData.budgetType === "month") &&
+      (formData.budgetType === "weekly" ||
+        formData.budgetType === "monthly") &&
       !(formData.periodStart && formData.periodEnd)
     ) {
       newErrors.period = "Start and end dates are required for period budgets";
@@ -103,35 +100,29 @@ export function BudgetFormModal({
 
     const data: CreateBudgetInput | UpdateBudgetInput = isEditing
       ? ({
-          name: formData.name,
-          description: formData.description || undefined,
           budgetTarget: formData.budgetTarget,
-          status: formData.status,
-          overrideReason: formData.overrideReason || undefined,
-          threshold80Pct: formData.threshold80Pct,
-          threshold90Pct: formData.threshold90Pct,
-          threshold100Pct: formData.threshold100Pct,
+          budgetType: formData.budgetType,
+          description: formData.description || undefined,
+          locationId: formData.locationId || undefined,
+          periodStart: formData.periodStart || undefined,
+          periodEnd: formData.periodEnd || undefined,
         } as UpdateBudgetInput)
       : ({
           name: formData.name,
           description: formData.description || undefined,
           budgetType: formData.budgetType,
           budgetTarget: formData.budgetTarget,
-          budgetUnit: formData.budgetUnit,
           locationId: formData.locationId || undefined,
           eventId: formData.eventId || undefined,
           periodStart: formData.periodStart || undefined,
           periodEnd: formData.periodEnd || undefined,
-          threshold80Pct: formData.threshold80Pct,
-          threshold90Pct: formData.threshold90Pct,
-          threshold100Pct: formData.threshold100Pct,
         } as CreateBudgetInput);
 
     await onSave(data);
   };
 
   const showPeriodDates =
-    formData.budgetType === "week" || formData.budgetType === "month";
+    formData.budgetType === "weekly" || formData.budgetType === "monthly";
 
   const showEventField = formData.budgetType === "event";
 
@@ -144,31 +135,33 @@ export function BudgetFormModal({
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Update the budget settings and thresholds."
-              : "Create a new labor budget to track scheduled hours or costs."}
+              ? "Update the budget target, type, period, and description. Approve or close budgets from the list actions."
+              : "Create a new labor budget to track labor spend. New budgets start in draft."}
           </DialogDescription>
         </DialogHeader>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
           {/* Basic Info */}
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">
-                Budget Name <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                disabled={loading}
-                id="name"
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                placeholder="e.g., Weekly Kitchen Staff Budget"
-                value={formData.name}
-              />
-              {errors.name && (
-                <p className="text-red-500 text-sm">{errors.name}</p>
-              )}
-            </div>
+            {!isEditing && (
+              <div className="space-y-2">
+                <Label htmlFor="name">
+                  Budget Name <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  disabled={loading}
+                  id="name"
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  placeholder="e.g., Weekly Kitchen Staff Budget"
+                  value={formData.name}
+                />
+                {errors.name && (
+                  <p className="text-red-500 text-sm">{errors.name}</p>
+                )}
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
@@ -185,61 +178,33 @@ export function BudgetFormModal({
             </div>
           </div>
 
-          {/* Budget Type & Unit (create only) */}
-          {!isEditing && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="budgetType">
-                  Budget Type <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  disabled={loading}
-                  onValueChange={(value: BudgetType) =>
-                    setFormData({ ...formData, budgetType: value })
-                  }
-                  value={formData.budgetType}
-                >
-                  <SelectTrigger id="budgetType">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="event">Event</SelectItem>
-                    <SelectItem value="week">Weekly</SelectItem>
-                    <SelectItem value="month">Monthly</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="budgetUnit">
-                  Budget Unit <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  disabled={loading}
-                  onValueChange={(value: BudgetUnit) =>
-                    setFormData({ ...formData, budgetUnit: value })
-                  }
-                  value={formData.budgetUnit}
-                >
-                  <SelectTrigger id="budgetUnit">
-                    <SelectValue placeholder="Select unit" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="hours">Hours</SelectItem>
-                    <SelectItem value="cost">Cost ($)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
+          {/* Budget Type */}
+          <div className="space-y-2">
+            <Label htmlFor="budgetType">
+              Budget Type <span className="text-red-500">*</span>
+            </Label>
+            <Select
+              disabled={loading}
+              onValueChange={(value: BudgetType) =>
+                setFormData({ ...formData, budgetType: value })
+              }
+              value={formData.budgetType}
+            >
+              <SelectTrigger id="budgetType">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="event">Event</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Budget Target */}
           <div className="space-y-2">
             <Label htmlFor="budgetTarget">
-              Budget Target{" "}
-              <span className="text-gray-500">
-                ({formData.budgetUnit === "cost" ? "$" : "hrs"})
-              </span>{" "}
+              Budget Target <span className="text-gray-500">($)</span>{" "}
               <span className="text-red-500">*</span>
             </Label>
             <Input
@@ -252,9 +217,7 @@ export function BudgetFormModal({
                   budgetTarget: Number.parseFloat(e.target.value) || 0,
                 })
               }
-              placeholder={
-                formData.budgetUnit === "cost" ? "5000.00" : "160.00"
-              }
+              placeholder="5000.00"
               step="0.01"
               type="number"
               value={formData.budgetTarget}
@@ -289,26 +252,24 @@ export function BudgetFormModal({
           )}
 
           {/* Location ID (optional) */}
-          {!isEditing && (
-            <div className="space-y-2">
-              <Label htmlFor="locationId">Location ID (Optional)</Label>
-              <Input
-                disabled={loading}
-                id="locationId"
-                onChange={(e) =>
-                  setFormData({ ...formData, locationId: e.target.value })
-                }
-                placeholder="Leave blank for tenant-wide budget"
-                value={formData.locationId}
-              />
-              <p className="text-gray-500 text-xs">
-                If specified, this budget applies only to this location.
-              </p>
-            </div>
-          )}
+          <div className="space-y-2">
+            <Label htmlFor="locationId">Location ID (Optional)</Label>
+            <Input
+              disabled={loading}
+              id="locationId"
+              onChange={(e) =>
+                setFormData({ ...formData, locationId: e.target.value })
+              }
+              placeholder="Leave blank for tenant-wide budget"
+              value={formData.locationId}
+            />
+            <p className="text-gray-500 text-xs">
+              If specified, this budget applies only to this location.
+            </p>
+          </div>
 
-          {/* Period Dates (for week/month budgets) */}
-          {showPeriodDates && !isEditing && (
+          {/* Period Dates (for weekly/monthly budgets) */}
+          {showPeriodDates && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="periodStart">
@@ -344,111 +305,6 @@ export function BudgetFormModal({
               )}
             </div>
           )}
-
-          {/* Status (edit only) */}
-          {isEditing && (
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                disabled={loading}
-                onValueChange={(value: BudgetStatus) =>
-                  setFormData({ ...formData, status: value })
-                }
-                value={formData.status}
-              >
-                <SelectTrigger id="status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="paused">Paused</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {/* Override Reason */}
-          {isEditing && formData.status !== "active" && (
-            <div className="space-y-2">
-              <Label htmlFor="overrideReason">Override Reason</Label>
-              <Textarea
-                disabled={loading}
-                id="overrideReason"
-                onChange={(e) =>
-                  setFormData({ ...formData, overrideReason: e.target.value })
-                }
-                placeholder="Explain why this budget is being overridden..."
-                rows={2}
-                value={formData.overrideReason}
-              />
-            </div>
-          )}
-
-          {/* Alert Thresholds */}
-          <div className="space-y-4 border-t pt-4">
-            <Label>Alert Thresholds</Label>
-            <p className="text-gray-500 text-sm">
-              Configure when you want to be notified about budget utilization.
-            </p>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="cursor-pointer" htmlFor="threshold80Pct">
-                  80% Alert
-                </Label>
-                <p className="text-gray-500 text-xs">
-                  Notify when budget reaches 80%
-                </p>
-              </div>
-              <Switch
-                checked={formData.threshold80Pct}
-                disabled={loading}
-                id="threshold80Pct"
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, threshold80Pct: checked })
-                }
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="cursor-pointer" htmlFor="threshold90Pct">
-                  90% Warning
-                </Label>
-                <p className="text-gray-500 text-xs">
-                  Warn when budget reaches 90%
-                </p>
-              </div>
-              <Switch
-                checked={formData.threshold90Pct}
-                disabled={loading}
-                id="threshold90Pct"
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, threshold90Pct: checked })
-                }
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="cursor-pointer" htmlFor="threshold100Pct">
-                  100% Critical
-                </Label>
-                <p className="text-gray-500 text-xs">
-                  Critical alert when budget is exceeded
-                </p>
-              </div>
-              <Switch
-                checked={formData.threshold100Pct}
-                disabled={loading}
-                id="threshold100Pct"
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, threshold100Pct: checked })
-                }
-              />
-            </div>
-          </div>
 
           <DialogFooter>
             <Button

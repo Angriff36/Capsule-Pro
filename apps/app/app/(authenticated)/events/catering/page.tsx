@@ -136,16 +136,7 @@ export default async function CateringOrdersPage() {
             eyebrow="Catering"
             title="All Orders"
           />
-          <CateringClient
-            initialMetrics={{
-              total,
-              draft,
-              confirmed,
-              inProgress,
-              completed,
-              cancelled,
-            }}
-          />
+          <CateringClient />
         </section>
       </OperationalColumn>
     </PageCanvas>

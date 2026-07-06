@@ -58,6 +58,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       transfers,
+      // Alias for the generated manifest client, which reads
+      // `json.inventoryTransfers` — without it the list renders empty.
+      inventoryTransfers: transfers,
       total,
       limit,
       offset,

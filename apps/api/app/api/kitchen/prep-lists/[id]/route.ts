@@ -139,7 +139,9 @@ export async function GET(
       batchMultiplier: Number(prepList.batchMultiplier),
       dietaryRestrictions: prepList.dietaryRestrictions,
       status: prepList.status,
-      totalItems: prepList.totalItems,
+      // Live row count, not the denormalized column — the stored value can
+      // drift when items are added/removed without touching prep_lists.
+      totalItems: items.length,
       totalEstimatedTime: prepList.totalEstimatedTime,
       notes: prepList.notes,
       generatedAt: prepList.generatedAt,

@@ -82,12 +82,14 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
   const [pickQueue, setPickQueue] = useState<PickQueueItem[]>([]);
   const [packingItems, setPackingItems] = useState<PickQueueItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Filters
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
+    setLoadError(null);
     try {
       const params = new URLSearchParams({ status: statusFilter });
       const res = await apiFetch(`/api/warehouse/pick-pack?${params}`);
@@ -98,7 +100,8 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
       setPickQueue(data.pickQueue ?? []);
       setPackingItems(data.packingItems ?? []);
     } catch {
-      // Error already logged by API route via @repo/observability/log
+      // Surface the failure — an error must not render as "no picks".
+      setLoadError("Could not load pick & pack data. Try again.");
     } finally {
       setIsLoading(false);
     }
@@ -138,6 +141,17 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
       {isLoading ? (
         <div className="flex items-center justify-center py-16 text-ink/50">
           Loading pick & pack data...
+        </div>
+      ) : loadError ? (
+        <div className="flex flex-col items-center justify-center gap-3 py-16 text-ink/60">
+          <p className="text-sm">{loadError}</p>
+          <button
+            className="rounded-md border border-hairline px-3 py-1.5 text-sm hover:bg-soft-stone"
+            onClick={fetchData}
+            type="button"
+          >
+            Retry
+          </button>
         </div>
       ) : (
         <>

@@ -39,7 +39,6 @@ import {
   Trash2Icon,
   XCircleIcon,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type {
@@ -51,16 +50,18 @@ import type {
   UpdateBudgetInput,
 } from "@/app/lib/labor-budgets";
 import {
+  approveBudget,
+  closeBudget,
   createBudget,
   deleteBudget,
   formatUtilization,
   getBudgets,
   getBudgetTypeName,
-  getBudgetUnitSymbol,
   getStatusColor,
   getUtilizationColor,
   updateBudget,
 } from "@/app/lib/labor-budgets";
+import { apiUrl } from "@/app/lib/api";
 import {
   OperationalPageShell,
   OperationalSection,
@@ -68,8 +69,6 @@ import {
 import { BudgetFormModal } from "./budget-form-modal";
 
 export function BudgetsClient() {
-  const _router = useRouter();
-
   // State
   const [budgets, setBudgets] = useState<LaborBudget[]>([]);
   const [loading, setLoading] = useState(true);
@@ -172,6 +171,45 @@ export function BudgetsClient() {
     setDeleteConfirmOpen(true);
   };
 
+  // Approve a draft budget (approver = current employee via /api/me)
+  const handleApprove = async (budget: LaborBudget) => {
+    setActionLoading(true);
+    try {
+      const meResponse = await fetch(apiUrl("/api/me"), {
+        credentials: "include",
+      });
+      if (!meResponse.ok) {
+        throw new Error("Could not resolve your employee identity");
+      }
+      const me = (await meResponse.json()) as { id: string };
+      await approveBudget(budget.id, me.id);
+      toast.success("Budget approved");
+      await fetchBudgets();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to approve budget"
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Close an approved budget
+  const handleClose = async (budget: LaborBudget) => {
+    setActionLoading(true);
+    try {
+      await closeBudget(budget.id);
+      toast.success("Budget closed");
+      await fetchBudgets();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to close budget"
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   // Filter budgets by search query
   const filteredBudgets = budgets.filter((budget) => {
     if (!searchQuery) {
@@ -184,19 +222,16 @@ export function BudgetsClient() {
     );
   });
 
-  // Calculate summary stats
-  const activeBudgets = budgets.filter((b) => b.status === "active").length;
-  const activeCostBudgets = budgets
-    .values()
-    .filter((budget) => budget.status === "active" && budget.budget_unit === "cost")
-    .toArray();
-  const totalBudgetTarget = activeCostBudgets
-    .map((budget) => budget.budget_target)
-    .reduce((sum, target) => sum + target, 0);
-  const totalActualSpend = activeCostBudgets
-    .filter((budget) => budget.actual_spend)
-    .map((budget) => budget.actual_spend || 0)
-    .reduce((sum, spend) => sum + spend, 0);
+  // Summary stats over approved (operationally active) budgets
+  const approvedBudgets = budgets.filter((b) => b.status === "approved");
+  const totalBudgetTarget = approvedBudgets.reduce(
+    (sum, budget) => sum + Number(budget.budgetTarget ?? 0),
+    0
+  );
+  const totalActualSpend = approvedBudgets.reduce(
+    (sum, budget) => sum + Number(budget.actualSpend ?? 0),
+    0
+  );
 
   return (
     <>
@@ -230,13 +265,15 @@ export function BudgetsClient() {
           <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="font-medium text-sm">
-                Active Budgets
+                Approved Budgets
               </CardTitle>
               <CheckCircle2Icon className="size-4 text-green-600" />
             </CardHeader>
             <CardContent>
               <CardDescription>{budgets.length} total budgets</CardDescription>
-              <div className="font-bold text-2xl">{activeBudgets}</div>
+              <div className="font-bold text-2xl">
+                {approvedBudgets.length}
+              </div>
             </CardContent>
           </Card>
 
@@ -248,7 +285,7 @@ export function BudgetsClient() {
               <DollarSignIcon className="size-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <CardDescription>Cost-based budgets only</CardDescription>
+              <CardDescription>Approved budgets only</CardDescription>
               <div className="font-bold text-2xl">
                 ${totalBudgetTarget.toFixed(2)}
               </div>
@@ -317,8 +354,8 @@ export function BudgetsClient() {
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="event">Event</SelectItem>
-                <SelectItem value="week">Weekly</SelectItem>
-                <SelectItem value="month">Monthly</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
               </SelectContent>
             </Select>
 
@@ -336,9 +373,9 @@ export function BudgetsClient() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="paused">Paused</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="closed">Closed</SelectItem>
               </SelectContent>
             </Select>
 
@@ -392,9 +429,14 @@ export function BudgetsClient() {
                   </TableRow>
                 ) : (
                   filteredBudgets.map((budget) => {
+                    const budgetTarget = Number(budget.budgetTarget ?? 0);
+                    const actualSpend =
+                      budget.actualSpend === null
+                        ? null
+                        : Number(budget.actualSpend);
                     const utilizationPct =
-                      budget.actual_spend && budget.budget_target > 0
-                        ? (budget.actual_spend / budget.budget_target) * 100
+                      actualSpend !== null && budgetTarget > 0
+                        ? (actualSpend / budgetTarget) * 100
                         : 0;
 
                     return (
@@ -411,22 +453,22 @@ export function BudgetsClient() {
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            {getBudgetTypeName(budget.budget_type)}
+                            {getBudgetTypeName(budget.budgetType)}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {budget.period_start && budget.period_end ? (
+                          {budget.periodStart && budget.periodEnd ? (
                             <div className="flex items-center gap-2 text-sm">
                               <CalendarIcon className="size-4 text-muted-foreground" />
                               {new Date(
-                                budget.period_start
+                                budget.periodStart
                               ).toLocaleDateString()}{" "}
                               -{" "}
-                              {new Date(budget.period_end).toLocaleDateString()}
+                              {new Date(budget.periodEnd).toLocaleDateString()}
                             </div>
-                          ) : budget.event_id ? (
+                          ) : budget.eventId ? (
                             <span className="text-sm">
-                              Event: {budget.event_id.slice(0, 8)}...
+                              Event: {budget.eventId.slice(0, 8)}...
                             </span>
                           ) : (
                             <span className="text-muted-foreground text-sm">
@@ -435,16 +477,8 @@ export function BudgetsClient() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <div>
-                            <div className="font-medium">
-                              {getBudgetUnitSymbol(budget.budget_unit)}
-                              {budget.budget_target.toFixed(2)}
-                            </div>
-                            <div className="text-muted-foreground text-xs">
-                              {budget.budget_unit === "hours"
-                                ? "hours"
-                                : "cost"}
-                            </div>
+                          <div className="font-medium">
+                            ${budgetTarget.toFixed(2)}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -453,15 +487,14 @@ export function BudgetsClient() {
                               <span
                                 className={getUtilizationColor(utilizationPct)}
                               >
-                                {budget.actual_spend === null
+                                {actualSpend === null
                                   ? "No data"
                                   : formatUtilization(
-                                      budget.actual_spend,
-                                      budget.budget_target,
-                                      budget.budget_unit
+                                      actualSpend,
+                                      budgetTarget
                                     )}
                               </span>
-                              {budget.actual_spend !== null && (
+                              {actualSpend !== null && (
                                 <span
                                   className={`font-medium ${getUtilizationColor(
                                     utilizationPct
@@ -471,7 +504,7 @@ export function BudgetsClient() {
                                 </span>
                               )}
                             </div>
-                            {budget.actual_spend !== null && (
+                            {actualSpend !== null && (
                               <Progress
                                 className="h-2"
                                 value={Math.min(utilizationPct, 100)}
@@ -486,6 +519,26 @@ export function BudgetsClient() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
+                            {budget.status === "draft" && (
+                              <Button
+                                disabled={actionLoading}
+                                onClick={() => handleApprove(budget)}
+                                size="sm"
+                                variant="outline"
+                              >
+                                Approve
+                              </Button>
+                            )}
+                            {budget.status === "approved" && (
+                              <Button
+                                disabled={actionLoading}
+                                onClick={() => handleClose(budget)}
+                                size="sm"
+                                variant="outline"
+                              >
+                                Close
+                              </Button>
+                            )}
                             <Button
                               onClick={() => handleEdit(budget)}
                               size="sm"
@@ -494,8 +547,14 @@ export function BudgetsClient() {
                               <EditIcon className="size-4" />
                             </Button>
                             <Button
+                              disabled={budget.status === "approved"}
                               onClick={() => handleDeleteClick(budget)}
                               size="sm"
+                              title={
+                                budget.status === "approved"
+                                  ? "Approved budgets must be closed before deletion"
+                                  : "Delete budget"
+                              }
                               variant="ghost"
                             >
                               <Trash2Icon className="size-4" />

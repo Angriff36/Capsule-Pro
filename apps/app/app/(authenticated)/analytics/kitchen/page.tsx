@@ -188,9 +188,11 @@ const KitchenAnalyticsPage = async () => {
         id: true,
         name: true,
         status: true,
-        totalItems: true,
         generatedAt: true,
         finalizedAt: true,
+        // Live item count — the denormalized totalItems column drifts when
+        // items change without the parent row being updated.
+        _count: { select: { items: { where: { deletedAt: null } } } },
       },
     }),
     database.wasteEntry.findMany({
@@ -449,7 +451,7 @@ const KitchenAnalyticsPage = async () => {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      {prepList.totalItems}
+                      {prepList._count.items}
                     </TableCell>
                   </TableRow>
                 ))

@@ -83,6 +83,7 @@ export function PutawayClient({ initialMetrics }: PutawayClientProps) {
   const [tasks, setTasks] = useState<PutawayTask[]>([]);
   const [locations, setLocations] = useState<StorageLocation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Filters
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -90,6 +91,7 @@ export function PutawayClient({ initialMetrics }: PutawayClientProps) {
 
   const fetchTasks = useCallback(async () => {
     setIsLoading(true);
+    setLoadError(null);
     try {
       const params = new URLSearchParams({
         status: statusFilter,
@@ -103,7 +105,8 @@ export function PutawayClient({ initialMetrics }: PutawayClientProps) {
       setTasks(data.tasks ?? []);
       setLocations(data.locations ?? []);
     } catch {
-      // Error already logged by API route via @repo/observability/log
+      // Surface the failure — an error must not render as "no tasks".
+      setLoadError("Could not load putaway tasks. Try again.");
     } finally {
       setIsLoading(false);
     }
@@ -158,6 +161,23 @@ export function PutawayClient({ initialMetrics }: PutawayClientProps) {
           <Loader2 className="h-5 w-5 animate-spin" />
           <span className="text-sm">Loading putaway tasks...</span>
         </div>
+      ) : loadError ? (
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Package />
+            </EmptyMedia>
+            <EmptyTitle>Failed to load putaway tasks</EmptyTitle>
+            <EmptyDescription>{loadError}</EmptyDescription>
+          </EmptyHeader>
+          <button
+            className="mx-auto mt-2 rounded-md border border-hairline px-3 py-1.5 text-sm hover:bg-soft-stone"
+            onClick={fetchTasks}
+            type="button"
+          >
+            Retry
+          </button>
+        </Empty>
       ) : tasks.length === 0 ? (
         <Empty>
           <EmptyHeader>
