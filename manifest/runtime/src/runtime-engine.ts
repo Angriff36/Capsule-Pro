@@ -151,6 +151,15 @@ export class ManifestRuntimeEngine extends RuntimeEngine {
       sanitizeCreateInitialTransitionInput(this, entityName, commandName, body);
     }
 
+    // Derive the target instance for instance-scoped verbs from `body.id` when
+    // the caller didn't pass options.instanceId (same convention as
+    // deriveInstanceIdFromBody in run-manifest-command-core). This MUST be
+    // threaded into super.runCommand: the upstream engine silently skips every
+    // `mutate` action when options.instanceId is absent while still reporting
+    // success and emitting events — hand-rolled routes that call
+    // runtime.runCommand directly (composite recipe update, contract send,
+    // allergen dish update, …) were persisting nothing. `create` is excluded so
+    // the engine's auto-create path stays in control of instantiation.
     const instanceId =
       commandName === "create"
         ? options.instanceId
@@ -172,8 +181,13 @@ export class ManifestRuntimeEngine extends RuntimeEngine {
       }
     }
 
+    const effectiveOptions =
+      instanceId && !options.instanceId
+        ? { ...options, instanceId }
+        : options;
+
     const startedAtMs = Date.now();
-    const result = await super.runCommand(commandName, input, options);
+    const result = await super.runCommand(commandName, input, effectiveOptions);
     const durationMs = Date.now() - startedAtMs;
 
     // R4 — Surface command failures so silently-swallowed reaction failures
