@@ -140,6 +140,24 @@ const UNITS_DATA = [
     is_base_unit: true,
   },
   {
+    id: 17,
+    code: "tbsp",
+    name: "tablespoon",
+    name_plural: "tablespoons",
+    unit_system: "imperial",
+    unit_type: "volume",
+    is_base_unit: false,
+  },
+  {
+    id: 18,
+    code: "tsp",
+    name: "teaspoon",
+    name_plural: "teaspoons",
+    unit_system: "imperial",
+    unit_type: "volume",
+    is_base_unit: false,
+  },
+  {
     id: 20,
     code: "ea",
     name: "each",
@@ -288,77 +306,84 @@ const UNIT_CONVERSIONS_DATA = [
   { from_unit_id: 12, to_unit_id: 10, multiplier: 29.5735 }, // fluid ounce to milliliter
   { from_unit_id: 11, to_unit_id: 16, multiplier: 0.264_172 }, // liter to gallon
   { from_unit_id: 16, to_unit_id: 11, multiplier: 3.785_41 }, // gallon to liter
+  { from_unit_id: 17, to_unit_id: 12, multiplier: 0.5 }, // tablespoon to fluid ounce
+  { from_unit_id: 18, to_unit_id: 17, multiplier: 0.333_333 }, // teaspoon to tablespoon
+  { from_unit_id: 17, to_unit_id: 10, multiplier: 14.7868 }, // tablespoon to milliliter
+  { from_unit_id: 18, to_unit_id: 10, multiplier: 4.928_92 }, // teaspoon to milliliter
 ];
 
+// Mirrors the live core.waste_reasons taxonomy (originally seeded by the
+// 20260124000001_seed_units_and_waste_reasons migration). Do NOT invent new
+// codes here — the table has a unique pkey and the UI reads these rows.
 const WASTE_REASONS_DATA = [
   {
-    code: "spoiled",
-    name: "Spoiled",
-    description: "Food item spoiled due to age or improper storage",
+    code: "spoilage",
+    name: "Spoilage",
+    description: "Food that has spoiled or expired",
     color_hex: "#ef4444",
     is_active: true,
   },
   {
-    code: "expired",
-    name: "Expired",
-    description: "Food item passed its expiration date",
+    code: "overproduction",
+    name: "Overproduction",
+    description: "Food prepared in excess of what was needed",
+    color_hex: "#f59e0b",
+    is_active: true,
+  },
+  {
+    code: "prep_error",
+    name: "Preparation Error",
+    description: "Mistakes made during food preparation",
     color_hex: "#f97316",
     is_active: true,
   },
   {
     code: "burnt",
     name: "Burnt",
-    description: "Food item was burnt during preparation",
+    description: "Food that was burnt during cooking",
+    color_hex: "#dc2626",
+    is_active: true,
+  },
+  {
+    code: "expired",
+    name: "Expired",
+    description: "Food that reached its expiration date before use",
+    color_hex: "#b91c1c",
+    is_active: true,
+  },
+  {
+    code: "quality",
+    name: "Quality Issues",
+    description: "Food that did not meet quality standards",
     color_hex: "#eab308",
     is_active: true,
   },
   {
     code: "dropped",
-    name: "Dropped",
-    description: "Food item was dropped on the floor",
-    color_hex: "#f59e0b",
+    name: "Dropped/Spilled",
+    description: "Food that was dropped or spilled",
+    color_hex: "#ca8a04",
     is_active: true,
   },
   {
-    code: "overcooked",
-    name: "Overcooked",
-    description: "Food item was cooked too long",
+    code: "leftovers",
+    name: "Leftovers",
+    description: "Uneaten food from events or service",
     color_hex: "#84cc16",
     is_active: true,
   },
   {
-    code: "undercooked",
-    name: "Undercooked",
-    description: "Food item was not cooked enough",
-    color_hex: "#10b981",
-    is_active: true,
-  },
-  {
-    code: "contaminated",
-    name: "Contaminated",
-    description: "Food item was contaminated",
-    color_hex: "#06b6d4",
-    is_active: true,
-  },
-  {
-    code: "portion_error",
-    name: "Portion Error",
-    description: "Incorrect portion size prepared",
-    color_hex: "#0ea5e9",
-    is_active: true,
-  },
-  {
-    code: "quality_issue",
-    name: "Quality Issue",
-    description: "Food item did not meet quality standards",
-    color_hex: "#6366f1",
+    code: "customer_return",
+    name: "Customer Return",
+    description: "Food returned by customers",
+    color_hex: "#a3e635",
     is_active: true,
   },
   {
     code: "other",
     name: "Other",
-    description: "Other reason not specified",
-    color_hex: "#8b5cf6",
+    description: "Other waste reasons not covered above",
+    color_hex: "#6b7280",
     is_active: true,
   },
 ];
