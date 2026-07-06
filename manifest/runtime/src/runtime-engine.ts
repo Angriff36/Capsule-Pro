@@ -81,6 +81,67 @@ interface RunCommandOptions {
 }
 
 /**
+ * Derive the target instance for instance-scoped verbs from `body.id` when
+ * the caller didn't pass `options.instanceId` (same convention as
+ * `deriveInstanceIdFromBody` in run-manifest-command-core). This MUST be
+ * threaded into `super.runCommand`: the upstream engine silently skips every
+ * `mutate` action when `options.instanceId` is absent while still reporting
+ * success and emitting events — hand-rolled routes that call
+ * `runtime.runCommand` directly (composite recipe update, contract send,
+ * allergen dish update, …) were persisting nothing. `create` is excluded so
+ * the engine's auto-create path stays in control of instantiation.
+ */
+function deriveEffectiveInstanceId(
+  commandName: string,
+  body: Record<string, unknown>,
+  options: RunCommandOptions
+): string | undefined {
+  if (options.instanceId || commandName === "create") {
+    return options.instanceId;
+  }
+  return typeof body.id === "string" && body.id.length > 0
+    ? body.id
+    : undefined;
+}
+
+/**
+ * R4 — Surface command failures so silently-swallowed reaction failures
+ * (e.g. BattleBoard.create triggered by EventCreated reaction) appear in
+ * api logs instead of vanishing. Non-throwing; best-effort structured log.
+ */
+function logCommandFailure(
+  entityName: string | undefined,
+  commandName: string,
+  result: CommandResult
+): void {
+  try {
+    const err =
+      (result as unknown as { error?: unknown }).error ??
+      (result as unknown as { message?: unknown }).message ??
+      "unknown error";
+    const guard = (result as unknown as { guardFailure?: { formatted?: string } })
+      .guardFailure;
+    const detail = guard?.formatted ?? stringifyCommandError(err);
+    console.error(
+      `[manifest-runtime] command failed: ${entityName ?? "??"}.${commandName} — ${detail}`
+    );
+  } catch {
+    // Defensive: never let logging crash the call path.
+  }
+}
+
+/** Render an unknown error value without collapsing objects to "[object Object]". */
+function stringifyCommandError(err: unknown): string {
+  if (typeof err === "string") {
+    return err;
+  }
+  if (err instanceof Error) {
+    return err.message;
+  }
+  return JSON.stringify(err);
+}
+
+/**
  * Extended runtime engine used by `@repo/manifest-runtime`.
  *
  * Two responsibilities beyond the base class:
@@ -151,22 +212,7 @@ export class ManifestRuntimeEngine extends RuntimeEngine {
       sanitizeCreateInitialTransitionInput(this, entityName, commandName, body);
     }
 
-    // Derive the target instance for instance-scoped verbs from `body.id` when
-    // the caller didn't pass options.instanceId (same convention as
-    // deriveInstanceIdFromBody in run-manifest-command-core). This MUST be
-    // threaded into super.runCommand: the upstream engine silently skips every
-    // `mutate` action when options.instanceId is absent while still reporting
-    // success and emitting events — hand-rolled routes that call
-    // runtime.runCommand directly (composite recipe update, contract send,
-    // allergen dish update, …) were persisting nothing. `create` is excluded so
-    // the engine's auto-create path stays in control of instantiation.
-    const instanceId =
-      commandName === "create"
-        ? options.instanceId
-        : (options.instanceId ??
-          (typeof body.id === "string" && body.id.length > 0
-            ? body.id
-            : undefined));
+    const instanceId = deriveEffectiveInstanceId(commandName, body, options);
 
     if (entityName && commandName === "syncFromEvent" && instanceId) {
       try {
@@ -182,55 +228,57 @@ export class ManifestRuntimeEngine extends RuntimeEngine {
     }
 
     const effectiveOptions =
-      instanceId && !options.instanceId
-        ? { ...options, instanceId }
-        : options;
+      instanceId === options.instanceId
+        ? options
+        : { ...options, instanceId };
 
     const startedAtMs = Date.now();
     const result = await super.runCommand(commandName, input, effectiveOptions);
     const durationMs = Date.now() - startedAtMs;
 
-    // R4 — Surface command failures so silently-swallowed reaction failures
-    // (e.g. BattleBoard.create triggered by EventCreated reaction) appear in
-    // api logs instead of vanishing. Non-throwing; best-effort structured log.
     if (!result.success) {
-      try {
-        const err =
-          (result as unknown as { error?: unknown }).error ??
-          (result as unknown as { message?: unknown }).message ??
-          "unknown error";
-        const guard = (
-          result as unknown as { guardFailure?: { formatted?: string } }
-        ).guardFailure;
-        const detail = guard?.formatted ?? String(err);
-        console.error(
-          `[manifest-runtime] command failed: ${options.entityName ?? "??"}.${commandName} — ${detail}`
-        );
-      } catch {
-        // Defensive: never let logging crash the call path.
-      }
+      logCommandFailure(options.entityName, commandName, result);
     }
 
-    // Fire the telemetry hook only when there is something to report.
-    if (
-      result.success &&
-      result.emittedEvents &&
-      result.emittedEvents.length > 0
-    ) {
-      const ctx = this.getContext() as ContextWithTelemetry;
-      const hook = ctx.telemetry?.onCommandExecuted;
-      if (hook) {
-        const irCommand = this.getCommand(commandName, options.entityName);
-        if (irCommand) {
-          await hook(irCommand, result, options.entityName);
-        }
-      }
-    }
+    await this.#fireExecutedHook(commandName, options.entityName, result);
+    await this.#fireSettledHook(commandName, input, options, result, durationMs);
 
-    // Observability: the settle hook fires for EVERY command — success OR
-    // failure — so the reaction-execution log captures silent no-ops and
-    // guard failures, not just successful emissions. Best-effort and
-    // non-throwing: observability must never break the command path.
+    return result;
+  }
+
+  /** Fire the `onCommandExecuted` telemetry hook only when there is something to report. */
+  async #fireExecutedHook(
+    commandName: string,
+    entityName: string | undefined,
+    result: CommandResult
+  ): Promise<void> {
+    if (!(result.success && result.emittedEvents?.length)) {
+      return;
+    }
+    const ctx = this.getContext() as ContextWithTelemetry;
+    const hook = ctx.telemetry?.onCommandExecuted;
+    if (!hook) {
+      return;
+    }
+    const irCommand = this.getCommand(commandName, entityName);
+    if (irCommand) {
+      await hook(irCommand, result, entityName);
+    }
+  }
+
+  /**
+   * Observability: the settle hook fires for EVERY command — success OR
+   * failure — so the reaction-execution log captures silent no-ops and
+   * guard failures, not just successful emissions. Best-effort and
+   * non-throwing: observability must never break the command path.
+   */
+  async #fireSettledHook(
+    commandName: string,
+    input: Record<string, unknown>,
+    options: RunCommandOptions,
+    result: CommandResult,
+    durationMs: number
+  ): Promise<void> {
     try {
       const ctx = this.getContext() as ContextWithTelemetry;
       const settled = ctx.telemetry?.onCommandSettled;
@@ -250,7 +298,5 @@ export class ManifestRuntimeEngine extends RuntimeEngine {
     } catch {
       // Swallow — never let the observability hook crash the call path.
     }
-
-    return result;
   }
 }
