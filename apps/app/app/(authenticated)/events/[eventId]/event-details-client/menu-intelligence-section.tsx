@@ -109,6 +109,7 @@ interface MenuIntelligenceSectionProps {
   selectedCourse: string;
   selectedDishIdForAdd: string;
   showAddDishDialog: boolean;
+  suggestedDishName?: string;
   templateName?: string | null;
   // Template suggestions
   templateSuggestions?: Array<{ name: string; added: boolean }>;
@@ -136,6 +137,7 @@ export function MenuIntelligenceSection({
   isCreatingDish = false,
   templateSuggestions = [],
   onAddSuggestedDish,
+  suggestedDishName,
 }: MenuIntelligenceSectionProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -212,6 +214,7 @@ export function MenuIntelligenceSection({
             selectedCourse={selectedCourse}
             selectedDishId={selectedDishIdForAdd}
             showAddDialog={showAddDishDialog}
+            suggestedDishName={suggestedDishName}
             templateSuggestions={templateSuggestions}
           />
         </TabsContent>

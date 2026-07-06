@@ -55,7 +55,7 @@ import {
   TrashIcon,
   UtensilsIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getBudgetStatusLabel, getVarianceColor } from "../../../lib/budgets";
 import { SuggestionsPanel } from "../../kitchen/components/suggestions-panel";
 import { attachEventImport } from "../actions";
@@ -234,6 +234,9 @@ interface MenuDishesSectionProps {
   selectedCourse: string;
   selectedDishId: string;
   showAddDialog: boolean;
+  // When set, the dialog opens on the Create tab with this name pre-filled
+  // (template quick-add flow).
+  suggestedDishName?: string;
   // Template suggestions - pre-computed with added status
   templateSuggestions?: Array<{ name: string; added: boolean }>;
 }
@@ -256,6 +259,7 @@ export function MenuDishesSection({
   isCreatingDish = false,
   templateSuggestions = [],
   onAddSuggestedDish,
+  suggestedDishName,
 }: MenuDishesSectionProps) {
   const COURSES = [
     "appetizer",
@@ -275,6 +279,15 @@ export function MenuDishesSection({
   const [newDishRecipeId, setNewDishRecipeId] = useState("");
   const [newDishCategory, setNewDishCategory] = useState("");
   const [newDishCourse, setNewDishCourse] = useState("");
+
+  // Template quick-add: when the dialog opens with a suggested name, jump to
+  // the Create tab pre-filled so only a recipe needs to be picked.
+  useEffect(() => {
+    if (showAddDialog && suggestedDishName) {
+      setActiveTab("create");
+      setNewDishName(suggestedDishName);
+    }
+  }, [showAddDialog, suggestedDishName]);
 
   // Delete confirmation state
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
@@ -635,8 +648,9 @@ export function MenuDishesSection({
               </span>
             </div>
             <p className="mb-3 text-muted-foreground text-xs">
-              Quick-add suggestions based on the event template. Click to create
-              and add to menu.
+              Quick-add suggestions based on the event template. Click one to
+              open the create form with the name pre-filled — pick a recipe to
+              finish.
             </p>
             <div className="flex flex-wrap gap-2">
               {templateSuggestions.map((suggestion, index) => (

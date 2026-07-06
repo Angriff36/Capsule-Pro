@@ -6,15 +6,6 @@ import { AlertTriangle, Loader2, RotateCcw, Settings } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-interface Metrics {
-  activeSmsRules: number;
-  activeWorkflows: number;
-  conversionRate: number;
-  openRate: number;
-  totalLeads: number;
-  totalSent: number;
-}
-
 interface WorkflowPerformance {
   id: string;
   isActive: boolean;
@@ -50,15 +41,13 @@ interface AnalyticsData {
   window: string;
 }
 
-interface AnalyticsClientProps {
-  initialMetrics: Metrics;
-}
-
 function formatTriggerType(type: string): string {
   return type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
+// Headline metrics render server-side on the page; this client only fetches
+// the windowed performance breakdown.
+export function AnalyticsClient() {
   const [windowPeriod, setWindowPeriod] = useState<"30d" | "90d" | "180d">(
     "30d"
   );

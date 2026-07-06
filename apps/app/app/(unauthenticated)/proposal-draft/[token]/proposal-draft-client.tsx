@@ -218,7 +218,9 @@ export function ProposalDraftClient({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`/api/public/proposals-draft/${magicToken}/respond`, {
+      // POST to the token route itself — unlike proposals, drafts have no
+      // /respond subroute (see apps/api/app/api/public/proposals-draft/[token]).
+      const response = await fetch(`/api/public/proposals-draft/${magicToken}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

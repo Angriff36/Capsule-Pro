@@ -70,15 +70,6 @@ export default async function MarketingAnalyticsPage() {
   const conversionRate =
     totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
 
-  const initialMetrics = {
-    totalSent,
-    openRate,
-    totalLeads,
-    conversionRate,
-    activeWorkflows: workflowCount,
-    activeSmsRules: smsRuleCount,
-  };
-
   return (
     <PageCanvas>
       <CommandBand>
@@ -127,7 +118,7 @@ export default async function MarketingAnalyticsPage() {
 
       <OperationalColumn>
         <SectionHeader eyebrow="Performance" title="Marketing performance" />
-        <AnalyticsClient initialMetrics={initialMetrics} />
+        <AnalyticsClient />
       </OperationalColumn>
     </PageCanvas>
   );

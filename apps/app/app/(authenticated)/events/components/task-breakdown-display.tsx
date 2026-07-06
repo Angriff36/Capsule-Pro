@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import {
   Collapsible,
   CollapsibleContent,
@@ -81,20 +80,13 @@ const COLOR_VARIANTS = {
 } as const;
 
 interface TaskCardProps {
-  onAssign?: (taskId: string) => void;
-  onComplete?: (taskId: string, completed: boolean) => void;
-  section: TaskSection;
   task: TaskBreakdownItem;
 }
 
-function TaskCard({ task, onComplete, onAssign }: TaskCardProps) {
+// This card previews a generated plan. Tasks only become real, trackable
+// PrepTasks after "Save Breakdown" — so there is no completion checkbox here.
+function TaskCard({ task }: TaskCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
-
-  const handleComplete = (checked: boolean) => {
-    setIsCompleted(checked);
-    onComplete?.(task.id, checked);
-  };
 
   const formatDuration = (minutes: number): string => {
     if (minutes < 60) {
@@ -131,31 +123,14 @@ function TaskCard({ task, onComplete, onAssign }: TaskCardProps) {
   const hasDetails = task.ingredients || task.steps || task.historicalContext;
 
   return (
-    <Card
-      className={`transition-all duration-200 ${
-        isCompleted ? "opacity-50" : ""
-      } hover:border-primary/40`}
-    >
+    <Card className="transition-all duration-200 hover:border-primary/40">
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
-          <div className="pt-1">
-            <Checkbox
-              checked={isCompleted}
-              className="h-5 w-5"
-              id={`task-${task.id}`}
-              onCheckedChange={handleComplete}
-            />
-          </div>
           <div className="min-w-0 flex-1">
             {/* Primary content: title, description, time badges */}
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1">
-                <label
-                  className="cursor-pointer font-medium text-base"
-                  htmlFor={`task-${task.id}`}
-                >
-                  {task.name}
-                </label>
+                <span className="font-medium text-base">{task.name}</span>
                 {task.description && (
                   <p className="mt-1 line-clamp-2 text-muted-foreground text-sm">
                     {task.description}
@@ -248,32 +223,15 @@ function TaskCard({ task, onComplete, onAssign }: TaskCardProps) {
               </Collapsible>
             )}
 
-            {/* Action footer with separator — only when there is something real to show */}
-            {(onAssign || task.assignment) && (
+            {/* Suggested assignment from the generated plan, when present */}
+            {task.assignment && (
               <>
                 <Separator className="my-3" />
-                <div className="flex items-center justify-between">
-                  {onAssign ? (
-                    <Button
-                      className="h-8 text-xs"
-                      onClick={() => onAssign(task.id)}
-                      size="sm"
-                      variant="outline"
-                    >
-                      <UserIcon className="mr-1 size-3" />
-                      {task.assignment ? task.assignment : "Assign"}
-                    </Button>
-                  ) : (
-                    <span />
-                  )}
-                  {task.assignment && (
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
-                        <UserIcon className="size-3" />
-                      </div>
-                      <span className="text-xs">{task.assignment}</span>
-                    </div>
-                  )}
+                <div className="flex items-center justify-end gap-2">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
+                    <UserIcon className="size-3" />
+                  </div>
+                  <span className="text-xs">{task.assignment}</span>
                 </div>
               </>
             )}
@@ -285,18 +243,11 @@ function TaskCard({ task, onComplete, onAssign }: TaskCardProps) {
 }
 
 interface TaskSectionProps {
-  onAssign?: (taskId: string) => void;
-  onComplete?: (taskId: string, completed: boolean) => void;
   section: TaskSection;
   tasks: TaskBreakdownItem[];
 }
 
-function TaskSectionComponent({
-  section,
-  tasks,
-  onComplete,
-  onAssign,
-}: TaskSectionProps) {
+function TaskSectionComponent({ section, tasks }: TaskSectionProps) {
   const [isOpen, setIsOpen] = useState(true);
   const config = SECTION_CONFIG[section];
 
@@ -348,15 +299,7 @@ function TaskSectionComponent({
                 No {config.label.toLowerCase()} needed
               </p>
             ) : (
-              tasks.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  onAssign={onAssign}
-                  onComplete={onComplete}
-                  section={section}
-                  task={task}
-                />
-              ))
+              tasks.map((task) => <TaskCard key={task.id} task={task} />)
             )}
           </div>
         </CollapsibleContent>

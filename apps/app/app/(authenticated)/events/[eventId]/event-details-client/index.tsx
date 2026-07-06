@@ -886,6 +886,7 @@ export function EventDetailsClient({
 
   // Dish management state
   const [showAddDishDialog, setShowAddDishDialog] = useState(false);
+  const [suggestedDishName, setSuggestedDishName] = useState("");
   const { availableDishes, isLoadingDishes } = useAvailableDishes(
     event.id,
     showAddDishDialog
@@ -1142,14 +1143,20 @@ export function EventDetailsClient({
   // Count assigned staff from event data
   const currentStaffCount = staffCount;
 
-  // Handler for adding a suggested dish
-  const handleAddSuggestedDish = useCallback(async (suggestionName: string) => {
-    // For now, just open the add dish dialog with a pre-filled name
-    // The user will need to select a recipe to create the dish
+  // Template quick-add: open the add-dish dialog on the Create tab with the
+  // suggestion name pre-filled (the user still picks the recipe).
+  const handleAddSuggestedDish = useCallback((suggestionName: string) => {
+    setSuggestedDishName(suggestionName);
     setShowAddDishDialog(true);
-    // Note: We could pre-fill the dish name in the dialog, but that would require
-    // additional state management. For now, the suggestion serves as a reference.
-    toast.info(`Select or create a dish for: ${suggestionName}`);
+  }, []);
+
+  // Clear the pre-filled suggestion when the dialog closes so a manual
+  // "Add Dish" afterwards starts from a clean form.
+  const handleShowAddDishDialogChange = useCallback((open: boolean) => {
+    if (!open) {
+      setSuggestedDishName("");
+    }
+    setShowAddDishDialog(open);
   }, []);
 
   // Handlers
@@ -1585,11 +1592,12 @@ export function EventDetailsClient({
               onRemoveDish={handleRemoveDish}
               onSelectedCourseChange={setSelectedCourse}
               onSelectedDishIdChange={setSelectedDishIdForAdd}
-              onShowAddDialogChange={setShowAddDishDialog}
+              onShowAddDialogChange={handleShowAddDishDialogChange}
               recipes={recipes}
               selectedCourse={selectedCourse}
               selectedDishIdForAdd={selectedDishIdForAdd}
               showAddDishDialog={showAddDishDialog}
+              suggestedDishName={suggestedDishName}
               templateName={templateName}
               templateSuggestions={templateSuggestions}
             />

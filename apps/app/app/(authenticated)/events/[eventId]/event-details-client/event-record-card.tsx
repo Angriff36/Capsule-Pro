@@ -221,7 +221,7 @@ export function EventRecordCard({ event, onEditEvent }: EventRecordCardProps) {
                 id={event.id}
                 label="Event Date"
                 type="date"
-                value={event.eventDate}
+                value={event.eventDate.toISOString()}
               />
             }
           />
