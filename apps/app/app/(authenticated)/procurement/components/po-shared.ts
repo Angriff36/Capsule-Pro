@@ -53,6 +53,17 @@ export const STATUS_CONFIG: Record<string, POStatusConfig> = {
   },
 };
 
+/**
+ * Non-null status lookup — unknown statuses render as a neutral badge instead
+ * of crashing under `noUncheckedIndexedAccess`.
+ */
+export const getStatusConfig = (status: string): POStatusConfig =>
+  STATUS_CONFIG[status] ?? {
+    label: status || "Unknown",
+    color: "bg-muted/50 text-foreground",
+    icon: FileText,
+  };
+
 export const STATUS_WORKFLOW: Record<string, string[]> = {
   submitted: ["approved", "rejected", "cancelled"],
   approved: ["ordered", "cancelled"],

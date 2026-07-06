@@ -20,7 +20,6 @@ import type {
   BudgetLineItemCategory,
   CreateEventBudgetInput,
   EventBudget,
-  EventBudgetStatus,
   UpdateEventBudgetInput,
 } from "@/app/lib/use-event-budgets";
 
@@ -45,9 +44,6 @@ export function CreateBudgetModal({
 
   // Form state
   const [eventId, setEventId] = useState(budget?.eventId || "");
-  const [status, setStatus] = useState<EventBudgetStatus>(
-    budget?.status || "draft"
-  );
   const [totalBudgetAmount, setTotalBudgetAmount] = useState(
     budget?.totalBudgetAmount.toString() || ""
   );
@@ -84,7 +80,6 @@ export function CreateBudgetModal({
     if (open) {
       if (budget) {
         setEventId(budget.eventId);
-        setStatus(budget.status);
         setTotalBudgetAmount(budget.totalBudgetAmount.toString());
         setNotes(budget.notes || "");
         setLineItems(
@@ -100,7 +95,6 @@ export function CreateBudgetModal({
         );
       } else {
         setEventId("");
-        setStatus("draft");
         setTotalBudgetAmount("");
         setNotes("");
         setLineItems([]);
@@ -142,7 +136,6 @@ export function CreateBudgetModal({
     }
 
     const data: CreateEventBudgetInput | UpdateEventBudgetInput = {
-      ...(isEditing && { status, notes }),
       eventId,
       totalBudgetAmount: Number.parseFloat(totalBudgetAmount),
       notes: notes || undefined,
@@ -235,27 +228,8 @@ export function CreateBudgetModal({
             )}
           </div>
 
-          {/* Status (only for edit) */}
-          {isEditing && (
-            <div>
-              <Label htmlFor="status">Status</Label>
-              <Select
-                onValueChange={(v) => setStatus(v as EventBudgetStatus)}
-                value={status}
-              >
-                <SelectTrigger id="status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="exceeded">Exceeded</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          {/* Status transitions (approve/finalize) happen from the budget
+              detail page via governed commands — not from this form. */}
 
           {/* Total Budget Amount */}
           <div>

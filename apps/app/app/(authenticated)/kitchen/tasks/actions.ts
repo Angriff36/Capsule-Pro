@@ -66,6 +66,7 @@ export const getKitchenTasks = async (filters?: {
   return database.kitchenTask.findMany({
     where: {
       tenantId,
+      deletedAt: null,
       ...(filters?.status && { status: filters.status }),
       ...(filters?.priority && { priority: filters.priority }),
     },

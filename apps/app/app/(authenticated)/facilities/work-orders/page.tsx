@@ -82,6 +82,7 @@ const STATUS_LABELS: Record<string, string> = {
 export default function FacilitiesWorkOrdersPage() {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [creating, setCreating] = useState(false);
   const [viewWorkOrder, setViewWorkOrder] = useState<WorkOrder | null>(null);
@@ -109,11 +110,13 @@ export default function FacilitiesWorkOrdersPage() {
   }, []);
 
   const loadWorkOrders = async () => {
+    setLoadError(null);
     try {
       const result = await listFacilityWorkOrders({ status: "all" });
       setWorkOrders(result.data as unknown as WorkOrder[]);
-    } catch (error) {
-      console.error("Failed to load work orders:", error);
+    } catch {
+      // A failed fetch must not render as "no work orders yet".
+      setLoadError("Could not load work orders. Try again.");
     } finally {
       setLoading(false);
     }
@@ -292,7 +295,26 @@ export default function FacilitiesWorkOrdersPage() {
               </Badge>
             </div>
 
-            {workOrders.length === 0 ? (
+            {loadError ? (
+              <Card>
+                <CardContent className="py-8">
+                  <Empty>
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <Wrench />
+                      </EmptyMedia>
+                      <EmptyTitle>Couldn't load work orders</EmptyTitle>
+                      <EmptyDescription>{loadError}</EmptyDescription>
+                    </EmptyHeader>
+                    <EmptyContent>
+                      <Button onClick={loadWorkOrders} variant="outline">
+                        Retry
+                      </Button>
+                    </EmptyContent>
+                  </Empty>
+                </CardContent>
+              </Card>
+            ) : workOrders.length === 0 ? (
               <Card>
                 <CardContent className="py-8">
                   <Empty>

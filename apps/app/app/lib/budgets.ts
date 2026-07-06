@@ -14,8 +14,10 @@ import type {
   BudgetLineItem as GeneratedBudgetLineItem,
   EventBudget as GeneratedEventBudget,
 } from "@/app/lib/manifest-types.generated";
-// Type definitions matching the API response
-export type EventBudgetStatus = "draft" | "approved" | "locked";
+// Type definitions matching the API response.
+// Status vocabulary comes from the Manifest constraint
+// (event-budget-rules.manifest): draft -> approved -> finalized.
+export type EventBudgetStatus = "draft" | "approved" | "finalized";
 export type BudgetCategory = "food" | "labor" | "rentals" | "miscellaneous";
 
 export interface BudgetLineItem {
@@ -255,7 +257,7 @@ export function getBudgetStatusColor(status: EventBudgetStatus): string {
       return "bg-yellow-100 text-yellow-800 border-yellow-200";
     case "approved":
       return "bg-blue-100 text-blue-800 border-blue-200";
-    case "locked":
+    case "finalized":
       return "bg-gray-100 text-gray-800 border-gray-200";
     default:
       return "bg-gray-100 text-gray-800 border-gray-200";
@@ -285,8 +287,8 @@ export function getBudgetStatusLabel(status: EventBudgetStatus): string {
       return "Draft";
     case "approved":
       return "Approved";
-    case "locked":
-      return "Locked";
+    case "finalized":
+      return "Finalized";
     default:
       return "Unknown";
   }

@@ -92,6 +92,7 @@ export function ActivityFeedClient({
   const router = useRouter();
   const [activities, setActivities] = useState<ActivityFeedItem[]>([]);
   const [stats, setStats] = useState<ActivityStatsProps | null>(null);
+  const [statsError, setStatsError] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [offset, setOffset] = useState(0);
@@ -143,32 +144,35 @@ export function ActivityFeedClient({
   );
 
   const fetchStats = useCallback(async () => {
+    setStatsError(false);
     try {
       const response = await apiFetch("/api/activity-feed/stats");
-      if (response.ok) {
-        const body = (await response.json()) as Record<string, unknown>;
-        const raw =
-          (unwrapManifestPayload(body, "stats") as
-            | (Partial<ActivityStatsProps> & { totalActivities?: number })
-            | undefined) ??
-          (body.stats as
-            | (Partial<ActivityStatsProps> & { totalActivities?: number })
-            | undefined);
-        if (raw) {
-          // API returns `totalActivities` (locked by route tests); the shared
-          // ActivityStats component expects `totalCount`. Map at this seam so a
-          // field-name mismatch can't crash the render with `undefined.toLocaleString()`.
-          setStats({
-            totalCount: raw.totalActivities ?? 0,
-            todayCount: raw.todayCount ?? 0,
-            weekCount: raw.weekCount ?? 0,
-            byType: raw.byType ?? {},
-            byEntity: raw.byEntity ?? {},
-          });
-        }
+      if (!response.ok) {
+        throw new Error(`Stats request failed (${response.status})`);
       }
-    } catch (error) {
-      console.error("Error fetching stats:", error);
+      const body = (await response.json()) as Record<string, unknown>;
+      const raw =
+        (unwrapManifestPayload(body, "stats") as
+          | (Partial<ActivityStatsProps> & { totalActivities?: number })
+          | undefined) ??
+        (body.stats as
+          | (Partial<ActivityStatsProps> & { totalActivities?: number })
+          | undefined);
+      if (raw) {
+        // API returns `totalActivities` (locked by route tests); the shared
+        // ActivityStats component expects `totalCount`. Map at this seam so a
+        // field-name mismatch can't crash the render with `undefined.toLocaleString()`.
+        setStats({
+          totalCount: raw.totalActivities ?? 0,
+          todayCount: raw.todayCount ?? 0,
+          weekCount: raw.weekCount ?? 0,
+          byType: raw.byType ?? {},
+          byEntity: raw.byEntity ?? {},
+        });
+      }
+    } catch {
+      // Surface the failure — a missing stats strip should not look intentional.
+      setStatsError(true);
     }
   }, []);
 
@@ -227,6 +231,18 @@ export function ActivityFeedClient({
   return (
     <div className="space-y-4">
       {stats ? <ActivityStats {...stats} variant="panel" /> : null}
+      {statsError && !stats ? (
+        <p className="text-muted-foreground text-xs">
+          Couldn't load activity stats.{" "}
+          <button
+            className="underline underline-offset-2"
+            onClick={fetchStats}
+            type="button"
+          >
+            Retry
+          </button>
+        </p>
+      ) : null}
 
       <ActivityFeed
         activities={activities}

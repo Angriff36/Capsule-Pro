@@ -58,8 +58,10 @@ import type {
   EventBudgetStatus,
 } from "@/app/lib/use-event-budgets";
 import {
+  approveBudget,
   createLineItem,
   deleteLineItem,
+  finalizeBudget,
   formatCurrency,
   getBudget,
   getCategoryColor,
@@ -67,6 +69,7 @@ import {
   updateBudget,
   updateLineItem,
 } from "@/app/lib/use-event-budgets";
+import { apiFetch } from "@/app/lib/api";
 
 export function BudgetDetailClient() {
   const params = useParams();
@@ -85,13 +88,11 @@ export function BudgetDetailClient() {
   const [editStatus, setEditStatus] = useState("");
   const [editNotes, setEditNotes] = useState("");
 
-  // Valid status values for validation
+  // Valid status values for validation (Manifest: draft -> approved -> finalized)
   const validStatuses: readonly string[] = [
     "draft",
     "approved",
-    "active",
-    "completed",
-    "exceeded",
+    "finalized",
   ] as const;
 
   // Handler for status change from Select component
@@ -138,7 +139,22 @@ export function BudgetDetailClient() {
     fetchBudget();
   }, [fetchBudget]);
 
-  // Handle budget update
+  // Resolve the current tenant employee id for governed transition commands.
+  const getCurrentUserId = async (): Promise<string> => {
+    const res = await apiFetch("/api/me");
+    if (!res.ok) {
+      throw new Error("Could not resolve current user");
+    }
+    const me = (await res.json()) as { id?: string };
+    if (!me.id) {
+      throw new Error("Could not resolve current user");
+    }
+    return me.id;
+  };
+
+  // Handle budget update. Notes go through `update`; status changes go
+  // through the governed approve/finalize commands (the Manifest `update`
+  // command never mutates status).
   const handleUpdateBudget = async () => {
     if (!budget) {
       return;
@@ -146,19 +162,24 @@ export function BudgetDetailClient() {
 
     setActionLoading(true);
     try {
-      const updateData: {
-        status?: EventBudgetStatus;
-        notes?: string;
-      } = {
-        notes: editNotes,
-      };
+      await updateBudget(budgetId, { notes: editNotes });
 
-      // Only include status if it's valid
-      if (editStatus && isValidStatus(editStatus)) {
-        updateData.status = editStatus;
+      if (
+        editStatus &&
+        isValidStatus(editStatus) &&
+        editStatus !== budget.status
+      ) {
+        if (editStatus === "approved") {
+          await approveBudget(budgetId, await getCurrentUserId());
+        } else if (editStatus === "finalized") {
+          await finalizeBudget(budgetId, await getCurrentUserId());
+        } else {
+          throw new Error(
+            `Budgets cannot move back to ${editStatus} — the lifecycle is draft -> approved -> finalized.`
+          );
+        }
       }
 
-      await updateBudget(budgetId, updateData);
       toast.success("Budget updated successfully");
       setEditMode(false);
       await fetchBudget();
@@ -452,7 +473,7 @@ export function BudgetDetailClient() {
           <div>
             <Label htmlFor="status">Status</Label>
             <Select
-              disabled={!editMode}
+              disabled={!editMode || budget.status === "finalized"}
               onValueChange={handleStatusChange}
               value={editMode ? editStatus : budget.status}
             >
@@ -460,11 +481,15 @@ export function BudgetDetailClient() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="exceeded">Exceeded</SelectItem>
+                {/* Only forward transitions are offered — the Manifest
+                    lifecycle is draft -> approved -> finalized. */}
+                {budget.status === "draft" && (
+                  <SelectItem value="draft">Draft</SelectItem>
+                )}
+                {budget.status !== "finalized" && (
+                  <SelectItem value="approved">Approved</SelectItem>
+                )}
+                <SelectItem value="finalized">Finalized</SelectItem>
               </SelectContent>
             </Select>
           </div>

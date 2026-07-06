@@ -130,8 +130,8 @@ export default async function LeaderboardPage() {
           {leaderboard.length === 0 ? (
             <OperationalRow density="compact">
               <p className="text-muted-foreground text-sm">
-                No shift activity yet this week. The board fills as people claim
-                open shifts.
+                No shifts scheduled this week. The board fills as shifts are
+                scheduled and claimed.
               </p>
             </OperationalRow>
           ) : (

@@ -190,6 +190,11 @@ const STATUS_CONFIG: Record<
   },
 };
 
+/** Non-null status lookup for `noUncheckedIndexedAccess`. */
+const getShipmentStatusConfig = (status: string) =>
+  STATUS_CONFIG[status] ??
+  (STATUS_CONFIG.draft as NonNullable<(typeof STATUS_CONFIG)[string]>);
+
 const STATUS_ORDER = [
   "draft",
   "scheduled",
@@ -203,6 +208,7 @@ const STATUS_ORDER = [
 export function ShipmentsClient() {
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -237,6 +243,7 @@ export function ShipmentsClient() {
 
   const loadShipments = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const result = await listShipments();
       const shipmentData = result.data as unknown as Record<string, unknown>[];
@@ -245,8 +252,9 @@ export function ShipmentsClient() {
           normalizeShipment(shipment)
         )
       );
-    } catch (error) {
-      console.error("Failed to load shipments:", error);
+    } catch {
+      // A failed fetch must not render as "no shipments".
+      setLoadError("Could not load shipments. Try again.");
     } finally {
       setLoading(false);
     }
@@ -408,7 +416,7 @@ export function ShipmentsClient() {
     if (idx === -1 || idx >= STATUS_ORDER.length - 2) {
       return null; // Don't suggest "returned"
     }
-    return STATUS_ORDER[idx + 1];
+    return STATUS_ORDER[idx + 1] ?? null;
   };
 
   const formatDate = (dateStr: string | null) => {
@@ -523,7 +531,26 @@ export function ShipmentsClient() {
         </TabsList>
 
         <TabsContent value={activeTab}>
-          {filteredShipments.length === 0 ? (
+          {loadError ? (
+            <Card tone="canvas">
+              <CardContent className="py-8">
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <Package />
+                    </EmptyMedia>
+                    <EmptyTitle>Couldn't load shipments</EmptyTitle>
+                    <EmptyDescription>{loadError}</EmptyDescription>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    <Button onClick={loadShipments} variant="outline">
+                      Retry
+                    </Button>
+                  </EmptyContent>
+                </Empty>
+              </CardContent>
+            </Card>
+          ) : filteredShipments.length === 0 ? (
             <Card tone="canvas">
               <CardContent className="py-8">
                 <Empty>
@@ -557,8 +584,7 @@ export function ShipmentsClient() {
           ) : (
             <div className="space-y-3">
               {filteredShipments.map((shipment) => {
-                const statusConfig =
-                  STATUS_CONFIG[shipment.status] || STATUS_CONFIG.draft;
+                const statusConfig = getShipmentStatusConfig(shipment.status);
                 const StatusIcon = statusConfig.icon;
                 const nextStatus = getNextStatus(shipment.status);
 

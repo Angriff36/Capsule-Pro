@@ -186,16 +186,19 @@ export function BudgetsPageClient() {
     );
   });
 
-  // Calculate summary stats
-  const activeBudgets = budgets.filter((b) => b.status === "active").length;
+  // Calculate summary stats. "Approved" is the operational in-play status
+  // (Manifest lifecycle: draft -> approved -> finalized).
+  const approvedBudgets = budgets.filter(
+    (b) => b.status === "approved"
+  ).length;
   const totalBudget = budgets
     .values()
-    .filter((budget) => budget.status === "active")
+    .filter((budget) => budget.status === "approved")
     .map((budget) => budget.totalBudgetAmount)
     .reduce((sum, budget) => sum + budget, 0);
   const totalActual = budgets
     .values()
-    .filter((budget) => budget.status === "active")
+    .filter((budget) => budget.status === "approved")
     .map((budget) => budget.totalActualAmount)
     .reduce((sum, budget) => sum + budget, 0);
 
@@ -242,13 +245,13 @@ export function BudgetsPageClient() {
           <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardDescription className="font-medium text-sm">
-                Active Budgets
+                Approved Budgets
               </CardDescription>
               <CheckCircle2Icon className="size-4 text-green-600" />
             </CardHeader>
             <CardContent>
               <CardTitle className="font-semibold text-2xl">
-                {activeBudgets}
+                {approvedBudgets}
               </CardTitle>
               <p className="text-muted-foreground text-xs">
                 {budgets.length} total budgets
@@ -268,7 +271,7 @@ export function BudgetsPageClient() {
                 {formatCurrency(totalBudget)}
               </CardTitle>
               <p className="text-muted-foreground text-xs">
-                Active budgets only
+                Approved budgets only
               </p>
             </CardContent>
           </Card>
@@ -338,9 +341,7 @@ export function BudgetsPageClient() {
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="draft">Draft</SelectItem>
                 <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="exceeded">Exceeded</SelectItem>
+                <SelectItem value="finalized">Finalized</SelectItem>
               </SelectContent>
             </Select>
 

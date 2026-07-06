@@ -10,17 +10,15 @@ import {
   budgetLineItemCreate,
   budgetLineItemRemove,
   budgetLineItemUpdate,
+  eventBudgetApprove,
   eventBudgetCreate,
+  eventBudgetFinalize,
   eventBudgetUpdate,
 } from "@/app/lib/manifest-client.generated";
 
-// Types
-export type EventBudgetStatus =
-  | "draft"
-  | "approved"
-  | "active"
-  | "completed"
-  | "exceeded";
+// Types — status vocabulary comes from the Manifest constraint
+// (event-budget-rules.manifest): draft -> approved -> finalized.
+export type EventBudgetStatus = "draft" | "approved" | "finalized";
 export type BudgetLineItemCategory =
   | "venue"
   | "catering"
@@ -80,9 +78,10 @@ export interface CreateBudgetLineItemInput {
   sortOrder?: number;
 }
 
+// Status is intentionally absent: the Manifest `update` command never mutates
+// status. Transitions go through approveBudget / finalizeBudget instead.
 export interface UpdateEventBudgetInput {
   notes?: string;
-  status?: EventBudgetStatus;
   totalBudgetAmount?: number;
 }
 
@@ -119,10 +118,8 @@ export function getStatusColor(status: EventBudgetStatus): string {
   const colors = {
     draft: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100",
     approved: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
-    active: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
-    completed:
-      "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100",
-    exceeded: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100",
+    finalized:
+      "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
   };
   return colors[status] || colors.draft;
 }
@@ -213,11 +210,14 @@ export async function createBudget(
 }
 
 export async function updateBudget(
-  _budgetId: string,
+  budgetId: string,
   input: UpdateEventBudgetInput
 ): Promise<EventBudget> {
   try {
+    // `id` scopes the command to the instance — without it the dispatcher
+    // can't resolve the target and the mutate is a silent no-op.
     const result = await eventBudgetUpdate({
+      id: budgetId,
       totalBudgetAmount: input.totalBudgetAmount,
       notes: input.notes,
     });
@@ -229,6 +229,30 @@ export async function updateBudget(
     console.error("Error updating budget:", error);
     throw error;
   }
+}
+
+/** Transition a draft budget to approved via the governed command. */
+export async function approveBudget(
+  budgetId: string,
+  userId: string
+): Promise<EventBudget> {
+  const result = await eventBudgetApprove({ id: budgetId, userId });
+  if (!result) {
+    throw new Error("Failed to approve budget");
+  }
+  return result as unknown as EventBudget;
+}
+
+/** Transition a draft/approved budget to finalized via the governed command. */
+export async function finalizeBudget(
+  budgetId: string,
+  userId: string
+): Promise<EventBudget> {
+  const result = await eventBudgetFinalize({ id: budgetId, userId });
+  if (!result) {
+    throw new Error("Failed to finalize budget");
+  }
+  return result as unknown as EventBudget;
 }
 
 // NOTE: Keeping apiFetch — no generated eventBudgetDelete/eventBudgetSoftDelete command

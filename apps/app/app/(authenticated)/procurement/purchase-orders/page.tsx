@@ -19,11 +19,11 @@ import { DollarSign, Eye, FileText, Loader2, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { OperationalPageShell } from "../../components/operational-page-shell";
-import { listPurchaseOrders } from "@/app/lib/manifest-client.generated";
+import { apiFetch } from "@/app/lib/api";
 import {
   formatCurrency,
   formatDateShort,
-  STATUS_CONFIG,
+  getStatusConfig,
 } from "../components/po-shared";
 
 interface PurchaseOrder {
@@ -44,6 +44,7 @@ interface PurchaseOrder {
 export default function PurchaseOrdersPage() {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -53,11 +54,18 @@ export default function PurchaseOrdersPage() {
 
   const loadOrders = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
-      const result = await listPurchaseOrders();
-      setOrders(result.data as unknown as PurchaseOrder[]);
-    } catch (error) {
-      console.error("Failed to load POs:", error);
+      // The procurement route returns rows already shaped to the snake_case
+      // fields this page renders (po_number, vendor_name, item_count, ...).
+      const res = await apiFetch("/api/procurement/purchase-orders/list");
+      if (!res.ok) {
+        throw new Error(`Failed to load purchase orders (${res.status})`);
+      }
+      const json = (await res.json()) as { orders?: PurchaseOrder[] };
+      setOrders(json.orders ?? []);
+    } catch {
+      setLoadError("Could not load purchase orders. Try again.");
     } finally {
       setLoading(false);
     }
@@ -103,7 +111,7 @@ export default function PurchaseOrdersPage() {
       <div className="grid gap-4 md:grid-cols-4">
         {(["submitted", "approved", "ordered", "received"] as const).map(
           (status) => {
-            const config = STATUS_CONFIG[status];
+            const config = getStatusConfig(status);
             const count = orders.filter((o) => o.status === status).length;
             return (
               <Card key={status}>
@@ -160,13 +168,23 @@ export default function PurchaseOrdersPage() {
                 key={s}
                 value={s}
               >
-                {STATUS_CONFIG[s].label} ({count})
+                {getStatusConfig(s).label} ({count})
               </TabsTrigger>
             ) : null;
           })}
         </TabsList>
         <TabsContent value={activeTab}>
-          {filtered.length === 0 ? (
+          {loadError ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <FileText className="mx-auto mb-4 h-12 w-12 opacity-50" />
+                <p className="mb-4">{loadError}</p>
+                <Button onClick={loadOrders} variant="outline">
+                  Retry
+                </Button>
+              </CardContent>
+            </Card>
+          ) : filtered.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 <FileText className="mx-auto mb-4 h-12 w-12 opacity-50" />
@@ -176,8 +194,7 @@ export default function PurchaseOrdersPage() {
           ) : (
             <div className="space-y-3">
               {filtered.map((order) => {
-                const config =
-                  STATUS_CONFIG[order.status] || STATUS_CONFIG.draft;
+                const config = getStatusConfig(order.status);
                 const Icon = config.icon;
                 return (
                   <Card

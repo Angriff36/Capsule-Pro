@@ -196,10 +196,7 @@ export async function searchPurchaseOrderByNumber(
   poNumber: string
 ): Promise<PurchaseOrderWithDetails | null> {
   const result = await listPurchaseOrders({ po_number: poNumber, limit: 1 });
-  if (result.data.length === 0) {
-    return null;
-  }
-  return result.data[0];
+  return result.data[0] ?? null;
 }
 
 // Update quantity received for a purchase order item

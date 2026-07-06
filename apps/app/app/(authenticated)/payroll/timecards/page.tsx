@@ -66,7 +66,7 @@ import {
 const formatCurrency = (v: number | null) =>
   _formatCurrency(v, { nullDisplay: "N/A" });
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
@@ -177,7 +177,6 @@ function getExceptionBadge(exceptionType: string | null) {
 
 export default function TimecardsPage() {
   const router = useRouter();
-  const _searchParams = useSearchParams() ?? new URLSearchParams();
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
@@ -186,6 +185,7 @@ export default function TimecardsPage() {
     totalPages: 1,
   });
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [selectedEntries, setSelectedEntries] = useState<Set<string>>(
     new Set()
   );
@@ -248,8 +248,12 @@ export default function TimecardsPage() {
       const data = await response.json();
       setTimeEntries(data.timeEntries || []);
       setPagination((previous) => data.pagination ?? previous);
+      setFetchError(null);
     } catch (error) {
       console.error("Error fetching timecards:", error);
+      // Keep the failure visible in the list area too — otherwise the
+      // filter-empty copy claims "no entries" after the toast disappears.
+      setFetchError("Couldn't load time entries. Try again.");
       toast.error("Failed to load timecards");
     } finally {
       setLoading(false);
@@ -662,6 +666,13 @@ export default function TimecardsPage() {
         {loading ? (
           <div className="flex flex-1 items-center justify-center py-24">
             <Loader2Icon className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : fetchError ? (
+          <div className="rounded-[22px] border border-hairline bg-canvas p-8 text-center">
+            <p className="mb-4 text-lg text-muted-foreground">{fetchError}</p>
+            <Button onClick={fetchTimecards} variant="outline">
+              Retry
+            </Button>
           </div>
         ) : timeEntries.length === 0 ? (
           <div className="rounded-[22px] border border-hairline bg-canvas p-8 text-center">

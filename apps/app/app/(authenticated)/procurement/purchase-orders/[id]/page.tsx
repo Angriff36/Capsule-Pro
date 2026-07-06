@@ -19,7 +19,7 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { ArrowLeft, DollarSign, Loader2, Package } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { OperationalPageShell } from "../../../components/operational-page-shell";
 import {
@@ -39,7 +39,7 @@ import {
 import {
   formatCurrency,
   formatDate,
-  STATUS_CONFIG,
+  getStatusConfig,
   STATUS_WORKFLOW,
 } from "../../components/po-shared";
 
@@ -62,7 +62,6 @@ interface POOrder {
 
 export default function PODetailPage() {
   const params = useParams();
-  const _router = useRouter();
   const id = (params?.id ?? "") as string;
 
   const [order, setOrder] = useState<POOrder | null>(null);
@@ -182,7 +181,7 @@ export default function PODetailPage() {
     );
   }
 
-  const config = STATUS_CONFIG[order.status] || STATUS_CONFIG.draft;
+  const config = getStatusConfig(order.status);
   const Icon = config.icon;
   const workflowActions = STATUS_WORKFLOW[order.status] || [];
   const totalReceived = items.reduce(
@@ -207,7 +206,7 @@ export default function PODetailPage() {
             </Button>
           </Link>
           {workflowActions.map((action: string) => {
-            const actionConfig = STATUS_CONFIG[action];
+            const actionConfig = getStatusConfig(action);
             return (
               <Button
                 disabled={updating === action}
