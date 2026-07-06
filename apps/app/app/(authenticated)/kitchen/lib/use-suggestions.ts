@@ -4,6 +4,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
+import { toast } from "sonner";
 // NOTE: Keeping apiFetch for /api/ai/suggestions — custom AI endpoint with no generated function
 import { apiFetch } from "@/app/lib/api";
 import type { SuggestedAction, SuggestionsResponse } from "./suggestions-types";
@@ -63,13 +64,28 @@ export function useSuggestions(tenantId?: string | null) {
   }, []);
 
   const handleAction = useCallback(
-    (suggestion: SuggestedAction) => {
+    async (suggestion: SuggestedAction) => {
       // Handle the action based on type
       if (suggestion.action.type === "navigate") {
         router.push(suggestion.action.path);
       } else if (suggestion.action.type === "api_call") {
-        // API call actions would be handled differently
-        // (console.log removed as per migration requirements)
+        const { method, endpoint, payload } = suggestion.action;
+        try {
+          const response = await apiFetch(endpoint, {
+            method,
+            ...(payload !== undefined && {
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            }),
+          });
+          if (!response.ok) {
+            throw new Error(`Request failed (${response.status})`);
+          }
+          toast.success(`Done: ${suggestion.title}`);
+        } catch (err) {
+          captureException(err);
+          toast.error(`Could not complete "${suggestion.title}"`);
+        }
       } else if (suggestion.action.type === "external") {
         window.open(suggestion.action.url, "_blank");
       }

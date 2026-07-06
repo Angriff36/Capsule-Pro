@@ -47,6 +47,7 @@ import {
 import { Play, Plus, RotateCcw, TrendingUp, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -258,7 +259,7 @@ export function RevenueRecognitionClient({
         totalRemaining: mapped.reduce((sum, s) => sum + s.remainingAmount, 0),
       });
     } catch {
-      // silently fail — server-rendered data is still visible
+      toast.error("Failed to refresh schedules — showing last loaded data");
     }
   }, [statusFilter, methodFilter, initialSchedules]);
 
@@ -292,7 +293,15 @@ export function RevenueRecognitionClient({
         setCreateOpen(false);
         setCreateForm(initialForm);
         await refresh();
+        toast.success("Recognition schedule created");
+      } else {
+        const err = (await res.json().catch(() => null)) as {
+          message?: string;
+        } | null;
+        toast.error(err?.message ?? "Failed to create schedule");
       }
+    } catch {
+      toast.error("Failed to create schedule");
     } finally {
       setCreating(false);
     }
@@ -313,7 +322,14 @@ export function RevenueRecognitionClient({
         );
         if (res.ok) {
           await refresh();
+        } else {
+          const err = (await res.json().catch(() => null)) as {
+            message?: string;
+          } | null;
+          toast.error(err?.message ?? `Failed to ${action} schedule`);
         }
+      } catch {
+        toast.error(`Failed to ${action} schedule`);
       } finally {
         setActionLoading(null);
       }

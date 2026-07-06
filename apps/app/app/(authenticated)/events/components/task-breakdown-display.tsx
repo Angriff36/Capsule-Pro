@@ -248,27 +248,35 @@ function TaskCard({ task, onComplete, onAssign }: TaskCardProps) {
               </Collapsible>
             )}
 
-            {/* Action footer with separator */}
-            <Separator className="my-3" />
-            <div className="flex items-center justify-between">
-              <Button
-                className="h-8 text-xs"
-                onClick={() => onAssign?.(task.id)}
-                size="sm"
-                variant="outline"
-              >
-                <UserIcon className="mr-1 size-3" />
-                {task.assignment ? task.assignment : "Assign"}
-              </Button>
-              {task.assignment && (
-                <div className="flex items-center gap-2">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
-                    <UserIcon className="size-3" />
-                  </div>
-                  <span className="text-xs">{task.assignment}</span>
+            {/* Action footer with separator — only when there is something real to show */}
+            {(onAssign || task.assignment) && (
+              <>
+                <Separator className="my-3" />
+                <div className="flex items-center justify-between">
+                  {onAssign ? (
+                    <Button
+                      className="h-8 text-xs"
+                      onClick={() => onAssign(task.id)}
+                      size="sm"
+                      variant="outline"
+                    >
+                      <UserIcon className="mr-1 size-3" />
+                      {task.assignment ? task.assignment : "Assign"}
+                    </Button>
+                  ) : (
+                    <span />
+                  )}
+                  {task.assignment && (
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
+                        <UserIcon className="size-3" />
+                      </div>
+                      <span className="text-xs">{task.assignment}</span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
         </div>
       </CardContent>

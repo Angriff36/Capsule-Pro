@@ -37,8 +37,10 @@ import {
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { ArrowUpRight, FileText, Loader2, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   knowledgeBaseEntryCreate,
+  knowledgeBaseEntryPublishEntry,
   listKnowledgeBaseEntries,
 } from "@/app/lib/manifest-client.generated";
 
@@ -89,6 +91,7 @@ export default function KnowledgeBaseClient() {
       setEntries(result.data as unknown as KnowledgeBaseEntry[]);
     } catch (error) {
       console.error("Failed to fetch entries:", error);
+      toast.error("Failed to load knowledge base articles");
     } finally {
       setLoading(false);
     }
@@ -112,7 +115,7 @@ export default function KnowledgeBaseClient() {
 
     setCreating(true);
     try {
-      await knowledgeBaseEntryCreate({
+      const created = await knowledgeBaseEntryCreate({
         title: createForm.title,
         content: createForm.content || undefined,
         category: createForm.category || undefined,
@@ -123,7 +126,10 @@ export default function KnowledgeBaseClient() {
               .filter(Boolean)
           : undefined,
       });
-      if (createForm.status === "published") {
+      // Entries are created as drafts; honor the form's status choice with the
+      // governed publish command, then refetch (the list shows published only).
+      if (createForm.status === "published" && created?.id) {
+        await knowledgeBaseEntryPublishEntry({ id: created.id });
         await fetchEntries();
       }
       setShowCreateDialog(false);
@@ -135,8 +141,10 @@ export default function KnowledgeBaseClient() {
         tags: "",
         status: "draft",
       });
+      toast.success("Article created");
     } catch (error) {
       console.error("Failed to create article:", error);
+      toast.error("Failed to create article");
     } finally {
       setCreating(false);
     }
