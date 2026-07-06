@@ -299,11 +299,11 @@ function IngredientRowItem({
               placeholder="Ingredient or sub-recipe..."
               value={nameInput}
             />
-            {ingredient.isSubRecipe && (
+            {ingredient.isSubRecipe && ingredient.subRecipeId && (
               <Link
                 className="absolute top-1/2 right-8 -translate-y-1/2 text-muted-foreground hover:text-primary"
                 href={`/kitchen/recipes/${ingredient.subRecipeId}`}
-                onClick={(e) => e.preventDefault()}
+                onClick={(e) => e.stopPropagation()}
                 target="_blank"
               >
                 <TooltipProvider>

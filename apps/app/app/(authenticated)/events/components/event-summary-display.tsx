@@ -230,8 +230,6 @@ export function EventSummaryDisplay({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState("");
   const [streamingSections, setStreamingSections] = useState<string[]>([]);
-  const [showRatingDialog, setShowRatingDialog] = useState(false);
-  const [userRating, setUserRating] = useState<number | null>(null);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -392,12 +390,6 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
     toast.success("Summary exported");
   }, [summary, eventTitle]);
 
-  const handleRating = useCallback((rating: number) => {
-    setUserRating(rating);
-    setShowRatingDialog(false);
-    toast.success("Thank you for your feedback!");
-  }, []);
-
   if (isGenerating && !summary) {
     return <EventSummarySkeleton />;
   }
@@ -488,15 +480,6 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
           >
             <DownloadIcon className="mr-2 size-4" />
             Export
-          </Button>
-          <Button
-            aria-label="Rate this summary"
-            onClick={() => setShowRatingDialog(true)}
-            size="sm"
-            variant="outline"
-          >
-            <StarIcon className="mr-2 size-4" />
-            Rate
           </Button>
           {onGenerate && (
             <Button
@@ -637,45 +620,6 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <Dialog onOpenChange={setShowRatingDialog} open={showRatingDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Rate this summary</DialogTitle>
-            <DialogDescription>
-              How accurate and helpful was this AI-generated summary?
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-center gap-2 py-4">
-            {[1, 2, 3, 4, 5].map((rating) => (
-              <Button
-                aria-label={`Rate ${rating} out of 5 stars`}
-                className="rounded-full"
-                key={rating}
-                onClick={() => handleRating(rating)}
-                size="lg"
-                variant="ghost"
-              >
-                <StarIcon
-                  className={`size-8 ${
-                    userRating && rating <= userRating
-                      ? "fill-yellow-400 text-yellow-400"
-                      : "text-muted-foreground"
-                  }`}
-                />
-              </Button>
-            ))}
-          </div>
-          <DialogFooter>
-            <Button
-              onClick={() => setShowRatingDialog(false)}
-              variant="outline"
-            >
-              Cancel
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <Dialog onOpenChange={setShowExportDialog} open={showExportDialog}>
         <DialogContent>

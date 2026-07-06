@@ -27,7 +27,7 @@ import {
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   OperationalPageShell,
@@ -56,6 +56,7 @@ export default function ReceivingPage() {
   const [searchPO, setSearchPO] = useState("");
   const [selectedPO, setSelectedPO] = useState<PurchaseOrderLocal | null>(null);
   const [scanning, setScanning] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const handlePOSearch = async () => {
     if (!searchPO.trim()) {
@@ -85,12 +86,16 @@ export default function ReceivingPage() {
     }
   };
 
-  const handleScan = () => {
-    setScanning(true);
-    setTimeout(() => {
-      setScanning(false);
-      toast.success("Item scanned: PROD-001 - Organic Tomatoes");
-    }, 1500);
+  // Hardware barcode scanners act as keyboard input followed by Enter, which
+  // the lookup field already handles — so "scan" means: put focus there.
+  const handleScanFocus = () => {
+    const input = searchInputRef.current;
+    if (!input) {
+      return;
+    }
+    input.focus();
+    input.select();
+    toast.info("Ready to scan — scan a PO barcode or type the PO number.");
   };
 
   const updateItemQuality = async (
@@ -284,6 +289,7 @@ export default function ReceivingPage() {
                 onChange={(e) => setSearchPO(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handlePOSearch()}
                 placeholder="Enter PO number or scan barcode..."
+                ref={searchInputRef}
                 value={searchPO}
               />
               <Button
@@ -297,11 +303,11 @@ export default function ReceivingPage() {
               <Button
                 className="gap-2"
                 disabled={scanning}
-                onClick={handleScan}
+                onClick={handleScanFocus}
                 variant="secondary"
               >
                 <Package className="size-4" />
-                {scanning ? "Scanning..." : "Scan Item"}
+                Scan barcode
               </Button>
             </div>
           </CardContent>

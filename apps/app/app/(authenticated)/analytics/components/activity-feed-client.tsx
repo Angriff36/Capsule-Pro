@@ -18,6 +18,7 @@ import {
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 // NOTE: Keeping apiFetch for custom activity-feed endpoints (/api/activity-feed/list, /api/activity-feed/stats)
@@ -25,16 +26,16 @@ import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 /** Unwrap manifestSuccessResponse payloads ({ success, ...fields }). */
-function unwrapManifestPayload<T extends Record<string, unknown>>(
+function unwrapManifestPayload(
   body: Record<string, unknown>,
-  key: keyof T
-): T[keyof T] | undefined {
+  key: string
+): unknown {
   if (body[key] !== undefined) {
-    return body[key] as T[keyof T];
+    return body[key];
   }
   const nested = body.data;
   if (nested && typeof nested === "object" && key in nested) {
-    return (nested as Record<string, unknown>)[key as string] as T[keyof T];
+    return (nested as Record<string, unknown>)[key];
   }
   return;
 }
@@ -46,12 +47,49 @@ interface ActivityFeedClientProps {
   userId: string;
 }
 
+/**
+ * Detail routes for Manifest entity types that appear in the feed
+ * (reaction_logs `entity` / ActivityFeed `entityType`). Only entities with a
+ * real detail page are listed — unmapped types simply don't navigate.
+ */
+const ENTITY_DETAIL_ROUTES: Record<string, (id: string) => string> = {
+  Recipe: (id) => `/kitchen/recipes/${id}`,
+  Dish: (id) => `/kitchen/recipes/dishes/${id}`,
+  Menu: (id) => `/kitchen/recipes/menus/${id}`,
+  Ingredient: (id) => `/kitchen/ingredients/${id}`,
+  PrepList: (id) => `/kitchen/prep-lists/${id}`,
+  Event: (id) => `/events/${id}`,
+  EventContract: (id) => `/events/contracts/${id}`,
+  EventBudget: (id) => `/events/budgets/${id}`,
+  BattleBoard: (id) => `/events/battle-boards/${id}`,
+  Client: (id) => `/crm/clients/${id}`,
+  Venue: (id) => `/crm/venues/${id}`,
+  Proposal: (id) => `/crm/proposals/${id}`,
+  Lead: (id) => `/marketing/leads/${id}`,
+  Invoice: (id) => `/accounting/invoices/${id}`,
+  Payment: (id) => `/accounting/payments/${id}`,
+  InventoryItem: (id) => `/inventory/items/${id}`,
+  Supplier: (id) => `/inventory/suppliers/${id}`,
+  Vendor: (id) => `/procurement/vendors/${id}`,
+  PurchaseOrder: (id) => `/procurement/purchase-orders/${id}`,
+  Requisition: (id) => `/procurement/requisitions/${id}`,
+};
+
+function getEntityDetailHref(
+  entityType: string,
+  entityId: string
+): string | null {
+  const build = ENTITY_DETAIL_ROUTES[entityType];
+  return build ? build(entityId) : null;
+}
+
 export function ActivityFeedClient({
   tenantId: _tenantId,
   userId: _userId,
   pollInterval = 30_000,
   enableRealtime = false,
 }: ActivityFeedClientProps) {
+  const router = useRouter();
   const [activities, setActivities] = useState<ActivityFeedItem[]>([]);
   const [stats, setStats] = useState<ActivityStatsProps | null>(null);
   const [hasMore, setHasMore] = useState(false);
@@ -79,13 +117,12 @@ export function ActivityFeedClient({
 
         const body = (await response.json()) as Record<string, unknown>;
         const activitiesPayload =
-          (unwrapManifestPayload<ActivityFeedResponse>(body, "activities") as
+          (unwrapManifestPayload(body, "activities") as
             | ActivityFeedItem[]
             | undefined) ?? [];
         const hasMorePayload =
-          (unwrapManifestPayload<ActivityFeedResponse>(body, "hasMore") as
-            | boolean
-            | undefined) ?? false;
+          (unwrapManifestPayload(body, "hasMore") as boolean | undefined) ??
+          false;
 
         if (currentOffset === 0) {
           setActivities(activitiesPayload);
@@ -111,10 +148,12 @@ export function ActivityFeedClient({
       if (response.ok) {
         const body = (await response.json()) as Record<string, unknown>;
         const raw =
-          (unwrapManifestPayload<{ stats: ActivityStatsProps }>(body, "stats") as
-            | ActivityStatsProps
+          (unwrapManifestPayload(body, "stats") as
+            | (Partial<ActivityStatsProps> & { totalActivities?: number })
             | undefined) ??
-          (body.stats as ActivityStatsProps | undefined);
+          (body.stats as
+            | (Partial<ActivityStatsProps> & { totalActivities?: number })
+            | undefined);
         if (raw) {
           // API returns `totalActivities` (locked by route tests); the shared
           // ActivityStats component expects `totalCount`. Map at this seam so a
@@ -147,24 +186,23 @@ export function ActivityFeedClient({
     fetchActivities(0, newFilters);
   };
 
-  const handleActivityClick = (activity: ActivityFeedItem) => {
-    console.log("Activity clicked:", activity);
-    // Navigate to entity details if applicable
-    if (activity.entityType && activity.entityId) {
-      // Could navigate to entity detail page
-      toast.info(`Viewing ${activity.entityType}: ${activity.title}`);
+  const navigateToEntity = (entityType: string, entityId: string) => {
+    const href = getEntityDetailHref(entityType, entityId);
+    if (href) {
+      router.push(href);
+    } else {
+      toast.info(`No detail page available for ${entityType} yet.`);
     }
   };
 
-  const handleUserClick = (userId: string) => {
-    console.log("User clicked:", userId);
-    // Could navigate to user profile
-    toast.info("Viewing user profile");
+  const handleActivityClick = (activity: ActivityFeedItem) => {
+    if (activity.entityType && activity.entityId) {
+      navigateToEntity(activity.entityType, activity.entityId);
+    }
   };
 
   const handleEntityClick = (entityType: string, entityId: string) => {
-    console.log("Entity clicked:", entityType, entityId);
-    toast.info(`Viewing ${entityType}`);
+    navigateToEntity(entityType, entityId);
   };
 
   // Initial fetch
@@ -199,7 +237,6 @@ export function ActivityFeedClient({
         onFilterChange={handleFilterChange}
         onLoadMore={handleLoadMore}
         onRefresh={handleRefresh}
-        onUserClick={handleUserClick}
         showHeader={false}
         variant="panel"
       />

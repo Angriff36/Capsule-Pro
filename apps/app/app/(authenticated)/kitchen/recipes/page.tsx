@@ -62,7 +62,6 @@ import { getDishMarginTierClasses } from "./lib/dish-margin-tier";
 import { getRecipeMarginCellClass } from "./lib/recipe-costing-styles";
 import { getMenus } from "./menus/actions";
 import { RecipeEditButton } from "./recipe-edit-button";
-import { RecipeFavoriteButton } from "./recipe-favorite-button";
 import { RecipeQuickRename } from "./recipe-quick-rename";
 import { RecipesPageClient } from "./recipes-page-client";
 import RecipesRealtime from "./recipes-realtime";
@@ -713,7 +712,6 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                               name={recipe.name}
                               type="recipe"
                             />
-                            <RecipeFavoriteButton recipeName={recipe.name} />
                           </div>
                         </Link>
                       );

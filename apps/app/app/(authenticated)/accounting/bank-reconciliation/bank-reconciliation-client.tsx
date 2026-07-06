@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { formatCurrency } from "@repo/design-system/lib/format-currency";
-import { Landmark, Plus, RefreshCw, Search } from "lucide-react";
+import { Landmark, RefreshCw, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
@@ -34,13 +34,6 @@ interface BankReconciliationRecord {
   statementBalance: number;
   status: ReconciliationStatus;
   transactionCount: number;
-}
-
-interface ReconciliationMetrics {
-  lastReconciledDate: string | null;
-  reconciledCount: number;
-  totalAccounts: number;
-  unreconciledCount: number;
 }
 
 interface InitialMetrics {
@@ -193,17 +186,6 @@ export function BankReconciliationClient({
           <Button onClick={loadAccounts} size="sm" variant="outline">
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
-          </Button>
-          <Button
-            onClick={() =>
-              toast.info(
-                "New reconciliation wizard coming soon. Select an account to begin matching."
-              )
-            }
-            size="sm"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            New reconciliation
           </Button>
         </div>
       </div>
