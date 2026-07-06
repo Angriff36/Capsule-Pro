@@ -60,7 +60,7 @@ so agents keep forking design languages. User verdict: recipe page + site look b
 - [x] Detail view falls back to flat instructions text for legacy text-only imports
 - [x] Versions/cost 500s root-caused: orphaned API dev server couldn't spawn compile workers (killed wrapper); restarted clean — version history works
 - [x] DESIGN.md updated: rule 11 (no tabs when content fits), detail-page light header pattern
-- [ ] Ingredient unit resolution: "5 POUNDS" imports as quantity 5 unit "g" with the real amount in notes — unit-resolver needs pounds/quarts/cups mapping
+- [x] Ingredient unit resolution: "5 POUNDS" imports as quantity 5 unit "g" — unit-resolver now matches code+name+name_plural from core.units + aliases (lbs/tbs/qts), strips embedded leading quantity; tbsp/tsp seeded into core.units (were missing); 7 tests (497a8c461)
 
 ---
 
@@ -83,3 +83,16 @@ so agents keep forking design languages. User verdict: recipe page + site look b
 - [x] MIDDLEWARE_PIPELINE_NAMES (62) out of sync with pipeline (63): event-staff-active-guard was wired but undeclared — added to names + MIDDLEWARE_REGISTRY (24/24 registry tests pass)
 - [x] param-audit swept 145 literal runCommand call sites vs IR: 1 LIVE bug (restore-version RecipeVersion.create — same 8-key mismatch; version restore 500'd) + 5 latent in exported zero-caller helpers (updateDishPricing/updateDishLeadTime/createInventoryItem/completePrepTask/createPrepTask) — ALL FIXED; bug-class rule documented in manifest/notes.md. Not auditable: AdminTask*/BoardConfig/Payment.* (absent from kitchen.ir.json)
 - [ ] tool-registry.ts pre-existing debt: complexity 39/28, ~10 scoped regexes, ~20 strict TS errors (untouched legacy)
+
+---
+
+# Follow-up 5: operational completeness sweep (WS1–WS10)
+
+- [x] WS1 prep-list flow: one generation path (apps/api/lib/prep-lists/), truthful unresolved-dish states with fix links, governed save, detail page, JW dish→recipe repair
+- [x] WS7 exports: prep-list PDF (was regenerating live instead of reading saved rows — preparePdfDataFromSaved), contract PDF (data shape vs ContractPDFData — was 500), shipment packing list (contact_person/stateProvince field mismatches — was 500), event PDF+CSV (guests/tasks column mismatches — was 500), battle-board 404 = soft-deleted event (correct)
+- [x] WS7 UI entry points: prep-list detail PDF button; contract detail Export PDF button (verified in browser, blob 200 application/pdf)
+- [x] Unit resolution (see Follow-up 2 item)
+- [ ] WS2 route gaps: subagent cross-referencing all hrefs vs page.tsx routes
+- [ ] WS3 dead buttons: subagent sweeping for handler-less/placeholder controls
+- [ ] WS4 empty shells, WS5 data unification, WS6 empty states, WS8 AI actions, WS9 runtime sweep, WS10 active-path TS debt
+- [x] Sidebar "hydration mismatch" on /kitchen/*: NOT an app bug — every diffed attr is data-cursor-ref (injected by Cursor browser automation pre-hydration); ignore when testing via the agent browser
