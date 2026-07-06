@@ -30,7 +30,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { PrintFooter, PrintViewButton } from "@/app/components/print-view";
-// NOTE: Keeping apiFetch for custom prep-lists endpoints (generate, mark-item-complete)
+// NOTE: Keeping apiFetch for the custom prep-lists generate endpoint
 // — generated client has prepListCreate/prepListItemMarkCompleted but these target different
 //   API routes and semantics (Manifest command dispatch vs. custom action endpoints)
 import { apiFetch } from "@/app/lib/api";
@@ -88,36 +88,20 @@ export function PrepListClient({
     router.push(getEventMenuDishesHref(selectedEventId || eventId));
   }, [router, selectedEventId, eventId]);
 
-  const handleReviewIngredient = useCallback(
-    async (ingredientId: string) => {
-      const isReviewed = reviewedIngredients.has(ingredientId);
-      setReviewedIngredients((prev) => {
-        const next = new Set(prev);
-        if (next.has(ingredientId)) {
-          next.delete(ingredientId);
-        } else {
-          next.add(ingredientId);
-        }
-        return next;
-      });
-      if (savedPrepListId && !isReviewed) {
-        try {
-          await apiFetch(
-            `/api/kitchen/prep-lists/${savedPrepListId}/items/${ingredientId}/complete`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ completed: true }),
-            }
-          );
-        } catch (error) {
-          captureException(error);
-          toast.error("Failed to mark ingredient as reviewed");
-        }
+  // Local review marks for the generated preview only. Real completion
+  // tracking lives on the saved detail page (/kitchen/prep-lists/[id]),
+  // where PrepListItem rows (and their ids) exist — saving navigates there.
+  const handleReviewIngredient = useCallback((ingredientId: string) => {
+    setReviewedIngredients((prev) => {
+      const next = new Set(prev);
+      if (next.has(ingredientId)) {
+        next.delete(ingredientId);
+      } else {
+        next.add(ingredientId);
       }
-    },
-    [savedPrepListId, reviewedIngredients]
-  );
+      return next;
+    });
+  }, []);
 
   const handleGenerate = useCallback(async () => {
     if (!selectedEventId) {
