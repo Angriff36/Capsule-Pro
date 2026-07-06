@@ -115,7 +115,8 @@ export function MenuEditor({ menuId }: MenuEditorProps) {
         return;
       }
 
-      router.push("/kitchen/recipes/menus");
+      // Menus have no index page — the list lives on the recipes page's menus tab.
+      router.push("/kitchen/recipes?tab=menus");
     } catch (error) {
       captureException(error);
       toast.error("Error saving menu. Please try again.");

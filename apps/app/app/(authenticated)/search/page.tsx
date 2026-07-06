@@ -154,7 +154,7 @@ const GROUP_CONFIG: Record<
     icon: <CheckSquare className="size-4" />,
     href: (item) => {
       const taskType = item.task_type as string;
-      return taskType === "admin" ? "/admin/tasks" : "/kitchen/tasks";
+      return taskType === "admin" ? "/administrative/kanban" : "/kitchen/tasks";
     },
     title: (item) => (item.title as string) || "Untitled Task",
     description: (item) => (

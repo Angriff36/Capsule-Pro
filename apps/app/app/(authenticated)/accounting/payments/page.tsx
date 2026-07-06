@@ -154,10 +154,11 @@ export default async function PaymentsPage() {
               size="sm"
               variant="outline"
             >
-              <Link href="/accounting/payments/export" target="_blank">
+              {/* API route (not a page): serves the CSV download directly. */}
+              <a href="/api/accounting/payments/export" target="_blank">
                 <Download className="mr-2 h-4 w-4" />
                 Export CSV
-              </Link>
+              </a>
             </Button>
             <Button
               asChild

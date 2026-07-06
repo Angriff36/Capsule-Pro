@@ -100,7 +100,7 @@ export async function createMenuManifest(
 
   const createdId = (result.result as { id?: string } | null)?.id;
 
-  revalidatePath("/kitchen/menus");
+  revalidatePath("/kitchen/recipes");
 
   return {
     success: true,
@@ -108,7 +108,7 @@ export async function createMenuManifest(
     menuId: createdId,
     name,
     isActive: true,
-    redirectUrl: createdId ? `/kitchen/menus/${createdId}` : undefined,
+    redirectUrl: createdId ? `/kitchen/recipes/menus/${createdId}` : undefined,
   };
 }
 
@@ -199,8 +199,8 @@ export async function updateMenuManifest(
     };
   }
 
-  revalidatePath("/kitchen/menus");
-  revalidatePath(`/kitchen/menus/${menuId}`);
+  revalidatePath("/kitchen/recipes");
+  revalidatePath(`/kitchen/recipes/menus/${menuId}`);
 
   return {
     success: true,
@@ -280,8 +280,8 @@ export async function activateMenuManifest(
     };
   }
 
-  revalidatePath("/kitchen/menus");
-  revalidatePath(`/kitchen/menus/${menuId}`);
+  revalidatePath("/kitchen/recipes");
+  revalidatePath(`/kitchen/recipes/menus/${menuId}`);
 
   return {
     success: true,
@@ -338,8 +338,8 @@ export async function deactivateMenuManifest(
     };
   }
 
-  revalidatePath("/kitchen/menus");
-  revalidatePath(`/kitchen/menus/${menuId}`);
+  revalidatePath("/kitchen/recipes");
+  revalidatePath(`/kitchen/recipes/menus/${menuId}`);
 
   return {
     success: true,
