@@ -311,7 +311,9 @@ function getTimeStatusLabel(
   return `Ended ${fmt(now.getTime() - eventEnd.getTime())} ago`;
 }
 
-type TaskStatus = "pending" | "in_progress" | "completed" | "canceled";
+// PrepTaskStatus DB enum: open | pending | in_progress | done | canceled.
+// "open" groups with pending (not started); "done" is the completed state.
+type TaskStatus = "open" | "pending" | "in_progress" | "done" | "canceled";
 
 function computeTaskSummary(tasks: PrepTaskSummaryClient[]) {
   const counts = {
@@ -322,9 +324,10 @@ function computeTaskSummary(tasks: PrepTaskSummaryClient[]) {
     other: 0,
   };
   const statusMap: Record<TaskStatus, keyof typeof counts> = {
+    open: "pending",
     pending: "pending",
     in_progress: "in_progress",
-    completed: "completed",
+    done: "completed",
     canceled: "canceled",
   };
   for (const task of tasks) {

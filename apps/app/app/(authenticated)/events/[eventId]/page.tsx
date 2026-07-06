@@ -106,14 +106,14 @@ const EventDetailsPage = async ({
     serializePrepTasks(prepTasks);
 
   // Prep readiness summary for the EventPhaseBar — derived from the same prep
-  // tasks the page already fetched. Prep task status enum uses "completed" for
-  // done (see event-details-client/index.tsx). Overdue = past its dueByDate and
-  // not yet completed.
+  // tasks the page already fetched. The PrepTaskStatus DB enum is
+  // open | pending | in_progress | done | canceled ("done" marks completion).
+  // Overdue = past its dueByDate and not yet done.
   const nowMs = Date.now();
   const prepSummary = normalizedPrepTasks.reduce(
     (acc, task) => {
       acc.total += 1;
-      const isDone = task.status === "completed";
+      const isDone = task.status === "done";
       if (isDone) {
         acc.done += 1;
       } else if (task.dueByDate.getTime() < nowMs) {
