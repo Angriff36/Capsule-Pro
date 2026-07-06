@@ -77,7 +77,7 @@ export interface EventBudgetForDisplay {
   event_id: string | null;
   id: string;
   notes: string | null;
-  status: "draft" | "approved" | "locked" | null;
+  status: "draft" | "approved" | "finalized" | null;
   tenantId: string;
   total_actual_amount: number | null;
   total_budget_amount: number | null;

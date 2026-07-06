@@ -260,8 +260,8 @@ function buildSections(lines: string[]): Section[] {
     // Check for section header with value on same line (e.g., "Invoice #: 5806")
     const sameLineMatch = line.match(/^(.+?):\s*(.+)$/);
     if (sameLineMatch) {
-      const label = normalizeLabel(sameLineMatch[1]);
-      const value = sameLineMatch[2].trim();
+      const label = normalizeLabel(sameLineMatch[1] ?? "");
+      const value = (sameLineMatch[2] ?? "").trim();
       current = { label, lines: value ? [value] : [] };
       sections.push(current);
       continue;
@@ -345,11 +345,15 @@ function extractMenuItems(lines: string[]): MenuItem[] {
 
     const categoryParts: string[] = [currentLine];
     index += 1;
-    while (
-      index < lines.length &&
-      isCategoryContinuation(lines[index], categoryParts)
-    ) {
-      categoryParts.push(lines[index]);
+    while (index < lines.length) {
+      const continuation = lines[index];
+      if (
+        continuation === undefined ||
+        !isCategoryContinuation(continuation, categoryParts)
+      ) {
+        break;
+      }
+      categoryParts.push(continuation);
       index += 1;
     }
 
@@ -392,8 +396,12 @@ function extractMenuItems(lines: string[]): MenuItem[] {
     const normalizedName = normalizeDishName(rawName || rawCategory);
 
     const quantityLines: string[] = [];
-    while (index < lines.length && /^P:\s*/i.test(lines[index])) {
-      quantityLines.push(lines[index]);
+    while (index < lines.length) {
+      const quantityLine = lines[index];
+      if (quantityLine === undefined || !/^P:\s*/i.test(quantityLine)) {
+        break;
+      }
+      quantityLines.push(quantityLine);
       index += 1;
     }
 
@@ -572,7 +580,7 @@ function isCategoryContinuation(
   }
   const lower = trimmed.toLowerCase();
   if (parts.length === 1) {
-    const first = normalizeWhitespace(parts[0]).toLowerCase();
+    const first = normalizeWhitespace(parts[0] ?? "").toLowerCase();
     if (first.endsWith("-")) {
       return true;
     }
@@ -722,7 +730,7 @@ function parseQuantitySegments(
   }
 
   for (let idx = 0; idx < trailingLines.length; ) {
-    const current = normalizeWhitespace(trailingLines[idx]);
+    const current = normalizeWhitespace(trailingLines[idx] ?? "");
     if (!current) {
       idx += 1;
       continue;
@@ -730,12 +738,8 @@ function parseQuantitySegments(
 
     const numeric = current.match(/^-?\d+(?:\.\d+)?$/);
     if (numeric) {
-      const unitLineRaw = trailingLines[idx + 1]
-        ? normalizeWhitespace(trailingLines[idx + 1])
-        : "";
-      const noteLineRaw = trailingLines[idx + 2]
-        ? normalizeWhitespace(trailingLines[idx + 2])
-        : "";
+      const unitLineRaw = normalizeWhitespace(trailingLines[idx + 1] ?? "");
+      const noteLineRaw = normalizeWhitespace(trailingLines[idx + 2] ?? "");
 
       if (unitLineRaw && isLikelyUnit(unitLineRaw)) {
         const value = Number.parseFloat(current);
@@ -780,12 +784,12 @@ function parsePortionLine(
     warnings.push(`Unrecognized quantity format: "${line}"`);
     return null;
   }
-  const value = Number.parseFloat(match[1].replace(/,/g, ""));
+  const value = Number.parseFloat((match[1] ?? "").replace(/,/g, ""));
   if (Number.isNaN(value)) {
     warnings.push(`Unable to parse quantity number from "${line}"`);
     return null;
   }
-  const unit = normalizeWhitespace(match[2]) || "serving";
+  const unit = normalizeWhitespace(match[2] ?? "") || "serving";
   return {
     value,
     unit,
@@ -803,6 +807,9 @@ function selectPrimaryQuantity(details: MenuQuantityDetail[]): {
   }
   const servingDetail = details.find((detail) => /serv/i.test(detail.unit));
   const base = servingDetail ?? details[0];
+  if (!base) {
+    return { value: 0, unit: "" };
+  }
   return {
     value: Number.isFinite(base.value) ? base.value : 0,
     unit: base.unit || "serving",
@@ -983,7 +990,7 @@ function deriveHeadcount(menuItems: MenuItem[], allLines: string[]): number {
 
   for (const line of allLines) {
     const match = line.match(/^P:\s*([\d.,]+)/i);
-    if (match) {
+    if (match?.[1]) {
       const value = Number.parseFloat(match[1].replace(/,/g, ""));
       if (value > 0) {
         candidates.push(value);
@@ -1257,7 +1264,8 @@ function deriveTimes(
   }
 
   const sorted = [...new Set(minutes)].sort((a, b) => a - b);
-  if (sorted.length === 0) {
+  const firstSorted = sorted[0];
+  if (firstSorted === undefined) {
     return { startTime: "", endTime: "" };
   }
 
@@ -1267,7 +1275,7 @@ function deriveTimes(
     return `${hours.toString().padStart(2, "0")}:${minutesPart.toString().padStart(2, "0")}`;
   };
 
-  const startTime = format(sorted[0]);
+  const startTime = format(firstSorted);
   const lastSorted = sorted.at(-1);
   const endTime =
     sorted.length > 1 && lastSorted !== undefined ? format(lastSorted) : "";
@@ -1275,8 +1283,11 @@ function deriveTimes(
   return { startTime, endTime };
 }
 
-function toMinutes(time: string, meridiem?: string | null): number | null {
-  const normalized = normalizeWhitespace(time);
+function toMinutes(
+  time: string | undefined,
+  meridiem?: string | null
+): number | null {
+  const normalized = normalizeWhitespace(time ?? "");
   if (!normalized) {
     return null;
   }
@@ -1286,8 +1297,8 @@ function toMinutes(time: string, meridiem?: string | null): number | null {
 
   if (normalized.includes(":")) {
     const [hoursStr, minutesStr] = normalized.split(":");
-    hours = Number.parseInt(hoursStr, 10);
-    minutes = Number.parseInt(minutesStr, 10);
+    hours = Number.parseInt(hoursStr ?? "", 10);
+    minutes = Number.parseInt(minutesStr ?? "", 10);
   } else if (/^\d{3,4}$/.test(normalized)) {
     hours = Number.parseInt(normalized.slice(0, -2), 10);
     minutes = Number.parseInt(normalized.slice(-2), 10);
@@ -1338,8 +1349,10 @@ function normalizeDate(input: string): string {
   const fallbackMatch = input.match(/(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})/);
   if (fallbackMatch) {
     const [, month, day, year] = fallbackMatch;
-    const normalizedYear = year.length === 2 ? `20${year}` : year;
-    return `${normalizedYear.padStart(4, "0")}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    if (month && day && year) {
+      const normalizedYear = year.length === 2 ? `20${year}` : year;
+      return `${normalizedYear.padStart(4, "0")}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
   }
 
   return "";
