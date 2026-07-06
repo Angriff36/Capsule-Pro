@@ -396,6 +396,30 @@ const baseConfig: NextConfig = withToolbar(
         destination: "/events/:eventId/battle-board",
         permanent: false,
       },
+      // Breadcrumb-generated ancestor paths with no index page of their own —
+      // send them to the surface where that list actually lives.
+      {
+        source: "/kitchen/ingredients",
+        destination: "/kitchen/recipes?tab=ingredients",
+        permanent: false,
+      },
+      {
+        source: "/inventory/suppliers",
+        destination: "/inventory/items",
+        permanent: false,
+      },
+      {
+        source: "/staff/mobile",
+        destination: "/staff/mobile/timeclock",
+        permanent: false,
+      },
+      {
+        // A template's "detail" view is its edit page. UUID-shaped ids only,
+        // so /crm/proposals/templates/new still resolves to the real page.
+        source: "/crm/proposals/templates/:id([0-9a-fA-F-]{36})",
+        destination: "/crm/proposals/templates/:id/edit",
+        permanent: false,
+      },
     ],
     rewrites,
     async headers() {
