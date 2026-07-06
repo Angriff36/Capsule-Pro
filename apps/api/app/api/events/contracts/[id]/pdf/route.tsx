@@ -2,7 +2,7 @@ import type { DocumentProps } from "@react-pdf/renderer";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
-import { ContractPDF } from "@repo/pdf";
+import { ContractPDF, type ContractPDFData } from "@repo/pdf";
 import { type NextRequest, NextResponse } from "next/server";
 import type React from "react";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -179,10 +179,17 @@ function convertToBase64(uint8Array: Uint8Array): string {
   return btoa(binary);
 }
 
-function prepareContractData(contract: Contract) {
+// The template consumes ContractPDFData (flat strings). Passing structured
+// address objects here crashes @react-pdf when it tries to render them as
+// text children, so everything is flattened to strings before rendering.
+
+function formatAddress(parts: Array<string | null | undefined>): string {
+  return parts.filter(Boolean).join(", ");
+}
+
+function prepareContractData(contract: Contract): ContractPDFData["contract"] {
   return {
     id: contract.id,
-    contractNumber: contract.contractNumber || undefined,
     title: contract.title,
     status: contract.status,
     notes: contract.notes || undefined,
@@ -191,71 +198,59 @@ function prepareContractData(contract: Contract) {
   };
 }
 
-function prepareEventData(event: EventData | null) {
+function prepareEventData(
+  event: EventData | null,
+  fallbackDate: Date
+): ContractPDFData["event"] {
   if (!event) {
-    return;
+    return { id: "", name: "Not specified", date: fallbackDate };
   }
 
   const venueName =
-    event.venue?.name ||
-    event.location?.name ||
-    event.venueName ||
-    "Not specified";
-
-  const hasVenueOrLocation = event.venue || event.location;
-  const venueAddress = hasVenueOrLocation
-    ? {
-        addressLine1: event.venue?.addressLine1 || event.location?.addressLine1,
-        addressLine2: event.venue?.addressLine2 || event.location?.addressLine2,
-        city: event.venue?.city || event.location?.city,
-        stateProvince: event.venue?.stateProvince || event.location?.state,
-        postalCode: event.venue?.postalCode || event.location?.postalCode,
-        countryCode: event.venue?.countryCode || event.location?.country,
-      }
-    : event.venueAddress || undefined;
+    event.venue?.name || event.location?.name || event.venueName || "";
+  const venueAddress =
+    formatAddress([
+      event.venue?.addressLine1 ?? event.location?.addressLine1,
+      event.venue?.addressLine2 ?? event.location?.addressLine2,
+      event.venue?.city ?? event.location?.city,
+      event.venue?.stateProvince ?? event.location?.state,
+      event.venue?.postalCode ?? event.location?.postalCode,
+    ]) ||
+    event.venueAddress ||
+    "";
+  const venue = [venueName, venueAddress].filter(Boolean).join(" — ");
 
   return {
     id: event.id,
-    title: event.title,
-    eventNumber: event.eventNumber,
-    eventDate: event.eventDate,
-    eventType: event.eventType,
-    guestCount: event.guestCount,
-    venueName,
-    venueAddress,
+    name: event.title,
+    date: event.eventDate ?? fallbackDate,
+    venue: venue || undefined,
   };
 }
 
-function prepareClientData(client: ClientData | null) {
+function prepareClientData(
+  client: ClientData | null
+): ContractPDFData["client"] {
   if (!client) {
     return;
   }
 
-  return {
-    id: client.id,
-    companyName: client.companyName,
-    firstName: client.firstName,
-    lastName: client.lastName,
-    email: client.email,
-    phone: client.phone,
-    address: {
-      addressLine1: client.addressLine1,
-      addressLine2: client.addressLine2,
-      city: client.city,
-      stateProvince: client.stateProvince,
-      postalCode: client.postalCode,
-      countryCode: client.countryCode,
-    },
-  };
-}
+  const personName = [client.firstName, client.lastName]
+    .filter(Boolean)
+    .join(" ");
 
-function prepareSignatureData(signature: Signature) {
   return {
-    id: signature.id,
-    signerName: signature.signerName,
-    signerEmail: signature.signerEmail,
-    signedAt: signature.signedAt,
-    signatureData: signature.signatureData,
+    name: client.companyName || personName || "Client",
+    email: client.email ?? undefined,
+    phone: client.phone ?? undefined,
+    address:
+      formatAddress([
+        client.addressLine1,
+        client.addressLine2,
+        client.city,
+        client.stateProvince,
+        client.postalCode,
+      ]) || undefined,
   };
 }
 
@@ -263,12 +258,20 @@ function preparePdfData(
   contract: Contract,
   user: UserData,
   defaultTerms: string[]
-) {
+): ContractPDFData {
   return {
     contract: prepareContractData(contract),
-    event: prepareEventData(contract.event),
+    event: prepareEventData(contract.event, contract.createdAt),
     client: prepareClientData(contract.client),
-    signatures: contract.contractSignatures.map(prepareSignatureData),
+    // The template renders "Signed: <date>" per row — only signed rows belong.
+    signatures: contract.contractSignatures
+      .filter((signature) => signature.signedAt !== null)
+      .map((signature) => ({
+        id: signature.id,
+        signerName: signature.signerName ?? "Unknown signer",
+        signerEmail: signature.signerEmail ?? "",
+        signedAt: signature.signedAt as Date,
+      })),
     terms: defaultTerms,
     metadata: {
       generatedAt: new Date(),
@@ -378,8 +381,9 @@ export async function GET(
 
     const pdfData = preparePdfData(contract, user, defaultTerms);
 
-    // @ts-expect-error - React-PDF renderer needs proper types
-    const pdfComponent = <ContractPDF data={pdfData} />;
+    const pdfComponent = (
+      <ContractPDF data={pdfData} />
+    ) as React.ReactElement<DocumentProps>;
 
     const url = new URL(request.url);
     const shouldDownload = url.searchParams.get("download") === "true";

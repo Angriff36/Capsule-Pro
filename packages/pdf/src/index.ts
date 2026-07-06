@@ -6,6 +6,7 @@ export { PackingListPDF } from "./templates/packing-list";
 export { PrepListPDF } from "./templates/prep-list";
 export { ProposalPDF } from "./templates/proposal";
 export type {
+  ContractPDFData,
   EventDetailPDFData,
   PackingListPDFData,
   PDFConfig,

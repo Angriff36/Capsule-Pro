@@ -49,7 +49,7 @@ async function fetchShipmentData(tenantId: string, shipmentId: string) {
         select: {
           id: true,
           name: true,
-          contact_person: true,
+          contactPerson: true,
           email: true,
           phone: true,
         },
@@ -61,7 +61,7 @@ async function fetchShipmentData(tenantId: string, shipmentId: string) {
           addressLine1: true,
           addressLine2: true,
           city: true,
-          stateProvince: true,
+          state: true,
           postalCode: true,
         },
       },
@@ -101,7 +101,7 @@ interface ShipmentData {
     addressLine1: string | null;
     addressLine2: string | null;
     city: string | null;
-    stateProvince: string | null;
+    state: string | null;
     postalCode: string | null;
   } | null;
   notes: string | null;
@@ -113,7 +113,7 @@ interface ShipmentData {
   status: string;
   supplier: {
     name: string;
-    contact_person: string | null;
+    contactPerson: string | null;
     email: string | null;
     phone: string | null;
   } | null;
@@ -132,7 +132,7 @@ function buildFromAddress(shipment: ShipmentData): string | undefined {
   if (shipment.supplier) {
     return buildLocationAddress(
       [
-        shipment.supplier.contact_person,
+        shipment.supplier.contactPerson,
         shipment.supplier.email,
         shipment.supplier.phone,
       ],
@@ -145,7 +145,7 @@ function buildFromAddress(shipment: ShipmentData): string | undefined {
         shipment.location.addressLine1,
         shipment.location.addressLine2,
         shipment.location.city,
-        shipment.location.stateProvince,
+        shipment.location.state,
         shipment.location.postalCode,
       ],
       ", "
@@ -164,7 +164,7 @@ function buildToAddress(shipment: ShipmentData): string | undefined {
         shipment.location.addressLine1,
         shipment.location.addressLine2,
         shipment.location.city,
-        shipment.location.stateProvince,
+        shipment.location.state,
         shipment.location.postalCode,
       ],
       ", "
