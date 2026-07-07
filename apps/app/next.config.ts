@@ -420,6 +420,17 @@ const baseConfig: NextConfig = withToolbar(
         destination: "/crm/proposals/templates/:id/edit",
         permanent: false,
       },
+      {
+        // Event-tree moved from /command-board to /events/tree (taxonomy reorg).
+        source: "/command-board",
+        destination: "/events/tree",
+        permanent: true,
+      },
+      {
+        source: "/command-board/:path*",
+        destination: "/events/tree/:path*",
+        permanent: true,
+      },
     ],
     rewrites,
     async headers() {

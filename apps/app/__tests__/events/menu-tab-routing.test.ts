@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { normalizeMenuTab } from "../../app/(authenticated)/events/[eventId]/event-details-client/menu-tab-utils";
-import { getEventMenuDishesHref } from "../../app/(authenticated)/kitchen/prep-lists/navigation";
+import { normalizeMenuTab } from "../../app/(authenticated)/(events)/events/[eventId]/event-details-client/menu-tab-utils";
+import { getEventMenuDishesHref } from "../../app/(authenticated)/(operations)/kitchen/prep-lists/navigation";
 
 describe("menu tab routing", () => {
   it("builds prep-list CTA href to event menu dishes tab", () => {

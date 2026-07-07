@@ -13,7 +13,7 @@ vi.mock("vega-embed", () => ({
 import {
   barChartSpec,
   VegaChart,
-} from "../../../app/(authenticated)/analytics/sales/components/vega-chart";
+} from "../../../app/(authenticated)/(insights)/analytics/sales/components/vega-chart";
 
 const SAMPLE_DATA = [
   { label: "Wedding", value: 5000 },

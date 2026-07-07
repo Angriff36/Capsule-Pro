@@ -6,7 +6,7 @@ import {
   parseWeekOffset,
   statusBadgeVariants,
   statusLabels,
-} from "../app/(authenticated)/administrative/lib/validation";
+} from "../app/(authenticated)/(administrative)/administrative/lib/validation";
 import { InvariantError } from "../app/lib/invariant";
 
 describe("getEventValidationStatus", () => {

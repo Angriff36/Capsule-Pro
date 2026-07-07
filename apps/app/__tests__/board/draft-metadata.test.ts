@@ -3,7 +3,7 @@ import {
   type DraftEnvelope,
   parseDraftEnvelope,
   writeDraftEnvelope,
-} from "@/app/(authenticated)/events/[eventId]/board/draft-metadata";
+} from "@/app/(authenticated)/(events)/events/[eventId]/board/draft-metadata";
 
 const staffDraft: DraftEnvelope = {
   draftAction: {

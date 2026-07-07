@@ -38,7 +38,7 @@ import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
-import { createFacility } from "../../app/(authenticated)/facilities/actions";
+import { createFacility } from "../../app/(authenticated)/(operations)/facilities/actions";
 
 const runCommand = runManifestCommand as ReturnType<typeof vi.fn>;
 const requireUser = requireCurrentUser as ReturnType<typeof vi.fn>;

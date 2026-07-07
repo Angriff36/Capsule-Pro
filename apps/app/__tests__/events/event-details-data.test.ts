@@ -30,7 +30,7 @@ vi.mock("@repo/database", () => ({
   },
 }));
 
-import { getEventPrepLists } from "../../app/(authenticated)/events/[eventId]/event-details-data";
+import { getEventPrepLists } from "../../app/(authenticated)/(events)/events/[eventId]/event-details-data";
 
 interface SqlMock {
   strings: TemplateStringsArray;

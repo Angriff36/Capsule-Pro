@@ -40,7 +40,7 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { SignaturePad } from "@/app/(authenticated)/events/contracts/components/signature-pad";
+import { SignaturePad } from "@/app/(authenticated)/(events)/events/contracts/components/signature-pad";
 
 interface ContractSigningClientProps {
   client: {

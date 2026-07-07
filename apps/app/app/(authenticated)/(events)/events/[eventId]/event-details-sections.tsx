@@ -1,0 +1,1250 @@
+"use client";
+
+import {
+  CollapsibleSectionBlock,
+  SectionHeaderBlock,
+} from "@repo/design-system/components/blocks/collapsible-section-block";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import {
+  AlertTriangleIcon,
+  ClipboardListIcon,
+  DollarSignIcon,
+  FileTextIcon,
+  Lightbulb,
+  PlusIcon,
+  SparklesIcon,
+  TrashIcon,
+  UtensilsIcon,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { getBudgetStatusLabel, getVarianceColor } from "../../../../lib/budgets";
+import { SuggestionsPanel } from "../../../(operations)/kitchen/components/suggestions-panel";
+import { attachEventImport } from "../actions";
+import type { GeneratedEventSummary } from "../actions/event-summary";
+import type { TaskBreakdown } from "../actions/task-breakdown";
+import {
+  EventSummaryDisplay,
+  EventSummarySkeleton,
+} from "../components/event-summary-display";
+import {
+  TaskBreakdownDisplay,
+  TaskBreakdownSkeleton,
+} from "../components/task-breakdown-display";
+import type { PrepTaskSummaryClient } from "./prep-task-contract";
+
+export interface EventBudgetForDisplay {
+  created_at: Date;
+  deleted_at: Date | null;
+  event_id: string | null;
+  id: string;
+  notes: string | null;
+  status: "draft" | "approved" | "finalized" | null;
+  tenantId: string;
+  total_actual_amount: number | null;
+  total_budget_amount: number | null;
+  updated_at: Date;
+  variance_amount: number | null;
+  variance_percentage: number | null;
+  version: number | null;
+}
+
+export interface EventDishRow {
+  category: string | null;
+  course: string | null;
+  dietary_tags: string[] | null;
+  dish_id: string;
+  link_id: string;
+  name: string;
+  quantity_servings: number;
+  recipe_name: string | null;
+}
+
+export interface AvailableDishOption {
+  category: string | null;
+  id: string;
+  name: string;
+  recipe_name: string | null;
+}
+
+const MISSING_FIELD_LABELS: Record<string, string> = {
+  client: "Event title",
+  eventDate: "Event date",
+  venueName: "Venue",
+  eventType: "Event type",
+  headcount: "Guest count",
+  menuItems: "Menu items",
+};
+
+interface MissingFieldsBannerProps {
+  missingFields: string[];
+  onUpdateDetails: () => void;
+}
+
+export function MissingFieldsBanner({
+  missingFields,
+  onUpdateDetails,
+}: MissingFieldsBannerProps) {
+  if (missingFields.length === 0) {
+    return null;
+  }
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border border-hairline bg-muted/20 px-4 py-3 text-foreground">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-start gap-2">
+          <AlertTriangleIcon className="mt-0.5 size-4 text-amber-600" />
+          <div>
+            <div className="font-semibold text-sm">
+              Event needs more details
+            </div>
+            <div className="text-amber-800 text-xs">
+              Missing:{" "}
+              {missingFields
+                .map((f) => MISSING_FIELD_LABELS[f] ?? f)
+                .join(", ")}
+            </div>
+          </div>
+        </div>
+        <Button onClick={onUpdateDetails} size="sm" variant="outline">
+          Update details
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+interface DishVariantDialogProps {
+  onCreate: () => void;
+  onOpenChange: (open: boolean) => void;
+  onVariantNameChange: (value: string) => void;
+  open: boolean;
+  sourceName: string;
+  variantName: string;
+}
+
+export function DishVariantDialog({
+  open,
+  onOpenChange,
+  sourceName,
+  variantName,
+  onVariantNameChange,
+  onCreate,
+}: DishVariantDialogProps) {
+  return (
+    <Dialog onOpenChange={onOpenChange} open={open}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create dish variant</DialogTitle>
+          <DialogDescription>
+            Create a new dish based on &quot;{sourceName}&quot; and replace it
+            for this event.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3 py-4">
+          <label
+            className="flex flex-col gap-2 font-medium text-sm"
+            htmlFor="variant-name"
+          >
+            Variant name
+            <Input
+              id="variant-name"
+              onChange={(e) => onVariantNameChange(e.target.value)}
+              placeholder="Enter a new dish name"
+              value={variantName}
+            />
+          </label>
+        </div>
+        <DialogFooter>
+          <Button onClick={() => onOpenChange(false)} variant="outline">
+            Cancel
+          </Button>
+          <Button disabled={variantName.trim().length === 0} onClick={onCreate}>
+            Create variant
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export interface RecipeForDishCreation {
+  category: string | null;
+  id: string;
+  name: string;
+}
+
+interface MenuDishesSectionProps {
+  availableDishes: AvailableDishOption[];
+  eventDishes: EventDishRow[];
+  isCreatingDish?: boolean;
+  isLoading: boolean;
+  onAddDish: () => void;
+  onAddSuggestedDish?: (suggestionName: string) => void;
+  onCreateDishInline?: (
+    name: string,
+    recipeId: string,
+    category?: string,
+    course?: string
+  ) => Promise<void>;
+  onOpenVariantDialog: (linkId: string, name: string) => void;
+  onRemoveDish: (linkId: string) => void;
+  onSelectedCourseChange: (course: string) => void;
+  onSelectedDishIdChange: (id: string) => void;
+  onShowAddDialogChange: (open: boolean) => void;
+  // Inline dish creation
+  recipes?: RecipeForDishCreation[];
+  selectedCourse: string;
+  selectedDishId: string;
+  showAddDialog: boolean;
+  // When set, the dialog opens on the Create tab with this name pre-filled
+  // (template quick-add flow).
+  suggestedDishName?: string;
+  // Template suggestions - pre-computed with added status
+  templateSuggestions?: Array<{ name: string; added: boolean }>;
+}
+
+export function MenuDishesSection({
+  eventDishes,
+  availableDishes,
+  isLoading,
+  showAddDialog,
+  onShowAddDialogChange,
+  selectedDishId,
+  onSelectedDishIdChange,
+  selectedCourse,
+  onSelectedCourseChange,
+  onAddDish,
+  onRemoveDish,
+  onOpenVariantDialog,
+  recipes = [],
+  onCreateDishInline,
+  isCreatingDish = false,
+  templateSuggestions = [],
+  onAddSuggestedDish,
+  suggestedDishName,
+}: MenuDishesSectionProps) {
+  const COURSES = [
+    "appetizer",
+    "soup",
+    "salad",
+    "entree",
+    "dessert",
+    "beverage",
+    "other",
+  ] as const;
+
+  // Inline dish creation state
+  const [activeTab, setActiveTab] = useState<"select" | "create">(
+    availableDishes.length === 0 && recipes.length > 0 ? "create" : "select"
+  );
+  const [newDishName, setNewDishName] = useState("");
+  const [newDishRecipeId, setNewDishRecipeId] = useState("");
+  const [newDishCategory, setNewDishCategory] = useState("");
+  const [newDishCourse, setNewDishCourse] = useState("");
+
+  // Template quick-add: when the dialog opens with a suggested name, jump to
+  // the Create tab pre-filled so only a recipe needs to be picked.
+  useEffect(() => {
+    if (showAddDialog && suggestedDishName) {
+      setActiveTab("create");
+      setNewDishName(suggestedDishName);
+    }
+  }, [showAddDialog, suggestedDishName]);
+
+  // Delete confirmation state
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
+  const [dishToRemove, setDishToRemove] = useState<string | null>(null);
+
+  const confirmRemoveDish = (linkId: string) => {
+    setDishToRemove(linkId);
+    setRemoveDialogOpen(true);
+  };
+
+  const handleRemoveDish = () => {
+    if (!dishToRemove) {
+      return;
+    }
+    const linkId = dishToRemove;
+    setRemoveDialogOpen(false);
+    setDishToRemove(null);
+    onRemoveDish(linkId);
+  };
+
+  // Reset form when dialog closes
+  const handleDialogClose = (open: boolean) => {
+    if (!open) {
+      setNewDishName("");
+      setNewDishRecipeId("");
+      setNewDishCategory("");
+      setNewDishCourse("");
+      setActiveTab(
+        availableDishes.length === 0 && recipes.length > 0 ? "create" : "select"
+      );
+    }
+    onShowAddDialogChange(open);
+  };
+
+  const handleCreateDish = async () => {
+    if (!(onCreateDishInline && newDishName.trim() && newDishRecipeId)) {
+      return;
+    }
+    await onCreateDishInline(
+      newDishName.trim(),
+      newDishRecipeId,
+      newDishCategory.trim() || undefined,
+      newDishCourse || selectedCourse || undefined
+    );
+    // Reset form on success
+    setNewDishName("");
+    setNewDishRecipeId("");
+    setNewDishCategory("");
+    setNewDishCourse("");
+    handleDialogClose(false);
+  };
+
+  const canCreate = newDishName.trim().length > 0 && newDishRecipeId.length > 0;
+  const hasInlineCreation = onCreateDishInline && recipes.length > 0;
+
+  const addDishDialog = (
+    <Dialog onOpenChange={handleDialogClose} open={showAddDialog}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Add Dish to Event</DialogTitle>
+          <DialogDescription>
+            {hasInlineCreation
+              ? "Select an existing dish or create a new one."
+              : "Select a dish from your menu to add to this event."}
+          </DialogDescription>
+        </DialogHeader>
+
+        {hasInlineCreation && (
+          <Tabs
+            className="w-full"
+            onValueChange={(v) => setActiveTab(v as "select" | "create")}
+            value={activeTab}
+          >
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="select">Select Existing</TabsTrigger>
+              <TabsTrigger value="create">Create New</TabsTrigger>
+            </TabsList>
+
+            <TabsContent className="space-y-4 py-4" value="select">
+              <div className="space-y-2">
+                <label
+                  className="font-medium text-sm"
+                  htmlFor="add-dish-select"
+                >
+                  Dish
+                </label>
+                <Select
+                  onValueChange={onSelectedDishIdChange}
+                  value={selectedDishId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a dish" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableDishes.length === 0 ? (
+                      <div className="p-2 text-muted-foreground text-sm">
+                        No dishes available. Use &quot;Create New&quot; tab.
+                      </div>
+                    ) : (
+                      availableDishes.map((d) => (
+                        <SelectItem key={d.id} value={d.id}>
+                          {d.name}
+                          {d.category ? ` (${d.category})` : ""}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="font-medium text-sm" htmlFor="select-course">
+                  Course (optional)
+                </label>
+                <Select
+                  onValueChange={onSelectedCourseChange}
+                  value={selectedCourse}
+                >
+                  <SelectTrigger aria-label="Select course" id="select-course">
+                    <SelectValue placeholder="Select course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COURSES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c.charAt(0).toUpperCase() + c.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <DialogFooter>
+                <Button
+                  onClick={() => handleDialogClose(false)}
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+                <Button disabled={!selectedDishId} onClick={onAddDish}>
+                  Add Dish
+                </Button>
+              </DialogFooter>
+            </TabsContent>
+
+            <TabsContent className="space-y-4 py-4" value="create">
+              <div className="space-y-2">
+                <label className="font-medium text-sm" htmlFor="new-dish-name">
+                  Dish Name <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  id="new-dish-name"
+                  onChange={(e) => setNewDishName(e.target.value)}
+                  placeholder="e.g., Margherita Pizza"
+                  value={newDishName}
+                />
+              </div>
+              <div className="space-y-2">
+                <label
+                  className="font-medium text-sm"
+                  htmlFor="new-dish-recipe"
+                >
+                  Recipe <span className="text-destructive">*</span>
+                </label>
+                <Select
+                  onValueChange={setNewDishRecipeId}
+                  value={newDishRecipeId}
+                >
+                  <SelectTrigger id="new-dish-recipe">
+                    <SelectValue placeholder="Select a recipe" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {recipes.map((r) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {r.name}
+                        {r.category ? ` (${r.category})` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label
+                    className="font-medium text-sm"
+                    htmlFor="new-dish-category"
+                  >
+                    Category
+                  </label>
+                  <Input
+                    id="new-dish-category"
+                    onChange={(e) => setNewDishCategory(e.target.value)}
+                    placeholder="e.g., Main"
+                    value={newDishCategory}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label
+                    className="font-medium text-sm"
+                    htmlFor="new-dish-course"
+                  >
+                    Course
+                  </label>
+                  <Select
+                    onValueChange={setNewDishCourse}
+                    value={newDishCourse}
+                  >
+                    <SelectTrigger id="new-dish-course">
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COURSES.map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c.charAt(0).toUpperCase() + c.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  onClick={() => handleDialogClose(false)}
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  disabled={!canCreate || isCreatingDish}
+                  onClick={handleCreateDish}
+                >
+                  {isCreatingDish ? "Creating..." : "Create & Add"}
+                </Button>
+              </DialogFooter>
+            </TabsContent>
+          </Tabs>
+        )}
+
+        {!hasInlineCreation && (
+          <>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label
+                  className="font-medium text-sm"
+                  htmlFor="add-dish-select"
+                >
+                  Dish
+                </label>
+                <Select
+                  onValueChange={onSelectedDishIdChange}
+                  value={selectedDishId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a dish" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableDishes.length === 0 ? (
+                      <div className="p-2 text-muted-foreground text-sm">
+                        No dishes available. Create dishes in Kitchen Recipes
+                        first.
+                      </div>
+                    ) : (
+                      availableDishes.map((d) => (
+                        <SelectItem key={d.id} value={d.id}>
+                          {d.name}
+                          {d.category ? ` (${d.category})` : ""}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label
+                  className="font-medium text-sm"
+                  htmlFor="add-course-select"
+                >
+                  Course (optional)
+                </label>
+                <Select
+                  onValueChange={onSelectedCourseChange}
+                  value={selectedCourse}
+                >
+                  <SelectTrigger
+                    aria-label="Select course"
+                    id="add-course-select"
+                  >
+                    <SelectValue placeholder="Select course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COURSES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c.charAt(0).toUpperCase() + c.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                onClick={() => handleDialogClose(false)}
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button disabled={!selectedDishId} onClick={onAddDish}>
+                Add Dish
+              </Button>
+            </DialogFooter>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+
+  return (
+    <>
+      {/* Trigger button in headerActions — simple button, no Dialog wrapper */}
+      <CollapsibleSectionBlock
+        defaultOpen
+        emptyState={{
+          icon: UtensilsIcon,
+          title: "No dishes linked to this event",
+          description:
+            "Add dishes so they can be used for prep lists and task generation",
+          actionLabel: "Add First Dish",
+          onAction: () => onShowAddDialogChange(true),
+        }}
+        headerActions={
+          <Button
+            onClick={() => onShowAddDialogChange(true)}
+            size="sm"
+            variant="outline"
+          >
+            <PlusIcon className="mr-2 size-3" />
+            Add Dish
+          </Button>
+        }
+        icon={UtensilsIcon}
+        iconColor="text-emerald-500"
+        id="dishes"
+        showEmptyState={!isLoading && eventDishes.length === 0}
+        subtitle={`${eventDishes.length} dishes linked to this event`}
+        title="Menu / Dishes"
+        triggerText="View dishes"
+      >
+        {isLoading && (
+          <div className="flex items-center justify-center py-8">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        )}
+
+        {/* Template Suggestions Section */}
+        {!isLoading && templateSuggestions.length > 0 && (
+          <div className="mb-4 rounded-lg border border-primary/30 bg-primary/5 p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <SparklesIcon className="size-4 text-primary" />
+              <span className="font-medium text-sm">
+                Suggested Dishes from Template
+              </span>
+            </div>
+            <p className="mb-3 text-muted-foreground text-xs">
+              Quick-add suggestions based on the event template. Click one to
+              open the create form with the name pre-filled — pick a recipe to
+              finish.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {templateSuggestions.map((suggestion, index) => (
+                <Button
+                  className={suggestion.added ? "opacity-50" : ""}
+                  disabled={suggestion.added || !onAddSuggestedDish}
+                  key={index}
+                  onClick={() => onAddSuggestedDish?.(suggestion.name)}
+                  size="sm"
+                  variant={suggestion.added ? "secondary" : "outline"}
+                >
+                  {suggestion.added ? (
+                    <>
+                      <span className="mr-1">✓</span>
+                      {suggestion.name}
+                    </>
+                  ) : (
+                    <>
+                      <PlusIcon className="mr-1 size-3" />
+                      {suggestion.name}
+                    </>
+                  )}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!isLoading && eventDishes.length > 0 && (
+          <div className="grid gap-3">
+            {eventDishes.map((dish) => (
+              <div
+                className="flex flex-wrap items-center justify-between gap-4 rounded-lg border px-4 py-3"
+                key={dish.link_id}
+              >
+                <div className="flex flex-1 flex-col">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{dish.name}</span>
+                    {dish.course && (
+                      <Badge className="text-xs" variant="secondary">
+                        {dish.course}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground text-xs">
+                    {dish.recipe_name ? (
+                      <span>Recipe: {dish.recipe_name}</span>
+                    ) : (
+                      <span className="text-amber-600">No recipe linked</span>
+                    )}
+                    {(dish.dietary_tags ?? []).length > 0 && (
+                      <Badge className="text-xs" variant="outline">
+                        {(dish.dietary_tags ?? []).join(", ")}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground text-xs">
+                    {dish.quantity_servings} servings
+                  </span>
+                  <Button
+                    onClick={() => onOpenVariantDialog(dish.link_id, dish.name)}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Create variant
+                  </Button>
+                  <Button
+                    className="size-8 text-muted-foreground hover:text-destructive"
+                    onClick={() => confirmRemoveDish(dish.link_id)}
+                    size="icon"
+                    variant="ghost"
+                  >
+                    <TrashIcon className="size-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <AlertDialog onOpenChange={setRemoveDialogOpen} open={removeDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove dish from event?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will unlink this dish from the event menu. The dish itself
+                will not be deleted.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleRemoveDish}>
+                Remove
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </CollapsibleSectionBlock>
+      {/* Dialog rendered OUTSIDE the collapsible to avoid portal blocking */}
+      {addDishDialog}
+    </>
+  );
+}
+
+interface BudgetSectionProps {
+  budget: EventBudgetForDisplay | null;
+  onCreateBudget: () => void;
+  onViewBudget: (id: string) => void;
+}
+
+export function BudgetSection({
+  budget,
+  onViewBudget,
+  onCreateBudget,
+}: BudgetSectionProps) {
+  const currencyFormatter = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  });
+
+  return (
+    <Card className="border-border/70" tone="canvas">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <DollarSignIcon className="size-4 text-emerald-600" />
+              Budget
+            </CardTitle>
+            <p className="mt-1 text-foreground/75 text-xs">
+              {budget?.status
+                ? `${getBudgetStatusLabel(budget.status)} - v${budget.version ?? 1}`
+                : "No budget configured"}
+            </p>
+          </div>
+          {budget ? (
+            <Button
+              onClick={() => onViewBudget(budget.id)}
+              size="sm"
+              variant="outline"
+            >
+              View
+            </Button>
+          ) : null}
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        {budget ? (
+          <div className="grid gap-2">
+            <div className="grid gap-2 sm:grid-cols-3">
+              <div className="rounded-lg border p-3">
+                <div className="text-foreground/70 text-xs">Total budgeted</div>
+                <div className="font-semibold text-base">
+                  {currencyFormatter.format(budget.total_budget_amount ?? 0)}
+                </div>
+              </div>
+              <div className="rounded-lg border p-3">
+                <div className="text-foreground/70 text-xs">Total actual</div>
+                <div className="font-semibold text-base">
+                  {currencyFormatter.format(budget.total_actual_amount ?? 0)}
+                </div>
+              </div>
+              <div className="rounded-lg border p-3">
+                <div className="text-foreground/70 text-xs">Variance</div>
+                <div
+                  className={`font-semibold text-base ${getVarianceColor(budget.variance_amount ?? 0)}`}
+                >
+                  {currencyFormatter.format(budget.variance_amount ?? 0)}
+                </div>
+              </div>
+            </div>
+            <Button
+              onClick={() => onViewBudget(budget.id)}
+              size="sm"
+              variant="outline"
+            >
+              Open budget workspace
+            </Button>
+          </div>
+        ) : (
+          <div className="rounded-lg border border-dashed bg-muted/20 p-4">
+            <p className="font-medium text-sm">No budget configured yet</p>
+            <p className="mt-1 text-foreground/70 text-sm">
+              Create a budget to track planned vs actual event spend.
+            </p>
+            <Button className="mt-3" onClick={onCreateBudget} size="sm">
+              Create budget
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+interface TaskBreakdownSectionProps {
+  breakdown: TaskBreakdown | null;
+  generationProgress: string;
+  isGenerating: boolean;
+  onCancelGeneration?: () => void;
+  onExport: () => void;
+  onOpenGenerateModal: () => void;
+  onRegenerate: () => void;
+  onSave: () => void;
+}
+
+export function TaskBreakdownSection({
+  breakdown,
+  isGenerating,
+  generationProgress,
+  onOpenGenerateModal,
+  onCancelGeneration,
+  onExport,
+  onRegenerate,
+  onSave,
+}: TaskBreakdownSectionProps) {
+  const showEmptyState = breakdown === null && !isGenerating;
+
+  return (
+    <>
+      <SectionHeaderBlock
+        icon={ClipboardListIcon}
+        iconColor="text-sky-700"
+        title="Task Breakdown"
+      />
+
+      {breakdown && (
+        <TaskBreakdownDisplay
+          breakdown={breakdown}
+          generationProgress={generationProgress}
+          isGenerating={isGenerating}
+          onCancelGeneration={onCancelGeneration}
+          onExport={onExport}
+          onRegenerate={onRegenerate}
+          onSave={onSave}
+        />
+      )}
+
+      {showEmptyState && (
+        <div className="rounded-xl border border-dashed bg-muted/15 p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="font-medium text-base">No task plan yet</h3>
+              <p className="text-foreground/70 text-sm">
+                Build a prep, setup, and cleanup plan from this event&apos;s
+                details and historical patterns.
+              </p>
+            </div>
+            <Button onClick={onOpenGenerateModal}>
+              Generate task breakdown
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {isGenerating && !breakdown && <TaskBreakdownSkeleton />}
+    </>
+  );
+}
+
+interface ExecutiveSummarySectionProps {
+  eventId: string;
+  eventTitle: string;
+  isLoading: boolean;
+  onDelete: () => Promise<void>;
+  onGenerate: () => Promise<GeneratedEventSummary>;
+  summary: GeneratedEventSummary | null | undefined;
+}
+
+export function ExecutiveSummarySection({
+  eventId,
+  eventTitle,
+  summary,
+  isLoading,
+  onGenerate,
+  onDelete,
+}: ExecutiveSummarySectionProps) {
+  return (
+    <>
+      <SectionHeaderBlock
+        icon={FileTextIcon}
+        iconColor="text-amber-700"
+        title="Executive Summary"
+      />
+
+      {isLoading ? (
+        <EventSummarySkeleton />
+      ) : (
+        <EventSummaryDisplay
+          eventId={eventId}
+          eventTitle={eventTitle}
+          initialSummary={summary}
+          onDelete={onDelete}
+          onGenerate={onGenerate}
+        />
+      )}
+    </>
+  );
+}
+
+import type { SuggestedAction } from "../../../(operations)/kitchen/lib/suggestions-types";
+
+interface SuggestionsSectionProps {
+  isLoading: boolean;
+  onAction: (suggestion: SuggestedAction) => void;
+  onDismiss: (id: string) => void;
+  onRefresh: () => void;
+  onShowSuggestionsChange: (show: boolean) => void;
+  showSuggestions: boolean;
+  suggestions: SuggestedAction[];
+}
+
+export function SuggestionsSection({
+  showSuggestions,
+  onShowSuggestionsChange,
+  suggestions,
+  isLoading,
+  onRefresh,
+  onDismiss,
+  onAction,
+}: SuggestionsSectionProps) {
+  const suggestionCount = suggestions.length;
+  const hasSuggestions = suggestionCount > 0;
+  const suggestionLabel = hasSuggestions
+    ? `${suggestionCount} recommendation${suggestionCount === 1 ? "" : "s"} ready`
+    : "No recommendations generated";
+
+  return (
+    <Card className="border-border/70" tone="canvas">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Lightbulb className="size-4 text-amber-600" />
+              AI Recommendations
+            </CardTitle>
+            <p className="mt-1 text-foreground/75 text-xs">{suggestionLabel}</p>
+          </div>
+          <Button
+            onClick={() => onShowSuggestionsChange(!showSuggestions)}
+            size="sm"
+            variant={showSuggestions ? "default" : "outline"}
+          >
+            {showSuggestions ? "Hide" : "View"}
+            {hasSuggestions ? (
+              <Badge className="ml-2" variant="secondary">
+                {suggestionCount}
+              </Badge>
+            ) : null}
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        {showSuggestions ? (
+          <SuggestionsPanel
+            isLoading={isLoading}
+            onAction={onAction}
+            onClose={() => onShowSuggestionsChange(false)}
+            onDismiss={onDismiss}
+            onRefresh={onRefresh}
+            suggestions={suggestions}
+          />
+        ) : (
+          <div className="rounded-lg border border-dashed bg-muted/20 p-4">
+            <p className="font-medium text-sm">
+              {hasSuggestions
+                ? "Recommendations are ready to review"
+                : "No recommendations available yet"}
+            </p>
+            <p className="mt-1 text-foreground/70 text-sm">
+              {hasSuggestions
+                ? "Open this panel to triage suggestions and apply actions."
+                : "Generate insights from event activity to populate recommendations."}
+            </p>
+            <div className="mt-3 flex gap-2">
+              <Button
+                onClick={() => onShowSuggestionsChange(true)}
+                size="sm"
+                variant={hasSuggestions ? "default" : "outline"}
+              >
+                {hasSuggestions ? "Review recommendations" : "Open panel"}
+              </Button>
+              {hasSuggestions ? null : (
+                <Button onClick={onRefresh} size="sm" variant="ghost">
+                  Refresh
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+interface SourceDocumentsSectionProps {
+  eventId: string;
+  fileCount?: number;
+}
+
+export function SourceDocumentsSection({
+  eventId,
+  fileCount = 0,
+}: SourceDocumentsSectionProps) {
+  return (
+    <CollapsibleSectionBlock
+      icon={FileTextIcon}
+      subtitle={`${fileCount} files attached`}
+      title="Source documents"
+      triggerText="View files"
+    >
+      <form
+        action={async (formData: FormData) => {
+          formData.append("eventId", eventId);
+          return attachEventImport(formData);
+        }}
+        className="flex flex-col gap-3"
+      >
+        <div className="flex flex-wrap items-center gap-3">
+          <input
+            accept=".csv,.pdf,image/*"
+            className="text-sm"
+            name="file"
+            type="file"
+          />
+          <Button type="submit" variant="secondary">
+            Attach file
+          </Button>
+        </div>
+      </form>
+    </CollapsibleSectionBlock>
+  );
+}
+
+import { ArrowUpRightIcon, ListChecksIcon } from "lucide-react";
+import Link from "next/link";
+
+export interface PrepListSummary {
+  batchMultiplier: number;
+  finalizedAt: Date | null;
+  generatedAt: Date;
+  id: string;
+  isActive: boolean;
+  name: string;
+  status: string;
+  totalItems: number;
+}
+
+function getPrepListStatusVariant(
+  status: string
+): "default" | "secondary" | "outline" | "destructive" {
+  switch (status) {
+    case "finalized":
+      return "default";
+    case "completed":
+      return "secondary";
+    case "cancelled":
+      return "destructive";
+    default:
+      return "outline"; // draft
+  }
+}
+
+interface PrepListsSectionProps {
+  prepLists: PrepListSummary[];
+}
+
+export function PrepListsSection({ prepLists }: PrepListsSectionProps) {
+  if (prepLists.length === 0) {
+    return null;
+  }
+
+  return (
+    <Card className="border-border/70" tone="canvas">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <ListChecksIcon className="size-4 text-emerald-600" />
+          Prep Lists
+        </CardTitle>
+        <p className="text-foreground/75 text-xs">
+          {prepLists.length} prep list{prepLists.length === 1 ? "" : "s"} linked
+          to this event
+        </p>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="grid gap-2">
+          {prepLists.map((list) => (
+            <Link
+              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2.5 transition-colors hover:bg-muted/50"
+              href={"/kitchen/prep-lists"}
+              key={list.id}
+            >
+              <div className="flex flex-col">
+                <span className="font-medium text-sm">{list.name}</span>
+                <span className="text-foreground/70 text-xs">
+                  {list.totalItems} item{list.totalItems === 1 ? "" : "s"} ·{" "}
+                  {list.batchMultiplier}x batch
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {!list.isActive && (
+                  <span className="rounded bg-muted px-2 py-1 text-xs">
+                    Inactive
+                  </span>
+                )}
+                <Badge
+                  className="text-xs"
+                  variant={getPrepListStatusVariant(list.status)}
+                >
+                  {list.status}
+                </Badge>
+                <ArrowUpRightIcon className="size-3 text-muted-foreground" />
+              </div>
+            </Link>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+interface PrepTasksSectionProps {
+  onOpenGenerateModal: () => void;
+  prepTasks: PrepTaskSummaryClient[];
+}
+
+export function PrepTasksSection({
+  prepTasks,
+  onOpenGenerateModal,
+}: PrepTasksSectionProps) {
+  return (
+    <Card className="border-border/70" tone="canvas">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <ClipboardListIcon className="size-4 text-sky-600" />
+          Prep Tasks
+        </CardTitle>
+        <p className="text-foreground/75 text-xs">
+          {prepTasks.length} tasks linked to this event
+        </p>
+      </CardHeader>
+      <CardContent className="pt-0">
+        {prepTasks.length === 0 ? (
+          <div className="rounded-lg border border-dashed bg-muted/20 p-4">
+            <p className="font-medium text-sm">No prep tasks yet</p>
+            <p className="mt-1 text-foreground/70 text-sm">
+              Generate a task breakdown or add tasks manually.
+            </p>
+            <Button className="mt-3" onClick={onOpenGenerateModal} size="sm">
+              Generate task breakdown
+            </Button>
+          </div>
+        ) : (
+          <div className="grid gap-2">
+            {prepTasks.map((task) => (
+              <div
+                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2.5"
+                key={task.id}
+              >
+                <div className="flex flex-col">
+                  <span className="font-medium text-sm">{task.name}</span>
+                  <span className="text-foreground/70 text-xs">
+                    Due{" "}
+                    {new Date(task.dueByDate).toLocaleDateString("en-US", {
+                      dateStyle: "medium",
+                    })}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {task.isEventFinish ? (
+                    <span className="rounded bg-muted px-2 py-1 text-xs">
+                      Finish
+                    </span>
+                  ) : null}
+                  <span className="rounded bg-muted px-2 py-1 text-xs capitalize">
+                    {task.status}
+                  </span>
+                  <span className="text-foreground/70 text-xs">
+                    {task.servingsTotal ??
+                      Math.round(Number(task.quantityTotal))}
+                    {task.servingsTotal ? " servings" : ""}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// Re-export types for convenience
+export type { GeneratedEventSummary } from "../actions/event-summary";
+export type { TaskBreakdown } from "../actions/task-breakdown";

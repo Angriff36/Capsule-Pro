@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   computeBranchStatus,
   resolveTemplate,
-} from "@/app/(authenticated)/events/[eventId]/board/templates";
+} from "@/app/(authenticated)/(events)/events/[eventId]/board/templates";
 
 describe("resolveTemplate", () => {
   it("returns the plated_dinner template for its eventType", () => {

@@ -39,7 +39,7 @@ import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
-import { createLead } from "../../app/(authenticated)/marketing/leads/actions";
+import { createLead } from "../../app/(authenticated)/(sales)/marketing/leads/actions";
 
 const leadFindFirst = database.lead.findFirst as ReturnType<typeof vi.fn>;
 const clientFindFirst = database.client.findFirst as ReturnType<typeof vi.fn>;

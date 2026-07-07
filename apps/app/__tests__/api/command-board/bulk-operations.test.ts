@@ -80,7 +80,7 @@ import {
   moveCardAction,
   toggleGroupCollapseAction,
   ungroupCardsAction,
-} from "@/app/(authenticated)/command-board/actions";
+} from "@/app/(authenticated)/(events)/events/tree/actions";
 
 describe("Command Board Server Actions", () => {
   beforeEach(() => {

@@ -4,8 +4,8 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it, type Mock, vi } from "vitest";
-import type { CreateEventState } from "../../app/(authenticated)/events/actions";
-import { EventForm } from "../../app/(authenticated)/events/components/event-form";
+import type { CreateEventState } from "../../app/(authenticated)/(events)/events/actions";
+import { EventForm } from "../../app/(authenticated)/(events)/events/components/event-form";
 
 function ControlledDatePickerForm({
   initialValue,

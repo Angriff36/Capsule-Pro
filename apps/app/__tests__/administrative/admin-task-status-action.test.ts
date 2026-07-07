@@ -44,7 +44,7 @@ import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
-import { updateAdminTaskStatus } from "../../app/(authenticated)/administrative/kanban/actions";
+import { updateAdminTaskStatus } from "../../app/(authenticated)/(administrative)/administrative/kanban/actions";
 
 const runCommand = runManifestCommand as ReturnType<typeof vi.fn>;
 const requireUser = requireCurrentUser as ReturnType<typeof vi.fn>;

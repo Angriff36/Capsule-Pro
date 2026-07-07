@@ -71,7 +71,7 @@ export const modules: ModuleDefinition[] = [
         label: "Planning",
         items: [
           { title: "Battle Boards", href: "/events/battle-boards" },
-          { title: "Event boards", href: "/command-board" },
+          { title: "Event boards", href: "/events/tree" },
           { title: "Budgets", href: "/events/budgets" },
         ],
       },

@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import PayrollPage from "../../app/(authenticated)/payroll/page";
+import PayrollPage from "../../app/(authenticated)/(accounting)/payroll/page";
 
 describe("Payroll landing page", () => {
   it("renders actionable overview cards with destination links", () => {

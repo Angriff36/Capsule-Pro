@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { UpcomingMaintenanceWidget } from "../../app/(authenticated)/facilities/components/upcoming-maintenance-widget";
+import { UpcomingMaintenanceWidget } from "../../app/(authenticated)/(operations)/facilities/components/upcoming-maintenance-widget";
 
 vi.mock("@/app/lib/manifest-client.generated", () => ({
   listPreventiveMaintenanceSchedules: vi.fn().mockResolvedValue({

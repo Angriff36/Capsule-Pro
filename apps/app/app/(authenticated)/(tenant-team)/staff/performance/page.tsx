@@ -1,0 +1,783 @@
+"use client";
+
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
+import { Label } from "@repo/design-system/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
+import {
+  OperationalPageShell,
+} from "../../../components/operational-page-shell";
+import {
+  AlertTriangle,
+  Calendar,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  Plus,
+  Star,
+  Target,
+  TrendingUp,
+  User,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  listStaffMembers,
+  listStaffPerformances,
+  staffPerformanceComplete,
+  staffPerformanceCreate,
+} from "@/app/lib/manifest-client.generated";
+
+// Types matching the PerformanceReview model
+interface Employee {
+  email: string;
+  firstName: string;
+  id: string;
+  lastName: string;
+  role: string;
+}
+
+interface PerformanceReview {
+  areasForImprovement: string | null;
+  completedDate: string | null;
+  createdAt: string;
+  employeeComments: string | null;
+  employeeId: string;
+  // Joined data
+  employeeName?: string;
+  goalsNextPeriod: string | null;
+  id: string;
+  managerComments: string | null;
+  rating: number | null;
+  reviewerId: string;
+  reviewerName?: string;
+  reviewType: string;
+  scheduledDate: string;
+  status: string;
+  strengths: string | null;
+}
+
+const REVIEW_TYPE_LABELS: Record<string, string> = {
+  ANNUAL: "Annual Review",
+  SIX_MONTH: "6-Month Review",
+  COACHING: "Coaching Session",
+  PROBATION: "Probation Review",
+};
+
+const REVIEW_TYPE_COLORS: Record<string, string> = {
+  ANNUAL: "bg-muted/50 text-foreground",
+  SIX_MONTH: "bg-muted/50 text-foreground",
+  COACHING: "bg-muted/50 text-foreground",
+  PROBATION: "bg-muted/50 text-foreground",
+};
+
+interface ReviewStatusConfig {
+  label: string;
+  color: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const STATUS_CONFIG: Record<string, ReviewStatusConfig> = {
+  scheduled: {
+    label: "Scheduled",
+    color: "bg-muted/50 text-foreground",
+    icon: Calendar,
+  },
+  completed: {
+    label: "Completed",
+    color: "bg-muted/50 text-foreground",
+    icon: CheckCircle2,
+  },
+  cancelled: {
+    label: "Cancelled",
+    color: "bg-muted/50 text-foreground",
+    icon: AlertTriangle,
+  },
+};
+
+const getStatusConfig = (status: string): ReviewStatusConfig =>
+  STATUS_CONFIG[status] ?? {
+    label: status || "Unknown",
+    color: "bg-muted/50 text-foreground",
+    icon: Calendar,
+  };
+
+function RatingStars({
+  rating,
+  onChange,
+}: {
+  rating: number;
+  onChange?: (r: number) => void;
+}) {
+  const [hovered, setHovered] = useState(0);
+  return (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          className="focus:outline-none"
+          disabled={!onChange}
+          key={star}
+          onClick={() => onChange?.(star)}
+          onMouseEnter={() => setHovered(star)}
+          onMouseLeave={() => setHovered(0)}
+          type="button"
+        >
+          <Star
+            className={`h-5 w-5 ${
+              star <= (hovered || rating)
+                ? "fill-amber-400 text-amber-400"
+                : "text-gray-300"
+            } ${onChange ? "cursor-pointer transition-transform hover:scale-110" : ""}`}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function formatDate(dateStr: string | null) {
+  if (!dateStr) {
+    return "—";
+  }
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export default function PerformancePageClient() {
+  const [reviews, setReviews] = useState<PerformanceReview[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("all");
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showCompleteDialog, setShowCompleteDialog] = useState(false);
+  const [selectedReview, setSelectedReview] =
+    useState<PerformanceReview | null>(null);
+  const [expandedReview, setExpandedReview] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [completing, setCompleting] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    employeeId: "",
+    reviewType: "SIX_MONTH",
+    scheduledDate: "",
+  });
+  const [completeForm, setCompleteForm] = useState({
+    rating: 0,
+    strengths: "",
+    areasForImprovement: "",
+    goalsNextPeriod: "",
+    managerComments: "",
+  });
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [reviewsResult, employeesResult] = await Promise.all([
+        listStaffPerformances(),
+        listStaffMembers(),
+      ]);
+      setReviews(reviewsResult.data as unknown as PerformanceReview[]);
+      setEmployees(employeesResult.data as unknown as Employee[]);
+    } catch (error) {
+      console.error("Failed to load performance data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!(createForm.employeeId && createForm.scheduledDate)) {
+      return;
+    }
+    setCreating(true);
+    try {
+      await staffPerformanceCreate(createForm);
+      await loadData();
+      setShowCreateDialog(false);
+      setCreateForm({
+        employeeId: "",
+        reviewType: "SIX_MONTH",
+        scheduledDate: "",
+      });
+    } catch (error) {
+      console.error("Failed to create review:", error);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleComplete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedReview || completeForm.rating === 0) {
+      return;
+    }
+    setCompleting(true);
+    try {
+      await staffPerformanceComplete({
+        id: selectedReview.id,
+        rating: completeForm.rating,
+      });
+      await loadData();
+      setShowCompleteDialog(false);
+      setSelectedReview(null);
+      setCompleteForm({
+        rating: 0,
+        strengths: "",
+        areasForImprovement: "",
+        goalsNextPeriod: "",
+        managerComments: "",
+      });
+    } catch (error) {
+      console.error("Failed to complete review:", error);
+    } finally {
+      setCompleting(false);
+    }
+  };
+
+  const stats = {
+    total: reviews.length,
+    scheduled: reviews.filter((r) => r.status === "scheduled").length,
+    completed: reviews.filter((r) => r.status === "completed").length,
+    avgRating:
+      reviews.filter((r) => r.rating).length > 0
+        ? (
+            reviews
+              .filter((r) => r.rating)
+              .reduce((sum, r) => sum + Number(r.rating), 0) /
+            reviews.filter((r) => r.rating).length
+          ).toFixed(1)
+        : "—",
+  };
+
+  const filteredReviews = reviews.filter((r) => {
+    if (activeTab === "all") {
+      return true;
+    }
+    if (activeTab === "upcoming") {
+      return (
+        r.status === "scheduled" &&
+        new Date(r.scheduledDate) <=
+          new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+      );
+    }
+    if (activeTab === "overdue") {
+      return r.status === "scheduled" && new Date(r.scheduledDate) < new Date();
+    }
+    return r.status === activeTab;
+  });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <OperationalPageShell
+        actions={
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Schedule Review
+          </Button>
+        }
+        description="Track reviews, ratings, goals, and staff development."
+        eyebrow="Staff / Performance"
+        title="Performance"
+      >
+
+      {/* Summary Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card tone="soft-stone">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="font-medium text-sm">Total Reviews</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="font-semibold text-2xl">{stats.total}</div>
+          </CardContent>
+        </Card>
+        <Card tone="soft-stone">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="font-medium text-sm">Scheduled</CardTitle>
+            <Calendar className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="font-semibold text-2xl">{stats.scheduled}</div>
+            <p className="text-muted-foreground text-xs">Pending completion</p>
+          </CardContent>
+        </Card>
+        <Card tone="soft-stone">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="font-medium text-sm">Completed</CardTitle>
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="font-semibold text-2xl">{stats.completed}</div>
+          </CardContent>
+        </Card>
+        <Card tone="soft-stone">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="font-medium text-sm">Avg Rating</CardTitle>
+            <Star className="h-4 w-4 text-amber-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="font-semibold text-2xl">{stats.avgRating}</div>
+            <p className="text-muted-foreground text-xs">out of 5.0</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Tabs & Reviews List */}
+      <Tabs onValueChange={setActiveTab} value={activeTab}>
+        <TabsList>
+          <TabsTrigger value="all">All ({reviews.length})</TabsTrigger>
+          <TabsTrigger value="upcoming">
+            Upcoming (
+            {
+              reviews.filter(
+                (r) =>
+                  r.status === "scheduled" &&
+                  new Date(r.scheduledDate) <=
+                    new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+              ).length
+            }
+            )
+          </TabsTrigger>
+          <TabsTrigger value="overdue">
+            Overdue (
+            {
+              reviews.filter(
+                (r) =>
+                  r.status === "scheduled" &&
+                  new Date(r.scheduledDate) < new Date()
+              ).length
+            }
+            )
+          </TabsTrigger>
+          <TabsTrigger value="completed">
+            Completed ({stats.completed})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value={activeTab}>
+          {filteredReviews.length === 0 ? (
+            <Card tone="canvas">
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <Target className="mx-auto mb-4 h-12 w-12 opacity-50" />
+                <p>No reviews found.</p>
+                <p className="mt-1 text-sm">
+                  Schedule a performance review to get started.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {filteredReviews.map((review) => {
+                const statusConfig = getStatusConfig(review.status);
+                const StatusIcon = statusConfig.icon;
+                const isOverdue =
+                  review.status === "scheduled" &&
+                  new Date(review.scheduledDate) < new Date();
+                const isExpanded = expandedReview === review.id;
+
+                return (
+                  <Card
+                    className={isOverdue ? "border-red-300" : ""}
+                    key={review.id}
+                    tone="canvas"
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-4">
+                        {/* Status icon */}
+                        <div
+                          className={`flex h-10 w-10 items-center justify-center rounded-full ${statusConfig.color}`}
+                        >
+                          <StatusIcon className="h-5 w-5" />
+                        </div>
+
+                        {/* Main info */}
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 flex items-center gap-2">
+                            <span className="font-semibold">
+                              {review.employeeName || review.employeeId}
+                            </span>
+                            <Badge
+                              className={
+                                REVIEW_TYPE_COLORS[review.reviewType] ||
+                                "bg-muted/50"
+                              }
+                            >
+                              {REVIEW_TYPE_LABELS[review.reviewType] ||
+                                review.reviewType}
+                            </Badge>
+                            {isOverdue && (
+                              <Badge variant="destructive">Overdue</Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-4 text-muted-foreground text-sm">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {formatDate(review.scheduledDate)}
+                            </span>
+                            {review.reviewerName && (
+                              <span className="flex items-center gap-1">
+                                <User className="h-3 w-3" />
+                                {review.reviewerName}
+                              </span>
+                            )}
+                            {review.rating && (
+                              <span className="flex items-center gap-1">
+                                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                                {Number(review.rating).toFixed(1)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-2">
+                          {review.status === "scheduled" && (
+                            <Button
+                              onClick={() => {
+                                setSelectedReview(review);
+                                setShowCompleteDialog(true);
+                              }}
+                              size="sm"
+                            >
+                              Complete Review
+                            </Button>
+                          )}
+                          <Button
+                            onClick={() =>
+                              setExpandedReview(isExpanded ? null : review.id)
+                            }
+                            size="sm"
+                            variant="ghost"
+                          >
+                            {isExpanded ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Expanded Details */}
+                      {isExpanded && (
+                        <div className="mt-4 space-y-3 border-t pt-4">
+                          <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
+                            <div>
+                              <p className="text-muted-foreground">Status</p>
+                              <p className="capitalize">{statusConfig.label}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Scheduled</p>
+                              <p>{formatDate(review.scheduledDate)}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Completed</p>
+                              <p>{formatDate(review.completedDate)}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Rating</p>
+                              {review.rating ? (
+                                <RatingStars rating={Number(review.rating)} />
+                              ) : (
+                                <p className="text-muted-foreground">
+                                  Not rated
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {review.strengths && (
+                            <div>
+                              <p className="mb-1 font-medium text-sm">
+                                Strengths
+                              </p>
+                              <p className="rounded-md bg-muted/20 p-2 text-muted-foreground text-sm">
+                                {review.strengths}
+                              </p>
+                            </div>
+                          )}
+                          {review.areasForImprovement && (
+                            <div>
+                              <p className="mb-1 font-medium text-sm">
+                                Areas for Improvement
+                              </p>
+                              <p className="rounded-md bg-muted/20 p-2 text-muted-foreground text-sm">
+                                {review.areasForImprovement}
+                              </p>
+                            </div>
+                          )}
+                          {review.goalsNextPeriod && (
+                            <div>
+                              <p className="mb-1 font-medium text-sm">
+                                Goals for Next Period
+                              </p>
+                              <p className="rounded-md bg-muted/20 p-2 text-muted-foreground text-sm">
+                                {review.goalsNextPeriod}
+                              </p>
+                            </div>
+                          )}
+                          {review.managerComments && (
+                            <div>
+                              <p className="mb-1 font-medium text-sm">
+                                Manager Comments
+                              </p>
+                              <p className="rounded-md bg-muted/20 p-2 text-muted-foreground text-sm">
+                                {review.managerComments}
+                              </p>
+                            </div>
+                          )}
+                          {review.employeeComments && (
+                            <div>
+                              <p className="mb-1 font-medium text-sm">
+                                Employee Comments
+                              </p>
+                              <p className="rounded-md bg-muted/20 p-2 text-muted-foreground text-sm">
+                                {review.employeeComments}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+      </OperationalPageShell>
+
+      {/* Create Review Dialog */}
+      <Dialog onOpenChange={setShowCreateDialog} open={showCreateDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Schedule Performance Review</DialogTitle>
+            <DialogDescription>
+              Schedule a new performance review for a team member.
+            </DialogDescription>
+          </DialogHeader>
+          <form className="space-y-4" onSubmit={handleCreate}>
+            <div className="space-y-2">
+              <Label>Employee *</Label>
+              <Select
+                onValueChange={(v) =>
+                  setCreateForm((p) => ({ ...p, employeeId: v }))
+                }
+                value={createForm.employeeId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select employee..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {employees.map((emp) => (
+                    <SelectItem key={emp.id} value={emp.id}>
+                      {emp.firstName} {emp.lastName} ({emp.role})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Review Type *</Label>
+                <Select
+                  onValueChange={(v) =>
+                    setCreateForm((p) => ({ ...p, reviewType: v }))
+                  }
+                  value={createForm.reviewType}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ANNUAL">Annual Review</SelectItem>
+                    <SelectItem value="SIX_MONTH">6-Month Review</SelectItem>
+                    <SelectItem value="COACHING">Coaching Session</SelectItem>
+                    <SelectItem value="PROBATION">Probation Review</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Scheduled Date *</Label>
+                <DatePicker
+                  onChange={(e) =>
+                    setCreateForm((p) => ({
+                      ...p,
+                      scheduledDate: e.target.value,
+                    }))
+                  }
+                  required
+                  value={createForm.scheduledDate}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                onClick={() => setShowCreateDialog(false)}
+                type="button"
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={
+                  !(createForm.employeeId && createForm.scheduledDate) ||
+                  creating
+                }
+                type="submit"
+              >
+                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Schedule Review
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Complete Review Dialog */}
+      <Dialog onOpenChange={setShowCompleteDialog} open={showCompleteDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Complete Performance Review</DialogTitle>
+            <DialogDescription>
+              {selectedReview &&
+                `Review for ${selectedReview.employeeName || "employee"} (${REVIEW_TYPE_LABELS[selectedReview.reviewType] || selectedReview.reviewType})`}
+            </DialogDescription>
+          </DialogHeader>
+          <form className="space-y-4" onSubmit={handleComplete}>
+            <div className="space-y-2">
+              <Label>Rating *</Label>
+              <RatingStars
+                onChange={(r) => setCompleteForm((p) => ({ ...p, rating: r }))}
+                rating={completeForm.rating}
+              />
+              {completeForm.rating === 0 && (
+                <p className="text-muted-foreground text-xs">
+                  Click a star to rate (1-5)
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>Strengths</Label>
+              <Textarea
+                onChange={(e) =>
+                  setCompleteForm((p) => ({ ...p, strengths: e.target.value }))
+                }
+                placeholder="What does this employee do well?"
+                rows={3}
+                value={completeForm.strengths}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Areas for Improvement</Label>
+              <Textarea
+                onChange={(e) =>
+                  setCompleteForm((p) => ({
+                    ...p,
+                    areasForImprovement: e.target.value,
+                  }))
+                }
+                placeholder="Where could this employee grow?"
+                rows={3}
+                value={completeForm.areasForImprovement}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Goals for Next Period</Label>
+              <Textarea
+                onChange={(e) =>
+                  setCompleteForm((p) => ({
+                    ...p,
+                    goalsNextPeriod: e.target.value,
+                  }))
+                }
+                placeholder="What should the employee focus on going forward?"
+                rows={3}
+                value={completeForm.goalsNextPeriod}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Manager Comments</Label>
+              <Textarea
+                onChange={(e) =>
+                  setCompleteForm((p) => ({
+                    ...p,
+                    managerComments: e.target.value,
+                  }))
+                }
+                placeholder="Additional notes from the reviewer..."
+                rows={2}
+                value={completeForm.managerComments}
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                onClick={() => {
+                  setShowCompleteDialog(false);
+                  setSelectedReview(null);
+                }}
+                type="button"
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={completeForm.rating === 0 || completing}
+                type="submit"
+              >
+                {completing && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Submit Review
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}

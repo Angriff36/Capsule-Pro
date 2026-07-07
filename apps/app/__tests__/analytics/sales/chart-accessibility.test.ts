@@ -4,7 +4,7 @@ import {
   generateChartSummary,
   narrateSummary,
   summarizeForScreenReader,
-} from "../../../app/(authenticated)/analytics/sales/lib/chart-accessibility";
+} from "../../../app/(authenticated)/(insights)/analytics/sales/lib/chart-accessibility";
 
 describe("generateChartSummary", () => {
   it("returns a zeroed summary for null/empty input", () => {

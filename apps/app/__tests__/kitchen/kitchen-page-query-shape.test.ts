@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { describe, expect, it, vi } from "vitest";
-import KitchenPage from "@/app/(authenticated)/kitchen/page";
+import KitchenPage from "@/app/(authenticated)/(operations)/kitchen/page";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 vi.mock("@repo/auth/server", () => ({
@@ -27,15 +27,15 @@ vi.mock("@repo/database", () => ({
   },
 }));
 
-vi.mock("@/app/(authenticated)/kitchen/components/kitchen-navigation", () => ({
+vi.mock("@/app/(authenticated)/(operations)/kitchen/components/kitchen-navigation", () => ({
   KitchenNavigation: () => null,
 }));
 
-vi.mock("@/app/(authenticated)/kitchen/production-board-client", () => ({
+vi.mock("@/app/(authenticated)/(operations)/kitchen/production-board-client", () => ({
   ProductionBoardClient: () => null,
 }));
 
-vi.mock("@/app/(authenticated)/kitchen/production-board-realtime", () => ({
+vi.mock("@/app/(authenticated)/(operations)/kitchen/production-board-realtime", () => ({
   ProductionBoardRealtime: () => null,
 }));
 

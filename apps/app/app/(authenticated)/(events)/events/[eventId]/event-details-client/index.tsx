@@ -1,0 +1,1802 @@
+"use client";
+
+import type { Event } from "@repo/database";
+import { GridBackground } from "@repo/design-system/components/ui/grid-background";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import { useQueryClient } from "@tanstack/react-query";
+import { ClipboardList, FileText, SwordsIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import type { MutableRefObject } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import { useSuggestions } from "../../../../(operations)/kitchen/lib/use-suggestions";
+import {
+  createDishAndAddToEvent,
+  getAvailableDishes,
+  getRecipesForDishCreation,
+} from "../../actions/event-dishes";
+import {
+  type GeneratedEventSummary,
+  getEventSummary,
+} from "../../actions/event-summary";
+import { generateProposalFromEvent } from "../../actions/generate-proposal";
+import {
+  generateTaskBreakdown,
+  type TaskBreakdown,
+} from "../../actions/task-breakdown";
+import { GenerateEventSummaryModal } from "../../components/event-summary-display";
+import {
+  EVENT_TEMPLATES,
+  getTemplateMenuSuggestions,
+} from "../../components/event-templates";
+import { GenerateTaskBreakdownModal } from "../../components/task-breakdown-display";
+import { EventEditorModal } from "../../event-editor-modal";
+import { ClientAssignDialog } from "../components/client-assign-dialog";
+import { EventSetupChecklist } from "../components/event-setup-checklist";
+import {
+  determineEventStage,
+  EventTimeline,
+} from "../components/event-timeline";
+import {
+  type AvailableDishOption,
+  DishVariantDialog,
+  type EventBudgetForDisplay,
+  type PrepListSummary,
+} from "../event-details-sections";
+import type {
+  EventDishSummary,
+  InventoryCoverageItem,
+  RecipeDetailSummary,
+  RelatedEventSummary,
+} from "../event-details-types";
+import {
+  useAddDishToEvent,
+  useCreateDishVariant,
+  useDeleteEventSummary,
+  useEventDetails,
+  useGenerateEventSummary,
+  useGeneratePrepList,
+  useQuickRsvp,
+  useRemoveDishFromEvent,
+  useSaveTaskBreakdown,
+  useUpdateEvent,
+} from "../event-hooks";
+import type { PrepTaskSummaryClient } from "../prep-task-contract";
+// Above-fold critical components loaded eagerly
+import { AllergenSection } from "./allergen-section";
+import { EventDetailTabs } from "./event-detail-tabs";
+import { EventOverviewCard } from "./event-overview-card";
+import { EventRecordCard } from "./event-record-card";
+import { GuestManagementSection } from "./guest-management-section";
+// Lazy-loaded below-the-fold components for bundle optimization
+import { AIInsightsPanel } from "./lazy-ai-insights-panel";
+import { EventExplorer } from "./lazy-event-explorer";
+import { MenuIntelligenceSection } from "./menu-intelligence-section";
+import { OperationsSection } from "./operations-section";
+import { RecipeDrawer } from "./recipe-drawer";
+import {
+  endOfDay,
+  formatCurrency,
+  formatDuration,
+  parseISODateToLocal,
+  scaleIngredients,
+  startOfDay,
+} from "./utils";
+
+type ExplorerView = "grid" | "calendar";
+type SortOption = "relevance" | "soonest" | "popularity" | "price";
+type QuickFilter =
+  | "live-now"
+  | "starting-soon"
+  | "high-capacity"
+  | "sold-out"
+  | "free"
+  | "paid";
+type DrawerMode = "instructions" | "ingredients";
+
+function getEventStatusLabel(isLive: boolean, isPast: boolean): string {
+  if (isLive) {
+    return "Live";
+  }
+  if (isPast) {
+    return "Past";
+  }
+  return "Upcoming";
+}
+
+interface MobileStickyBarProps {
+  isSaved: boolean;
+  onRsvp: () => void;
+  onShare: () => void;
+  onToggleSave: () => void;
+  saveReady: boolean;
+  soldOut: boolean;
+}
+
+function MobileStickyBar({
+  soldOut,
+  saveReady,
+  isSaved,
+  onRsvp,
+  onToggleSave,
+  onShare,
+}: MobileStickyBarProps) {
+  return (
+    <>
+      <button className="hidden" onClick={onRsvp} type="button">
+        Open RSVP
+      </button>
+      <div className="fixed right-0 bottom-0 left-0 z-40 border-border border-t bg-muted/95 px-4 py-3 backdrop-blur sm:hidden">
+        <div className="flex items-center gap-2">
+          <button
+            className="inline-flex flex-1 items-center justify-center rounded-sm bg-success font-medium text-sm text-success-foreground transition-colors hover:bg-success/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+            disabled={soldOut}
+            onClick={onRsvp}
+            type="button"
+          >
+            RSVP
+          </button>
+          <button
+            className="inline-flex items-center justify-center rounded-sm border border-input bg-background px-3 font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            disabled={!saveReady}
+            onClick={onToggleSave}
+            type="button"
+          >
+            <svg
+              className={cn("size-4", isSaved && "fill-current")}
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <title>{isSaved ? "Saved" : "Save"}</title>
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+          </button>
+          <button
+            className="inline-flex items-center justify-center rounded-sm border border-input bg-background px-3 font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            onClick={onShare}
+            type="button"
+          >
+            <svg
+              className="size-4"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <title>Share</title>
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+interface QuickRsvpModalProps {
+  email: string;
+  eventTitle: string;
+  loading: boolean;
+  name: string;
+  onClose: () => void;
+  onEmailChange: (v: string) => void;
+  onNameChange: (v: string) => void;
+  onSubmit: () => void;
+  open: boolean;
+}
+
+function QuickRsvpModal({
+  open,
+  eventTitle,
+  name,
+  email,
+  loading,
+  onNameChange,
+  onEmailChange,
+  onSubmit,
+  onClose,
+}: QuickRsvpModalProps) {
+  return (
+    <div className={`fixed inset-0 z-50 bg-black/80 ${open ? "" : "hidden"}`}>
+      <div className="fixed top-[50%] left-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-hairline bg-background p-6 duration-200 sm:rounded-lg">
+        <div className="flex flex-col space-y-1.5 text-center sm:text-left">
+          <h2 className="font-semibold text-lg leading-none tracking-tight">
+            Add RSVP
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            Add a guest to the RSVP list for {eventTitle}.
+          </p>
+        </div>
+        <div className="space-y-4 py-2">
+          <div className="space-y-2">
+            <label className="font-medium text-sm" htmlFor="rsvp-name">
+              Guest name
+            </label>
+            <input
+              className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:font-medium file:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              id="rsvp-name"
+              onChange={(e) => onNameChange(e.target.value)}
+              placeholder="Full name"
+              value={name}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="font-medium text-sm" htmlFor="rsvp-email">
+              Guest email
+            </label>
+            <input
+              className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:font-medium file:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              id="rsvp-email"
+              onChange={(e) => onEmailChange(e.target.value)}
+              placeholder="Optional email"
+              type="email"
+              value={email}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+          <button
+            className="inline-flex h-10 items-center justify-center rounded-sm border border-input bg-background px-4 py-2 font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            onClick={onClose}
+            type="button"
+          >
+            Cancel
+          </button>
+          <button
+            className="inline-flex h-10 items-center justify-center rounded-sm bg-primary px-4 py-2 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            disabled={loading}
+            onClick={onSubmit}
+            type="button"
+          >
+            {loading ? "Saving..." : "Add RSVP"}
+          </button>
+        </div>
+        <button
+          className="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
+          onClick={onClose}
+          type="button"
+        >
+          <svg
+            className="size-4"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <title>Close</title>
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function getTicketPriceLabel(
+  ticketPrice: number | null,
+  fmt: (n: number) => string
+): string {
+  if (ticketPrice === null) {
+    return "Not specified";
+  }
+  if (ticketPrice <= 0) {
+    return "Free";
+  }
+  return fmt(ticketPrice);
+}
+
+function getTimeStatusLabel(
+  isLive: boolean,
+  isUpcoming: boolean,
+  now: Date,
+  eventStart: Date,
+  eventEnd: Date,
+  fmt: (ms: number) => string
+): string {
+  if (isLive) {
+    return `Live for ${fmt(now.getTime() - eventStart.getTime())}`;
+  }
+  if (isUpcoming) {
+    return `Starts in ${fmt(eventStart.getTime() - now.getTime())}`;
+  }
+  return `Ended ${fmt(now.getTime() - eventEnd.getTime())} ago`;
+}
+
+// PrepTaskStatus DB enum: open | pending | in_progress | done | canceled.
+// "open" groups with pending (not started); "done" is the completed state.
+type TaskStatus = "open" | "pending" | "in_progress" | "done" | "canceled";
+
+function computeTaskSummary(tasks: PrepTaskSummaryClient[]) {
+  const counts = {
+    pending: 0,
+    in_progress: 0,
+    completed: 0,
+    canceled: 0,
+    other: 0,
+  };
+  const statusMap: Record<TaskStatus, keyof typeof counts> = {
+    open: "pending",
+    pending: "pending",
+    in_progress: "in_progress",
+    done: "completed",
+    canceled: "canceled",
+  };
+  for (const task of tasks) {
+    const key = statusMap[task.status as TaskStatus];
+    if (key) {
+      counts[key] += 1;
+    } else {
+      counts.other += 1;
+    }
+  }
+  return counts;
+}
+
+interface AggregatedIngredient {
+  ingredientId: string;
+  ingredientName: string;
+  isOptional: boolean;
+  quantity: number;
+  sources: string[];
+  unitCode: string | null;
+}
+
+async function copyEventLink(eventId: string): Promise<void> {
+  const url = `${globalThis.location.origin}/events/${eventId}`;
+  try {
+    await navigator.clipboard.writeText(url);
+    toast.success("Event link copied to clipboard");
+  } catch {
+    toast.error("Unable to copy link. Please try again.");
+  }
+}
+
+async function shareEvent(event: { id: string; title: string }): Promise<void> {
+  const url = `${globalThis.location.origin}/events/${event.id}`;
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: event.title,
+        text: `Event: ${event.title}`,
+        url,
+      });
+      return;
+    } catch {
+      // Fall through to copy link
+    }
+  }
+  await copyEventLink(event.id);
+}
+
+function useAvailableDishes(eventId: string, showDialog: boolean) {
+  const [availableDishes, setAvailableDishes] = useState<AvailableDishOption[]>(
+    []
+  );
+  const [isLoadingDishes, setIsLoadingDishes] = useState(false);
+
+  useEffect(() => {
+    if (!showDialog) {
+      return;
+    }
+    let cancelled = false;
+    setIsLoadingDishes(true);
+    getAvailableDishes(eventId)
+      .then((available) => {
+        if (!cancelled) {
+          setAvailableDishes((available ?? []) as AvailableDishOption[]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsLoadingDishes(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [eventId, showDialog]);
+
+  return { availableDishes, isLoadingDishes };
+}
+
+function useRecipesForDishCreation(showDialog: boolean) {
+  const [recipes, setRecipes] = useState<
+    { id: string; name: string; category: string | null }[]
+  >([]);
+
+  useEffect(() => {
+    if (!showDialog) {
+      return;
+    }
+    let cancelled = false;
+    getRecipesForDishCreation()
+      .then((result) => {
+        if (!cancelled) {
+          setRecipes(result ?? []);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRecipes([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [showDialog]);
+
+  return { recipes };
+}
+
+function useSavedEvent(eventId: string) {
+  const [isSaved, setIsSaved] = useState(false);
+  const [saveReady, setSaveReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof globalThis === "undefined") {
+      return;
+    }
+    const stored = globalThis.localStorage.getItem("saved-events");
+    if (!stored) {
+      setSaveReady(true);
+      return;
+    }
+    try {
+      const parsed = JSON.parse(stored) as string[];
+      setIsSaved(parsed.includes(eventId));
+    } catch {
+      setIsSaved(false);
+    }
+    setSaveReady(true);
+  }, [eventId]);
+
+  const toggleSave = () => {
+    const stored = globalThis.localStorage.getItem("saved-events");
+    const parsed = stored ? (JSON.parse(stored) as string[]) : [];
+    const next = parsed.includes(eventId)
+      ? parsed.filter((id) => id !== eventId)
+      : [...parsed, eventId];
+    globalThis.localStorage.setItem("saved-events", JSON.stringify(next));
+    setIsSaved(next.includes(eventId));
+    toast.success(next.includes(eventId) ? "Event saved" : "Event removed");
+  };
+
+  return { isSaved, saveReady, toggleSave };
+}
+
+function useEventSummary(eventId: string) {
+  const [summary, setSummary] = useState<
+    GeneratedEventSummary | null | undefined
+  >(undefined);
+  const [isLoadingSummary, setIsLoadingSummary] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoadingSummary(true);
+    getEventSummary(eventId)
+      .then((result) => {
+        if (cancelled) {
+          return;
+        }
+        setSummary(result.success && result.summary ? result.summary : null);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSummary(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsLoadingSummary(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [eventId]);
+
+  return { summary, setSummary, isLoadingSummary };
+}
+
+interface GenerateBreakdownDeps {
+  cancelledRef: MutableRefObject<boolean>;
+  eventId: string;
+  onRefresh: () => void;
+  progressIntervalRef: MutableRefObject<ReturnType<
+    typeof globalThis.setInterval
+  > | null>;
+  setBreakdown: (v: TaskBreakdown) => void;
+  setGenerationProgress: (v: string) => void;
+  setIsGenerating: (v: boolean) => void;
+  setShowBreakdownModal: (v: boolean) => void;
+}
+
+async function runGenerateBreakdown(
+  deps: GenerateBreakdownDeps,
+  customInstructions?: string
+): Promise<void> {
+  const {
+    eventId,
+    setIsGenerating,
+    setGenerationProgress,
+    setBreakdown,
+    setShowBreakdownModal,
+    onRefresh,
+    progressIntervalRef,
+    cancelledRef,
+  } = deps;
+
+  cancelledRef.current = false;
+  if (progressIntervalRef.current) {
+    globalThis.clearInterval(progressIntervalRef.current);
+    progressIntervalRef.current = null;
+  }
+
+  setIsGenerating(true);
+  setGenerationProgress("Analyzing event details...");
+  const messages = [
+    "Analyzing event details...",
+    "Reviewing menu items...",
+    "Creating prep tasks...",
+    "Creating setup tasks...",
+    "Creating cleanup tasks...",
+    "Finalizing breakdown...",
+  ];
+  let idx = 0;
+  progressIntervalRef.current = globalThis.setInterval(() => {
+    const message = messages[idx];
+    if (message !== undefined) {
+      setGenerationProgress(message);
+      idx++;
+    }
+  }, 1500);
+  try {
+    const result = await generateTaskBreakdown({ eventId, customInstructions });
+    if (progressIntervalRef.current) {
+      globalThis.clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+    if (cancelledRef.current) {
+      return;
+    }
+    setGenerationProgress("");
+    setBreakdown(result);
+    setShowBreakdownModal(true);
+    onRefresh();
+  } catch (error) {
+    if (progressIntervalRef.current) {
+      globalThis.clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+    if (cancelledRef.current) {
+      return;
+    }
+    const message =
+      error instanceof Error ? error.message : "Failed to generate breakdown";
+    setGenerationProgress(`Error: ${message}`);
+    // Don't close modal on error so user can see the message
+  } finally {
+    if (progressIntervalRef.current) {
+      globalThis.clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+    if (!cancelledRef.current) {
+      setIsGenerating(false);
+    }
+  }
+}
+
+function exportBreakdownToCsv(
+  breakdown: TaskBreakdown,
+  eventTitle: string
+): void {
+  const rows: string[][] = [
+    [
+      "Section",
+      "Task",
+      "Description",
+      "Duration (min)",
+      "Start",
+      "End",
+      "Relative Time",
+      "Assignment",
+      "Ingredients",
+      "Steps",
+      "Critical",
+      "Due (hours)",
+      "Confidence",
+    ],
+  ];
+
+  const pushTask = (section: string, task: TaskBreakdown["prep"][number]) => {
+    rows.push([
+      section,
+      task.name,
+      task.description ?? "",
+      String(task.durationMinutes ?? ""),
+      task.startTime ?? "",
+      task.endTime ?? "",
+      task.relativeTime ?? "",
+      task.assignment ?? "",
+      task.ingredients?.join("; ") ?? "",
+      task.steps?.join("; ") ?? "",
+      task.isCritical ? "yes" : "no",
+      task.dueInHours ? String(task.dueInHours) : "",
+      task.confidence ? String(task.confidence) : "",
+    ]);
+  };
+
+  for (const task of breakdown.prep) {
+    pushTask("Prep", task);
+  }
+  for (const task of breakdown.setup) {
+    pushTask("Setup", task);
+  }
+  for (const task of breakdown.cleanup) {
+    pushTask("Cleanup", task);
+  }
+
+  const escapeValue = (value: string) => `"${value.replace(/"/g, '""')}"`;
+  const csv = rows
+    .map((row) => row.map((value) => escapeValue(value ?? "")).join(","))
+    .join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `${eventTitle.replace(/[^\w\s-]/g, "").trim() || "event"}-task-breakdown.csv`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
+function buildDishRows(
+  eventDishes: EventDishSummary[],
+  recipeById: Map<string, RecipeDetailSummary>
+) {
+  return eventDishes.map((dish) => {
+    const recipe = dish.recipeId
+      ? (recipeById.get(dish.recipeId) ?? null)
+      : null;
+    const scaledIngredients = recipe
+      ? scaleIngredients(
+          recipe.ingredients,
+          dish.quantityServings,
+          recipe.yieldQuantity
+        )
+      : [];
+    return { dish, recipe, scaledIngredients };
+  });
+}
+
+function computeInventoryStats(
+  aggregatedIngredients: AggregatedIngredient[],
+  inventoryByIngredient: Map<string, InventoryCoverageItem>
+): { tracked: number; low: number } {
+  let tracked = 0;
+  let low = 0;
+  for (const ingredient of aggregatedIngredients) {
+    const inventory = inventoryByIngredient.get(ingredient.ingredientId);
+    if (!inventory) {
+      continue;
+    }
+    tracked += 1;
+    if (
+      inventory.parLevel !== null &&
+      inventory.onHand !== null &&
+      inventory.onHand < inventory.parLevel
+    ) {
+      low += 1;
+    }
+  }
+  return { tracked, low };
+}
+
+function aggregateIngredients(
+  dishRows: Array<{
+    dish: { name: string };
+    recipe: RecipeDetailSummary | null;
+    scaledIngredients: Array<{
+      ingredientId: string;
+      ingredientName: string;
+      scaledQuantity: number;
+      unitCode: string | null;
+      isOptional: boolean;
+    }>;
+  }>
+): AggregatedIngredient[] {
+  const map = new Map<string, AggregatedIngredient>();
+  for (const row of dishRows) {
+    if (!row.recipe) {
+      continue;
+    }
+    for (const ingredient of row.scaledIngredients) {
+      const existing = map.get(ingredient.ingredientId);
+      const sourceName = row.dish.name;
+      if (existing) {
+        existing.quantity += ingredient.scaledQuantity;
+        if (!existing.sources.includes(sourceName)) {
+          existing.sources.push(sourceName);
+        }
+        continue;
+      }
+      map.set(ingredient.ingredientId, {
+        ingredientId: ingredient.ingredientId,
+        ingredientName: ingredient.ingredientName,
+        quantity: ingredient.scaledQuantity,
+        unitCode: ingredient.unitCode,
+        isOptional: ingredient.isOptional,
+        sources: [sourceName],
+      });
+    }
+  }
+  return Array.from(map.values()).sort((a, b) =>
+    a.ingredientName.localeCompare(b.ingredientName)
+  );
+}
+
+interface EventDetailsClientProps {
+  /** Server-fetched data used as initialData for TanStack Query to avoid double-fetch on mount */
+  allEventData: Awaited<
+    ReturnType<typeof import("../event-details-data").fetchAllEventDetailsData>
+  >;
+  battleBoardHref: string;
+  /** Server-rendered Event tree tab — passed from page.tsx to cross the server/client boundary */
+  board: import("react").ReactNode;
+  budget: EventBudgetForDisplay | null;
+  event: Omit<Event, "budget" | "ticketPrice"> & {
+    budget: number | null;
+    ticketPrice: number | null;
+  };
+  eventDishes: EventDishSummary[];
+  hasBudget?: boolean;
+  hasContract?: boolean;
+  inventoryCoverage: InventoryCoverageItem[];
+  prepLists?: PrepListSummary[];
+  prepTasks: PrepTaskSummaryClient[];
+  recipeDetails: RecipeDetailSummary[];
+  relatedEvents: RelatedEventSummary[];
+  relatedGuestCounts: Record<string, number>;
+  rsvpCount: number;
+  staffCount?: number;
+  tenantId?: string;
+}
+
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: React component with many state pieces; complexity is inherent to the feature scope
+export function EventDetailsClient({
+  budget,
+  event,
+  allEventData,
+  prepTasks: initialPrepTasks,
+  tenantId,
+  eventDishes,
+  recipeDetails,
+  inventoryCoverage,
+  relatedEvents,
+  relatedGuestCounts,
+  rsvpCount: initialRsvpCount,
+  hasContract = false,
+  staffCount = 0,
+  prepLists = [],
+  hasBudget = false,
+  battleBoardHref,
+  board,
+}: EventDetailsClientProps) {
+  const router = useRouter();
+
+  // TanStack Query: replaces all router.refresh() calls with granular
+  // query cache invalidation via the canonical useMutation pattern.
+  const queryClient = useQueryClient();
+  const { data: eventQueryData } = useEventDetails(event.id, allEventData);
+  const liveEvent = useMemo(() => {
+    const fromQuery = eventQueryData?.event;
+    if (!fromQuery) {
+      return event;
+    }
+    return {
+      ...event,
+      ...fromQuery,
+      budget:
+        fromQuery.budget === null || fromQuery.budget === undefined
+          ? event.budget
+          : Number(fromQuery.budget),
+      ticketPrice:
+        fromQuery.ticketPrice === null || fromQuery.ticketPrice === undefined
+          ? event.ticketPrice
+          : Number(fromQuery.ticketPrice),
+    };
+  }, [event, eventQueryData?.event]);
+  const updateEventMutation = useUpdateEvent();
+  const addDishMutation = useAddDishToEvent();
+  const removeDishMutation = useRemoveDishFromEvent();
+  const createVariantMutation = useCreateDishVariant();
+  const generateSummaryMutation = useGenerateEventSummary();
+  const deleteSummaryMutation = useDeleteEventSummary();
+  const saveBreakdownMutation = useSaveTaskBreakdown();
+  const generatePrepListMutation = useGeneratePrepList();
+  const quickRsvpMutation = useQuickRsvp();
+
+  // Timeline stage navigation - maps stages to tabs
+  const handleTimelineStageClick = useCallback(
+    (stage: string) => {
+      const stageToTab: Record<string, string> = {
+        created: "overview",
+        "client-set": "overview",
+        "venue-set": "overview",
+        "menu-set": "menu",
+        "staff-assigned": "operations",
+        "prep-complete": "operations",
+        "event-day": "overview",
+        "follow-ups-sent": "followups",
+      };
+      const targetTab = stageToTab[stage] ?? "overview";
+      const url =
+        targetTab === "overview"
+          ? `/events/${event.id}`
+          : `/events/${event.id}?tab=${targetTab}`;
+      router.push(url);
+    },
+    [event.id, router]
+  );
+
+  // Time state
+  const [now, setNow] = useState(() => new Date());
+
+  // Edit/RSVP state
+  const [showEditEvent, setShowEditEvent] = useState(false);
+  const [showAssignClient, setShowAssignClient] = useState(false);
+  const [rsvpCount, setRsvpCount] = useState(initialRsvpCount);
+  const { isSaved, saveReady, toggleSave } = useSavedEvent(event.id);
+  const [quickRsvpOpen, setQuickRsvpOpen] = useState(false);
+  const [quickRsvpName, setQuickRsvpName] = useState("");
+  const [quickRsvpEmail, setQuickRsvpEmail] = useState("");
+  const [quickRsvpLoading, setQuickRsvpLoading] = useState(false);
+
+  // Drawer state
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerMode, setDrawerMode] = useState<DrawerMode>("instructions");
+  const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
+  const [selectedDishId, setSelectedDishId] = useState<string | null>(null);
+
+  // Task breakdown state
+  const [showBreakdownModal, setShowBreakdownModal] = useState(false);
+  const [breakdown, setBreakdown] = useState<TaskBreakdown | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState("");
+  const breakdownProgressIntervalRef = useRef<ReturnType<
+    typeof globalThis.setInterval
+  > | null>(null);
+  const breakdownGenerationCancelledRef = useRef(false);
+
+  // Prep list state
+  const [isGeneratingPrepList, setIsGeneratingPrepList] = useState(false);
+
+  // Summary state
+  const { summary, setSummary, isLoadingSummary } = useEventSummary(event.id);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
+
+  // Dish management state
+  const [showAddDishDialog, setShowAddDishDialog] = useState(false);
+  const [suggestedDishName, setSuggestedDishName] = useState("");
+  const { availableDishes, isLoadingDishes } = useAvailableDishes(
+    event.id,
+    showAddDishDialog
+  );
+  const { recipes } = useRecipesForDishCreation(showAddDishDialog);
+  const [selectedDishIdForAdd, setSelectedDishIdForAdd] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [isCreatingDish, setIsCreatingDish] = useState(false);
+
+  // Inline dish creation handler
+  const handleCreateDishInline = useCallback(
+    async (
+      name: string,
+      recipeId: string,
+      category?: string,
+      course?: string
+    ) => {
+      setIsCreatingDish(true);
+      try {
+        const result = await createDishAndAddToEvent(
+          event.id,
+          name,
+          recipeId,
+          category,
+          course
+        );
+        if (result.success) {
+          toast.success(`Created "${name}" and added to event`);
+          queryClient.invalidateQueries({ queryKey: ["event", event.id] });
+        } else {
+          toast.error(result.error || "Failed to create dish");
+        }
+      } catch (err) {
+        toast.error(
+          err instanceof Error ? err.message : "Failed to create dish"
+        );
+      } finally {
+        setIsCreatingDish(false);
+      }
+    },
+    [event.id, queryClient]
+  );
+
+  // Variant dialog state
+  const [showVariantDialog, setShowVariantDialog] = useState(false);
+
+  // Client assigned callback — refreshes page data after linking
+  const handleClientAssigned = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["event", event.id] });
+  }, [event.id, queryClient]);
+  const [variantLinkId, setVariantLinkId] = useState<string | null>(null);
+  const [variantSourceName, setVariantSourceName] = useState("");
+  const [variantName, setVariantName] = useState("");
+
+  // Suggestions state
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const {
+    suggestions,
+    isLoading: suggestionsLoading,
+    fetchSuggestions,
+    dismissSuggestion,
+    handleAction,
+  } = useSuggestions(tenantId);
+
+  // Explorer state
+  const [explorerView, setExplorerView] = useState<ExplorerView>("grid");
+  const [sortBy, setSortBy] = useState<SortOption>("relevance");
+  const [quickFilters, setQuickFilters] = useState<QuickFilter[]>([]);
+  const [selectedDateStart, setSelectedDateStart] = useState("");
+  const [selectedDateEnd, setSelectedDateEnd] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("all");
+  const [selectedOrganizer, setSelectedOrganizer] = useState("all");
+  const [selectedFormat, setSelectedFormat] = useState("all");
+  const [selectedPrice, setSelectedPrice] = useState("all");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedAccessibility, setSelectedAccessibility] = useState<string[]>(
+    []
+  );
+
+  // Missing fields computation
+  const missingFields = (event.tags ?? [])
+    .filter((tag) => typeof tag === "string" && tag.startsWith("needs:"))
+    .map((tag) => (tag as string).replace("needs:", ""))
+    .filter(Boolean);
+
+  // Effects
+  useEffect(() => {
+    const interval = globalThis.setInterval(() => {
+      setNow(new Date());
+    }, 30_000);
+    return () => globalThis.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    setRsvpCount(initialRsvpCount);
+  }, [initialRsvpCount]);
+
+  useEffect(() => {
+    if (tenantId && showSuggestions) {
+      fetchSuggestions();
+    }
+  }, [tenantId, showSuggestions, fetchSuggestions]);
+
+  // Memoized computations
+  const recipeById = useMemo(() => {
+    const map = new Map<string, RecipeDetailSummary>();
+    for (const recipe of recipeDetails) {
+      map.set(recipe.recipeId, recipe);
+    }
+    return map;
+  }, [recipeDetails]);
+
+  const inventoryByIngredient = useMemo(() => {
+    const map = new Map<string, InventoryCoverageItem>();
+    for (const item of inventoryCoverage) {
+      map.set(item.ingredientId, item);
+    }
+    return map;
+  }, [inventoryCoverage]);
+
+  const eventDate = useMemo(
+    () => parseISODateToLocal(event.eventDate),
+    [event.eventDate]
+  );
+  const eventStart = useMemo(() => startOfDay(eventDate), [eventDate]);
+  const eventEnd = useMemo(() => endOfDay(eventDate), [eventDate]);
+  const isLive = now >= eventStart && now <= eventEnd;
+  const isPast = now > eventEnd;
+  const isUpcoming = !isPast && now < eventStart;
+
+  const timeZoneLabel = useMemo(() => {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZoneName: "short",
+    }).formatToParts(new Date());
+    const timeZone = parts.find((part) => part.type === "timeZoneName");
+    return timeZone?.value ?? "Local time";
+  }, []);
+
+  const capacity = event.guestCount ?? 0;
+  const availability = capacity > 0 ? capacity - rsvpCount : 0;
+  const soldOut = capacity > 0 && rsvpCount >= capacity;
+  const limited = capacity > 0 && !soldOut && rsvpCount / capacity >= 0.85;
+
+  const eventStatusLabel = getEventStatusLabel(isLive, isPast);
+
+  const ticketPriceLabel = getTicketPriceLabel(
+    event.ticketPrice,
+    formatCurrency
+  );
+
+  const featuredMediaUrl =
+    event.featuredMediaUrl ||
+    eventDishes.find((dish) => Boolean(dish.presentationImageUrl))
+      ?.presentationImageUrl ||
+    null;
+
+  const displayedTags = (event.tags ?? []).filter(
+    (tag) => !tag.startsWith("needs:")
+  );
+
+  const dishRows = useMemo(
+    () => buildDishRows(eventDishes, recipeById),
+    [eventDishes, recipeById]
+  );
+
+  const aggregatedIngredients = useMemo(
+    () => aggregateIngredients(dishRows),
+    [dishRows]
+  );
+
+  const inventoryStats = useMemo(
+    () => computeInventoryStats(aggregatedIngredients, inventoryByIngredient),
+    [aggregatedIngredients, inventoryByIngredient]
+  );
+
+  const taskSummary = useMemo(
+    () => computeTaskSummary(initialPrepTasks),
+    [initialPrepTasks]
+  );
+
+  const sortedPrepTasks = useMemo(
+    () =>
+      [...initialPrepTasks].sort(
+        (a, b) =>
+          new Date(a.dueByDate).getTime() - new Date(b.dueByDate).getTime()
+      ),
+    [initialPrepTasks]
+  );
+
+  const timeStatusLabel = getTimeStatusLabel(
+    isLive,
+    isUpcoming,
+    now,
+    eventStart,
+    eventEnd,
+    formatDuration
+  );
+
+  const menuDishRows = useMemo(
+    () =>
+      eventDishes.map((dish) => ({
+        link_id: dish.linkId,
+        dish_id: dish.dishId,
+        name: dish.name,
+        category: dish.category,
+        recipe_name: dish.recipeName,
+        course: dish.course,
+        quantity_servings: dish.quantityServings,
+        dietary_tags: dish.dietaryTags,
+      })),
+    [eventDishes]
+  );
+
+  // Template suggestions - compute which suggestions haven't been added yet
+  const templateSuggestions = useMemo(() => {
+    const suggestions = getTemplateMenuSuggestions(
+      (event as { templateId?: string | null }).templateId ?? null
+    );
+    if (!suggestions) {
+      return [];
+    }
+
+    // Create a set of existing dish names for quick lookup
+    const existingDishNames = new Set(
+      eventDishes.map((d) => d.name.toLowerCase())
+    );
+
+    return suggestions.map((suggestion) => ({
+      name: suggestion,
+      added: existingDishNames.has(suggestion.toLowerCase()),
+    }));
+  }, [(event as { templateId?: string | null }).templateId, eventDishes]);
+
+  // Get template name for display
+  const templateName = useMemo(() => {
+    const templateId = (event as { templateId?: string | null }).templateId;
+    if (!templateId) {
+      return null;
+    }
+    const template = EVENT_TEMPLATES.find((t) => t.id === templateId);
+    return template?.name ?? null;
+  }, [(event as { templateId?: string | null }).templateId]);
+
+  // Get template staffing defaults
+  const templateStaffing = useMemo(() => {
+    const templateId = (event as { templateId?: string | null }).templateId;
+    if (!templateId) {
+      return null;
+    }
+    const template = EVENT_TEMPLATES.find((t) => t.id === templateId);
+    return template?.defaultStaffing ?? null;
+  }, [(event as { templateId?: string | null }).templateId]);
+
+  // Count assigned staff from event data
+  const currentStaffCount = staffCount;
+
+  // Template quick-add: open the add-dish dialog on the Create tab with the
+  // suggestion name pre-filled (the user still picks the recipe).
+  const handleAddSuggestedDish = useCallback((suggestionName: string) => {
+    setSuggestedDishName(suggestionName);
+    setShowAddDishDialog(true);
+  }, []);
+
+  // Clear the pre-filled suggestion when the dialog closes so a manual
+  // "Add Dish" afterwards starts from a clean form.
+  const handleShowAddDishDialogChange = useCallback((open: boolean) => {
+    if (!open) {
+      setSuggestedDishName("");
+    }
+    setShowAddDishDialog(open);
+  }, []);
+
+  // Handlers
+  const openRecipeDrawer = (
+    recipeId: string,
+    dishId: string,
+    mode: DrawerMode
+  ) => {
+    setSelectedRecipeId(recipeId);
+    setSelectedDishId(dishId);
+    setDrawerMode(mode);
+    setDrawerOpen(true);
+  };
+
+  const selectedRecipe = selectedRecipeId
+    ? (recipeById.get(selectedRecipeId) ?? null)
+    : null;
+  const selectedDish = selectedDishId
+    ? (eventDishes.find((dish) => dish.dishId === selectedDishId) ?? null)
+    : null;
+  const selectedScaledIngredients =
+    selectedRecipe && selectedDish
+      ? scaleIngredients(
+          selectedRecipe.ingredients,
+          selectedDish.quantityServings,
+          selectedRecipe.yieldQuantity
+        )
+      : [];
+
+  const handleShare = async () => {
+    await shareEvent({ id: event.id, title: event.title });
+  };
+
+  const handleInviteTeam = () => {
+    const subject = encodeURIComponent(`Team invite: ${event.title}`);
+    const body = encodeURIComponent(
+      `Event: ${event.title}\nDate: ${new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }).format(
+        eventDate
+      )} (${timeZoneLabel})\nVenue: ${event.venueName ?? "TBD"}\nLink: ${globalThis.location.origin}/events/${event.id}`
+    );
+    globalThis.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
+  const handleToggleSave = toggleSave;
+
+  const handleQuickRsvp = async () => {
+    if (!quickRsvpName.trim()) {
+      toast.error("Guest name is required to RSVP");
+      return;
+    }
+    setQuickRsvpLoading(true);
+    setRsvpCount((prev) => prev + 1);
+    try {
+      await quickRsvpMutation.mutateAsync({
+        eventId: event.id,
+        guestName: quickRsvpName.trim(),
+        guestEmail: quickRsvpEmail.trim() || undefined,
+      });
+      toast.success("RSVP added");
+      setQuickRsvpName("");
+      setQuickRsvpEmail("");
+      setQuickRsvpOpen(false);
+    } catch {
+      setRsvpCount((prev) => Math.max(prev - 1, 0));
+      toast.error("Unable to RSVP. Please try again.");
+    } finally {
+      setQuickRsvpLoading(false);
+    }
+  };
+
+  const handleGenerateBreakdown = useCallback(
+    async (customInstructions?: string) => {
+      try {
+        await runGenerateBreakdown(
+          {
+            eventId: event.id,
+            setIsGenerating,
+            setGenerationProgress,
+            setBreakdown,
+            setShowBreakdownModal,
+            cancelledRef: breakdownGenerationCancelledRef,
+            onRefresh: () =>
+              queryClient.invalidateQueries({
+                queryKey: ["event", event.id],
+              }),
+            progressIntervalRef: breakdownProgressIntervalRef,
+          },
+          customInstructions
+        );
+      } catch (error) {
+        if (breakdownGenerationCancelledRef.current) {
+          return;
+        }
+        const message =
+          error instanceof Error ? error.message : "Failed to generate tasks";
+        toast.error(message);
+        throw error;
+      }
+    },
+    [
+      event.id,
+      queryClient,
+      setIsGenerating,
+      setGenerationProgress,
+      setBreakdown,
+      setShowBreakdownModal,
+      breakdownGenerationCancelledRef,
+      breakdownProgressIntervalRef,
+    ]
+  );
+
+  const handleCancelBreakdownGeneration = useCallback(() => {
+    breakdownGenerationCancelledRef.current = true;
+    if (breakdownProgressIntervalRef.current) {
+      globalThis.clearInterval(breakdownProgressIntervalRef.current);
+      breakdownProgressIntervalRef.current = null;
+    }
+    setIsGenerating(false);
+    setGenerationProgress("");
+  }, []);
+
+  const handleSaveBreakdown = useCallback(async () => {
+    if (!breakdown) {
+      return;
+    }
+    try {
+      await saveBreakdownMutation.mutateAsync({
+        eventId: event.id,
+        breakdown,
+      });
+    } catch {
+      toast.error("Failed to save task breakdown");
+    }
+  }, [breakdown, event.id, saveBreakdownMutation]);
+
+  const handleGeneratePrepList = useCallback(async () => {
+    setIsGeneratingPrepList(true);
+    try {
+      const result = await generatePrepListMutation.mutateAsync({
+        eventId: event.id,
+      });
+
+      if (result.success) {
+        toast.success(
+          `Prep list generated with ${result.prepList?.totalIngredients ?? 0} ingredients`
+        );
+      } else {
+        toast.error(result.error || "Failed to generate prep list");
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to generate prep list";
+      toast.error(message);
+    } finally {
+      setIsGeneratingPrepList(false);
+    }
+  }, [event.id, generatePrepListMutation]);
+
+  const handleGenerateSummary =
+    useCallback(async (): Promise<GeneratedEventSummary> => {
+      const result = await generateSummaryMutation.mutateAsync(event.id);
+      setSummary(result);
+      return result;
+    }, [event.id, generateSummaryMutation, setSummary]);
+
+  const handleDeleteSummary = useCallback(async () => {
+    if (!summary?.id) {
+      return;
+    }
+    await deleteSummaryMutation.mutateAsync({
+      summaryId: summary.id,
+      eventId: event.id,
+    });
+    setSummary(null);
+  }, [summary, setSummary, deleteSummaryMutation]);
+
+  const handleUpdateEvent = useCallback(
+    (formData: FormData) => updateEventMutation.mutateAsync(formData),
+    [updateEventMutation]
+  );
+
+  const handleAddDish = useCallback(async () => {
+    if (!selectedDishIdForAdd) {
+      toast.error("Please select a dish");
+      return;
+    }
+    try {
+      await addDishMutation.mutateAsync({
+        eventId: event.id,
+        dishId: selectedDishIdForAdd,
+        course: selectedCourse,
+      });
+      toast.success("Dish added to event");
+      setShowAddDishDialog(false);
+      setSelectedDishIdForAdd("");
+      setSelectedCourse("");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to add dish");
+    }
+  }, [event.id, selectedCourse, selectedDishIdForAdd, addDishMutation]);
+
+  const handleRemoveDish = useCallback(
+    async (linkId: string) => {
+      try {
+        await removeDishMutation.mutateAsync({
+          eventId: event.id,
+          linkId,
+        });
+        toast.success("Dish removed from event");
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Failed to remove dish");
+      }
+    },
+    [event.id, removeDishMutation]
+  );
+
+  const openVariantDialog = useCallback((linkId: string, name: string) => {
+    setVariantLinkId(linkId);
+    setVariantSourceName(name);
+    setVariantName("");
+    setShowVariantDialog(true);
+  }, []);
+
+  const handleCreateVariant = useCallback(async () => {
+    if (!variantLinkId) {
+      return;
+    }
+    try {
+      await createVariantMutation.mutateAsync({
+        eventId: event.id,
+        linkId: variantLinkId,
+        newDishName: variantName,
+      });
+      toast.success("Variant created");
+      setShowVariantDialog(false);
+      setVariantLinkId(null);
+      setVariantSourceName("");
+      setVariantName("");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to create variant");
+    }
+  }, [event.id, variantLinkId, variantName, createVariantMutation]);
+
+  const handleExportBreakdown = useCallback(() => {
+    if (!breakdown) {
+      toast.error("No task breakdown to export");
+      return;
+    }
+    exportBreakdownToCsv(breakdown, event.title);
+  }, [breakdown, event.title]);
+
+  const [isGeneratingProposal, setIsGeneratingProposal] = useState(false);
+  const handleGenerateProposal = useCallback(async () => {
+    setIsGeneratingProposal(true);
+    try {
+      const result = await generateProposalFromEvent(event.id);
+      if (result.success && result.proposalId) {
+        toast.success(`Proposal ${result.proposalNumber} created`);
+        router.push(`/crm/proposals/${result.proposalId}`);
+      } else {
+        toast.error(result.error ?? "Failed to generate proposal");
+      }
+    } catch {
+      toast.error("Failed to generate proposal");
+    } finally {
+      setIsGeneratingProposal(false);
+    }
+  }, [event.id, router]);
+
+  const editorEvent = {
+    id: liveEvent.id,
+    eventNumber: liveEvent.eventNumber ?? undefined,
+    title: liveEvent.title,
+    description: liveEvent.notes ?? undefined,
+    date: parseISODateToLocal(liveEvent.eventDate).toISOString().slice(0, 10),
+    clientId: liveEvent.clientId ?? undefined,
+    venueName: liveEvent.venueName ?? undefined,
+    venueAddress: liveEvent.venueAddress ?? undefined,
+    guestCount: liveEvent.guestCount ?? undefined,
+    eventType: liveEvent.eventType ?? undefined,
+    status: liveEvent.status ?? undefined,
+    budget: liveEvent.budget ?? null,
+    tags: liveEvent.tags ?? [],
+    ticketTier: liveEvent.ticketTier ?? null,
+    ticketPrice: liveEvent.ticketPrice ?? null,
+    eventFormat: liveEvent.eventFormat ?? null,
+    accessibilityOptions: liveEvent.accessibilityOptions ?? [],
+    featuredMediaUrl: liveEvent.featuredMediaUrl ?? null,
+  };
+
+  const resetFilters = () => {
+    setQuickFilters([]);
+    setSelectedDateStart("");
+    setSelectedDateEnd("");
+    setSelectedLocation("all");
+    setSelectedOrganizer("all");
+    setSelectedFormat("all");
+    setSelectedPrice("all");
+    setSelectedTags([]);
+    setSelectedAccessibility([]);
+  };
+
+  return (
+    <div className="relative min-h-screen bg-background text-foreground">
+      <GridBackground className="pointer-events-none absolute inset-0 opacity-15" />
+      <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pt-10 pb-28 sm:px-6 lg:px-8">
+        <Separator />
+        <EventDetailTabs
+          battleBoardHref={battleBoardHref}
+          battleboard={
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <SwordsIcon className="mb-3 h-12 w-12 opacity-40" />
+              <p className="text-sm">
+                Coordinate menu finalization with the team.
+              </p>
+              <a
+                className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:bg-primary/90"
+                href={battleBoardHref}
+              >
+                Open Battle Board
+              </a>
+            </div>
+          }
+          board={board}
+          copilot={
+            <AIInsightsPanel
+              breakdown={breakdown}
+              budget={budget}
+              eventId={event.id}
+              eventTitle={event.title}
+              generationProgress={generationProgress}
+              isGenerating={isGenerating}
+              isLoadingSummary={isLoadingSummary}
+              onCancelBreakdownGeneration={handleCancelBreakdownGeneration}
+              onCreateBudget={() => router.push("/events/budgets")}
+              onDeleteSummary={handleDeleteSummary}
+              onDismissSuggestion={dismissSuggestion}
+              onExportBreakdown={handleExportBreakdown}
+              onGenerateSummary={handleGenerateSummary}
+              onHandleSuggestionAction={handleAction}
+              onOpenBreakdownModal={() => setShowBreakdownModal(true)}
+              onOpenGenerateModal={() => setShowBreakdownModal(true)}
+              onOpenSummaryModal={() => setShowSummaryModal(true)}
+              onRefreshSuggestions={fetchSuggestions}
+              onRegenerateBreakdown={() => {
+                handleGenerateBreakdown().catch(() => undefined);
+              }}
+              onSaveBreakdown={handleSaveBreakdown}
+              onShowSuggestionsChange={setShowSuggestions}
+              onViewBudget={(budgetId: string) =>
+                router.push(`/events/budgets/${budgetId}`)
+              }
+              prepTasks={sortedPrepTasks}
+              showSuggestions={showSuggestions}
+              suggestions={suggestions}
+              suggestionsLoading={suggestionsLoading}
+              summary={summary}
+            />
+          }
+          eventDate={event.eventDate ?? undefined}
+          eventId={event.id}
+          eventStatus={event.status ?? null}
+          explore={
+            <EventExplorer
+              explorerView={explorerView}
+              now={now}
+              quickFilters={quickFilters}
+              relatedEvents={relatedEvents}
+              relatedGuestCounts={relatedGuestCounts}
+              resetFilters={resetFilters}
+              selectedAccessibility={selectedAccessibility}
+              selectedDateEnd={selectedDateEnd}
+              selectedDateStart={selectedDateStart}
+              selectedFormat={selectedFormat}
+              selectedLocation={selectedLocation}
+              selectedOrganizer={selectedOrganizer}
+              selectedPrice={selectedPrice}
+              selectedTags={selectedTags}
+              setExplorerView={setExplorerView}
+              setQuickFilters={setQuickFilters}
+              setSelectedAccessibility={setSelectedAccessibility}
+              setSelectedDateEnd={setSelectedDateEnd}
+              setSelectedDateStart={setSelectedDateStart}
+              setSelectedFormat={setSelectedFormat}
+              setSelectedLocation={setSelectedLocation}
+              setSelectedOrganizer={setSelectedOrganizer}
+              setSelectedPrice={setSelectedPrice}
+              setSelectedTags={setSelectedTags}
+              setSortBy={setSortBy}
+              sortBy={sortBy}
+            />
+          }
+          followups={
+            <div className="p-4">
+              <p className="mb-4 text-muted-foreground">
+                Manage automated follow-up tasks for this event.
+              </p>
+              <a
+                className="inline-flex items-center justify-center rounded-sm bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:bg-primary/90"
+                href={`/events/${event.id}/follow-ups`}
+              >
+                Open Follow-Ups Dashboard
+              </a>
+            </div>
+          }
+          guests={
+            <GuestManagementSection
+              eventId={event.id}
+              eventTitle={event.title}
+              isSoldOut={soldOut}
+              onQuickRsvp={() => setQuickRsvpOpen(true)}
+            />
+          }
+          menu={
+            <MenuIntelligenceSection
+              aggregatedIngredients={aggregatedIngredients}
+              availableDishes={availableDishes}
+              dishRows={dishRows}
+              eventId={event.id}
+              inventoryByIngredient={inventoryByIngredient}
+              isCreatingDish={isCreatingDish}
+              isLoadingDishes={isLoadingDishes}
+              menuDishRows={menuDishRows}
+              onAddDish={handleAddDish}
+              onAddSuggestedDish={handleAddSuggestedDish}
+              onCreateDishInline={handleCreateDishInline}
+              onOpenRecipeDrawer={openRecipeDrawer}
+              onOpenVariantDialog={openVariantDialog}
+              onRemoveDish={handleRemoveDish}
+              onSelectedCourseChange={setSelectedCourse}
+              onSelectedDishIdChange={setSelectedDishIdForAdd}
+              onShowAddDialogChange={handleShowAddDishDialogChange}
+              recipes={recipes}
+              selectedCourse={selectedCourse}
+              selectedDishIdForAdd={selectedDishIdForAdd}
+              showAddDishDialog={showAddDishDialog}
+              suggestedDishName={suggestedDishName}
+              templateName={templateName}
+              templateSuggestions={templateSuggestions}
+            />
+          }
+          operations={
+            <div className="space-y-6">
+              <OperationsSection
+                battleBoardHref={battleBoardHref}
+                currentStaffCount={currentStaffCount}
+                eventId={event.id}
+                isGeneratingPrepList={isGeneratingPrepList}
+                onGeneratePrepList={handleGeneratePrepList}
+                onOpenGenerateModal={() => setShowBreakdownModal(true)}
+                prepLists={prepLists}
+                prepTasks={sortedPrepTasks}
+                taskSummary={taskSummary}
+                templateName={templateName}
+                templateStaffing={templateStaffing}
+              />
+              <AllergenSection eventId={event.id} />
+              <div className="flex flex-wrap gap-2">
+                <a
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 font-medium text-sm hover:bg-accent"
+                  href={`/events/${event.id}/run-sheet`}
+                >
+                  <ClipboardList className="h-3.5 w-3.5" /> Run Sheet
+                </a>
+                <button
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 font-medium text-sm hover:bg-accent disabled:opacity-50"
+                  disabled={isGeneratingProposal}
+                  onClick={handleGenerateProposal}
+                  type="button"
+                >
+                  <FileText className="h-3.5 w-3.5" />
+                  {isGeneratingProposal ? "Generating..." : "Generate Proposal"}
+                </button>
+              </div>
+            </div>
+          }
+          overview={
+            <div className="space-y-6">
+              <EventRecordCard
+                event={liveEvent}
+                onEditEvent={() => setShowEditEvent(true)}
+              />
+              <EventSetupChecklist
+                eventDate={liveEvent.eventDate}
+                eventId={liveEvent.id}
+                eventStatus={liveEvent.status ?? undefined}
+                hasBudget={hasBudget ?? false}
+                hasClient={!!liveEvent.clientId}
+                hasContract={hasContract}
+                hasMenu={eventDishes.length > 0}
+                hasPrepList={prepLists.length > 0}
+                hasStaff={staffCount > 0}
+                hasVenue={!!liveEvent.venueName}
+                onAssignClient={() => setShowAssignClient(true)}
+                onEditEvent={() => setShowEditEvent(true)}
+              />
+              <EventTimeline
+                currentStage={determineEventStage({
+                  createdAt: event.createdAt ?? undefined,
+                  clientId: event.clientId ?? undefined,
+                  venueName: event.venueName ?? undefined,
+                  eventDishes,
+                  prepTasks: sortedPrepTasks,
+                  status: event.status ?? undefined,
+                  eventDate: event.eventDate,
+                })}
+                onStageClick={handleTimelineStageClick}
+              />
+              <EventOverviewCard
+                aggregatedIngredientsCount={aggregatedIngredients.length}
+                availability={availability}
+                capacity={capacity}
+                displayedTags={displayedTags}
+                event={liveEvent}
+                eventDate={eventDate}
+                eventStart={eventStart}
+                eventStatusLabel={eventStatusLabel}
+                featuredMediaUrl={featuredMediaUrl}
+                inventoryStats={inventoryStats}
+                isLimited={limited}
+                isLive={isLive}
+                isPast={isPast}
+                isSaved={isSaved}
+                isSoldOut={soldOut}
+                missingFields={missingFields}
+                onEditEvent={() => setShowEditEvent(true)}
+                onInviteTeam={handleInviteTeam}
+                onQuickRsvp={() => setQuickRsvpOpen(true)}
+                onShare={handleShare}
+                onToggleSave={handleToggleSave}
+                onUpdateDetails={() => setShowEditEvent(true)}
+                prepTasks={initialPrepTasks}
+                rsvpCount={rsvpCount}
+                saveReady={saveReady}
+                taskSummary={taskSummary}
+                ticketPriceLabel={ticketPriceLabel}
+                timeStatusLabel={timeStatusLabel}
+                timeZoneLabel={timeZoneLabel}
+              />
+            </div>
+          }
+          reports={
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <p className="text-sm">
+                Generate post-event reports and review performance.
+              </p>
+              <a
+                className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:bg-primary/90"
+                href={"/events/reports"}
+              >
+                View Reports
+              </a>
+            </div>
+          }
+        />
+      </div>
+
+      {/* Modals */}
+      <EventEditorModal
+        event={editorEvent}
+        onOpenChange={setShowEditEvent}
+        onSave={handleUpdateEvent}
+        open={showEditEvent}
+      />
+
+      <ClientAssignDialog
+        eventId={event.id}
+        onAssigned={handleClientAssigned}
+        onOpenChange={setShowAssignClient}
+        open={showAssignClient}
+      />
+
+      <GenerateTaskBreakdownModal
+        eventDate={parseISODateToLocal(event.eventDate).toISOString()}
+        eventId={event.id}
+        eventTitle={event.title}
+        guestCount={event.guestCount ?? 0}
+        isOpen={showBreakdownModal}
+        onGenerate={handleGenerateBreakdown}
+        onOpenChange={setShowBreakdownModal}
+        showTrigger={false}
+        venueName={event.venueName ?? undefined}
+      />
+
+      <GenerateEventSummaryModal
+        eventId={event.id}
+        eventTitle={event.title}
+        isOpen={showSummaryModal}
+        onGenerate={handleGenerateSummary}
+        onOpenChange={setShowSummaryModal}
+        showTrigger={false}
+      />
+
+      <DishVariantDialog
+        onCreate={handleCreateVariant}
+        onOpenChange={setShowVariantDialog}
+        onVariantNameChange={setVariantName}
+        open={showVariantDialog}
+        sourceName={variantSourceName}
+        variantName={variantName}
+      />
+
+      {/* Mobile sticky bar + Quick RSVP */}
+      <MobileStickyBar
+        isSaved={isSaved}
+        onRsvp={() => setQuickRsvpOpen(true)}
+        onShare={handleShare}
+        onToggleSave={handleToggleSave}
+        saveReady={saveReady}
+        soldOut={soldOut}
+      />
+      <QuickRsvpModal
+        email={quickRsvpEmail}
+        eventTitle={event.title}
+        loading={quickRsvpLoading}
+        name={quickRsvpName}
+        onClose={() => setQuickRsvpOpen(false)}
+        onEmailChange={setQuickRsvpEmail}
+        onNameChange={setQuickRsvpName}
+        onSubmit={handleQuickRsvp}
+        open={quickRsvpOpen}
+      />
+
+      <RecipeDrawer
+        drawerMode={drawerMode}
+        onDrawerModeChange={setDrawerMode}
+        onOpenChange={setDrawerOpen}
+        open={drawerOpen}
+        selectedDish={selectedDish}
+        selectedRecipe={selectedRecipe}
+        selectedScaledIngredients={selectedScaledIngredients}
+      />
+    </div>
+  );
+}
+
+function cn(...classes: (string | boolean | undefined | null)[]) {
+  return classes.filter(Boolean).join(" ");
+}

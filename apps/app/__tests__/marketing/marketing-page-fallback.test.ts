@@ -20,7 +20,7 @@ vi.mock("@repo/database", () => ({
   database: {},
 }));
 
-import MarketingPage from "../../app/(authenticated)/marketing/page";
+import MarketingPage from "../../app/(authenticated)/(sales)/marketing/page";
 
 describe("marketing pages without marketing models", () => {
   it("does not crash on the marketing overview page", () => {

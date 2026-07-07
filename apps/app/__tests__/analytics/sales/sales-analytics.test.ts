@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { utils, type WorkBook } from "xlsx";
-import { loadSalesData } from "../../../app/(authenticated)/analytics/sales/lib/sales-analytics";
+import { loadSalesData } from "../../../app/(authenticated)/(insights)/analytics/sales/lib/sales-analytics";
 
 const buildWorkbook = (
   sheets: Array<{ name: string; rows: Record<string, unknown>[] }>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeStaffImpact } from "@/app/(authenticated)/events/[eventId]/board/impact";
+import { computeStaffImpact } from "@/app/(authenticated)/(events)/events/[eventId]/board/impact";
 
 const drafts = [
   {

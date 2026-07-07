@@ -56,7 +56,7 @@ import { runManifestCommand } from "@/lib/manifest-command";
 import {
   createProposalTemplate,
   updateProposalTemplate,
-} from "../../app/(authenticated)/crm/proposals/templates/actions";
+} from "../../app/(authenticated)/(sales)/crm/proposals/templates/actions";
 
 const runCommand = runManifestCommand as ReturnType<typeof vi.fn>;
 const requireUser = requireCurrentUser as ReturnType<typeof vi.fn>;

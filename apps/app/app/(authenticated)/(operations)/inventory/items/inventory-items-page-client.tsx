@@ -1,0 +1,668 @@
+"use client";
+
+import { NoInventoryState } from "@repo/design-system/components/blocks/illustrated-empty-states";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { Checkbox } from "@repo/design-system/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@repo/design-system/components/ui/dropdown-menu";
+import { Input } from "@repo/design-system/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/design-system/components/ui/table";
+import { PackageIcon, PlusIcon, TrashIcon, UploadIcon } from "lucide-react";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import {
+  deleteInventoryItem,
+  FSA_STATUSES,
+  type FSAStatus,
+  formatCurrency,
+  getCategoryLabel,
+  getFSAStatusColor,
+  getFSAStatusLabel,
+  getStockStatusColor,
+  getStockStatusLabel,
+  type InventoryItemWithStatus,
+  ITEM_CATEGORIES,
+  type ItemCategory,
+  listInventoryItems,
+  listSuppliers,
+  type StockStatus,
+  type Supplier,
+} from "../../../../lib/inventory";
+import {
+  OperationalPageShell,
+  OperationalSection,
+} from "../../../components/operational-page-shell";
+import { SampleDataImportButton } from "../../../components/sample-data-import-button";
+import { CreateInventoryItemModal } from "./components/create-inventory-item-modal";
+
+export const InventoryItemsPageClient = () => {
+  const [items, setItems] = useState<InventoryItemWithStatus[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [categoryFilter, setCategoryFilter] = useState<ItemCategory | "all">(
+    "all"
+  );
+  const [supplierFilter, setSupplierFilter] = useState<string>("all");
+  const [stockStatusFilter, setStockStatusFilter] = useState<
+    StockStatus | "all"
+  >("all");
+  const [fsaStatusFilter, setFsaStatusFilter] = useState<FSAStatus | "all">(
+    "all"
+  );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] =
+    useState<InventoryItemWithStatus | null>(null);
+  const [editItem, setEditItem] = useState<InventoryItemWithStatus | null>(
+    null
+  );
+
+  // Selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [_batchUpdateDialogOpen, setBatchUpdateDialogOpen] = useState(false);
+  const [_batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
+  const [_batchUpdateField, setBatchUpdateField] = useState<
+    "category" | "fsa_status"
+  >("category");
+
+  // Load suppliers once for the filter dropdown
+  useEffect(() => {
+    listSuppliers()
+      .then(setSuppliers)
+      .catch(() => setSuppliers([]));
+  }, []);
+
+  const loadItems = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await listInventoryItems({
+        page,
+        limit: 20,
+        search: searchQuery || undefined,
+        category: categoryFilter === "all" ? undefined : categoryFilter,
+        supplierId: supplierFilter === "all" ? undefined : supplierFilter,
+        stockStatus:
+          stockStatusFilter === "all" ? undefined : stockStatusFilter,
+        fsaStatus: fsaStatusFilter === "all" ? undefined : fsaStatusFilter,
+      });
+      setItems(response.data);
+      setTotalPages(response.pagination.totalPages);
+      setTotalCount(response.pagination.total);
+    } catch (error) {
+      console.error("Failed to load inventory items:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to load inventory items"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [
+    page,
+    searchQuery,
+    categoryFilter,
+    supplierFilter,
+    stockStatusFilter,
+    fsaStatusFilter,
+  ]);
+
+  useEffect(() => {
+    loadItems();
+  }, [loadItems]);
+
+  const handleDelete = useCallback(async () => {
+    if (!itemToDelete) {
+      return;
+    }
+
+    try {
+      await deleteInventoryItem(itemToDelete.id);
+      toast.success("Inventory item deleted successfully");
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+      loadItems();
+    } catch (error) {
+      console.error("Failed to delete inventory item:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to delete inventory item"
+      );
+    }
+  }, [itemToDelete, loadItems]);
+
+  const confirmDelete = (item: InventoryItemWithStatus) => {
+    setItemToDelete(item);
+    setDeleteDialogOpen(true);
+  };
+
+  const openEditModal = (item: InventoryItemWithStatus) => {
+    setEditItem(item);
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsCreateModalOpen(false);
+    setEditItem(null);
+  };
+
+  // Selection helpers
+  const toggleSelectAll = useCallback(() => {
+    if (selectedIds.size === items.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(items.map((item) => item.id)));
+    }
+  }, [items, selectedIds.size]);
+
+  const toggleSelectItem = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
+
+  // Calculate summary stats
+  const totalValue = items.reduce((sum, item) => sum + item.total_value, 0);
+  const lowStockCount = items.filter(
+    (item) => item.stock_status === "low_stock"
+  ).length;
+  const outOfStockCount = items.filter(
+    (item) => item.stock_status === "out_of_stock"
+  ).length;
+
+  const hasActiveFilters =
+    !!searchQuery ||
+    categoryFilter !== "all" ||
+    supplierFilter !== "all" ||
+    stockStatusFilter !== "all" ||
+    fsaStatusFilter !== "all";
+
+  return (
+    <>
+      <OperationalPageShell
+        description="Manage ingredient inventory, track stock levels, and monitor reorder points."
+        eyebrow="Inventory / Items"
+        title="Inventory items"
+      >
+        <OperationalSection title="Performance overview">
+          <div className="grid gap-4 md:grid-cols-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Total Items</CardDescription>
+                <CardTitle className="text-2xl">{totalCount}</CardTitle>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Total Value</CardDescription>
+                <CardTitle className="text-2xl">
+                  {formatCurrency(totalValue)}
+                </CardTitle>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Low Stock</CardDescription>
+                <CardTitle className="text-2xl text-yellow-600">
+                  {lowStockCount}
+                </CardTitle>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Out of Stock</CardDescription>
+                <CardTitle className="text-2xl text-red-600">
+                  {outOfStockCount}
+                </CardTitle>
+              </CardHeader>
+            </Card>
+          </div>
+        </OperationalSection>
+
+        {/* Filters Section */}
+        <section>
+          <h2 className="mb-4 font-medium text-muted-foreground text-sm">
+            Filters
+          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-card p-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="relative">
+                <Input
+                  className="w-64"
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setPage(1);
+                  }}
+                  placeholder="Search by name or SKU..."
+                  type="text"
+                  value={searchQuery}
+                />
+              </div>
+              <Select
+                onValueChange={(value) => {
+                  setCategoryFilter(
+                    value === "all" ? "all" : (value as ItemCategory)
+                  );
+                  setPage(1);
+                }}
+                value={categoryFilter}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {ITEM_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {getCategoryLabel(cat)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                onValueChange={(value) => {
+                  setSupplierFilter(value);
+                  setPage(1);
+                }}
+                value={supplierFilter}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Supplier" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Suppliers</SelectItem>
+                  {suppliers.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                onValueChange={(value) => {
+                  setStockStatusFilter(
+                    value === "all" ? "all" : (value as StockStatus)
+                  );
+                  setPage(1);
+                }}
+                value={stockStatusFilter}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Stock Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Stock Levels</SelectItem>
+                  <SelectItem value="in_stock">In Stock</SelectItem>
+                  <SelectItem value="low_stock">Low Stock</SelectItem>
+                  <SelectItem value="out_of_stock">Out of Stock</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                onValueChange={(value) => {
+                  setFsaStatusFilter(
+                    value === "all" ? "all" : (value as FSAStatus)
+                  );
+                  setPage(1);
+                }}
+                value={fsaStatusFilter}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="FSA Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All FSA Statuses</SelectItem>
+                  {FSA_STATUSES.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {getFSAStatusLabel(status)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button onClick={() => setIsCreateModalOpen(true)}>
+              <PlusIcon className="mr-2 size-4" />
+              New Item
+            </Button>
+          </div>
+        </section>
+
+        {/* Batch Actions Bar */}
+        {selectedIds.size > 0 && (
+          <section>
+            <div className="flex items-center justify-between rounded-xl border bg-muted/50 p-4">
+              <div className="flex items-center gap-3">
+                <span className="font-medium text-sm">
+                  {selectedIds.size} item{selectedIds.size === 1 ? "" : "s"}{" "}
+                  selected
+                </span>
+                <Button onClick={clearSelection} size="sm" variant="ghost">
+                  Clear
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="outline">
+                      <UploadIcon className="mr-2 size-4" />
+                      Update Selected
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Update Field</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setBatchUpdateField("category");
+                        setBatchUpdateDialogOpen(true);
+                      }}
+                    >
+                      Update Category
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setBatchUpdateField("fsa_status");
+                        setBatchUpdateDialogOpen(true);
+                      }}
+                    >
+                      Update FSA Status
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button
+                  onClick={() => setBatchDeleteDialogOpen(true)}
+                  size="sm"
+                  variant="destructive"
+                >
+                  <TrashIcon className="mr-2 size-4" />
+                  Delete Selected
+                </Button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Inventory Items Table Section */}
+        <section>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="font-medium text-muted-foreground text-sm">
+              Inventory Items ({totalCount})
+            </h2>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/inventory/import">
+                <UploadIcon className="mr-2 size-4" />
+                Import CSV
+              </Link>
+            </Button>
+          </div>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+          ) : items.length === 0 ? (
+            hasActiveFilters ? (
+              <div className="flex flex-col items-center justify-center rounded-xl border border-dashed p-12 text-center">
+                <div className="mb-4 rounded-full bg-muted p-4">
+                  <PackageIcon className="size-8 text-muted-foreground" />
+                </div>
+                <h3 className="mb-2 font-semibold text-lg">No items found</h3>
+                <p className="text-muted-foreground text-sm">
+                  Try adjusting your filters or search query
+                </p>
+              </div>
+            ) : (
+              <NoInventoryState
+                description="Inventory items are the ingredients and supplies you stock. Add items to track quantities on hand, costs, par levels, and reorder points across your locations."
+                onAddItem={() => setIsCreateModalOpen(true)}
+                secondaryAction={
+                  <SampleDataImportButton onSeeded={loadItems} />
+                }
+                userRole="admin"
+              />
+            )
+          ) : (
+            <div className="rounded-xl border bg-card">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={
+                          items.length > 0 && selectedIds.size === items.length
+                        }
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </TableHead>
+                    <TableHead>Item Number</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead className="text-right">Quantity</TableHead>
+                    <TableHead className="text-right">Unit Cost</TableHead>
+                    <TableHead className="text-right">Total Value</TableHead>
+                    <TableHead>Stock Status</TableHead>
+                    <TableHead>FSA Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {items.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedIds.has(item.id)}
+                          onCheckedChange={() => toggleSelectItem(item.id)}
+                        />
+                      </TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {item.item_number}
+                      </TableCell>
+                      <TableCell>
+                        <Link
+                          className="font-medium text-primary hover:underline"
+                          href={`/inventory/items/${item.id}`}
+                        >
+                          {item.name}
+                        </Link>
+                        {item.tags.length > 0 && (
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {item.tags.slice(0, 2).map((tag) => (
+                              <Badge
+                                className="text-xs"
+                                key={tag}
+                                variant="outline"
+                              >
+                                {tag}
+                              </Badge>
+                            ))}
+                            {item.tags.length > 2 && (
+                              <Badge className="text-xs" variant="outline">
+                                +{item.tags.length - 2}
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {getCategoryLabel(item.category as ItemCategory)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="font-medium">
+                          {item.quantity_on_hand.toFixed(3)}
+                        </div>
+                        <div className="text-muted-foreground text-xs">
+                          Reorder at: {item.reorder_level.toFixed(3)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(item.unit_cost)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="font-medium">
+                          {formatCurrency(item.total_value)}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={getStockStatusColor(item.stock_status)}
+                          variant="outline"
+                        >
+                          {getStockStatusLabel(item.stock_status)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={getFSAStatusColor(
+                            item.fsa_status ?? "unknown"
+                          )}
+                          variant="outline"
+                        >
+                          {getFSAStatusLabel(item.fsa_status ?? "unknown")}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            onClick={() => openEditModal(item)}
+                            size="sm"
+                            variant="ghost"
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => confirmDelete(item)}
+                            size="sm"
+                            variant="ghost"
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t px-4 py-4">
+                  <div className="text-muted-foreground text-sm">
+                    Showing {Math.min((page - 1) * 20 + 1, totalCount)} to{" "}
+                    {Math.min(page * 20, totalCount)} of {totalCount} items
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      disabled={page === 1}
+                      onClick={() => setPage(page - 1)}
+                      size="sm"
+                      variant="outline"
+                    >
+                      Previous
+                    </Button>
+                    <div className="flex items-center px-3 text-sm">
+                      Page {page} of {totalPages}
+                    </div>
+                    <Button
+                      disabled={page === totalPages}
+                      onClick={() => setPage(page + 1)}
+                      size="sm"
+                      variant="outline"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      </OperationalPageShell>
+
+      {/* Create/Edit Modal */}
+      <CreateInventoryItemModal
+        editItem={editItem}
+        onClose={handleCloseModal}
+        onCreated={loadItems}
+        open={isCreateModalOpen}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog onOpenChange={setDeleteDialogOpen} open={deleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Inventory Item?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete{" "}
+              <strong>{itemToDelete?.name}</strong>? This action cannot be
+              undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setItemToDelete(null);
+              }}
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleDelete} variant="destructive">
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};

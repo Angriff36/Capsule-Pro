@@ -4,7 +4,7 @@
 
 import { database } from "@repo/database";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import RecipeDetailPage from "../../../app/(authenticated)/kitchen/recipes/[recipeId]/page";
+import RecipeDetailPage from "../../../app/(authenticated)/(operations)/kitchen/recipes/[recipeId]/page";
 
 vi.mock("@repo/auth/server", () => ({
   auth: vi.fn().mockResolvedValue({ orgId: "org-1" }),

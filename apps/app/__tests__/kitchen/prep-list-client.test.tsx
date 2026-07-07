@@ -24,8 +24,8 @@ vi.mock(
   })
 );
 
-import type { PrepListGenerationResult } from "../../app/(authenticated)/kitchen/prep-lists/actions";
-import { PrepListClient } from "../../app/(authenticated)/kitchen/prep-lists/prep-list-client";
+import type { PrepListGenerationResult } from "../../app/(authenticated)/(operations)/kitchen/prep-lists/actions";
+import { PrepListClient } from "../../app/(authenticated)/(operations)/kitchen/prep-lists/prep-list-client";
 
 const AVAILABLE_EVENTS = [
   {

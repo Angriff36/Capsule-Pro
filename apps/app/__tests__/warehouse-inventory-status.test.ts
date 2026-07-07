@@ -6,7 +6,7 @@ import {
   getStockHealthStatus,
   stockHealthBadgeVariants,
   stockHealthLabels,
-} from "../app/(authenticated)/warehouse/lib/inventory-status";
+} from "../app/(authenticated)/(operations)/warehouse/lib/inventory-status";
 
 describe("getStockHealthStatus", () => {
   it("returns 'out_of_stock' when quantity is 0", () => {

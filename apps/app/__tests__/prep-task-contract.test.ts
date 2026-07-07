@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { validatePrepTasks } from "../app/(authenticated)/events/[eventId]/prep-task-contract";
+import { validatePrepTasks } from "../app/(authenticated)/(events)/events/[eventId]/prep-task-contract";
 
 const CONTRACT_VIOLATION_REGEX = /PrepTask contract violation/;
 

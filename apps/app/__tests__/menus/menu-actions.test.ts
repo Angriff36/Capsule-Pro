@@ -19,7 +19,7 @@ import {
   removeDishFromMenu,
   reorderMenuDishes,
   updateMenu,
-} from "../../app/(authenticated)/kitchen/recipes/menus/actions";
+} from "../../app/(authenticated)/(operations)/kitchen/recipes/menus/actions";
 
 // Mock the tenant module
 vi.mock(
