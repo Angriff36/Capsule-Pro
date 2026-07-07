@@ -159,13 +159,11 @@ function getWarningTypeLabel(type: string): string {
  * Acknowledge dialog component for override reason input
  */
 function AcknowledgeDialog({
-  warningId,
   warningType,
   severity,
   onConfirm,
   trigger,
 }: {
-  warningId: string;
   warningType: string;
   severity: string;
   onConfirm: (reason?: string) => void | Promise<void>;
@@ -563,7 +561,6 @@ export function AllergenWarningBanner({
                       Acknowledge
                     </Button>
                   }
-                  warningId={warning.id}
                   warningType={warning.warningType}
                 />
 

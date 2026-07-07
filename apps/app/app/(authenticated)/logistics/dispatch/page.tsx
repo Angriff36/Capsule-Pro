@@ -84,8 +84,10 @@ interface DispatchData {
   };
 }
 
+type DispatchStatus = "unassigned" | "assigned" | "in_progress" | "complete";
+
 const DISPATCH_STATUS_CONFIG: Record<
-  string,
+  DispatchStatus,
   {
     label: string;
     color: string;
@@ -265,7 +267,7 @@ export default function DispatchPage() {
           {(["unassigned", "assigned", "in_progress"] as const).map(
             (status) => {
               const config = DISPATCH_STATUS_CONFIG[status];
-              const routes = groupedRoutes[status];
+              const routes = groupedRoutes[status] ?? [];
               if (routes.length === 0) {
                 return null;
               }

@@ -44,30 +44,6 @@ const getStatusBadgeVariant = (
   }
 };
 
-// Helper to get type badge style
-const _getTypeBadgeVariant = (
-  type: TimeOffType
-): "default" | "secondary" | "destructive" | "outline" => {
-  switch (type) {
-    case "VACATION":
-      return "default";
-    case "SICK_LEAVE":
-      return "destructive";
-    case "PERSONAL_DAY":
-      return "secondary";
-    case "BEREAVEMENT":
-      return "destructive";
-    case "MATERNITY_LEAVE":
-      return "default";
-    case "PATERNITY_LEAVE":
-      return "default";
-    case "OTHER":
-      return "outline";
-    default:
-      return "outline";
-  }
-};
-
 // Helper to get color for type
 const getTypeColor = (type: TimeOffType): string => {
   switch (type) {

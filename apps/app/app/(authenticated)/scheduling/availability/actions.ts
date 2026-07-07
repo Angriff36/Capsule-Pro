@@ -251,7 +251,7 @@ export async function createAvailability(formData: FormData) {
     `
   );
 
-  if (Number(existingActive.count) > 0) {
+  if (Number(existingActive?.count ?? 0) > 0) {
     throw new Error("Employee already has active availability for this day");
   }
 
@@ -576,7 +576,7 @@ export async function createBatchAvailability(formData: FormData) {
     `
   );
 
-  if (Number(existingActive.count) > 0) {
+  if (Number(existingActive?.count ?? 0) > 0) {
     throw new Error(
       "Employee already has active availability for one or more of these days"
     );

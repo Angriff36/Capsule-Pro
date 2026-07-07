@@ -277,7 +277,7 @@ export function getNativeCommandSchema(
     // 3.1.3 IR: optional params carry required:false; required params OMIT the field
     required: param.required !== false,
   }));
-  if (!generator) {
+  if (!(generator && compiledIr)) {
     return {
       description: `${entity}.${command}`,
       params: coarseParams,

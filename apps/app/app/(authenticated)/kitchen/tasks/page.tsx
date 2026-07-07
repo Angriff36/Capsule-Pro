@@ -73,9 +73,6 @@ const KitchenTasksPage = async () => {
   // Fetch user's active claims
   const myClaims = currentUser ? await getMyActiveClaims(currentUser.id) : [];
 
-  // Build task map with claims
-  const myClaimedTaskIds = new Set(myClaims.map((c) => c.taskId));
-
   return (
     <>
       <Header page="Kitchen Tasks" pages={["Kitchen Ops"]} />
@@ -160,7 +157,6 @@ const KitchenTasksPage = async () => {
                   </TableHeader>
                   <TableBody>
                     {tasks.map((task) => {
-                      const _isClaimedByMe = myClaimedTaskIds.has(task.id);
                       const claimedBy = myClaims.find(
                         (c) => c.taskId === task.id
                       );

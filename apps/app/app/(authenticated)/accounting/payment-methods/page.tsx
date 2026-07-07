@@ -22,17 +22,6 @@ import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { PaymentMethodsClient } from "./payment-methods-client";
 
-function _formatDate(value: Date | null) {
-  if (!value) {
-    return "\u2014";
-  }
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(value);
-}
-
 function getClientLabel(
   client: {
     companyName: string | null;

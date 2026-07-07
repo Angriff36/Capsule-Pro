@@ -35,6 +35,7 @@ import {
   formatDateShort,
   PRIORITY_CONFIG,
   REQ_STATUS_CONFIG,
+  type ReqStatusConfig,
 } from "../components/req-shared";
 
 interface Requisition {
@@ -50,6 +51,19 @@ interface Requisition {
   status: string;
   subtotal: number;
 }
+
+const getReqStatusConfig = (status: string): ReqStatusConfig =>
+  REQ_STATUS_CONFIG[status] ?? {
+    label: status || "Unknown",
+    color: "bg-muted/50 text-foreground",
+    icon: FileText,
+  };
+
+const getPriorityConfig = (priority: string) =>
+  PRIORITY_CONFIG[priority] ?? {
+    label: priority || "Unknown",
+    color: "bg-muted/50 text-foreground",
+  };
 
 export default function RequisitionsPage() {
   const [requisitions, setRequisitions] = useState<Requisition[]>([]);
@@ -101,7 +115,7 @@ export default function RequisitionsPage() {
   const workflowMetrics = (
     ["pending_manager", "pending_finance", "approved", "rejected"] as const
   ).map((status) => {
-    const config = REQ_STATUS_CONFIG[status];
+    const config = getReqStatusConfig(status);
     const count = requisitions.filter((r) => r.status === status).length;
     return { status, config, count };
   });
@@ -198,7 +212,7 @@ export default function RequisitionsPage() {
                     key={s}
                     value={s}
                   >
-                    {REQ_STATUS_CONFIG[s].label} ({count})
+                    {getReqStatusConfig(s).label} ({count})
                   </TabsTrigger>
                 ) : null;
               })}
@@ -214,11 +228,9 @@ export default function RequisitionsPage() {
               ) : (
                 <div className="space-y-3">
                   {filtered.map((req) => {
-                    const config =
-                      REQ_STATUS_CONFIG[req.status] || REQ_STATUS_CONFIG.draft;
+                    const config = getReqStatusConfig(req.status);
                     const Icon = config.icon;
-                    const priorityConfig =
-                      PRIORITY_CONFIG[req.priority] || PRIORITY_CONFIG.normal;
+                    const priorityConfig = getPriorityConfig(req.priority);
                     return (
                       <OperationalRow
                         className="p-5"

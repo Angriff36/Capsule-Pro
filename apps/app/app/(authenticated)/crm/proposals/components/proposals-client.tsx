@@ -252,12 +252,6 @@ export function ProposalsClient({
     setStatusFilter(value);
   };
 
-  const _handleStatusChangeOpen = (open: boolean) => {
-    if (!open && statusFilter !== "__all__") {
-      updateFilters();
-    }
-  };
-
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", String(newPage));

@@ -30,7 +30,6 @@ import { log } from "@repo/observability/log";
 import {
   addMonths,
   eachDayOfInterval,
-  endOfDay,
   endOfMonth,
   endOfWeek,
   format,
@@ -346,7 +345,6 @@ export function UnifiedCalendar({
   const getEventsForDay = (day: Date) => {
     return filteredEvents.filter((event) => {
       const dayStart = startOfDay(day);
-      const _dayEnd = endOfDay(day);
       const eventStart = event.start;
 
       // Event starts on this day
@@ -743,7 +741,7 @@ export function UnifiedCalendar({
         <div className="flex flex-wrap gap-2">
           {Object.entries(EVENT_TYPE_LABELS).map(([type, label]) => (
             <Badge
-              className={`cursor-pointer ${filters.includes(type) ? EVENT_COLORS[type].replace("bg-", "bg-").replace("border-", "border-") : ""}`}
+              className={`cursor-pointer ${filters.includes(type) ? (EVENT_COLORS[type] ?? "").replace("bg-", "bg-").replace("border-", "border-") : ""}`}
               key={type}
               onClick={() => toggleFilter(type)}
               variant={filters.includes(type) ? "default" : "outline"}

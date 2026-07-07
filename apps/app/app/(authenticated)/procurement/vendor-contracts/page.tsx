@@ -44,6 +44,7 @@ import {
   CONTRACT_TYPE_CONFIG,
   formatDateShort,
   VC_STATUS_CONFIG,
+  type VCStatusConfig,
 } from "../components/vc-shared";
 
 interface VendorContract {
@@ -59,6 +60,13 @@ interface VendorContract {
   status: string;
   vendorName: string | null;
 }
+
+const getVcStatusConfig = (status: string): VCStatusConfig =>
+  VC_STATUS_CONFIG[status] ?? {
+    label: status || "Unknown",
+    color: "bg-muted/50 text-foreground",
+    icon: FileText,
+  };
 
 export default function VendorContractsPage() {
   const [contracts, setContracts] = useState<VendorContract[]>([]);
@@ -167,7 +175,7 @@ export default function VendorContractsPage() {
       <div className="grid gap-4 md:grid-cols-4">
         {(["pending_approval", "active", "expired", "terminated"] as const).map(
           (status) => {
-            const config = VC_STATUS_CONFIG[status];
+            const config = getVcStatusConfig(status);
             const count = contracts.filter((c) => c.status === status).length;
             return (
               <Card key={status}>
@@ -223,7 +231,7 @@ export default function VendorContractsPage() {
                 key={s}
                 value={s}
               >
-                {VC_STATUS_CONFIG[s].label} ({count})
+                {getVcStatusConfig(s).label} ({count})
               </TabsTrigger>
             ) : null;
           })}
@@ -239,8 +247,7 @@ export default function VendorContractsPage() {
           ) : (
             <div className="space-y-3">
               {filtered.map((contract) => {
-                const config =
-                  VC_STATUS_CONFIG[contract.status] || VC_STATUS_CONFIG.draft;
+                const config = getVcStatusConfig(contract.status);
                 const Icon = config.icon;
                 const typeLabel =
                   CONTRACT_TYPE_CONFIG[contract.contractType] ||

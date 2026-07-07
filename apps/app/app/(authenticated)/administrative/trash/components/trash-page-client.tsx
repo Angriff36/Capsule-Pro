@@ -35,7 +35,7 @@ import {
   Trash2Icon,
   Undo2Icon,
 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 // NOTE: Keeping apiFetch for trash/recovery endpoints (/api/administrative/trash/*) — no generated client for trash operations
@@ -116,7 +116,6 @@ export function TrashPageClient({
   initialParams: { entityType?: string; search?: string; page?: string };
 }) {
   const router = useRouter();
-  const _searchParams = useSearchParams();
 
   const [items, setItems] = useState<TrashItem[]>([]);
   const [entityTypes, setEntityTypes] = useState<

@@ -26,9 +26,9 @@ export function formatPercentage(value: number, decimals = 1): string {
  * @returns Date object representing the same calendar date in local timezone
  */
 export function parseISODateToLocal(isoString: string): Date {
-  const dateStr = isoString.split("T")[0];
+  const dateStr = isoString.split("T")[0] ?? "";
   const [year, month, day] = dateStr.split("-").map(Number);
-  return new Date(year, month - 1, day);
+  return new Date(year ?? Number.NaN, (month ?? Number.NaN) - 1, day);
 }
 
 /**

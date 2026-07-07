@@ -29,7 +29,7 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { TeamClient, type TeamMemberRow } from "./team-client";
 
 const SettingsTeamPage = async () => {
-  const _adminUser = await requireAdminUser();
+  await requireAdminUser();
   const { orgId } = await auth();
 
   if (!orgId) {

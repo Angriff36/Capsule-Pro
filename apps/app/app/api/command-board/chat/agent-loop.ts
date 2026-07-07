@@ -1409,6 +1409,9 @@ export async function runManifestActionAgent(
 
   for (let index = 0; index < plan.commandSequence.length; index += 1) {
     const step = plan.commandSequence[index];
+    if (!step) {
+      continue;
+    }
     const pair = `${step.entity}.${step.command}`;
     const toolName = "execute_manifest_command";
 

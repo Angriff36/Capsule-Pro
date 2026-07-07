@@ -18,7 +18,7 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Label } from "@repo/design-system/components/ui/label";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { ArrowLeft, DollarSign, Loader2 } from "lucide-react";
+import { ArrowLeft, DollarSign, FileText, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -35,6 +35,7 @@ import {
   formatDate,
   PRIORITY_CONFIG,
   REQ_STATUS_CONFIG,
+  type ReqStatusConfig,
 } from "../../components/req-shared";
 
 interface Requisition {
@@ -70,6 +71,19 @@ const WORKFLOW_ACTIONS: Record<
   ],
   approved: [{ label: "Convert to PO", command: "convert-to-po" }],
 };
+
+const getReqStatusConfig = (status: string): ReqStatusConfig =>
+  REQ_STATUS_CONFIG[status] ?? {
+    label: status || "Unknown",
+    color: "bg-muted/50 text-foreground",
+    icon: FileText,
+  };
+
+const getPriorityConfig = (priority: string) =>
+  PRIORITY_CONFIG[priority] ?? {
+    label: priority || "Unknown",
+    color: "bg-muted/50 text-foreground",
+  };
 
 export default function RequisitionDetailPage() {
   const params = useParams();
@@ -238,11 +252,9 @@ export default function RequisitionDetailPage() {
     );
   }
 
-  const config =
-    REQ_STATUS_CONFIG[requisition.status] || REQ_STATUS_CONFIG.draft;
+  const config = getReqStatusConfig(requisition.status);
   const Icon = config.icon;
-  const priorityConfig =
-    PRIORITY_CONFIG[requisition.priority] || PRIORITY_CONFIG.normal;
+  const priorityConfig = getPriorityConfig(requisition.priority);
   const actions = WORKFLOW_ACTIONS[requisition.status] || [];
 
   return (

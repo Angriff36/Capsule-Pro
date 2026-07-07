@@ -236,7 +236,7 @@ export function RoutesView() {
     setEditForm({
       name: route.name,
       scheduledDate: route.scheduledDate
-        ? new Date(route.scheduledDate).toISOString().split("T")[0]
+        ? (new Date(route.scheduledDate).toISOString().split("T")[0] ?? "")
         : "",
       description: route.description || "",
     });

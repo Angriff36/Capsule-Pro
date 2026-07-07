@@ -110,7 +110,6 @@ function getNonTaxDeductions(item: PayrollLineItem): number {
 
 export default function PayrollLineItemsTable({
   lineItems,
-  runId,
 }: PayrollLineItemsTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<"name" | "netPay" | "grossPay">(
@@ -159,9 +158,6 @@ export default function PayrollLineItemsTable({
       setSortOrder("asc");
     }
   };
-
-  const _getTotalDeductions = (deductions: Record<string, number>) =>
-    Object.values(deductions).reduce((sum, val) => sum + val, 0);
 
   return (
     <section>

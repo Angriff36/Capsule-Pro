@@ -213,6 +213,7 @@ export function TimeOffForm({
       const timeoutId = setTimeout(checkConflicts, 500);
       return () => clearTimeout(timeoutId);
     }
+    return undefined;
   }, [
     formData.employeeId,
     formData.startDate,
@@ -298,7 +299,7 @@ export function TimeOffForm({
         submitData.reason = formData.reason.trim();
       }
 
-      const _result = await createTimeOffRequest(submitData);
+      await createTimeOffRequest(submitData);
       toast.success(
         `Time-off request created successfully for ${duration} ${duration === 1 ? "day" : "days"}`
       );

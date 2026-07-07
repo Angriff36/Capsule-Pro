@@ -204,7 +204,10 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
       setInteractionAttachments((prev) => {
         const updated = { ...prev };
         for (const key of Object.keys(updated)) {
-          updated[key] = updated[key].filter((a) => a.id !== attachment.id);
+          const existing = updated[key];
+          if (existing) {
+            updated[key] = existing.filter((a) => a.id !== attachment.id);
+          }
         }
         return updated;
       });
@@ -340,7 +343,7 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
       subject: interaction.subject || "",
       description: interaction.description || "",
       followUpDate: interaction.followUpDate
-        ? new Date(interaction.followUpDate).toISOString().split("T")[0]
+        ? (new Date(interaction.followUpDate).toISOString().split("T")[0] ?? "")
         : "",
     });
     setEditDialogOpen(true);
@@ -639,9 +642,10 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
                         {interaction.description}
                       </p>
                     )}
-                    {interactionAttachments[interaction.id]?.length > 0 && (
+                    {(interactionAttachments[interaction.id]?.length ?? 0) >
+                      0 && (
                       <div className="mt-2 space-y-1">
-                        {interactionAttachments[interaction.id].map(
+                        {(interactionAttachments[interaction.id] ?? []).map(
                           (attachment) => (
                             <div
                               className="flex items-center justify-between rounded-md border px-2 py-1 text-sm"

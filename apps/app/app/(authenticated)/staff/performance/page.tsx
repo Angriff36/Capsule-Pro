@@ -99,14 +99,13 @@ const REVIEW_TYPE_COLORS: Record<string, string> = {
   PROBATION: "bg-muted/50 text-foreground",
 };
 
-const STATUS_CONFIG: Record<
-  string,
-  {
-    label: string;
-    color: string;
-    icon: React.ComponentType<{ className?: string }>;
-  }
-> = {
+interface ReviewStatusConfig {
+  label: string;
+  color: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const STATUS_CONFIG: Record<string, ReviewStatusConfig> = {
   scheduled: {
     label: "Scheduled",
     color: "bg-muted/50 text-foreground",
@@ -123,6 +122,13 @@ const STATUS_CONFIG: Record<
     icon: AlertTriangle,
   },
 };
+
+const getStatusConfig = (status: string): ReviewStatusConfig =>
+  STATUS_CONFIG[status] ?? {
+    label: status || "Unknown",
+    color: "bg-muted/50 text-foreground",
+    icon: Calendar,
+  };
 
 function RatingStars({
   rating,
@@ -405,8 +411,7 @@ export default function PerformancePageClient() {
           ) : (
             <div className="space-y-3">
               {filteredReviews.map((review) => {
-                const statusConfig =
-                  STATUS_CONFIG[review.status] || STATUS_CONFIG.scheduled;
+                const statusConfig = getStatusConfig(review.status);
                 const StatusIcon = statusConfig.icon;
                 const isOverdue =
                   review.status === "scheduled" &&

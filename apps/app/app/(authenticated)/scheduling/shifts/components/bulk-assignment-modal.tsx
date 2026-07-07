@@ -255,15 +255,6 @@ export function BulkAssignmentModal({
     return first || last || employee.email;
   };
 
-  const _formatDateTime = (date: Date) =>
-    new Date(date).toLocaleString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-
   const hasData = data && data.results.length > 0;
   const hasSelected = selectedShifts.size > 0;
   const allSelected = hasData
@@ -271,8 +262,6 @@ export function BulkAssignmentModal({
         (r) => r.suggestions.length === 0 || selectedShifts.has(r.shiftId)
       )
     : false;
-  const _someSelected = hasData && selectedShifts.size > 0 && !allSelected;
-
   return (
     <Dialog onOpenChange={onClose} open={open}>
       <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">

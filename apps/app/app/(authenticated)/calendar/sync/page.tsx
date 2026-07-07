@@ -91,6 +91,7 @@ export default function CalendarSyncPage() {
       }, 5000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [connectedProvider, errorMessage, router]);
 
   const handleConnect = async (provider: string) => {

@@ -45,7 +45,6 @@ export function KanbanCardDetail({
   onClose,
   onUpdate,
   mutations,
-  isDevMode,
 }: KanbanCardDetailProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("details");
   const [comments, setComments] = useState<TaskComment[]>([]);
@@ -69,6 +68,7 @@ export function KanbanCardDetail({
                 setComments(data.data ?? [])
               );
           }
+          return undefined;
         })
         .catch(() => {});
     } else if (activeTab === "attachments") {
@@ -81,6 +81,7 @@ export function KanbanCardDetail({
                 setAttachments(data.data ?? [])
               );
           }
+          return undefined;
         })
         .catch(() => {});
     } else if (activeTab === "activity") {
@@ -93,6 +94,7 @@ export function KanbanCardDetail({
                 setActivity(data.data ?? [])
               );
           }
+          return undefined;
         })
         .catch(() => {});
     }
@@ -107,6 +109,7 @@ export function KanbanCardDetail({
                 setDevMeta(data.data ?? null)
               );
           }
+          return undefined;
         })
         .catch(() => {});
     }
@@ -138,6 +141,7 @@ export function KanbanCardDetail({
                 setComments(data.data ?? [])
               );
           }
+          return undefined;
         })
         .catch(() => {});
     }

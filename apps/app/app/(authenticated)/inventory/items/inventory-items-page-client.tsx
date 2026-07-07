@@ -47,8 +47,6 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
-  batchDeleteItems,
-  batchUpdateItems,
   deleteInventoryItem,
   FSA_STATUSES,
   type FSAStatus,
@@ -103,11 +101,9 @@ export const InventoryItemsPageClient = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [_batchUpdateDialogOpen, setBatchUpdateDialogOpen] = useState(false);
   const [_batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
-  const [batchUpdateField, setBatchUpdateField] = useState<
+  const [_batchUpdateField, setBatchUpdateField] = useState<
     "category" | "fsa_status"
   >("category");
-  const [batchUpdateValue, setBatchUpdateValue] = useState<string>("");
-  const [_batchUpdating, setBatchUpdating] = useState(false);
 
   // Load suppliers once for the filter dropdown
   useEffect(() => {
@@ -215,57 +211,6 @@ export const InventoryItemsPageClient = () => {
   const clearSelection = useCallback(() => {
     setSelectedIds(new Set());
   }, []);
-
-  // Batch update handler
-  const _handleBatchUpdate = useCallback(async () => {
-    if (!batchUpdateValue) {
-      return;
-    }
-    setBatchUpdating(true);
-    try {
-      const updates: Record<string, string> = {};
-      updates[batchUpdateField] = batchUpdateValue;
-      await batchUpdateItems(
-        Array.from(selectedIds),
-        updates as Parameters<typeof batchUpdateItems>[1]
-      );
-      toast.success(`Updated ${selectedIds.size} items`);
-      setBatchUpdateDialogOpen(false);
-      setBatchUpdateValue("");
-      clearSelection();
-      loadItems();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to batch update items"
-      );
-    } finally {
-      setBatchUpdating(false);
-    }
-  }, [
-    batchUpdateValue,
-    batchUpdateField,
-    selectedIds,
-    clearSelection,
-    loadItems,
-  ]);
-
-  // Batch delete handler
-  const _handleBatchDelete = useCallback(async () => {
-    setBatchUpdating(true);
-    try {
-      await batchDeleteItems(Array.from(selectedIds));
-      toast.success(`Deleted ${selectedIds.size} items`);
-      setBatchDeleteDialogOpen(false);
-      clearSelection();
-      loadItems();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to batch delete items"
-      );
-    } finally {
-      setBatchUpdating(false);
-    }
-  }, [selectedIds, clearSelection, loadItems]);
 
   // Calculate summary stats
   const totalValue = items.reduce((sum, item) => sum + item.total_value, 0);

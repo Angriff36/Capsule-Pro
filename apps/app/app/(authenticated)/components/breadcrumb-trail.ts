@@ -326,7 +326,7 @@ export function generateBreadcrumbTrail(pathname: string): BreadcrumbTrail {
 
   // Walk every remaining segment, accumulating hrefs relative to the full path.
   for (let offset = 0; offset < remaining.length; offset++) {
-    const segment = remaining[offset];
+    const segment = remaining[offset] ?? "";
     const fullPathIndex = rootComponents.length + offset; // index into `segments`
     const href = `/${segments.slice(0, fullPathIndex + 1).join("/")}`;
     const isLast = offset === remaining.length - 1;

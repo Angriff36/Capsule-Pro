@@ -172,6 +172,9 @@ export async function getTimeOffRequestById(
   }
 
   const [request] = await mapTimeOffRequests(tenantId, [record]);
+  if (!request) {
+    throw new Error("Time-off request not found");
+  }
   return { request };
 }
 

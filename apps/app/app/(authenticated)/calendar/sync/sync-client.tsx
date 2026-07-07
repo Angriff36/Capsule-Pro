@@ -91,6 +91,7 @@ export function SyncClient() {
       }, 5000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [connectedProvider, errorMessage, router]);
 
   const handleConnect = async (provider: string) => {
@@ -173,8 +174,6 @@ export function SyncClient() {
     { id: "google", name: "Google Calendar" },
     { id: "outlook", name: "Microsoft Outlook" },
   ];
-
-  const _connectedCount = syncs.filter((s) => s.status === "connected").length;
 
   return (
     <OperationalColumn>

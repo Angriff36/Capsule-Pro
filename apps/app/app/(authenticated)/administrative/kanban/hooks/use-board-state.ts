@@ -31,7 +31,7 @@ export function useBoardState({
 }: BoardStateParams): UseBoardStateReturn {
   const [tasks, setTasks] = useState<KanbanTask[]>(initialTasks);
   const [isDevMode, setIsDevMode] = useState(settings.devModeEnabled ?? false);
-  const [optimisticUpdates, setOptimisticUpdates] = useState<
+  const [, setOptimisticUpdates] = useState<
     Record<string, Partial<KanbanTask>>
   >({});
 
@@ -52,14 +52,18 @@ export function useBoardState({
     });
 
     filteredTasks.forEach((task) => {
-      if (grouped[task.status]) {
-        grouped[task.status].push(task);
+      const columnTasks = grouped[task.status];
+      if (columnTasks) {
+        columnTasks.push(task);
       }
     });
 
     // Sort each column by position
     Object.keys(grouped).forEach((status) => {
-      grouped[status].sort((a, b) => a.position - b.position);
+      const columnTasks = grouped[status];
+      if (columnTasks) {
+        columnTasks.sort((a, b) => a.position - b.position);
+      }
     });
 
     return grouped;
@@ -73,10 +77,11 @@ export function useBoardState({
       // Find position in target column
       const targetColumnTasks = tasksByColumn[overColumnStatus] || [];
       const targetIndex = targetColumnTasks.findIndex((t) => t.id === overId);
-      const newPosition =
-        targetIndex >= 0
-          ? targetColumnTasks[targetIndex].position
-          : targetColumnTasks.length;
+      const targetTask =
+        targetIndex >= 0 ? targetColumnTasks[targetIndex] : undefined;
+      const newPosition = targetTask
+        ? targetTask.position
+        : targetColumnTasks.length;
 
       // Optimistic update
       const updatedTask: KanbanTask = {

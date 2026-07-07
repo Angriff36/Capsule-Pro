@@ -25,7 +25,6 @@ import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
-  listNotifications,
   notificationMarkDismissed,
   notificationMarkRead,
   notificationRemove,
@@ -151,22 +150,10 @@ export function NotificationsClient({
     useState<Notification[]>(initialNotifications);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [actioningId, setActioningId] = useState<string | null>(null);
   const [removeId, setRemoveId] = useState<string | null>(null);
   const [markingAllRead, setMarkingAllRead] = useState(false);
-
-  const _loadNotifications = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await listNotifications();
-      setNotifications(result.data as unknown as Notification[]);
-    } catch {
-      toast.error("Failed to load notifications");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   const handleMarkRead = useCallback(async (id: string) => {
     setActioningId(id);

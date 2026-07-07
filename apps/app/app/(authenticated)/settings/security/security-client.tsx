@@ -138,7 +138,7 @@ function ApiKeyDetailDialog({
   const rows: Array<{ label: string; value: string; mono?: boolean }> = [
     { label: "Name", value: apiKey.name },
     { label: "Key Prefix", value: apiKey.keyPrefix, mono: true },
-    { label: "Status", value: STATUS_LABEL[status] },
+    { label: "Status", value: STATUS_LABEL[status] ?? status },
     { label: "Last Used", value: formatDate(apiKey.lastUsedAt) },
     { label: "Created", value: formatDate(apiKey.createdAt) },
     { label: "Updated", value: formatDate(apiKey.updatedAt) },

@@ -53,7 +53,6 @@ import {
   PlayIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
@@ -139,7 +138,6 @@ function getStatusBadge(status: PayrollRun["status"]) {
 }
 
 export default function PayrollRunsPage() {
-  const _router = useRouter();
   const [runs, setRuns] = useState<PayrollRun[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,

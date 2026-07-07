@@ -126,17 +126,6 @@ interface InitialMetrics {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const _formatDate = (d: string | null) => {
-  if (!d) {
-    return "\u2014";
-  }
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(d));
-};
-
 const STATUS_CONFIG: Record<
   CollectionStatus,
   { label: string; variant: string }

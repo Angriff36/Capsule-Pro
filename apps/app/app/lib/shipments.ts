@@ -709,7 +709,7 @@ export function formatDateTime(date: Date | string | null): string {
  */
 export function formatDateForInput(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
-  return d.toISOString().split("T")[0];
+  return d.toISOString().split("T")[0] ?? "";
 }
 
 /**

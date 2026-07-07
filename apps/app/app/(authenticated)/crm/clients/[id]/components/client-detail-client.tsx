@@ -142,33 +142,6 @@ export function ClientDetailClient({ client }: ClientDetailProps) {
     return client.email || "Unnamed Client";
   };
 
-  const _getFullAddress = () => {
-    const parts: string[] = [];
-    if (client.addressLine1) {
-      parts.push(client.addressLine1);
-    }
-    if (client.addressLine2) {
-      parts.push(client.addressLine2);
-    }
-    if (client.city || client.stateProvince || client.postalCode) {
-      const cityParts: string[] = [];
-      if (client.city) {
-        cityParts.push(client.city);
-      }
-      if (client.stateProvince) {
-        cityParts.push(client.stateProvince);
-      }
-      if (client.postalCode) {
-        cityParts.push(client.postalCode);
-      }
-      parts.push(cityParts.join(", "));
-    }
-    if (client.countryCode) {
-      parts.push(client.countryCode);
-    }
-    return parts.join("\n") || "No address on file";
-  };
-
   const handleDelete = async () => {
     setIsDeleting(true);
     try {

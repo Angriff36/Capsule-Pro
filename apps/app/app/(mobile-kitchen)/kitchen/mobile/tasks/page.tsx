@@ -119,7 +119,8 @@ function MobileTaskCard({
   onToggleSelect?: (taskId: string) => void;
   onSelectAndClaim?: (taskId: string) => void;
 }) {
-  const priority = priorityConfig[task.priority] || priorityConfig[5];
+  const priority = priorityConfig[task.priority] ||
+    priorityConfig[5] || { label: "MEDIUM", color: "bg-yellow-500" };
   const dueStatus = formatDueStatus(task.dueDate);
 
   // Handle long press for multi-select
@@ -235,7 +236,7 @@ function MobileTaskCard({
           <div className="mb-3 flex items-center gap-2 rounded-lg bg-slate-50 px-2 py-1">
             <AlertCircle className="h-4 w-4 text-slate-500" />
             <span className="text-slate-600 text-xs">
-              Claimed by {task.claims[0].user?.firstName || "Someone"}
+              Claimed by {task.claims[0]?.user?.firstName || "Someone"}
             </span>
           </div>
         )}

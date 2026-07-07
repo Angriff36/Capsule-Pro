@@ -29,7 +29,6 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { ArrowLeft, Loader2, Package, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { OperationalPageShell } from "../../../components/operational-page-shell";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { listInventoryItems } from "@/app/lib/manifest-client.generated";
@@ -56,7 +55,6 @@ interface LineItem {
 }
 
 export default function NewRequisitionPage() {
-  const _router = useRouter();
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);

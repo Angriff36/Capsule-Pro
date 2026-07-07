@@ -137,7 +137,7 @@ function getKnownPatterns(): Set<string> {
  */
 function matchesKnownRoute(path: string): boolean {
   // Strip query string for matching
-  const pathOnly = path.split("?")[0];
+  const pathOnly = path.split("?")[0] ?? path;
   const patterns = getKnownPatterns();
 
   if (patterns.size === 0) {
@@ -159,7 +159,7 @@ function matchesKnownRoute(path: string): boolean {
     let match = true;
     for (let i = 0; i < patternSegments.length; i++) {
       const ps = patternSegments[i];
-      if (ps.startsWith(":")) {
+      if (ps?.startsWith(":")) {
         continue; // Param segment — matches anything
       }
       if (ps !== segments[i]) {

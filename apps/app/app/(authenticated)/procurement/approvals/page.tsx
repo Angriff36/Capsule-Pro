@@ -42,6 +42,7 @@ import {
   formatCurrency,
   formatDate,
   formatDateShort,
+  getStatusConfig,
   STATUS_CONFIG,
 } from "../components/po-shared";
 
@@ -71,13 +72,6 @@ interface ApprovalOrder {
   vendor_name: string | null;
 }
 
-// Approval chain steps
-const _APPROVAL_STEPS = [
-  { key: "requester", label: "Requester", description: "PO Created" },
-  { key: "manager", label: "Manager", description: "Review & Approve" },
-  { key: "finance", label: "Finance", description: "Final Review" },
-];
-
 function ApprovalChainStepper({
   status,
   approvalHistory,
@@ -93,7 +87,6 @@ function ApprovalChainStepper({
 
   // Check approval history for specific actions
   const managerApproval = approvalHistory.find((h) => h.action === "approved");
-  const _financeApproval = hasApproval && managerApproval; // If approved, we assume finance also signed off
 
   return (
     <div className="mt-2 flex items-center gap-1">
@@ -454,8 +447,7 @@ export default function ApprovalsPage() {
             ) : (
               <div className="space-y-3">
                 {filtered.map((order) => {
-                  const config =
-                    STATUS_CONFIG[order.status] || STATUS_CONFIG.draft;
+                  const config = getStatusConfig(order.status);
                   const Icon = config.icon;
                   const isPending = order.status === "submitted";
                   const isActioning = actioning === order.id;

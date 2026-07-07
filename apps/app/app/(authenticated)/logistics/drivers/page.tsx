@@ -88,14 +88,13 @@ interface Vehicle {
   plate_number: string | null;
 }
 
-const STATUS_CONFIG: Record<
-  string,
-  {
-    label: string;
-    color: string;
-    icon: React.ComponentType<{ className?: string }>;
-  }
-> = {
+interface DriverStatusConfig {
+  label: string;
+  color: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const STATUS_CONFIG: Record<string, DriverStatusConfig> = {
   available: {
     label: "Available",
     color: "bg-muted/50 text-foreground",
@@ -117,6 +116,13 @@ const STATUS_CONFIG: Record<
     icon: Shield,
   },
 };
+
+const getStatusConfig = (status: string): DriverStatusConfig =>
+  STATUS_CONFIG[status] ?? {
+    label: status || "Unknown",
+    color: "bg-muted/50 text-foreground",
+    icon: CheckCircle2,
+  };
 
 export default function DriversPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
@@ -277,7 +283,7 @@ export default function DriversPage() {
 
       <div className="grid gap-4 md:grid-cols-3">
         {(["available", "on_route", "off_duty"] as const).map((status) => {
-          const config = STATUS_CONFIG[status];
+          const config = getStatusConfig(status);
           const count = drivers.filter((d) => d.status === status).length;
           return (
             <Card key={status} tone="soft-stone">
@@ -323,8 +329,7 @@ export default function DriversPage() {
       ) : (
         <div className="space-y-3">
           {drivers.map((driver) => {
-            const config =
-              STATUS_CONFIG[driver.status] || STATUS_CONFIG.available;
+            const config = getStatusConfig(driver.status);
             const Icon = config.icon;
             return (
               <Card

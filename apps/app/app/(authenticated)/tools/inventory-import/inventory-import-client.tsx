@@ -78,6 +78,11 @@ export function InventoryImportClient() {
     }
 
     const headers = raw[3];
+    if (!headers) {
+      setErrorMsg("File has no data rows");
+      setState("error");
+      return;
+    }
     const colIndex: Record<string, number> = {};
     for (let i = 0; i < headers.length; i++) {
       const h = String(headers[i] ?? "").trim();
@@ -89,18 +94,23 @@ export function InventoryImportClient() {
     const rows: PreviewRow[] = [];
     for (let i = 4; i < Math.min(raw.length, 9); i++) {
       const row = raw[i];
-      const productId = String(row[colIndex["Product ID"]] ?? "").trim();
+      if (!row) {
+        continue;
+      }
+      const productId = String(row[colIndex["Product ID"] ?? -1] ?? "").trim();
       if (!productId || productId === "undefined" || productId === "null") {
         continue;
       }
 
-      const name = String(row[colIndex.Title] ?? "").trim();
-      const primaryCat = String(row[colIndex["Primary Category"]] ?? "").trim();
-      const subCat = String(row[colIndex["Sub Category"]] ?? "").trim();
+      const name = String(row[colIndex.Title ?? -1] ?? "").trim();
+      const primaryCat = String(
+        row[colIndex["Primary Category"] ?? -1] ?? ""
+      ).trim();
+      const subCat = String(row[colIndex["Sub Category"] ?? -1] ?? "").trim();
       const category = primaryCat || subCat || "Uncategorized";
 
-      const inStock = row[colIndex["In Stock"]] ?? "";
-      const flatFee = row[colIndex["Flat Fee Price"]] ?? "";
+      const inStock = row[colIndex["In Stock"] ?? -1] ?? "";
+      const flatFee = row[colIndex["Flat Fee Price"] ?? -1] ?? "";
 
       const tagKeys = [
         "Attr::Color",
@@ -112,7 +122,7 @@ export function InventoryImportClient() {
       ];
       const tags: string[] = [];
       for (const key of tagKeys) {
-        const val = row[colIndex[key]];
+        const val = row[colIndex[key] ?? -1];
         if (val !== undefined && val !== null && String(val).trim() !== "") {
           tags.push(String(val).trim());
         }

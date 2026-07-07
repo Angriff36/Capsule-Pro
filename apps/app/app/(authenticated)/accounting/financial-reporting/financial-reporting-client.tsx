@@ -68,12 +68,14 @@ function formatPercentage(value: number): string {
 }
 
 function getToday(): string {
-  return new Date().toISOString().split("T")[0];
+  return new Date().toISOString().split("T")[0] ?? "";
 }
 
 function getStartOfMonth(): string {
   const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split("T")[0];
+  return (
+    new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split("T")[0] ?? ""
+  );
 }
 
 function getStartOfYear(): string {
@@ -180,8 +182,8 @@ export function FinancialReportingClient({
       case "last_month": {
         const start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
         const end = new Date(today.getFullYear(), today.getMonth(), 0);
-        setStartDate(start.toISOString().split("T")[0]);
-        setEndDate(end.toISOString().split("T")[0]);
+        setStartDate(start.toISOString().split("T")[0] ?? "");
+        setEndDate(end.toISOString().split("T")[0] ?? "");
         break;
       }
       case "this_quarter": {
@@ -190,7 +192,7 @@ export function FinancialReportingClient({
           Math.floor(today.getMonth() / 3) * 3,
           1
         );
-        setStartDate(qStart.toISOString().split("T")[0]);
+        setStartDate(qStart.toISOString().split("T")[0] ?? "");
         setEndDate(getToday());
         break;
       }

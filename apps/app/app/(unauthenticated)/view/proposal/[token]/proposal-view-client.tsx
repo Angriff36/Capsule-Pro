@@ -165,7 +165,6 @@ export function ProposalViewClient({
   lineItems,
   client,
   lead,
-  event,
   organization,
   isExpired,
   publicToken,

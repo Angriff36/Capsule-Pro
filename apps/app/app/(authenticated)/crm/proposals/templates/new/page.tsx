@@ -160,7 +160,7 @@ export default function NewProposalTemplatePage() {
 
     startTransition(async () => {
       try {
-        const _result = await createProposalTemplate({
+        await createProposalTemplate({
           name: name.trim(),
           description: description.trim() || null,
           eventType: eventType === "__any__" ? null : eventType,

@@ -47,7 +47,6 @@ import {
   XCircle,
   Zap,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 // NOTE: Keeping apiFetch for conflict detection endpoint (/api/conflicts/detect) — no generated client for conflict detection
@@ -183,19 +182,6 @@ function severityIcon(severity: ConflictSeverity) {
   }
 }
 
-function _severityColor(severity: ConflictSeverity): string {
-  switch (severity) {
-    case "critical":
-      return "text-red-600";
-    case "high":
-      return "text-orange-600";
-    case "medium":
-      return "text-yellow-600";
-    case "low":
-      return "text-green-600";
-  }
-}
-
 function entityIcon(type: AffectedEntity["type"]) {
   switch (type) {
     case "employee":
@@ -283,7 +269,6 @@ function StatCard({
 
 function ConflictCard({ conflict }: { conflict: Conflict }) {
   const [expanded, setExpanded] = useState(false);
-  const _router = useRouter();
 
   const hasResolutions =
     conflict.resolutionOptions && conflict.resolutionOptions.length > 0;
@@ -391,7 +376,6 @@ function ConflictCard({ conflict }: { conflict: Conflict }) {
 // ---------------------------------------------------------------------------
 
 export function ConflictsClient() {
-  const _router = useRouter();
   const [activeTab, setActiveTab] = useState<ConflictTab>("all");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

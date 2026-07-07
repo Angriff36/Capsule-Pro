@@ -21,8 +21,9 @@ interface StaffCsvParseResult {
 export function parseCsvDocument(text: string): ParsedDocumentResult {
   const { groups, warnings } = parseStaffCsv(text);
   const events = [...groups.keys()];
+  const eventName = events[0];
 
-  if (events.length === 0) {
+  if (eventName === undefined) {
     return {
       success: false,
       format: "csv",
@@ -33,7 +34,6 @@ export function parseCsvDocument(text: string): ParsedDocumentResult {
     };
   }
 
-  const eventName = events[0];
   const eventStaff = groups.get(eventName) || [];
 
   return {
@@ -63,11 +63,12 @@ function parseStaffCsv(text: string): StaffCsvParseResult {
   const rows = parseCsvRows(text);
   const warnings: string[] = [];
 
-  if (rows.length === 0) {
+  const headerRow = rows[0];
+  if (!headerRow) {
     return { groups: new Map(), warnings: ["CSV file is empty"] };
   }
 
-  const header = rows[0].map((cell) => cell.trim());
+  const header = headerRow.map((cell) => cell.trim());
   const column = (name: string) =>
     header.findIndex((col) => col.toLowerCase() === name.toLowerCase());
 
@@ -96,6 +97,9 @@ function parseStaffCsv(text: string): StaffCsvParseResult {
 
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
+    if (!row) {
+      continue;
+    }
     if (row.every((c) => !c.trim())) {
       continue;
     }
@@ -178,8 +182,8 @@ function parseTime(value: string | undefined): string {
     return trimmed;
   }
   const [, hourStr, minuteStr, meridiem] = match;
-  let hour = Number.parseInt(hourStr, 10);
-  const minute = Number.parseInt(minuteStr, 10);
+  let hour = Number.parseInt(hourStr ?? "", 10);
+  const minute = Number.parseInt(minuteStr ?? "", 10);
   if (Number.isNaN(hour) || Number.isNaN(minute)) {
     return trimmed;
   }
@@ -208,8 +212,8 @@ function formatTime12Hour(time24: string): string {
     return time24;
   }
   const [hoursStr, minutesStr] = time24.split(":");
-  const hours = Number.parseInt(hoursStr, 10);
-  const minutes = Number.parseInt(minutesStr, 10);
+  const hours = Number.parseInt(hoursStr ?? "", 10);
+  const minutes = Number.parseInt(minutesStr ?? "", 10);
   if (Number.isNaN(hours) || Number.isNaN(minutes)) {
     return time24;
   }

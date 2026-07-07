@@ -353,6 +353,9 @@ export async function createProposal(input: CreateProposalInput) {
   if (effectiveLineItems && effectiveLineItems.length > 0) {
     for (let index = 0; index < effectiveLineItems.length; index++) {
       const item = effectiveLineItems[index];
+      if (!item) {
+        continue;
+      }
       try {
         await runManifestCommand({
           entity: "ProposalLineItem",

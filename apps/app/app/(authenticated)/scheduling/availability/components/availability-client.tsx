@@ -39,8 +39,7 @@ import type { ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { DayOfWeek } from "@/app/lib/staff/availability/types";
-import { getLocations } from "../../shifts/actions";
-import { getAvailability, getEmployees } from "../actions";
+import { getAvailability } from "../actions";
 import { AvailabilityDetailModal } from "./availability-detail-modal";
 import { AvailabilityForm } from "./availability-form";
 
@@ -69,19 +68,13 @@ interface Employee {
   role: string;
 }
 
-interface Location {
-  id: string;
-  name: string;
-}
-
 export function AvailabilityClient() {
   const router = useRouter();
   const searchParams = useSearchParams() ?? new URLSearchParams();
 
   // State
   const [availability, setAvailability] = useState<Availability[]>([]);
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [_locations, setLocations] = useState<Location[]>([]);
+  const [employees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -139,20 +132,6 @@ export function AvailabilityClient() {
     },
     [filters]
   );
-
-  // Fetch filter options
-  const _fetchFilterOptions = useCallback(async () => {
-    try {
-      const [employeesData, locationsData] = await Promise.all([
-        getEmployees(),
-        getLocations(),
-      ]);
-      setEmployees(employeesData.employees || []);
-      setLocations(locationsData.locations || []);
-    } catch (error) {
-      console.warn("Failed to load filter options:", error);
-    }
-  }, []);
 
   // Fetch when filters or pagination change
   useEffect(() => {

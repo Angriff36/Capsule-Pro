@@ -10,8 +10,8 @@ export function parseGenericPdf(lines: string[]): ParsedDocumentResult {
   for (const line of lines) {
     const kvMatch = line.match(/^(.+?)\s*:\s*(.+)$/);
     if (kvMatch) {
-      const key = kvMatch[1].toLowerCase().trim();
-      const value = kvMatch[2].trim();
+      const key = (kvMatch[1] ?? "").toLowerCase().trim();
+      const value = (kvMatch[2] ?? "").trim();
 
       if (
         key.includes("client") ||
@@ -57,8 +57,8 @@ export function parseGenericPdf(lines: string[]): ParsedDocumentResult {
     );
     if (timeMatch) {
       timeline.push({
-        time: timeMatch[1].trim(),
-        item: timeMatch[2].trim(),
+        time: (timeMatch[1] ?? "").trim(),
+        item: (timeMatch[2] ?? "").trim(),
         team: "",
         location: "",
         style: "",

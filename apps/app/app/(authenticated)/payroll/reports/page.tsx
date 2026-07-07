@@ -61,12 +61,6 @@ interface PayrollPeriod {
   status: string;
 }
 
-interface ReportConfig {
-  aggregate?: boolean;
-  format: ReportFormat;
-  periodId: string;
-}
-
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",

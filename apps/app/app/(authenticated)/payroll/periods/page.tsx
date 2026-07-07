@@ -59,7 +59,7 @@ import {
   Loader2Icon,
   PlusIcon,
 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -124,7 +124,6 @@ function getStatusBadge(status: PayrollPeriod["status"]) {
 
 export default function PayrollPeriodsPage() {
   const router = useRouter();
-  const _searchParams = useSearchParams();
   const [periods, setPeriods] = useState<PayrollPeriod[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,

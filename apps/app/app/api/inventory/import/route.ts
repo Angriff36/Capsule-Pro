@@ -5,25 +5,6 @@ import * as XLSX from "xlsx";
 import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
 
-interface ImportRow {
-  category: string;
-  item_number: string;
-  name: string;
-  quantityOnHand: string;
-  tags: string[];
-  unitCost: string;
-}
-
-function _parseBoolean(val: unknown): boolean {
-  if (typeof val === "boolean") {
-    return val;
-  }
-  if (typeof val === "string") {
-    return val === "true" || val === "1" || val === "yes";
-  }
-  return false;
-}
-
 export async function POST(request: NextRequest) {
   try {
     const { orgId } = await auth();
@@ -72,6 +53,12 @@ export async function POST(request: NextRequest) {
     }
 
     const headers = raw[3];
+    if (!headers) {
+      return NextResponse.json(
+        { error: "File has no data rows" },
+        { status: 400 }
+      );
+    }
     const colIndex: Record<string, number> = {};
     for (let i = 0; i < headers.length; i++) {
       const h = String(headers[i] ?? "").trim();
@@ -95,23 +82,28 @@ export async function POST(request: NextRequest) {
 
     for (let i = 4; i < raw.length; i++) {
       const row = raw[i];
-      const productId = String(row[colIndex["Product ID"]] ?? "").trim();
+      if (!row) {
+        continue;
+      }
+      const productId = String(row[colIndex["Product ID"] ?? -1] ?? "").trim();
       if (!productId || productId === "undefined" || productId === "null") {
         continue;
       }
 
-      const name = String(row[colIndex.Title] ?? "").trim();
-      const primaryCat = String(row[colIndex["Primary Category"]] ?? "").trim();
-      const subCat = String(row[colIndex["Sub Category"]] ?? "").trim();
+      const name = String(row[colIndex.Title ?? -1] ?? "").trim();
+      const primaryCat = String(
+        row[colIndex["Primary Category"] ?? -1] ?? ""
+      ).trim();
+      const subCat = String(row[colIndex["Sub Category"] ?? -1] ?? "").trim();
       const category = primaryCat || subCat || "Uncategorized";
 
-      const inStockRaw = row[colIndex["In Stock"]];
+      const inStockRaw = row[colIndex["In Stock"] ?? -1];
       const inStock =
         inStockRaw === undefined || inStockRaw === null || inStockRaw === ""
           ? 0
           : Number(inStockRaw);
 
-      const flatFeeRaw = row[colIndex["Flat Fee Price"]];
+      const flatFeeRaw = row[colIndex["Flat Fee Price"] ?? -1];
       const flatFee =
         flatFeeRaw === undefined || flatFeeRaw === null || flatFeeRaw === ""
           ? 0
@@ -128,7 +120,7 @@ export async function POST(request: NextRequest) {
       ];
       const tags: string[] = [];
       for (const key of tagKeys) {
-        const val = row[colIndex[key]];
+        const val = row[colIndex[key] ?? -1];
         if (val !== undefined && val !== null && String(val).trim() !== "") {
           tags.push(String(val).trim());
         }
@@ -173,17 +165,19 @@ export async function POST(request: NextRequest) {
           LIMIT 1
         `;
 
+        const existingItem = existing[0];
+
         const userCtx = {
           id: user.id,
           tenantId: user.tenantId,
           role: user.role,
         };
 
-        if (existing.length > 0) {
+        if (existingItem) {
           const result = await runManifestCommand({
             entity: "InventoryItem",
             command: "update",
-            instanceId: existing[0].id,
+            instanceId: existingItem.id,
             body: {
               name: item.name,
               category: item.category,

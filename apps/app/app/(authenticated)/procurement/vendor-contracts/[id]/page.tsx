@@ -18,7 +18,7 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Label } from "@repo/design-system/components/ui/label";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { ArrowLeft, Loader2, Shield } from "lucide-react";
+import { ArrowLeft, FileText, Loader2, Shield } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -30,6 +30,7 @@ import {
   formatCurrency,
   formatDate,
   VC_STATUS_CONFIG,
+  type VCStatusConfig,
 } from "../../components/vc-shared";
 
 interface VendorContract {
@@ -72,6 +73,13 @@ const WORKFLOW_ACTIONS: Record<
     { label: "Renew", command: "renew" },
   ],
 };
+
+const getVcStatusConfig = (status: string): VCStatusConfig =>
+  VC_STATUS_CONFIG[status] ?? {
+    label: status || "Unknown",
+    color: "bg-muted/50 text-foreground",
+    icon: FileText,
+  };
 
 export default function VendorContractDetailPage() {
   const params = useParams();
@@ -163,7 +171,7 @@ export default function VendorContractDetailPage() {
     );
   }
 
-  const config = VC_STATUS_CONFIG[contract.status] || VC_STATUS_CONFIG.draft;
+  const config = getVcStatusConfig(contract.status);
   const Icon = config.icon;
   const typeLabel =
     CONTRACT_TYPE_CONFIG[contract.contractType] || contract.contractType;

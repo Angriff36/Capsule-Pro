@@ -133,8 +133,9 @@ export async function createPurchaseOrder(input: CreatePurchaseOrderInput) {
       ORDER BY is_primary DESC, name ASC
       LIMIT 1
     `;
-    if (fallback.length > 0) {
-      locationId = fallback[0].id;
+    const fallbackLocation = fallback[0];
+    if (fallbackLocation) {
+      locationId = fallbackLocation.id;
     }
   }
   invariant(locationId, "No location available — create a location first");

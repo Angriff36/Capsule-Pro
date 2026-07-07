@@ -107,6 +107,10 @@ export const GlobalSidebar = ({
   const activeModule =
     modules.find((module) => module.key === activeModuleKey) ?? modules[0];
 
+  if (!activeModule) {
+    return null;
+  }
+
   /**
    * Handle notification bell click - ONLY load Knock SDK AFTER user interaction.
    *

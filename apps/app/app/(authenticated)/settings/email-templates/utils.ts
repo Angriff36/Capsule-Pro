@@ -35,8 +35,9 @@ export function extractMergeFields(content: string): string[] {
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(content)) !== null) {
-    if (!fields.includes(match[1])) {
-      fields.push(match[1]);
+    const field = match[1] ?? "";
+    if (!fields.includes(field)) {
+      fields.push(field);
     }
   }
 

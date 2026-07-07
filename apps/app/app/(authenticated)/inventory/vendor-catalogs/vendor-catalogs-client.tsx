@@ -331,9 +331,11 @@ export function VendorCatalogsClient() {
           ? "1"
           : String(catalog.minimumOrderQuantity),
       effectiveFrom: catalog.effectiveFrom
-        ? catalog.effectiveFrom.split("T")[0]
+        ? (catalog.effectiveFrom.split("T")[0] ?? "")
         : "",
-      effectiveTo: catalog.effectiveTo ? catalog.effectiveTo.split("T")[0] : "",
+      effectiveTo: catalog.effectiveTo
+        ? (catalog.effectiveTo.split("T")[0] ?? "")
+        : "",
       notes: catalog.notes ?? "",
     });
     setFormOpen(true);

@@ -188,6 +188,7 @@ export default function PayrollRunDetailClient({
 
       return () => clearInterval(interval);
     }
+    return undefined;
   }, [runData?.status, fetchRunDetails]);
 
   const handleApprove = async () => {

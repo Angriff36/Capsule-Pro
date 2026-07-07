@@ -84,6 +84,8 @@ export default clerkMiddleware(async (auth, req) => {
     }
     return redirectToSignIn(req);
   }
+  // Authenticated page request — fall through to the route handler.
+  return;
 });
 
 export const config = {

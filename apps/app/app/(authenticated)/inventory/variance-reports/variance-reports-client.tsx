@@ -85,17 +85,6 @@ function formatPct(value: number | string | null | undefined): string {
   return `${Number(value).toFixed(1)}%`;
 }
 
-function _formatDate(iso: string | null): string {
-  if (!iso) {
-    return "--";
-  }
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
 interface VarianceReportsClientProps {
   initialMetrics: InitialMetrics;
 }
@@ -290,7 +279,6 @@ export function VarianceReportsClient({
               icon: null,
               variant: "neutral",
             };
-            const _varianceNum = Number(report.variance);
             const isHighVariance =
               Number(report.variancePct) > 10 ||
               Number(report.variancePct) < -10;

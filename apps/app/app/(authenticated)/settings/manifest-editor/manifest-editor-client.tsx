@@ -59,8 +59,9 @@ export function ManifestEditorClient() {
     fetchEntities()
       .then((list) => {
         setEntities(list);
-        if (list.length > 0) {
-          setSelectedEntity(list[0].name);
+        const firstEntity = list[0];
+        if (firstEntity) {
+          setSelectedEntity(firstEntity.name);
         }
       })
       .catch((e: unknown) => {

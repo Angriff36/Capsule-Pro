@@ -110,7 +110,8 @@ function WorkTaskCard({
   onComplete: (taskId: string) => void;
   onRelease: (taskId: string) => void;
 }) {
-  const priority = priorityConfig[task.priority] || priorityConfig[5];
+  const priority = priorityConfig[task.priority] ||
+    priorityConfig[5] || { label: "MEDIUM", color: "bg-yellow-500" };
   const dueStatus = formatDueStatus(task.dueDate);
   const isActive = task.status === "in_progress";
 
