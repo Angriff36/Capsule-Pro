@@ -88,6 +88,19 @@ so agents keep forking design languages. User verdict: recipe page + site look b
 
 # Follow-up 5: operational completeness sweep (WS1–WS10)
 
+- [x] ROOT CAUSE (class bug): upstream engine SILENTLY SKIPS every `mutate` action when
+  options.instanceId is absent — still returns success:true + emits events. Canonical
+  dispatcher derives instanceId from body.id (run-manifest-command-core), but ~15 hand-rolled
+  routes call runtime.runCommand directly with id only in the body: recipe composite
+  update-with-version (description edits never persisted to recipes table), allergens
+  update-dish, contract status/send, recipe scale updateWasteFactor, prep-list item
+  markCompleted/markUncompleted, … FIX: ManifestRuntimeEngine.#runCommandTraced now derives
+  instanceId from body.id for non-create commands and threads it into super.runCommand
+  (4e88ec871); regression test run-command-instance-id-derivation.test.ts (3 tests);
+  full suite 633/633 green; live-verified recipe description edit persists + reloads
+  (recipes.description now set, v3 created, detail page + modal prefill correct).
+  Lint cleanup: derivation/telemetry extracted, complexity 26→ok (6d118e008).
+
 - [x] WS1 prep-list flow: one generation path (apps/api/lib/prep-lists/), truthful unresolved-dish states with fix links, governed save, detail page, JW dish→recipe repair
 - [x] WS7 exports: prep-list PDF (was regenerating live instead of reading saved rows — preparePdfDataFromSaved), contract PDF (data shape vs ContractPDFData — was 500), shipment packing list (contact_person/stateProvince field mismatches — was 500), event PDF+CSV (guests/tasks column mismatches — was 500), battle-board 404 = soft-deleted event (correct)
 - [x] WS7 UI entry points: prep-list detail PDF button; contract detail Export PDF button (verified in browser, blob 200 application/pdf)
