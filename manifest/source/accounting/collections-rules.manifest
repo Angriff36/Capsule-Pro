@@ -1,0 +1,556 @@
+use "../_base.manifest"
+// Collections Rules Manifest
+// Defines collections workflows, aging, and dunning management
+
+entity CollectionCase mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+
+  // Reference information
+  property required invoiceId: uuid = ""
+  unique property required invoiceNumber: string = ""
+  property required eventId: uuid = ""
+  property required clientId: uuid = ""
+  property required clientName: string = ""
+
+  // Amount details
+  property required originalAmount: money = 0
+  property required outstandingAmount: money = 0
+  property required collectedAmount: money = 0
+
+  // Collection status
+  indexed property required status: string = "ACTIVE"
+  property required priority: string = "MEDIUM"
+  property required dunningStage: string = "CURRENT"
+
+  // Aging
+  property required daysOverdue: int = 0
+  property agingBucket: string? = ""
+
+  // Assignment
+  property assignedTo: uuid? = ""
+  property assignedAt: datetime?
+
+  // Payment plan
+  property hasPaymentPlan: boolean = false
+  property paymentPlanId: uuid? = ""
+  property nextPaymentDue: datetime?
+
+  // Dispute handling
+  property isDisputed: boolean = false
+  property disputeReason: string? = ""
+  property disputeResolvedAt: datetime?
+
+  // Legal escalation
+  property isEscalatedToLegal: boolean = false
+  property legalCaseNumber: string? = ""
+  property legalFirm: string? = ""
+
+  // Metadata
+  searchable property notes: string? = ""
+  property lastActivityAt: datetime? = now()
+  property metadata: json = {}
+
+  // Timestamps
+  timestamps
+  property resolvedAt: datetime?
+  property closedAt: datetime?
+
+  // Computed properties
+  computed collectionPercentage: number = percent(self.collectedAmount, self.originalAmount) cache request
+  computed isHighRisk: boolean = self.daysOverdue > 90 or self.status == "LEGAL"
+  computed estimatedLoss: money = self.status == "WRITTEN_OFF" ? self.outstandingAmount : 0
+
+  // Constraints
+  relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+  relationship belongsTo invoice: Invoice fields [tenantId, invoiceId] references [tenantId, id]
+
+  constraint amount_positive: self.originalAmount > 0 "Original amount must be positive"
+  constraint collected_valid: self.collectedAmount <= self.originalAmount "Collected amount cannot exceed original"
+
+  // Commands
+  default policy CollectionCaseDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Collections management"
+  // Explicit create command. Required so the propagation middleware can dispatch
+  // CollectionCase.create via engine.runCommand (which resolves against the command
+  // registry) — without it the runtime reports "Command 'create' not found". The
+  // engine still auto-instantiates the full instance from the body seed
+  // (shouldAutoCreateInstance) and generates the id, so fields NOT listed here
+  // (invoiceNumber/eventId/clientId/notes/metadata/...) persist from the body and
+  // are protected from parent-context over-inheritance because a value present in
+  // the body always wins over an inherited parent value.
+  // Params are deliberately MINIMAL — only collection-specific identity/amounts that
+  // are NOT inferable from a belongsTo parent. The FK-mirrored fields (invoiceNumber/
+  // eventId/clientId) and the coincidental name-collisions (metadata/assignedTo) are
+  // intentionally NOT params so the parent-context audit (which forbids REQUIRING a
+  // parent-inferable field as input) stays clean; the caller still supplies them in
+  // the body. `status` is excluded too: it carries transitions, the seed defaults it
+  // to "ACTIVE", and mutating it to "ACTIVE" would be a rejected no-op self-transition
+  // (create-command-transition-self-loop-bug).
+  command create(invoiceId: string, clientName: string, originalAmount: money, outstandingAmount: money) {
+    guard invoiceId != "" "Invoice ID is required"
+    guard originalAmount > 0 "Original amount must be positive"
+    mutate invoiceId = invoiceId
+    mutate clientName = clientName
+    mutate originalAmount = originalAmount
+    mutate outstandingAmount = outstandingAmount
+    emit CollectionCaseCreated
+  }
+
+  command assignTo(userId: string) {
+    guard self.status in ["ACTIVE", "IN_PROGRESS"] "Can only assign active cases"
+    mutate assignedTo = userId
+    mutate assignedAt = now()
+    emit CollectionAssigned
+  }
+
+  command updateStatus(newStatus: string, newNotes: string) {
+    mutate status = newStatus
+    mutate notes = newNotes
+    emit CollectionStatusChanged
+  }
+
+  command settle(notes: string) {
+    mutate status = "RESOLVED"
+    mutate resolvedAt = now()
+    mutate notes = notes
+    emit CollectionStatusChanged
+  }
+
+  command recordPayment(amount: money, paymentId: string, paymentDate: datetime) {
+    guard amount > 0 "Payment amount must be positive"
+    guard amount <= self.outstandingAmount "Payment cannot exceed outstanding amount"
+    mutate collectedAmount = self.collectedAmount + amount
+    mutate outstandingAmount = self.outstandingAmount - amount
+    mutate lastActivityAt = now()
+    emit CollectionPaymentRecorded
+  }
+
+  command markResolved() {
+    guard self.outstandingAmount <= 0.01 "Outstanding amount must be near zero"
+    mutate status = "RESOLVED"
+    mutate resolvedAt = now()
+    mutate closedAt = now()
+    emit CollectionResolved
+  }
+
+  command escalateDunning() {
+    guard self.status == "ACTIVE" "Can only escalate active cases"
+    guard self.dunningStage != "COLLECTIONS" "Maximum dunning stage reached"
+    mutate dunningStage = self.dunningStage == "CURRENT" ? "REMINDER_1" : self.dunningStage == "REMINDER_1" ? "REMINDER_2" : self.dunningStage == "REMINDER_2" ? "REMINDER_3" : self.dunningStage == "REMINDER_3" ? "FINAL_NOTICE" : "COLLECTIONS"
+    mutate priority = self.dunningStage == "COLLECTIONS" || self.dunningStage == "FINAL_NOTICE" ? "URGENT" : self.dunningStage == "REMINDER_2" || self.dunningStage == "REMINDER_3" ? "HIGH" : self.priority
+    emit DunningEscalated
+  }
+
+  command escalateToLegal() {
+    mutate status = "LEGAL"
+    mutate isEscalatedToLegal = true
+    mutate priority = "URGENT"
+    emit DunningEscalated
+  }
+
+  command setUrgentPriority() {
+    mutate priority = "URGENT"
+  }
+
+  command setHighPriority() {
+    mutate priority = "HIGH"
+  }
+
+  command resetDunning(stage: string, reason: string) {
+    guard self.status in ["ACTIVE", "IN_PROGRESS"] "Can only reset active/in-progress cases"
+    guard stage in ["CURRENT", "REMINDER_1", "REMINDER_2", "REMINDER_3", "FINAL_NOTICE", "COLLECTIONS"] "Invalid dunning stage"
+    mutate dunningStage = stage
+    emit DunningReset
+  }
+
+  command createPaymentPlan(planId: string, nextPaymentDue: datetime) {
+    guard self.hasPaymentPlan == false "Payment plan already exists"
+    guard self.status == "ACTIVE" "Can only create plan for active cases"
+    mutate hasPaymentPlan = true
+    mutate paymentPlanId = planId
+    mutate nextPaymentDue = nextPaymentDue
+    mutate priority = "MEDIUM"
+    emit PaymentPlanCreated
+  }
+
+  command markDisputed(reason: string) {
+    guard self.isDisputed == false "Case already disputed"
+    mutate isDisputed = true
+    mutate disputeReason = reason
+    mutate status = "DISPUTED"
+    emit CollectionDisputed
+  }
+
+  command resolveDispute(resolutionNotes: string) {
+    guard self.isDisputed == true "Case is not disputed"
+    mutate isDisputed = false
+    mutate disputeResolvedAt = now()
+    mutate status = "ACTIVE"
+    emit DisputeResolved
+  }
+
+  command escalateToLegalWithDetails(legalCaseNumber: string, legalFirm: string) {
+    guard self.isEscalatedToLegal == false "Already escalated to legal"
+    guard self.status in ["ACTIVE", "IN_PROGRESS"] "Cannot escalate resolved cases"
+    mutate isEscalatedToLegal = true
+    mutate legalCaseNumber = legalCaseNumber
+    mutate legalFirm = legalFirm
+    mutate status = "LEGAL"
+    mutate dunningStage = "COLLECTIONS"
+    mutate priority = "URGENT"
+    emit EscalatedToLegal
+  }
+
+  command writeOff(amount: money, reason: string, approvedBy: string) {
+    guard self.status in ["ACTIVE", "IN_PROGRESS", "LEGAL"] "Cannot write off resolved cases"
+    guard amount <= self.outstandingAmount "Write-off amount cannot exceed outstanding"
+    mutate collectedAmount = self.collectedAmount + (self.outstandingAmount - amount)
+    mutate outstandingAmount = amount
+    mutate status = "WRITTEN_OFF"
+    mutate closedAt = now()
+    emit CollectionWrittenOff
+  }
+
+  command updateAging(daysOverdue: number, agingBucket: string) {
+    mutate daysOverdue = daysOverdue
+    mutate agingBucket = agingBucket
+    emit AgingUpdated
+  }
+
+  command setPriority(newPriority: string, reason: string) {
+    mutate priority = newPriority
+    emit PriorityChanged
+  }
+
+  command close(resolution: string) {
+    guard self.status in ["ACTIVE", "IN_PROGRESS", "DISPUTED"] "Case already closed"
+    mutate status = "RESOLVED"
+    mutate closedAt = now()
+    emit CollectionClosed
+  }
+
+  // State transitions
+  // NOTE: "WRITTEN_OFF" is a transition target from ACTIVE/IN_PROGRESS/LEGAL to match
+  // writeOff's mutate (status -> "WRITTEN_OFF") and its guard (status in those three).
+  // It was previously ABSENT from every transition, so writeOff was a DEAD command — the
+  // engine rejected every call ("Invalid state transition ... -> WRITTEN_OFF") before the
+  // mutate ran, even though the route at accounting/collections/cases/[id] exposes it.
+  // Same dead-target class already fixed for Invoice (VOIDED/WRITTEN_OFF -> VOID/WRITE_OFF).
+  // DISPUTED added: markDisputed guards only isDisputed==false, so ACTIVE/IN_PROGRESS cases can dispute
+  transition status from "ACTIVE" to ["IN_PROGRESS", "LEGAL", "RESOLVED", "WRITTEN_OFF", "DEFAULTED", "CANCELLED", "DISPUTED"]
+  transition status from "IN_PROGRESS" to ["LEGAL", "RESOLVED", "WRITTEN_OFF", "DEFAULTED", "CANCELLED", "DISPUTED"]
+  transition status from "LEGAL" to ["RESOLVED", "WRITTEN_OFF", "DISPUTED"]
+  // ACTIVE added: resolveDispute mutates status = "ACTIVE" (un-dispute path)
+  transition status from "DISPUTED" to ["ACTIVE", "IN_PROGRESS", "RESOLVED"]
+  // "RESOLVED", "WRITTEN_OFF", "DEFAULTED", "CANCELLED" are terminal states
+
+  store CollectionCase in durable
+}
+
+entity CollectionAction mixin TenantScoped {
+  key [tenantId, id]
+  property required collectionCaseId: uuid = ""
+
+  // Action details
+  property required actionType: string = ""
+  property required direction: string? = ""
+  indexed property required status: string? = "ACTIVE"
+
+  // Action content
+  searchable property description: string = ""
+  property outcome: string? = ""
+  property nextActionDate: datetime? = now()
+
+  // Promise to pay
+  property promiseAmount: money? = 0
+  property promiseDate: datetime? = now()
+
+  // Timestamps
+  property required scheduledFor: datetime? = now()
+  property completedAt: datetime?
+  timestamps
+
+  // Computed properties
+  computed isCompleted: boolean = self.status == "COMPLETED"
+  computed isOverdue: boolean = self.status == "PENDING" and self.scheduledFor < now() cache request
+  computed hasPromiseToPay: boolean = self.promiseAmount > 0
+
+  // Constraints
+  relationship belongsTo case: CollectionCase fields [tenantId, collectionCaseId] references [tenantId, id]
+
+  constraint valid_direction: self.direction in ["INBOUND", "OUTBOUND"] "Invalid direction"
+  constraint valid_status: self.status in ["PENDING", "COMPLETED", "FAILED", "SKIPPED"] "Invalid status"
+
+  // State transitions
+  transition status from "PENDING" to ["COMPLETED", "FAILED", "SKIPPED"]
+
+  // Commands
+  default policy CollectionActionDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Collections management"
+  command complete(outcome: string, promiseAmount: money, promiseDate: datetime, nextActionDate: datetime) {
+    guard self.status == "PENDING" "Can only complete pending actions"
+    mutate status = "COMPLETED"
+    mutate completedAt = now()
+    mutate outcome = outcome
+    mutate promiseAmount = promiseAmount
+    mutate promiseDate = promiseDate
+    mutate nextActionDate = nextActionDate
+    emit ActionCompleted
+  }
+
+  command fail(reason: string) {
+    guard self.status == "PENDING" "Can only fail pending actions"
+    mutate status = "FAILED"
+    mutate outcome = "Failed: " + reason
+    mutate completedAt = now()
+    emit ActionFailed
+  }
+
+  command skip(reason: string) {
+    guard self.status == "PENDING" "Can only skip pending actions"
+    mutate status = "SKIPPED"
+    mutate outcome = "Skipped: " + reason
+    mutate completedAt = now()
+    emit ActionSkipped
+  }
+
+  command reschedule(newScheduledFor: datetime, reason: string) {
+    guard self.status == "PENDING" "Can only reschedule pending actions"
+    mutate scheduledFor = newScheduledFor
+    emit ActionRescheduled
+  }
+  store CollectionAction in durable
+}
+
+// Payment plan entity for installment arrangements
+entity CollectionPaymentPlan mixin TenantScoped {
+  key [tenantId, id]
+  property required collectionCaseId: uuid = ""
+
+  // Plan details
+  property required totalAmount: money = 0
+  property required installmentAmount: money? = 0
+  property required installments: int = 1
+  property required completedInstallments: int? = 0
+
+  // Status
+  indexed property required status: string = "ACTIVE"
+
+  // Schedule
+  property required startDate: datetime = now()
+
+  // Metadata
+  property metadata: json = {}
+
+  // Timestamps
+  timestamps
+  property completedAt: datetime?
+  property defaultedAt: datetime?
+
+  // Computed properties
+  computed isCompleted: boolean = self.status == "COMPLETED"
+  computed isDefaulted: boolean = self.status == "DEFAULTED"
+  computed completionPercentage: number = percent(self.completedInstallments, self.installments) cache request
+  computed remainingAmount: money = (self.installments - self.completedInstallments) * self.installmentAmount
+  computed paidAmount: money = self.completedInstallments * self.installmentAmount
+
+  // Constraints
+  relationship belongsTo case: CollectionCase fields [tenantId, collectionCaseId] references [tenantId, id]
+
+  constraint amount_positive: self.totalAmount > 0 and self.installmentAmount > 0 "Amounts must be positive"
+  constraint installments_valid: self.installments > 0 "Must have at least one installment"
+  constraint completed_valid: self.completedInstallments <= self.installments "Completed cannot exceed total"
+
+  // State transitions
+  transition status from "ACTIVE" to ["COMPLETED", "DEFAULTED", "CANCELLED"]
+
+  // Commands
+  default policy CollectionPaymentPlanDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Collections management"
+  command recordInstallment(amount: money, paymentDate: datetime) {
+    guard self.status == "ACTIVE" "Can only record payments for active plans"
+    guard amount == self.installmentAmount "Payment must match installment amount"
+    mutate completedInstallments = self.completedInstallments + 1
+    emit InstallmentRecorded
+  }
+
+  command markCompleted() {
+    guard self.status == "ACTIVE" "Can only complete active plans"
+    mutate status = "COMPLETED"
+    mutate completedAt = now()
+    emit PaymentPlanCompleted
+  }
+
+  command markDefaulted(reason: string) {
+    guard self.status == "ACTIVE" "Can only default active plans"
+    mutate status = "DEFAULTED"
+    mutate defaultedAt = now()
+    emit PaymentPlanDefaulted
+  }
+
+  command cancel(reason: string) {
+    guard self.status == "ACTIVE" "Can only cancel active plans"
+    mutate status = "CANCELLED"
+    emit PaymentPlanCancelled
+  }
+
+  command modify(newInstallmentAmount: money, newInstallmentCount: int, reason: string) {
+    guard self.status == "ACTIVE" "Can only modify active plans"
+    mutate installmentAmount = newInstallmentAmount
+    mutate installments = newInstallmentCount
+    emit PaymentPlanModified
+  }
+  store CollectionPaymentPlan in durable
+}
+
+// Events
+event CollectionCaseCreated: "collections.case.created" {
+  caseId: string
+  invoiceId: string
+  clientId: string
+  originalAmount: money
+}
+
+event CollectionAssigned: "collections.case.assigned" {
+  caseId: string
+  invoiceId: string
+  assignedTo: string
+}
+
+event CollectionStatusChanged: "collections.case.status-changed" {
+  caseId: string
+  invoiceId: string
+  oldStatus: string
+  newStatus: string
+}
+
+event CollectionPaymentRecorded: "collections.case.payment-recorded" {
+  caseId: string
+  invoiceId: string
+  amount: money
+  outstandingAmount: money
+}
+
+event CollectionResolved: "collections.case.resolved" {
+  caseId: string
+  invoiceId: string
+}
+
+event DunningEscalated: "collections.case.dunning-escalated" {
+  caseId: string
+  invoiceId: string
+  previousStage: string
+  newStage: string
+}
+
+event DunningReset: "collections.case.dunning-reset" {
+  caseId: string
+  invoiceId: string
+  newStage: string
+  reason: string
+}
+
+event PaymentPlanCreated: "collections.case.payment-plan-created" {
+  caseId: string
+  planId: string
+  nextPaymentDue: datetime
+}
+
+event CollectionDisputed: "collections.case.disputed" {
+  caseId: string
+  invoiceId: string
+  reason: string
+}
+
+event DisputeResolved: "collections.case.dispute-resolved" {
+  caseId: string
+  invoiceId: string
+  resolution: string
+}
+
+event EscalatedToLegal: "collections.case.escalated-to-legal" {
+  caseId: string
+  invoiceId: string
+  legalCaseNumber: string
+  legalFirm: string
+}
+
+event CollectionWrittenOff: "collections.case.written-off" {
+  caseId: string
+  invoiceId: string
+  amount: money
+  reason: string
+}
+
+event AgingUpdated: "collections.case.aging-updated" {
+  caseId: string
+  daysOverdue: number
+  agingBucket: string
+}
+
+event PriorityChanged: "collections.case.priority-changed" {
+  caseId: string
+  oldPriority: string
+  newPriority: string
+}
+
+event CollectionClosed: "collections.case.closed" {
+  caseId: string
+  invoiceId: string
+  resolution: string
+}
+
+event ActionCompleted: "collections.action.completed" {
+  actionId: string
+  caseId: string
+  actionType: string
+  outcome: string
+  promiseAmount: money
+}
+
+event ActionFailed: "collections.action.failed" {
+  actionId: string
+  caseId: string
+  reason: string
+}
+
+event ActionSkipped: "collections.action.skipped" {
+  actionId: string
+  caseId: string
+  reason: string
+}
+
+event ActionRescheduled: "collections.action.rescheduled" {
+  actionId: string
+  caseId: string
+  newDate: datetime
+}
+
+event InstallmentRecorded: "collections.payment-plan.installment-recorded" {
+  planId: string
+  caseId: string
+  installmentNumber: number
+  amount: money
+}
+
+event PaymentPlanCompleted: "collections.payment-plan.completed" {
+  planId: string
+  caseId: string
+}
+
+event PaymentPlanDefaulted: "collections.payment-plan.defaulted" {
+  planId: string
+  caseId: string
+  reason: string
+}
+
+event PaymentPlanCancelled: "collections.payment-plan.cancelled" {
+  planId: string
+  caseId: string
+  reason: string
+}
+
+event PaymentPlanModified: "collections.payment-plan.modified" {
+  planId: string
+  caseId: string
+  newInstallmentAmount: money
+  newInstallmentCount: number
+}

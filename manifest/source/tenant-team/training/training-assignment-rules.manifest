@@ -1,0 +1,64 @@
+use "../../_base.manifest"
+// Staff Domain - Training Assignment Rules
+// Manifest spec for assigning training modules to staff and tracking completion.
+// Lifecycle: assigned -> in_progress -> completed (or waived / overdue).
+//
+// NOTE: TrainingAssignment entity + commands moved to training-module-rules.manifest
+// (comprehensive definition with attempt tracking, manager review, and shift-based due dates).
+// This file retains the simpler event definitions used by legacy code paths.
+// No relationships: no entity definitions in this file — only events and policies
+
+policy TrainingAssignmentManagement execute: user.role in ["manager", "admin", "kitchen_manager"] "Managers can manage training assignments"
+
+event TrainingAssignmentCreated: "staff.training-assignment.created" {
+  assignmentId: string
+  tenantId: string
+  moduleId: string
+  employeeId: string
+  assignedToAll: boolean
+  assignedBy: string
+  createdAt: datetime
+}
+
+event TrainingStarted: "staff.training-assignment.started" {
+  assignmentId: string
+  tenantId: string
+  employeeId: string
+  startedAt: datetime
+}
+
+event TrainingCompleted: "staff.training-assignment.completed" {
+  assignmentId: string
+  tenantId: string
+  employeeId: string
+  moduleId: string
+  score: number
+  completedAt: datetime
+}
+
+event TrainingWaived: "staff.training-assignment.waived" {
+  assignmentId: string
+  tenantId: string
+  employeeId: string
+  reason: string
+  waivedAt: datetime
+}
+
+event TrainingMarkedOverdue: "staff.training-assignment.overdue" {
+  assignmentId: string
+  tenantId: string
+  employeeId: string
+  markedAt: datetime
+}
+
+event TrainingDueDateExtended: "staff.training-assignment.due-date-extended" {
+  assignmentId: string
+  tenantId: string
+  dueDate: string
+  updatedAt: datetime
+}
+
+event TrainingAssignmentDeleted: "staff.training-assignment.deleted" {
+  assignmentId: string
+  deletedAt: datetime
+}

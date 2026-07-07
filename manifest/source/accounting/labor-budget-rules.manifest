@@ -1,0 +1,239 @@
+use "../_base.manifest"
+// Staff Domain - Labor Budget Rules
+// Manifest spec for labor budgets and budget alerts
+
+entity LaborBudget mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property eventId: uuid?
+  property name: string
+  property locationId: uuid? = ""
+  property periodStart: datetime?
+  property periodEnd: datetime?
+  property budgetTarget: money = 0
+  property actualSpend: money? = 0
+  property budgetType: string = "weekly"
+  indexed property status: string = "draft"
+  searchable property description: string? = ""
+  property approvedBy: uuid? = ""
+  property approvedAt: datetime?
+  timestamps
+
+  computed isDeleted: boolean = self.deletedAt != null
+  computed isApproved: boolean = self.status == "approved"
+  computed isOverBudget: boolean = self.actualSpend > self.budgetTarget
+  computed varianceAmount: money = self.actualSpend - self.budgetTarget
+
+  relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
+
+  constraint validStatus: self.status in ["draft", "approved", "closed"] "Invalid labor budget status"
+  constraint positiveBudget: self.budgetTarget > 0 "Budget amount must be positive"
+
+  // State transitions
+  transition status from "draft" to ["approved"]
+  transition status from "approved" to ["closed"]
+
+  constraint warnOverBudget:warn (self.actualSpend > self.budgetTarget) {
+    messageTemplate: "Labor budget for location {locationId} is over by {varianceAmount}"
+    details: {
+      locationId: self.locationId
+      budgetTarget: self.budgetTarget
+      actualSpend: self.actualSpend
+      varianceAmount: self.varianceAmount
+    }
+  }
+
+  default policy LaborBudgetDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Labor budget management"
+  command create(locationId: string, periodStart: string, periodEnd: string, budgetTarget: money, budgetType: string, description: string) {
+    guard budgetTarget > 0 "Budget amount must be positive"
+
+    mutate locationId = locationId
+    mutate periodStart = periodStart
+    mutate periodEnd = periodEnd
+    mutate budgetTarget = budgetTarget
+    mutate budgetType = budgetType
+    mutate description = description
+
+    emit LaborBudgetCreated
+  }
+
+  command update(locationId: string, periodStart: string, periodEnd: string, budgetTarget: money, budgetType: string, description: string) {
+    guard self.deletedAt == null "Cannot update a deleted budget"
+
+    mutate locationId = locationId
+    mutate periodStart = periodStart
+    mutate periodEnd = periodEnd
+    mutate budgetTarget = budgetTarget
+    mutate budgetType = budgetType
+    mutate description = description
+
+    emit LaborBudgetUpdated
+  }
+
+  command approve(approvedBy: string) {
+    guard self.status == "draft" "Only draft labor budgets can be approved"
+    guard self.deletedAt == null "Cannot approve a deleted budget"
+    guard approvedBy != null and approvedBy != "" "Approver ID is required"
+
+    constraint blockApproveZero:block self.budgetTarget > 0 {
+      messageTemplate: "Cannot approve labor budget with zero amount"
+      details: {
+        locationId: self.locationId
+        periodStart: self.periodStart
+      }
+    }
+
+    mutate status = "approved"
+    mutate approvedBy = approvedBy
+    mutate approvedAt = now()
+
+    emit LaborBudgetApproved
+  }
+
+  command recordActual(actualSpend: money) {
+    guard self.status == "approved" "Can only record actuals on approved budgets"
+    guard self.deletedAt == null "Cannot update a deleted budget"
+    guard actualSpend >= 0 "Actual amount must be non-negative"
+
+    mutate actualSpend = actualSpend
+
+    emit LaborBudgetActualRecorded
+  }
+
+  command close() {
+    guard self.status == "approved" "Only approved budgets can be closed"
+    guard self.deletedAt == null "Cannot close a deleted budget"
+
+    mutate status = "closed"
+
+    emit LaborBudgetClosed
+  }
+
+  command softDelete() {
+    guard self.deletedAt == null "Budget is already deleted"
+    guard self.status != "approved" "Cannot delete an approved budget; close it first"
+
+    mutate deletedAt = now()
+
+    emit LaborBudgetDeleted
+  }
+
+  store LaborBudget in durable
+}
+
+entity BudgetAlert mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property budgetId: uuid = ""
+  property alertType: string = ""
+  property utilization: decimal = 0
+  property message: string = ""
+  property isAcknowledged: boolean = false
+  property acknowledgedBy: uuid? = ""
+  property acknowledgedAt: datetime?
+  property resolved: boolean = false
+  property resolvedAt: datetime?
+  timestamps
+
+  computed isPending: boolean = self.isAcknowledged == false and self.resolved == false
+
+  constraint validAlertType: self.alertType in ["threshold_warning", "threshold_exceeded", "overage", "critical"] "Invalid alert type"
+
+  default policy BudgetAlertDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Labor budget management"
+  command create(budgetId: string, alertType: string, utilization: number, message: string) {
+    guard budgetId != null and budgetId != "" "Budget ID is required"
+    guard alertType != null and alertType != "" "Alert type is required"
+    guard alertType in ["threshold_warning", "threshold_exceeded", "overage", "critical"] "Invalid alert type"
+
+    mutate budgetId = budgetId
+    mutate alertType = alertType
+    mutate utilization = utilization
+    mutate message = message
+    mutate isAcknowledged = false
+    mutate resolved = false
+
+    emit BudgetAlertCreated
+  }
+
+  command acknowledge(acknowledgedBy: string) {
+    guard self.isAcknowledged == false "Alert is already acknowledged"
+
+    mutate isAcknowledged = true
+    mutate acknowledgedBy = acknowledgedBy
+    mutate acknowledgedAt = now()
+
+    emit BudgetAlertAcknowledged
+  }
+
+  command markResolved() {
+    guard self.resolved == false "Alert is already resolved"
+
+    mutate resolved = true
+    mutate resolvedAt = now()
+
+    emit BudgetAlertResolved
+  }
+
+  relationship belongsTo budget: LaborBudget with budgetId
+
+  store BudgetAlert in durable
+}
+
+policy LaborBudgetManagement execute: user.role in ["manager", "admin"] "Managers can manage labor budgets"
+
+event LaborBudgetCreated: "staff.labor-budget.created" {
+  budgetId: string
+  tenantId: string
+  budgetTarget: money
+  createdAt: datetime
+}
+
+event LaborBudgetUpdated: "staff.labor-budget.updated" {
+  budgetId: string
+  updatedAt: datetime
+}
+
+event LaborBudgetDeleted: "staff.labor-budget.deleted" {
+  budgetId: string
+  deletedAt: datetime
+}
+
+event BudgetAlertCreated: "staff.budget-alert.created" {
+  alertId: string
+  tenantId: string
+  budgetId: string
+  alertType: string
+  utilization: number
+  createdAt: datetime
+}
+
+event BudgetAlertAcknowledged: "staff.budget-alert.acknowledged" {
+  alertId: string
+  acknowledgedBy: string
+  acknowledgedAt: datetime
+}
+
+event BudgetAlertResolved: "staff.budget-alert.resolved" {
+  alertId: string
+  resolvedAt: datetime
+}
+
+event LaborBudgetApproved: "staff.labor-budget.approved" {
+  budgetId: string
+  tenantId: string
+  locationId: string
+  budgetTarget: money
+  approvedBy: string
+  approvedAt: datetime
+}
+
+event LaborBudgetActualRecorded: "staff.labor-budget.actual_recorded" {
+  budgetId: string
+  tenantId: string
+  actualSpend: money
+  recordedAt: datetime
+}
+
+event LaborBudgetClosed: "staff.labor-budget.closed" {
+  budgetId: string
+  tenantId: string
+  closedAt: datetime
+}

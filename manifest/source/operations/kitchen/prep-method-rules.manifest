@@ -1,0 +1,127 @@
+use "../../_base.manifest"
+// Kitchen Ops - Prep Method Rules
+// Manifest spec for preparation method catalog, duration estimates, and certification requirements
+// PrepMethod is a simple config catalog — enriched with reactivate command.
+
+entity PrepMethod mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  searchable property required name: string
+  property category: string? = ""
+  searchable property description: string? = ""
+  property estimatedDurationMinutes: int? = 0
+  property requiresCertification: array<string>? = []
+  property isActive: boolean = true
+  timestamps
+
+  computed hasDuration: boolean = self.estimatedDurationMinutes > 0
+  computed hasCertification: boolean = count(self.requiresCertification) > 0
+  computed isDeactivated: boolean = self.isActive == false
+
+  relationship hasMany videos: MethodVideo
+
+  constraint requireName: self.name != "" "Prep method name is required"
+  constraint positiveDuration: self.estimatedDurationMinutes >= 0 "Estimated duration cannot be negative"
+
+  constraint warnNoDuration:warn self.estimatedDurationMinutes == 0 and self.isActive {
+    messageTemplate: "Prep method '{methodName}' has no estimated duration configured"
+    details: {
+      methodName: self.name
+      methodId: self.id
+    }
+  }
+
+  default policy PrepMethodDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Prep method management"
+  command create(name: string, category: string, description: string, estimatedDurationMinutes: int, requiresCertification: string[]) {
+    guard name != null and name != "" "Prep method name is required"
+    guard estimatedDurationMinutes >= 0 "Estimated duration cannot be negative"
+
+    mutate name = name
+    mutate category = category
+    mutate description = description
+    mutate estimatedDurationMinutes = estimatedDurationMinutes
+    mutate requiresCertification = requiresCertification
+    mutate isActive = true
+
+    emit PrepMethodCreated
+  }
+
+  command update(name: string, category: string, description: string, estimatedDurationMinutes: int, requiresCertification: string[]) {
+    guard name != null and name != "" "Prep method name is required"
+    guard self.isActive "Cannot update a deactivated prep method"
+    guard estimatedDurationMinutes >= 0 "Estimated duration cannot be negative"
+
+    mutate name = name
+    mutate category = category
+    mutate description = description
+    mutate estimatedDurationMinutes = estimatedDurationMinutes
+    mutate requiresCertification = requiresCertification
+
+    emit PrepMethodUpdated
+  }
+
+  command deactivate(reason: string, userId: string) {
+    guard self.isActive "Prep method is already deactivated"
+
+    constraint warnInUse:warn true {
+      messageTemplate: "Deactivating prep method '{methodName}' — verify it is not referenced in active recipe versions"
+      details: {
+        methodName: self.name
+        methodId: self.id
+        reason: reason
+      }
+    }
+
+    mutate isActive = false
+
+    emit PrepMethodDeactivated
+  }
+
+  // Reactivate a previously deactivated prep method — makes it available again for recipe authoring.
+  command reactivate(userId: string) {
+    guard self.isActive == false "Prep method is already active"
+
+    mutate isActive = true
+
+    emit PrepMethodReactivated
+  }
+
+  store PrepMethod in durable
+}
+
+policy KitchenStaffCanManagePrepMethods execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage prep methods"
+policy ManagersCanDeactivatePrepMethods execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can deactivate prep methods"
+
+event PrepMethodCreated: "kitchen.prepmethod.created" {
+  prepMethodId: string
+  tenantId: string
+  name: string
+  category: string
+  estimatedDurationMinutes: int
+  requiresCertification: string[]
+  createdAt: datetime
+}
+
+event PrepMethodUpdated: "kitchen.prepmethod.updated" {
+  prepMethodId: string
+  name: string
+  category: string
+  estimatedDurationMinutes: int
+  requiresCertification: string[]
+  updatedAt: datetime
+}
+
+event PrepMethodDeactivated: "kitchen.prepmethod.deactivated" {
+  prepMethodId: string
+  name: string
+  reason: string
+  userId: string
+  deactivatedAt: datetime
+}
+
+event PrepMethodReactivated: "kitchen.prepmethod.reactivated" {
+  prepMethodId: string
+  tenantId: string
+  name: string
+  userId: string
+  reactivatedAt: datetime
+}

@@ -1,0 +1,261 @@
+use "../_base.manifest"
+// CRM & Sales - Client Interaction Rules
+// Manifest spec for tracking client interactions, follow-ups, and communication history
+
+entity ClientInteraction mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property clientId: uuid? = ""
+  property leadId: uuid? = ""
+  property employeeId: uuid = ""
+  property interactionType: string = "note"
+  property interactionDate: datetime = now()
+  property subject: string? = ""
+  searchable property description: string? = ""
+  property followUpDate: datetime?
+  property followUpCompleted: boolean = false
+  indexed property status: string? = "open"
+  property priority: string? = "normal"
+  property escalatedAt: datetime?
+  property escalatedTo: string? = ""
+  property correlationId: string? = ""
+  timestamps
+
+  computed hasFollowUp: boolean = self.followUpDate != null
+  computed isFollowUpOverdue: boolean = self.followUpDate != null and self.followUpDate < now() and self.followUpCompleted == false cache request
+  computed isEscalated: boolean = self.escalatedAt != null
+  computed isCompleted: boolean = self.followUpCompleted == true
+  computed hasSubject: boolean = self.subject != null and self.subject != ""
+
+  constraint validInteractionType: self.interactionType in ["call", "email", "meeting", "note"] "Interaction type must be 'call', 'email', 'meeting', or 'note'"
+  constraint validSubject: self.subject != null and self.subject != "" "Subject is required"
+  constraint validEmployeeId: self.employeeId != null and self.employeeId != "" "Employee ID is required"
+
+  relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
+  relationship belongsTo lead: Lead fields [tenantId, leadId] references [tenantId, id]
+  relationship belongsTo employee: User fields [tenantId, employeeId] references [tenantId, id]
+
+  constraint warnNoClientOrLead:warn self.clientId == "" and self.leadId == "" {
+    messageTemplate: "Interaction '{subject}' is not linked to any client or lead"
+    details: {
+      subject: self.subject
+      interactionType: self.interactionType
+      employeeId: self.employeeId
+    }
+  }
+
+  constraint validStatus: self.status in ["open", "scheduled", "overdue", "completed", "escalated"] "Invalid interaction status"
+  constraint validPriority: self.priority in ["low", "normal", "high", "urgent"] "Invalid priority level"
+
+  transition status from "open" to ["scheduled", "overdue", "completed", "escalated"]
+  transition status from "scheduled" to ["overdue", "completed", "escalated"]
+  transition status from "overdue" to ["scheduled", "completed", "escalated"]
+  transition status from "escalated" to ["open", "scheduled", "completed"]
+
+  constraint warnOverdueFollowUp:warn (self.followUpDate != null and self.followUpDate < now() and self.followUpCompleted == false) {
+    messageTemplate: "Follow-up for '{subject}' is overdue (due {followUpDate})"
+    details: {
+      subject: self.subject
+      interactionType: self.interactionType
+      followUpDate: self.followUpDate
+      employeeId: self.employeeId
+    }
+  }
+
+  default policy ClientInteractionDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Client interaction tracking"
+  command create(clientId: string, leadId: string, employeeId: string, interactionType: string, interactionDate: datetime, subject: string, description: string, followUpDate: datetime) {
+    guard subject != null and subject != "" "Subject is required"
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard interactionType != null and interactionType != "" "Interaction type is required"
+
+    constraint warnPastFollowUp:warn followUpDate != null and followUpDate < now() {
+      messageTemplate: "Creating interaction with a follow-up date in the past ({followUpDate})"
+      details: {
+        subject: subject
+        followUpDate: followUpDate
+      }
+    }
+
+    mutate clientId = clientId
+    mutate leadId = leadId
+    mutate employeeId = employeeId
+    mutate interactionType = interactionType
+    mutate interactionDate = interactionDate != null ? interactionDate : now()
+    mutate subject = subject
+    mutate description = description
+    mutate followUpDate = followUpDate
+    mutate followUpCompleted = false
+
+    emit ClientInteractionCreated
+  }
+
+  command update(interactionType: string, interactionDate: datetime, subject: string, description: string, followUpDate: datetime, correlationId: string) {
+    guard self.deletedAt == null "Cannot update a deleted interaction"
+    guard subject != null and subject != "" "Subject is required"
+
+    constraint warnPastFollowUp:warn followUpDate != null and followUpDate < now() {
+      messageTemplate: "Updating interaction with a follow-up date in the past ({followUpDate})"
+      details: {
+        subject: subject
+        followUpDate: followUpDate
+      }
+    }
+
+    mutate interactionType = interactionType
+    mutate interactionDate = interactionDate
+    mutate subject = subject
+    mutate description = description
+    mutate followUpDate = followUpDate
+    mutate correlationId = correlationId
+
+    emit ClientInteractionUpdated
+  }
+
+  command complete(completionNotes: string, userId: string) {
+    guard self.deletedAt == null "Cannot complete a deleted interaction"
+    guard self.followUpCompleted == false "Interaction follow-up is already completed"
+
+    constraint warnNoFollowUp:warn (self.followUpDate != null) == false {
+      messageTemplate: "Completing interaction '{subject}' that has no follow-up date set"
+      details: {
+        subject: self.subject
+        interactionType: self.interactionType
+      }
+    }
+
+    mutate followUpCompleted = true
+    mutate status = "completed"
+
+    emit ClientInteractionCompleted
+  }
+
+  command schedule(followUpDate: datetime, assignedTo: string) {
+    guard self.deletedAt == null "Cannot schedule a deleted interaction"
+    guard self.status in ["open", "overdue"] "Can only schedule open or overdue interactions"
+    guard followUpDate != null "Follow-up date is required"
+    guard followUpDate > now() "Follow-up date must be in the future"
+
+    mutate followUpDate = followUpDate
+    mutate employeeId = assignedTo
+    mutate status = "scheduled"
+    mutate followUpCompleted = false
+
+    emit ClientInteractionScheduled
+  }
+
+  command markOverdue() {
+    guard self.deletedAt == null "Cannot mark a deleted interaction overdue"
+    guard self.status in ["open", "scheduled"] "Can only mark open or scheduled interactions overdue"
+    guard self.followUpDate != null "Interaction has no follow-up date"
+    guard self.followUpDate < now() "Follow-up date has not yet passed"
+
+    mutate status = "overdue"
+
+    emit ClientInteractionMarkedOverdue
+  }
+
+  command escalate(escalatedTo: string, reason: string) {
+    guard self.deletedAt == null "Cannot escalate a deleted interaction"
+    guard self.status != "completed" "Cannot escalate a completed interaction"
+    guard escalatedTo != null and escalatedTo != "" "Escalation target is required"
+    guard reason != null and reason != "" "Escalation reason is required"
+
+    mutate escalatedAt = now()
+    mutate escalatedTo = escalatedTo
+    mutate status = "escalated"
+    mutate priority = "urgent"
+
+    emit ClientInteractionEscalated
+  }
+
+  command softDelete() {
+    guard self.deletedAt == null "Interaction is already deleted"
+
+    mutate deletedAt = now()
+
+    emit ClientInteractionSoftDeleted
+  }
+
+  store ClientInteraction in durable
+}
+
+// Policy definitions
+policy SalesCanManageInteractions execute: user.role in ["sales", "manager", "admin"] "Sales staff can manage interactions"
+policy SalesCanCompleteInteractions execute: user.role in ["sales", "manager", "admin"] "Sales staff can complete interaction follow-ups"
+
+// Event definitions
+event ClientInteractionCreated: "crm.interaction.created" {
+  interactionId: string
+  tenantId: string
+  clientId: string
+  leadId: string
+  employeeId: string
+  interactionType: string
+  subject: string
+  followUpDate: datetime
+  createdAt: datetime
+}
+
+event ClientInteractionUpdated: "crm.interaction.updated" {
+  interactionId: string
+  tenantId: string
+  clientId: string
+  leadId: string
+  subject: string
+  interactionType: string
+  followUpDate: datetime
+  updatedAt: datetime
+}
+
+event ClientInteractionCompleted: "crm.interaction.completed" {
+  interactionId: string
+  tenantId: string
+  clientId: string
+  leadId: string
+  employeeId: string
+  subject: string
+  interactionType: string
+  completionNotes: string
+  userId: string
+  completedAt: datetime
+}
+
+event ClientInteractionScheduled: "crm.interaction.scheduled" {
+  interactionId: string
+  tenantId: string
+  clientId: string
+  leadId: string
+  employeeId: string
+  subject: string
+  followUpDate: datetime
+  scheduledAt: datetime
+}
+
+event ClientInteractionMarkedOverdue: "crm.interaction.marked_overdue" {
+  interactionId: string
+  tenantId: string
+  clientId: string
+  leadId: string
+  subject: string
+  followUpDate: datetime
+  markedAt: datetime
+}
+
+event ClientInteractionEscalated: "crm.interaction.escalated" {
+  interactionId: string
+  tenantId: string
+  clientId: string
+  leadId: string
+  subject: string
+  escalatedTo: string
+  reason: string
+  escalatedAt: datetime
+}
+
+event ClientInteractionSoftDeleted: "crm.interaction.soft_deleted" {
+  interactionId: string
+  tenantId: string
+  clientId: string
+  leadId: string
+  subject: string
+  deletedAt: datetime
+}

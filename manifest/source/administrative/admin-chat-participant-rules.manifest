@@ -1,0 +1,69 @@
+use "../_base.manifest"
+// Administrative Domain - Chat Participant Rules
+// Manifest spec for admin chat participant operations
+
+entity AdminChatParticipant mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property threadId: uuid = ""
+  property userId: uuid = ""
+  property archivedAt: datetime?
+  property clearedAt: datetime?
+  timestamps
+
+  computed isArchived: boolean = self.archivedAt != null
+
+  default policy AdminChatParticipantDefaultAccess execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Admin chat"
+  command create(threadId: string) {
+    guard threadId != null and threadId != "" "Thread ID is required"
+
+    mutate threadId = threadId
+    mutate userId = user.id
+
+    emit AdminChatParticipantCreated
+  }
+
+  command archive() {
+    mutate archivedAt = now()
+
+    emit ChatParticipantArchived
+  }
+
+  command unarchive() {
+    mutate archivedAt = null
+
+    emit ChatParticipantUnarchived
+  }
+
+  command clearHistory() {
+    mutate clearedAt = now()
+
+    emit ChatHistoryCleared
+  }
+
+  relationship belongsTo thread: AdminChatThread fields [tenantId, threadId] references [tenantId, id]
+  relationship belongsTo user: User fields [tenantId, userId] references [tenantId, id]
+
+  store AdminChatParticipant in durable
+}
+
+policy AdminChatManagement execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Staff can manage their chat participation"
+
+event AdminChatParticipantCreated: "admin.chat-participant.created" {
+  participantId: string
+  threadId: string
+  userId: string
+}
+
+event ChatParticipantArchived: "admin.chat-participant.archived" {
+  participantId: string
+  archivedAt: datetime
+}
+
+event ChatParticipantUnarchived: "admin.chat-participant.unarchived" {
+  participantId: string
+}
+
+event ChatHistoryCleared: "admin.chat-participant.history-cleared" {
+  participantId: string
+  clearedAt: datetime
+}

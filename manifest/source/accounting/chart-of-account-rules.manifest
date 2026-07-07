@@ -1,0 +1,87 @@
+use "../_base.manifest"
+// Accounting Domain - Chart of Account Rules
+// Manifest spec for managing chart of accounts (general ledger account definitions)
+
+entity ChartOfAccount mixin TenantScoped {
+  key [tenantId, id]
+  property accountNumber: string = ""
+  property accountName: string = ""
+  property accountType: string = ""
+  property parentId: uuid? = ""
+  searchable property description: string? = ""
+  property isActive: boolean = true
+  timestamps
+
+  computed hasParent: boolean = self.parentId != ""
+  computed isRoot: boolean = self.parentId == ""
+
+  constraint requireAccountNumber: self.accountNumber != "" "Account number is required"
+  constraint requireAccountName: self.accountName != "" "Account name is required"
+  constraint requireAccountType: self.accountType != "" "Account type is required"
+  constraint validAccountType: self.accountType in ["asset", "liability", "equity", "revenue", "expense", "cogs", "other"] "Invalid account type"
+
+  // Self-referential hierarchy via parentId only — no belongsTo parent: ChartOfAccount
+  // here. Domain-completeness (Manifest ≥2.18) treats create params that name+type-match
+  // a belongsTo parent as parent-context fields; a self-ref would falsely flag
+  // accountNumber/accountName/accountType as inherited from the parent row.
+
+  default policy ChartOfAccountDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Chart of accounts"
+  command create(accountNumber: string, accountName: string, accountType: string, parentId: string, description: string) {
+    guard accountNumber != null and accountNumber != "" "Account number is required"
+    guard accountName != null and accountName != "" "Account name is required"
+    guard accountType != null and accountType != "" "Account type is required"
+
+    mutate accountNumber = accountNumber
+    mutate accountName = accountName
+    mutate accountType = accountType
+    mutate parentId = parentId
+    mutate description = description
+    mutate isActive = true
+
+    emit ChartOfAccountCreated
+  }
+
+  command update(accountName: string, accountNumber: string, accountType: string, parentId: string, description: string, isActive: boolean) {
+    guard self.isActive == true "Cannot update an inactive account"
+
+    mutate accountName = accountName
+    mutate accountNumber = accountNumber
+    mutate accountType = accountType
+    mutate parentId = parentId
+    mutate description = description
+    mutate isActive = isActive
+
+    emit ChartOfAccountUpdated
+  }
+
+  command deactivate() {
+    guard self.isActive == true "Account is already inactive"
+
+    mutate isActive = false
+
+    emit ChartOfAccountDeactivated
+  }
+
+  store ChartOfAccount in durable
+}
+
+policy AccountManagement execute: user.role in ["manager", "admin"] "Managers can manage chart of accounts"
+
+event ChartOfAccountCreated: "accounting.chart-of-account.created" {
+  accountId: string
+  tenantId: string
+  accountNumber: string
+  accountName: string
+  accountType: string
+  createdAt: datetime
+}
+
+event ChartOfAccountUpdated: "accounting.chart-of-account.updated" {
+  accountId: string
+  updatedAt: datetime
+}
+
+event ChartOfAccountDeactivated: "accounting.chart-of-account.deactivated" {
+  accountId: string
+  updatedAt: datetime
+}

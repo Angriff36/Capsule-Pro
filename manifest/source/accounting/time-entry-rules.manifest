@@ -1,0 +1,297 @@
+use "../_base.manifest"
+// Staff - Time Entry Rules
+// Manifest spec for time tracking and timecard edit requests
+
+entity TimeEntry mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property required employeeId: uuid
+  property locationId: uuid? = ""
+  property shiftId: uuid? = ""
+  property clockIn: datetime
+  property clockOut: datetime?
+  property breakMinutes: int = 0
+  searchable property notes: string? = ""
+  property approvedBy: uuid? = ""
+  property approvedAt: datetime?
+  timestamps
+
+  computed isClockedIn: boolean = self.clockIn != null and self.clockOut == null
+  computed isCompleted: boolean = self.clockIn != null and self.clockOut != null
+  computed totalMinutes: number = self.clockOut > self.clockIn ? (self.clockOut - self.clockIn) / 60000 : 0
+  computed totalHours: number = self.totalMinutes > 0 ? (self.totalMinutes - self.breakMinutes) / 60 : 0
+  computed isApproved: boolean = self.approvedBy != ""
+
+  relationship belongsTo shift: ScheduleShift fields [tenantId, shiftId] references [tenantId, id]
+  relationship belongsTo employee: User with employeeId
+  relationship belongsTo location: Facility with locationId
+  relationship hasMany editRequests: TimecardEditRequest
+
+  default policy TimeEntryDefaultAccess execute: roleAllows(user.role, "manageAccess") "Time entry management"
+  command clockIn(employeeId: string, locationId: string, shiftId: string, notes: string) {
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+
+    constraint blockAlreadyClockedIn:block !(self.clockIn != null and self.clockOut == null) {
+      messageTemplate: "Employee '{employeeId}' is already clocked in"
+      details: {
+        employeeId: self.employeeId
+        clockIn: self.clockIn
+      }
+    }
+
+    mutate employeeId = employeeId
+    mutate locationId = locationId
+    mutate shiftId = shiftId
+    mutate clockIn = now()
+    mutate clockOut = null
+    mutate breakMinutes = 0
+    mutate notes = notes
+
+    emit TimeEntryClockedIn
+  }
+
+  command clockOut(breakMinutes: number, notes: string) {
+    guard (self.clockIn != null and self.clockOut == null) "Must be clocked in to clock out"
+
+    constraint blockNotClockedIn:block self.clockIn != null {
+      messageTemplate: "Cannot clock out - no active clock-in found"
+      details: {
+        employeeId: self.employeeId
+      }
+    }
+
+    constraint warnLongShift:warn (now() - self.clockIn) > 43200000 {
+      messageTemplate: "Clock-out after 12+ hours for employee '{employeeId}'"
+      details: {
+        employeeId: self.employeeId
+        clockIn: self.clockIn
+        durationMs: now() - self.clockIn
+      }
+    }
+
+    mutate clockOut = now()
+    mutate breakMinutes = breakMinutes
+    mutate notes = notes
+
+    emit TimeEntryClockedOut
+  }
+
+  command addEntry(employeeId: string, locationId: string, shiftId: string, clockIn: datetime, clockOut: datetime, breakMinutes: number, notes: string) {
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard clockIn != null "Clock-in time is required"
+    guard clockOut != null and clockOut > clockIn "Clock-out must be after clock-in"
+
+    constraint warnLongEntry:warn (clockOut - clockIn) > 43200000 {
+      messageTemplate: "Manual time entry exceeds 12 hours for employee '{employeeId}'"
+      details: {
+        employeeId: employeeId
+        clockIn: clockIn
+        clockOut: clockOut
+        durationMs: clockOut - clockIn
+      }
+    }
+
+    mutate employeeId = employeeId
+    mutate locationId = locationId
+    mutate shiftId = shiftId
+    mutate clockIn = clockIn
+    mutate clockOut = clockOut
+    mutate breakMinutes = breakMinutes
+    mutate notes = notes
+
+    emit TimeEntryAdded
+  }
+
+  // Apply an APPROVED timecard edit back onto the entry. Invoked by the
+  // timecard-edit-approved middleware (the corrected values + timeEntryId are the
+  // TimecardEditRequest's OWN fields, which `approve` does not take as params, so no
+  // reaction can carry them). Clock times COALESCE against the current value so a
+  // partial edit (only one clock field requested) can never blank a real time — the
+  // command is self-protecting even if called directly with nulls. breakMinutes is a
+  // concrete int (requestedBreakMinutes defaults 0, never null) so it applies through.
+  // No transition (status untouched); guarded against editing a deleted entry.
+  command applyEdit(clockIn: datetime, clockOut: datetime, breakMinutes: number) {
+    guard self.deletedAt == null "Cannot edit a deleted time entry"
+
+    mutate clockIn = clockIn != null ? clockIn : self.clockIn
+    mutate clockOut = clockOut != null ? clockOut : self.clockOut
+    mutate breakMinutes = breakMinutes != null ? breakMinutes : self.breakMinutes
+
+    emit TimeEntryEdited
+  }
+
+  command softDelete(reason: string, userId: string) {
+    guard self.deletedAt == null "Time entry is already deleted"
+
+    mutate deletedAt = now()
+
+    emit TimeEntryDeleted
+  }
+
+  store TimeEntry in durable
+}
+
+entity TimecardEditRequest mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property required timeEntryId: uuid
+  property required employeeId: uuid
+  property requestedClockIn: datetime?
+  property requestedClockOut: datetime?
+  property requestedBreakMinutes: int? = 0
+  property required reason: string
+  indexed property status: string = "pending"
+  timestamps
+
+  computed isPending: boolean = self.status == "pending"
+  computed isApproved: boolean = self.status == "approved"
+  computed isRejected: boolean = self.status == "rejected"
+  computed isProcessed: boolean = self.status != "pending"
+
+  relationship belongsTo timeEntry: TimeEntry fields [tenantId, timeEntryId] references [tenantId, id]
+  relationship belongsTo employee: User with employeeId
+
+  constraint validStatus: self.status in ["pending", "approved", "rejected"] "Invalid edit request status"
+
+  // State transitions
+  transition status from "pending" to ["approved", "rejected"]
+
+  default policy TimecardEditRequestDefaultAccess execute: roleAllows(user.role, "manageAccess") "Time entry management"
+  command create(optional timeEntryId: string, optional employeeId: string, requestedClockIn: datetime, requestedClockOut: datetime, requestedBreakMinutes: number, reason: string) {
+    guard timeEntryId != null and timeEntryId != "" "Time entry ID is required"
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard reason != null and reason != "" "Reason is required"
+
+    mutate timeEntryId = timeEntryId
+    mutate employeeId = employeeId
+    mutate requestedClockIn = requestedClockIn
+    mutate requestedClockOut = requestedClockOut
+    mutate requestedBreakMinutes = requestedBreakMinutes
+    mutate reason = reason
+
+    emit TimecardEditRequested
+  }
+
+  command approve(userId: string) {
+    guard self.status == "pending" "Can only approve pending requests"
+
+    constraint blockAlreadyProcessed:block !(self.status != "pending") {
+      messageTemplate: "Edit request has already been processed (status: '{status}')"
+      details: {
+        timeEntryId: self.timeEntryId
+        employeeId: self.employeeId
+        status: self.status
+      }
+    }
+
+    mutate status = "approved"
+
+    emit TimecardEditApproved
+  }
+
+  command reject(userId: string, reason: string) {
+    guard self.status == "pending" "Can only reject pending requests"
+
+    constraint blockAlreadyProcessed:block !(self.status != "pending") {
+      messageTemplate: "Edit request has already been processed (status: '{status}')"
+      details: {
+        timeEntryId: self.timeEntryId
+        employeeId: self.employeeId
+        status: self.status
+      }
+    }
+
+    mutate status = "rejected"
+
+    emit TimecardEditRejected
+  }
+
+  store TimecardEditRequest in durable
+}
+
+// U1: Role hierarchy migration — policies now use roleAllows() instead of
+// inline role arrays. Permission tiers declared in _base.manifest.
+//   staffAccess: Staff (all employees incl. KitchenStaff, KitchenLead, Manager, Admin)
+//   leadAccess: KitchenLead, Manager+
+//   manageAccess: Manager+ (incl. HRAdmin, PayrollAdmin, all specialized managers)
+policy StaffCanClockInOut execute: roleAllows(user.role, "staffAccess") "All staff can clock in and out"
+policy ManagersCanAddEntries execute: roleAllows(user.role, "leadAccess") "Leads and managers can add manual time entries"
+policy ManagersCanDeleteEntries execute: roleAllows(user.role, "manageAccess") "Only managers can delete time entries"
+policy StaffCanRequestEdit execute: roleAllows(user.role, "staffAccess") "All staff can request timecard edits"
+policy ManagersCanApproveEdits execute: roleAllows(user.role, "manageAccess") "Only managers can approve timecard edits"
+
+event TimeEntryClockedIn: "staff.timeentry.clocked_in" {
+  timeEntryId: string
+  tenantId: string
+  employeeId: string
+  locationId: string
+  shiftId: string
+  clockIn: datetime
+}
+
+event TimeEntryClockedOut: "staff.timeentry.clocked_out" {
+  timeEntryId: string
+  employeeId: string
+  clockIn: datetime
+  clockOut: datetime
+  totalHours: number
+  breakMinutes: number
+  clockedOutAt: datetime
+}
+
+event TimeEntryAdded: "staff.timeentry.added" {
+  timeEntryId: string
+  tenantId: string
+  employeeId: string
+  locationId: string
+  clockIn: datetime
+  clockOut: datetime
+  totalHours: number
+  breakMinutes: number
+  createdAt: datetime
+}
+
+event TimeEntryEdited: "staff.timeentry.edited" {
+  timeEntryId: string
+  tenantId: string
+  employeeId: string
+  clockIn: datetime
+  clockOut: datetime
+  breakMinutes: number
+  editedAt: datetime
+}
+
+event TimeEntryDeleted: "staff.timeentry.deleted" {
+  timeEntryId: string
+  tenantId: string
+  employeeId: string
+  deletedBy: string
+  reason: string
+  deletedAt: datetime
+}
+
+event TimecardEditRequested: "staff.timecard.edit.requested" {
+  editRequestId: string
+  tenantId: string
+  timeEntryId: string
+  employeeId: string
+  reason: string
+  requestedClockIn: datetime
+  requestedClockOut: datetime
+  createdAt: datetime
+}
+
+event TimecardEditApproved: "staff.timecard.edit.approved" {
+  editRequestId: string
+  timeEntryId: string
+  employeeId: string
+  approvedBy: string
+  approvedAt: datetime
+}
+
+event TimecardEditRejected: "staff.timecard.edit.rejected" {
+  editRequestId: string
+  timeEntryId: string
+  employeeId: string
+  rejectedBy: string
+  reason: string
+  rejectedAt: datetime
+}

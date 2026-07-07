@@ -1,0 +1,753 @@
+use "../../_base.manifest"
+// Logistics Domain — Driver, Vehicle, Route, Dispatch Rules
+
+entity Driver mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  searchable property required name: string
+  encrypted property email: string? = ""
+  encrypted property phone: string? = ""
+  private encrypted property licenseNumber: string? = ""
+  property licenseExpiry: datetime?
+  property vehicleId: uuid? = ""
+  indexed property status: string = "available"
+  searchable property notes: string? = ""
+  timestamps
+
+  computed isActive: boolean = self.status in ["available", "on_route"]
+  computed licenseExpiring: boolean = self.licenseExpiry != null and addDays(now(), 30) > self.licenseExpiry cache request
+  computed licenseExpired: boolean = self.licenseExpiry != null and now() > self.licenseExpiry cache request
+
+  constraint validStatus: self.status in ["available", "on_route", "off_duty", "inactive"] "Invalid driver status"
+
+  constraint warnLicenseExpiring:warn (self.licenseExpiry != null and addDays(now(), 30) > self.licenseExpiry) and (self.status in ["available", "on_route"]) and not (self.licenseExpiry != null and now() > self.licenseExpiry) {
+    messageTemplate: "Driver '{driverName}' license expiring within 30 days"
+    details: {
+      driverName: self.name
+      licenseExpiry: self.licenseExpiry
+    }
+  }
+
+  constraint warnExpiredLicense:warn (self.licenseExpiry != null and now() > self.licenseExpiry) and (self.status in ["available", "on_route"]) {
+    messageTemplate: "Driver '{driverName}' has an expired license — suspend or renew before dispatching"
+    details: {
+      driverName: self.name
+      licenseExpiry: self.licenseExpiry
+    }
+  }
+
+  // State transitions — aligned with Prisma drivers.status
+  transition status from "available" to ["on_route", "off_duty", "inactive"]
+  transition status from "on_route" to ["available", "off_duty", "inactive"]
+  transition status from "off_duty" to ["available", "on_route", "inactive"]
+  // reactivate (guard admits "inactive") brings a removed driver back to "available";
+  // remove (guard self.status != "on_route", admits "inactive") is idempotent via the self-loop.
+  transition status from "inactive" to ["available", "inactive"]
+
+  default policy DriverDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
+  command create(name: string, email: string, phone: string, licenseNumber: string, licenseExpiry: datetime, optional vehicleId: string, status: string, notes: string) {
+    guard name != null and name != "" "Name is required"
+
+    mutate name = name
+    mutate email = email
+    mutate phone = phone
+    mutate licenseNumber = licenseNumber
+    mutate licenseExpiry = licenseExpiry
+    mutate vehicleId = vehicleId
+    mutate notes = notes
+
+    emit DriverCreated
+  }
+
+  command remove() {
+    guard self.status != "on_route" "Cannot remove a driver currently on route"
+
+    mutate status = "inactive"
+
+    emit DriverDeleted
+  }
+
+  command update(name: string, email: string, phone: string, licenseNumber: string, licenseExpiry: datetime, vehicleId: string, notes: string) {
+    guard name != null and name != "" "Name is required"
+
+    mutate name = name
+    mutate email = email
+    mutate phone = phone
+    mutate licenseNumber = licenseNumber
+    mutate licenseExpiry = licenseExpiry
+    mutate vehicleId = vehicleId
+    mutate notes = notes
+
+    emit DriverUpdated
+  }
+
+  // Record a renewed or replaced license and clear the expiry warning
+  command renewLicense(licenseNumber: string, licenseExpiry: datetime) {
+    guard licenseNumber != null and licenseNumber != "" "License number is required"
+    guard licenseExpiry != null "New expiry date is required"
+
+    mutate licenseNumber = licenseNumber
+    mutate licenseExpiry = licenseExpiry
+
+    emit DriverLicenseRenewed
+  }
+
+  // Take a driver off duty
+  command setOffDuty(notes: string) {
+    guard self.status in ["available", "on_route"] "Only available or on-route drivers can be set off duty"
+
+    mutate status = "off_duty"
+
+    emit DriverSetOffDuty
+  }
+
+  // Reactivate a driver back to available status
+  command reactivate(notes: string) {
+    guard self.status in ["off_duty", "inactive"] "Only off-duty or inactive drivers can be reactivated"
+
+    mutate status = "available"
+
+    emit DriverReactivated
+  }
+
+  // Put a driver on route when a dispatch is assigned to them. This is what makes
+  // the previously-unreachable "on_route" status actually reachable — see the
+  // LogisticsDispatch lifecycle middleware. Guard-safe: a driver already on route
+  // (busy on another dispatch) is left alone.
+  command setOnRoute() {
+    guard self.status == "available" "Only available drivers can be put on route"
+
+    mutate status = "on_route"
+
+    emit DriverSetOnRoute
+  }
+
+  // Return a driver to available once their dispatch is delivered or fails. Distinct
+  // from reactivate (off_duty/inactive -> available); this only frees an on-route driver.
+  command setAvailable() {
+    guard self.status == "on_route" "Only on-route drivers are freed by dispatch completion"
+
+    mutate status = "available"
+
+    emit DriverSetAvailable
+  }
+
+  relationship belongsTo vehicle: Vehicle with vehicleId
+  relationship hasMany deliveryRoutes: DeliveryRoute
+  relationship hasMany dispatches: LogisticsDispatch
+  relationship hasMany routes: LogisticsRoute
+
+  store Driver in durable
+}
+
+entity Vehicle mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property required make: string
+  property required model: string
+  property year: int? = 0
+  unique property plateNumber: string? = ""
+  property vin: string? = ""
+  property capacityWeight: decimal? = 0
+  property capacityVolume: decimal? = 0
+  property fuelType: string? = ""
+  property mileage: decimal? = 0
+  indexed property status: string = "available"
+  searchable property notes: string? = ""
+  timestamps
+
+  computed isAvailable: boolean = self.status == "available"
+  computed displayName: string = self.make + " " + self.model + (self.year > 0 ? " " + self.year : "")
+  // Fleet-utilization rollups over the Vehicle's route children (the hasMany
+  // routes back-relation). The FILTERS carry the business meaning — count ONLY
+  // in_progress routes (not planned/completed/cancelled) as the live workload on
+  // this vehicle right now, and sum ONLY completed routes' distance (not planned
+  // estimates that may still change) as lifetime distance actually driven. Drop
+  // or flip a predicate literal and the rollup silently reports the wrong number
+  // with no compile error; the vehicle-aggregate-computeds regression test locks
+  // the shape. IR-only computeds (no stored column, no migration); request-cached
+  // like the Equipment/Event/Client/Invoice/Lead precedent.
+  computed activeRouteCount: int = count_of(filter(self.routes, (r) => r.status == "in_progress")) cache request
+  computed completedRouteDistance: decimal = sum(filter(self.routes, (r) => r.status == "completed"), (r) => r.totalDistance) cache request
+
+  constraint validStatus: self.status in ["available", "in_use", "maintenance", "out_of_service"] "Invalid vehicle status"
+
+  // State transitions
+  transition status from "available" to ["in_use", "maintenance", "out_of_service"]
+  transition status from "in_use" to ["available", "maintenance", "out_of_service"]
+  transition status from "maintenance" to ["available", "out_of_service"]
+  transition status from "out_of_service" to ["available", "maintenance"]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Vehicle
+  relationship hasMany routes: LogisticsRoute
+  relationship hasMany dispatches: LogisticsDispatch
+  relationship hasMany drivers: Driver
+
+  default policy VehicleDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
+  command create(make: string, model: string, year: int, plateNumber: string, vin: string, capacityWeight: decimal, capacityVolume: decimal, fuelType: string, mileage: decimal, status: string, notes: string) {
+    guard make != null and make != "" "Make is required"
+    guard model != null and model != "" "Model is required"
+
+    mutate make = make
+    mutate model = model
+    mutate year = year
+    mutate plateNumber = plateNumber
+    mutate vin = vin
+    mutate capacityWeight = capacityWeight
+    mutate capacityVolume = capacityVolume
+    mutate fuelType = fuelType
+    mutate mileage = mileage
+    mutate notes = notes
+
+    emit VehicleCreated
+  }
+
+  command remove() {
+    guard self.deletedAt == null "Vehicle is already removed"
+    guard self.status == "out_of_service" "Only out-of-service vehicles can be deleted"
+
+    mutate deletedAt = now()
+
+    emit VehicleDeleted
+  }
+
+  command update(make: string, model: string, year: int, plateNumber: string, vin: string, capacityWeight: decimal, capacityVolume: decimal, fuelType: string, mileage: decimal, notes: string) {
+    guard make != null and make != "" "Make is required"
+    guard model != null and model != "" "Model is required"
+
+    mutate make = make
+    mutate model = model
+    mutate year = year
+    mutate plateNumber = plateNumber
+    mutate vin = vin
+    mutate capacityWeight = capacityWeight
+    mutate capacityVolume = capacityVolume
+    mutate fuelType = fuelType
+    mutate mileage = mileage
+    mutate notes = notes
+
+    emit VehicleUpdated
+  }
+
+  // Send vehicle to maintenance workshop; blocks dispatch until returned
+  command sendToMaintenance(reason: string) {
+    guard self.status in ["available", "out_of_service"] "Vehicle must be available or out of service to send to maintenance"
+    guard reason != null and reason != "" "Reason is required"
+
+    mutate status = "maintenance"
+
+    emit VehicleSentToMaintenance
+  }
+
+  // Return vehicle to fleet after maintenance
+  command returnFromMaintenance(notes: string) {
+    guard self.status == "maintenance" "Vehicle is not in maintenance"
+
+    mutate status = "available"
+
+    emit VehicleReturnedFromMaintenance
+  }
+
+  // Permanently take a vehicle out of service
+  command decommission(reason: string) {
+    guard self.status != "out_of_service" "Vehicle is already out of service"
+    guard self.status != "in_use" "Cannot decommission a vehicle currently in use"
+
+    mutate status = "out_of_service"
+
+    emit VehicleDecommissioned
+  }
+
+  // Put a vehicle in use when a dispatch is assigned to it. Makes the
+  // previously-unreachable "in_use" status reachable — see the LogisticsDispatch
+  // lifecycle middleware. Guard-safe: a vehicle already in use is left alone.
+  command setInUse() {
+    guard self.status == "available" "Only available vehicles can be put in use"
+
+    mutate status = "in_use"
+
+    emit VehicleSetInUse
+  }
+
+  // Return a vehicle to available once its dispatch is delivered or fails. Distinct
+  // from returnFromMaintenance (maintenance -> available); this only frees an in-use vehicle.
+  command setAvailable() {
+    guard self.status == "in_use" "Only in-use vehicles are freed by dispatch completion"
+
+    mutate status = "available"
+
+    emit VehicleSetAvailable
+  }
+
+  store Vehicle in durable
+}
+
+entity LogisticsRoute mixin TenantScoped {
+  key [tenantId, id]
+  searchable property required name: string
+  indexed property status: string = "planned"
+  property vehicleId: uuid = ""
+  property driverId: uuid = ""
+  property totalDistance: decimal = 0
+  property totalDuration: int = 0
+  // scheduledDate/endTime and actualStartTime/actualEndTime: lifecycle times — no = now() default
+  property scheduledDate: datetime
+  property endTime: datetime
+  property actualStartTime: datetime?
+  property actualEndTime: datetime?
+  property completedStops: int = 0
+  property delayMinutes: int = 0
+  searchable property description: string = ""
+  timestamps
+
+  computed isActive: boolean = self.status == "in_progress"
+  computed isDelayed: boolean = self.delayMinutes > 0 and self.status == "in_progress"
+
+  // Route-execution rollups over the dispatch children (the hasMany dispatches
+  // back-relation). The FILTERS carry the business meaning — count the dispatches
+  // that reached a TERMINAL outcome, split by outcome: delivered = goods that made
+  // it to the venue on this route, failed = deliveries that fell over (breakdown,
+  // wrong address, access denied). The two facets read the SAME status property but
+  // DIFFERENT terminal literals, so neither is the other's restatement (delivered
+  // and failed are mutually exclusive ends; the remaining pending/assigned/in_transit
+  // states are still in flight and counted by neither). Count-only on purpose —
+  // LogisticsDispatch has no money/decimal field, so there is nothing to sum (the
+  // route's distance/duration live on the route itself, not the dispatch; summing a
+  // status would be meaningless, the Container/TrainingModule lesson). Drop or flip a
+  // literal and the rollup silently reports the wrong number with no compile error;
+  // the logistics-route-aggregate-computeds regression test locks the shape. IR-only
+  // computeds (no stored column, no migration); request-cached like the
+  // Vehicle/Container/TrainingModule precedent.
+  computed deliveredDispatchCount: int = count_of(filter(self.dispatches, (d) => d.status == "delivered")) cache request
+  computed failedDispatchCount: int = count_of(filter(self.dispatches, (d) => d.status == "failed")) cache request
+
+  constraint validStatus: self.status in ["planned", "in_progress", "completed", "cancelled"] "Invalid route status"
+
+  transition status from "planned" to ["in_progress", "cancelled"]
+  transition status from "in_progress" to ["completed", "cancelled"]
+  transition status from "completed" to ["cancelled"]
+  transition status from "cancelled" to ["cancelled"]
+
+  relationship belongsTo vehicle: Vehicle with vehicleId
+  relationship belongsTo driver: Driver with driverId
+
+  // Back-relations (U11): inverse hasMany for children that belongTo LogisticsRoute
+  relationship hasMany dispatches: LogisticsDispatch
+
+  default policy LogisticsRouteDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
+  // endTime/totalDistance/totalDuration/description optional: unknown at
+  // creation time — the routes dialog only knows name/date/assignments.
+  command create(name: string, optional vehicleId: string, optional driverId: string, scheduledDate: datetime, optional endTime: datetime, optional totalDistance: number, optional totalDuration: number, optional description: string) {
+    guard name != null and name != "" "Route name is required"
+
+    mutate name = name
+    mutate vehicleId = vehicleId
+    mutate driverId = driverId
+    mutate scheduledDate = scheduledDate
+    mutate endTime = endTime
+    mutate totalDistance = totalDistance
+    mutate totalDuration = totalDuration
+    mutate description = description
+    mutate completedStops = 0
+    mutate delayMinutes = 0
+
+    emit LogisticsRouteCreated
+  }
+
+  command remove() {
+    guard self.status != "in_progress" "Cannot delete a route in progress"
+
+    mutate status = "cancelled"
+
+    emit LogisticsRouteDeleted
+  }
+
+  command update(name: string, vehicleId: string, driverId: string, scheduledDate: datetime, endTime: datetime, totalDistance: number, totalDuration: number, description: string) {
+    guard name != null and name != "" "Route name is required"
+    guard self.status == "planned" "Can only update a planned route"
+
+    mutate name = name
+    mutate vehicleId = vehicleId
+    mutate driverId = driverId
+    mutate scheduledDate = scheduledDate
+    mutate endTime = endTime
+    mutate totalDistance = totalDistance
+    mutate totalDuration = totalDuration
+    mutate description = description
+
+    emit LogisticsRouteUpdated
+  }
+
+  // Driver departs; route moves from planned to in progress
+  command start() {
+    guard self.status == "planned" "Only a planned route can be started"
+
+    mutate status = "in_progress"
+    mutate actualStartTime = now()
+
+    emit LogisticsRouteStarted
+  }
+
+  // Record a stop completion during an active route
+  command completeStop(notes: string) {
+    guard self.status == "in_progress" "Route must be in progress to complete a stop"
+
+    mutate completedStops = self.completedStops + 1
+
+    emit LogisticsRouteStopCompleted
+  }
+
+  // Record a delay (weather, traffic, incident) and new ETA offset in minutes
+  command recordDelay(delayMinutes: number, reason: string) {
+    guard self.status == "in_progress" "Route must be in progress to record a delay"
+    guard delayMinutes > 0 "Delay must be a positive number of minutes"
+
+    mutate delayMinutes = self.delayMinutes + delayMinutes
+
+    emit LogisticsRouteDelayRecorded
+  }
+
+  // Route fully completed — all deliveries done
+  command complete(notes: string) {
+    guard self.status == "in_progress" "Only an in-progress route can be completed"
+
+    mutate status = "completed"
+    mutate actualEndTime = now()
+
+    emit LogisticsRouteCompleted
+  }
+
+  command cancel(reason: string) {
+    guard self.status != "completed" "Cannot cancel a completed route"
+    guard reason != null and reason != "" "Cancellation reason is required"
+
+    mutate status = "cancelled"
+
+    emit LogisticsRouteCancelled
+  }
+
+  command optimize() {
+    guard self.status == "planned" "Only planned routes can be optimized"
+
+
+    emit LogisticsRouteOptimized
+  }
+
+  store LogisticsRoute in durable
+}
+
+entity LogisticsDispatch mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
+  key [tenantId, id]
+  property required routeId: string
+  property driverId: string? = ""
+  property vehicleId: string? = ""
+  indexed property status: string? = "pending"
+  property priority: string? = "normal"
+  // estimatedDeliveryTime / actualDeliveryTime / departedAt: lifecycle — no = now() default
+  property estimatedDeliveryTime: datetime?
+  property actualDeliveryTime: datetime?
+  property departedAt: datetime?
+  property failureReason: string? = ""
+  searchable property notes: string? = ""
+  timestamps
+
+  computed isInTransit: boolean = self.status == "in_transit"
+  computed isDelivered: boolean = self.status == "delivered"
+  computed hasFailed: boolean = self.status == "failed"
+
+  constraint validStatus: self.status in ["pending", "assigned", "in_transit", "delivered", "failed"] "Invalid dispatch status"
+  constraint validPriority: self.priority in ["low", "normal", "high", "urgent"] "Invalid priority"
+
+  relationship belongsTo route: LogisticsRoute fields [tenantId, routeId] references [tenantId, id]
+  relationship belongsTo driver: Driver fields [tenantId, driverId] references [tenantId, id]
+  relationship belongsTo vehicle: Vehicle fields [tenantId, vehicleId] references [tenantId, id]
+
+  transition status from "pending" to ["assigned"]
+  // "assigned" self-loop: reassign re-writes an already-assigned dispatch to a
+  // new driver/vehicle (mutate status = "assigned"). The engine validates every
+  // status mutation, incl. no-op self-transitions (notes.md §21), so without the
+  // self-loop reassign silently dropped the whole update — the driver/vehicle
+  // change was lost. Mirrors invoice PARTIALLY_PAID / equipment active precedents.
+  transition status from "assigned" to ["in_transit", "pending", "assigned"]
+  transition status from "in_transit" to ["delivered", "failed"]
+  // "failed" -> "assigned": reassign recovers a failed dispatch onto a new
+  // driver/vehicle (guarded by reassign). Without this edge a failed dispatch
+  // could never be reassigned — the recovery path was dead.
+  transition status from "failed" to ["assigned"]
+
+  default policy LogisticsDispatchDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
+  command assign(routeId: string, driverId: string, vehicleId: string, priority: string, estimatedDeliveryTime: datetime, notes: string) {
+    guard routeId != null and routeId != "" "Route ID is required"
+    guard driverId != null and driverId != "" "Driver ID is required"
+    guard vehicleId != null and vehicleId != "" "Vehicle ID is required"
+
+    mutate routeId = routeId
+    mutate driverId = driverId
+    mutate vehicleId = vehicleId
+    mutate priority = priority
+    mutate estimatedDeliveryTime = estimatedDeliveryTime
+    mutate notes = notes
+    mutate status = "assigned"
+
+    emit LogisticsDispatchAssigned
+  }
+
+  // Driver confirms departure — catering goods are on the road
+  command depart(notes: string) {
+    guard self.status == "assigned" "Dispatch must be assigned before departing"
+
+    mutate status = "in_transit"
+    mutate departedAt = now()
+
+    emit LogisticsDispatchDeparted
+  }
+
+  // Goods successfully delivered to the venue
+  command deliver(notes: string) {
+    guard self.status == "in_transit" "Dispatch must be in transit to mark delivered"
+
+    mutate status = "delivered"
+    mutate actualDeliveryTime = now()
+
+    emit LogisticsDispatchDelivered
+  }
+
+  // Delivery failed — vehicle breakdown, wrong address, access denied, etc.
+  command fail(reason: string) {
+    guard self.status == "in_transit" "Dispatch must be in transit to mark as failed"
+    guard reason != null and reason != "" "Failure reason is required"
+
+    mutate status = "failed"
+    mutate failureReason = reason
+
+    emit LogisticsDispatchFailed
+  }
+
+  // Reassign a failed or pending dispatch to a different driver/vehicle
+  command reassign(driverId: string, vehicleId: string, estimatedDeliveryTime: datetime, notes: string) {
+    guard self.status in ["pending", "assigned", "failed"] "Can only reassign a pending, assigned, or failed dispatch"
+    guard driverId != null and driverId != "" "Driver ID is required"
+    guard vehicleId != null and vehicleId != "" "Vehicle ID is required"
+
+    mutate driverId = driverId
+    mutate vehicleId = vehicleId
+    mutate estimatedDeliveryTime = estimatedDeliveryTime
+    mutate notes = notes
+    mutate status = "assigned"
+    mutate failureReason = ""
+
+    emit LogisticsDispatchReassigned
+  }
+
+  store LogisticsDispatch in durable
+}
+
+policy LogisticsManagersCanManage execute: user.role in ["logistics_manager", "manager", "admin"] "Only managers can manage logistics"
+policy DriversCanViewRoutes execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Drivers can view assigned routes"
+
+event DriverCreated: "logistics.driver.created" {
+  driverId: string
+  tenantId: string
+  name: string
+  createdAt: datetime
+}
+
+event DriverDeleted: "logistics.driver.deleted" {
+  driverId: string
+  deletedAt: datetime
+}
+
+event DriverUpdated: "logistics.driver.updated" {
+  driverId: string
+  name: string
+  updatedAt: datetime
+}
+
+event DriverLicenseRenewed: "logistics.driver.license-renewed" {
+  driverId: string
+  tenantId: string
+  licenseNumber: string
+  licenseExpiry: datetime
+  renewedAt: datetime
+}
+
+event DriverSetOffDuty: "logistics.driver.set-off-duty" {
+  driverId: string
+  tenantId: string
+  notes: string
+  changedAt: datetime
+}
+
+event DriverReactivated: "logistics.driver.reactivated" {
+  driverId: string
+  tenantId: string
+  notes: string
+  reactivatedAt: datetime
+}
+
+event DriverSetOnRoute: "logistics.driver.set-on-route" {
+  driverId: string
+  tenantId: string
+  changedAt: datetime
+}
+
+event DriverSetAvailable: "logistics.driver.set-available" {
+  driverId: string
+  tenantId: string
+  changedAt: datetime
+}
+
+event VehicleCreated: "logistics.vehicle.created" {
+  vehicleId: string
+  tenantId: string
+  make: string
+  model: string
+  createdAt: datetime
+}
+
+event VehicleDeleted: "logistics.vehicle.deleted" {
+  vehicleId: string
+  deletedAt: datetime
+}
+
+event VehicleUpdated: "logistics.vehicle.updated" {
+  vehicleId: string
+  make: string
+  model: string
+  updatedAt: datetime
+}
+
+event VehicleSentToMaintenance: "logistics.vehicle.sent-to-maintenance" {
+  vehicleId: string
+  tenantId: string
+  reason: string
+  sentAt: datetime
+}
+
+event VehicleReturnedFromMaintenance: "logistics.vehicle.returned-from-maintenance" {
+  vehicleId: string
+  tenantId: string
+  notes: string
+  returnedAt: datetime
+}
+
+event VehicleDecommissioned: "logistics.vehicle.decommissioned" {
+  vehicleId: string
+  tenantId: string
+  reason: string
+  decommissionedAt: datetime
+}
+
+event VehicleSetInUse: "logistics.vehicle.set-in-use" {
+  vehicleId: string
+  tenantId: string
+  changedAt: datetime
+}
+
+event VehicleSetAvailable: "logistics.vehicle.set-available" {
+  vehicleId: string
+  tenantId: string
+  changedAt: datetime
+}
+
+event LogisticsRouteCreated: "logistics.route.created" {
+  routeId: string
+  tenantId: string
+  name: string
+  scheduledDate: datetime
+  createdAt: datetime
+}
+
+event LogisticsRouteDeleted: "logistics.route.deleted" {
+  routeId: string
+  deletedAt: datetime
+}
+
+event LogisticsRouteUpdated: "logistics.route.updated" {
+  routeId: string
+  name: string
+  updatedAt: datetime
+}
+
+event LogisticsRouteStarted: "logistics.route.started" {
+  routeId: string
+  tenantId: string
+  driverId: string
+  vehicleId: string
+  startedAt: datetime
+}
+
+event LogisticsRouteStopCompleted: "logistics.route.stop-completed" {
+  routeId: string
+  tenantId: string
+  completedStops: number
+  completedAt: datetime
+}
+
+event LogisticsRouteDelayRecorded: "logistics.route.delay-recorded" {
+  routeId: string
+  tenantId: string
+  delayMinutes: number
+  reason: string
+  recordedAt: datetime
+}
+
+event LogisticsRouteCompleted: "logistics.route.completed" {
+  routeId: string
+  tenantId: string
+  completedAt: datetime
+}
+
+event LogisticsRouteCancelled: "logistics.route.cancelled" {
+  routeId: string
+  tenantId: string
+  reason: string
+  cancelledAt: datetime
+}
+
+event LogisticsRouteOptimized: "logistics.route.optimized" {
+  routeId: string
+  optimizedAt: datetime
+}
+
+event LogisticsDispatchAssigned: "logistics.dispatch.assigned" {
+  dispatchId: string
+  tenantId: string
+  routeId: string
+  driverId: string
+  vehicleId: string
+  assignedAt: datetime
+}
+
+event LogisticsDispatchDeparted: "logistics.dispatch.departed" {
+  dispatchId: string
+  tenantId: string
+  routeId: string
+  driverId: string
+  departedAt: datetime
+}
+
+event LogisticsDispatchDelivered: "logistics.dispatch.delivered" {
+  dispatchId: string
+  tenantId: string
+  routeId: string
+  actualDeliveryTime: datetime
+  deliveredAt: datetime
+}
+
+event LogisticsDispatchFailed: "logistics.dispatch.failed" {
+  dispatchId: string
+  tenantId: string
+  routeId: string
+  reason: string
+  failedAt: datetime
+}
+
+event LogisticsDispatchReassigned: "logistics.dispatch.reassigned" {
+  dispatchId: string
+  tenantId: string
+  newDriverId: string
+  newVehicleId: string
+  reassignedAt: datetime
+}

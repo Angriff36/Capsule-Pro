@@ -1,0 +1,399 @@
+use "../../_base.manifest"
+// Kitchen Ops - Dish Rules
+// Manifest spec for dish catalog management, pricing, lead times, and menu integration
+// Lifecycle: active | seasonal | eighty_six (out-of-stock/pulled)
+// "eighty_six" = kitchen term for "we're out / not serving this today"
+
+entity Dish mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property required recipeId: uuid
+  searchable property required name: string
+  searchable property description: string? = ""
+  property category: string? = ""
+  property serviceStyle: string? = ""
+  property defaultContainerId: uuid? = ""
+  property presentationImageUrl: string? = ""
+  property minPrepLeadDays: int = 0
+  property maxPrepLeadDays: int? = 0
+  property portionSizeDescription: string? = ""
+  property dietaryTags: array<string>? = []
+  property allergens: array<string>? = []
+  property pricePerPerson: money? = 0
+  property costPerPerson: money? = 0
+  property isActive: boolean = true
+  // Seasonal flag: dish is only offered during certain seasons/periods
+  property isSeasonal: boolean? = false
+  property seasonLabel: string? = ""
+  property seasonStartMonth: int? = 0
+  property seasonEndMonth: int? = 0
+  // 86'd: temporarily pulled from service (out of stock or unavailable)
+  property isEightySix: boolean? = false
+  property eightySixReason: string? = ""
+  property eightySixAt: datetime?
+  timestamps
+
+  computed hasPrice: boolean = self.pricePerPerson > 0
+  computed hasCost: boolean = self.costPerPerson > 0
+  computed margin: money = self.pricePerPerson > 0 and self.costPerPerson > 0 ? self.pricePerPerson - self.costPerPerson : 0
+  computed marginPercent: decimal = self.pricePerPerson > 0 and self.costPerPerson > 0 ? ((self.pricePerPerson - self.costPerPerson) / self.pricePerPerson) * 100 : 0
+  computed hasLeadTime: boolean = self.minPrepLeadDays > 0
+  computed isDeactivated: boolean = self.isActive == false
+  computed isAvailable: boolean = self.isActive and self.isEightySix == false
+
+  relationship belongsTo recipe: Recipe fields [tenantId, recipeId] references [tenantId, id]
+  relationship belongsTo defaultContainer: Container fields [tenantId, defaultContainerId] references [tenantId, id]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Dish
+  relationship hasMany prepTasks: PrepTask
+  relationship hasMany prepListItems: PrepListItem
+  relationship hasMany menuDishes: MenuDish
+  relationship hasMany allergenWarnings: AllergenWarning
+
+  constraint validName: self.name != null and self.name != "" "Dish name is required"
+  constraint positivePrice: self.pricePerPerson >= 0 "Price per person cannot be negative"
+  constraint positiveCost: self.costPerPerson >= 0 "Cost per person cannot be negative"
+  constraint positiveMinLeadDays: self.minPrepLeadDays >= 0 "Minimum prep lead days cannot be negative"
+  constraint positiveMaxLeadDays: self.maxPrepLeadDays >= 0 "Maximum prep lead days cannot be negative"
+  constraint leadDaysOrder: self.maxPrepLeadDays == 0 or self.maxPrepLeadDays >= self.minPrepLeadDays "Max prep lead days must be >= min prep lead days"
+  constraint validSeasonMonths: self.seasonStartMonth >= 0 and self.seasonStartMonth <= 12 and self.seasonEndMonth >= 0 and self.seasonEndMonth <= 12 "Season months must be between 0 and 12"
+
+  constraint warnCostExceedsPrice:warn self.costPerPerson > self.pricePerPerson and self.pricePerPerson > 0 {
+    messageTemplate: "Dish cost ({cost}) exceeds price ({price})"
+    details: {
+      cost: self.costPerPerson
+      price: self.pricePerPerson
+    }
+  }
+
+  constraint warnLongLeadTime:warn self.minPrepLeadDays > 3 {
+    messageTemplate: "Dish requires {days} days advance notice"
+    details: {
+      minPrepLeadDays: self.minPrepLeadDays
+    }
+  }
+
+  constraint warnNoPrice:warn self.pricePerPerson == 0 and self.isActive {
+    messageTemplate: "Active dish '{dishName}' has no price set"
+    details: {
+      dishName: self.name
+      dishId: self.id
+    }
+  }
+
+  constraint warnLowMargin:warn (self.pricePerPerson > 0 and self.costPerPerson > 0 ? ((self.pricePerPerson - self.costPerPerson) / self.pricePerPerson) * 100 : 0) > 0 and (self.pricePerPerson > 0 and self.costPerPerson > 0 ? ((self.pricePerPerson - self.costPerPerson) / self.pricePerPerson) * 100 : 0) < 20 {
+    messageTemplate: "Dish '{dishName}' has a low margin of {margin}%"
+    details: {
+      dishName: self.name
+      margin: self.marginPercent
+      price: self.pricePerPerson
+      cost: self.costPerPerson
+    }
+  }
+
+  default policy DishDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen dish management"
+  command create(recipeId: string, name: string, description: string, category: string, serviceStyle: string, defaultContainerId: string, presentationImageUrl: string, minPrepLeadDays: number, maxPrepLeadDays: number, portionSizeDescription: string, dietaryTags: array<string>, allergens: array<string>, pricePerPerson: money, costPerPerson: money) {
+    guard name != null and name != "" "Dish name is required"
+    guard recipeId != null and recipeId != "" "Recipe ID is required"
+    guard pricePerPerson >= 0 "Price per person cannot be negative"
+    guard costPerPerson >= 0 "Cost per person cannot be negative"
+    guard minPrepLeadDays >= 0 "Min prep lead days cannot be negative"
+
+    mutate recipeId = recipeId
+    mutate name = name
+    mutate description = description
+    mutate category = category
+    mutate serviceStyle = serviceStyle
+    mutate defaultContainerId = defaultContainerId
+    mutate presentationImageUrl = presentationImageUrl
+    mutate minPrepLeadDays = minPrepLeadDays
+    mutate maxPrepLeadDays = maxPrepLeadDays
+    mutate portionSizeDescription = portionSizeDescription
+    mutate dietaryTags = dietaryTags
+    mutate allergens = allergens
+    mutate pricePerPerson = pricePerPerson
+    mutate costPerPerson = costPerPerson
+    mutate isActive = true
+    mutate isSeasonal = false
+    mutate isEightySix = false
+
+    emit DishCreated
+  }
+
+  // Relink this dish to a different recipe. Dishes are menu presentations of
+  // recipes; imports historically mislinked them, and prep-list generation
+  // resolves ingredients through this link — so users need a governed way to
+  // correct it.
+  command changeRecipe(recipeId: string) {
+    guard recipeId != null and recipeId != "" "Recipe ID is required"
+    guard self.recipeId != recipeId "Dish is already linked to this recipe"
+
+    mutate recipeId = recipeId
+
+    emit DishRecipeChanged
+  }
+
+  command update(name: string, description: string, category: string, serviceStyle: string, defaultContainerId: string, presentationImageUrl: string, portionSizeDescription: string, dietaryTags: array<string>, allergens: array<string>) {
+    guard name != null and name != "" "Dish name is required"
+    guard self.isActive "Cannot update a deactivated dish"
+
+    mutate name = name
+    mutate description = description
+    mutate category = category
+    mutate serviceStyle = serviceStyle
+    mutate defaultContainerId = defaultContainerId
+    mutate presentationImageUrl = presentationImageUrl
+    mutate portionSizeDescription = portionSizeDescription
+    mutate dietaryTags = dietaryTags
+    mutate allergens = allergens
+
+    emit DishUpdated
+  }
+
+  command activate() {
+    guard self.isActive == false "Dish is already active"
+
+    mutate isActive = true
+
+    emit DishActivated
+  }
+
+  command deactivate(reason: string, userId: string) {
+    guard self.isActive "Dish is already deactivated"
+
+    constraint warnActiveMenu:warn true {
+      messageTemplate: "Deactivating dish '{dishName}' — verify it is not on any active menus"
+      details: {
+        dishName: self.name
+        dishId: self.id
+        reason: reason
+      }
+    }
+
+    mutate isActive = false
+
+    emit DishDeactivated
+  }
+
+  command updatePricing(pricePerPerson: money, costPerPerson: money, userId: string) {
+    guard self.isActive "Cannot update pricing on a deactivated dish"
+    guard pricePerPerson >= 0 "Price per person cannot be negative"
+    guard costPerPerson >= 0 "Cost per person cannot be negative"
+
+    constraint warnPriceDecrease:warn pricePerPerson < self.pricePerPerson {
+      messageTemplate: "Price decreased from {oldPrice} to {newPrice}"
+      details: {
+        oldPrice: self.pricePerPerson
+        newPrice: pricePerPerson
+      }
+    }
+
+    constraint warnMarginBelowThreshold:warn pricePerPerson > 0 and (costPerPerson / pricePerPerson) > 0.75 {
+      messageTemplate: "New pricing has low profit margin ({marginPercent}% cost)"
+      details: {
+        costPerPerson: costPerPerson
+        pricePerPerson: pricePerPerson
+        marginPercent: (costPerPerson / pricePerPerson) * 100
+      }
+    }
+
+    constraint warnLowMargin:warn pricePerPerson > 0 and costPerPerson > 0 and ((pricePerPerson - costPerPerson) / pricePerPerson) * 100 < 20 {
+      messageTemplate: "New pricing for '{dishName}' results in a low margin ({margin}%)"
+      details: {
+        dishName: self.name
+        price: pricePerPerson
+        cost: costPerPerson
+        margin: ((pricePerPerson - costPerPerson) / pricePerPerson) * 100
+      }
+    }
+
+    mutate pricePerPerson = pricePerPerson
+    mutate costPerPerson = costPerPerson
+
+    emit DishPricingUpdated
+  }
+
+  command updateLeadTime(minPrepLeadDays: number, maxPrepLeadDays: number, userId: string) {
+    guard self.isActive "Cannot update lead time on a deactivated dish"
+    guard minPrepLeadDays >= 0 "Min prep lead days cannot be negative"
+    guard maxPrepLeadDays >= 0 "Max prep lead days cannot be negative"
+    guard maxPrepLeadDays == 0 or maxPrepLeadDays >= minPrepLeadDays "Max lead days must be >= min lead days"
+
+    mutate minPrepLeadDays = minPrepLeadDays
+    mutate maxPrepLeadDays = maxPrepLeadDays
+
+    emit DishLeadTimeUpdated
+  }
+
+  // Mark dish as seasonal — only offered during a specific period of the year.
+  command markSeasonal(seasonLabel: string, seasonStartMonth: number, seasonEndMonth: number) {
+    guard self.isActive "Cannot mark a deactivated dish as seasonal"
+    guard seasonLabel != null and seasonLabel != "" "Season label is required"
+    guard seasonStartMonth >= 1 and seasonStartMonth <= 12 "Season start month must be 1–12"
+    guard seasonEndMonth >= 1 and seasonEndMonth <= 12 "Season end month must be 1–12"
+
+    mutate isSeasonal = true
+    mutate seasonLabel = seasonLabel
+    mutate seasonStartMonth = seasonStartMonth
+    mutate seasonEndMonth = seasonEndMonth
+
+    emit DishMarkedSeasonal
+  }
+
+  // Remove seasonal flag — dish is available year-round again.
+  command unmarkSeasonal() {
+    guard self.isSeasonal "Dish is not marked seasonal"
+
+    mutate isSeasonal = false
+    mutate seasonLabel = ""
+    mutate seasonStartMonth = 0
+    mutate seasonEndMonth = 0
+
+    emit DishUnmarkedSeasonal
+  }
+
+  // 86 a dish: temporarily pull it from service (out of stock or unavailable today).
+  command eightySix(reason: string, userId: string) {
+    guard self.isActive "Cannot 86 a deactivated dish"
+    guard self.isEightySix == false "Dish is already 86'd"
+    guard reason != null and reason != "" "Reason is required when 86ing a dish"
+
+    mutate isEightySix = true
+    mutate eightySixReason = reason
+    mutate eightySixAt = now()
+
+    emit DishEightySixed
+  }
+
+  // Reinstate an 86'd dish — back in service.
+  command reinstate(userId: string) {
+    guard self.isEightySix "Dish is not currently 86'd"
+
+    mutate isEightySix = false
+    mutate eightySixReason = ""
+    mutate eightySixAt = null
+
+    emit DishReinstated
+  }
+
+  // Clear this dish's default container reference. Used by the
+  // ContainerDeactivated cascade so dishes stop pointing at a retired
+  // container (and the read-time belongsTo defaultContainer relationship stops
+  // resolving a dead reference). Plain mutate on the existing
+  // defaultContainerId field — NO migration. Cleared regardless of dish state
+  // (an inactive/86'd dish can still hold a dangling container reference); the
+  // idempotency guard skips dishes that already have no default container.
+  command clearDefaultContainer(userId: string) {
+    guard self.defaultContainerId != "" "Dish has no default container to clear"
+
+    mutate defaultContainerId = ""
+
+    emit DishDefaultContainerCleared
+  }
+
+  store Dish in durable
+}
+
+policy KitchenStaffCanManageDishes execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage dishes"
+policy ManagersCanDeactivateDishes execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can deactivate dishes"
+policy ManagersCanUpdatePricing execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can update dish pricing"
+
+event DishCreated: "kitchen.dish.created" {
+  dishId: string
+  tenantId: string
+  recipeId: string
+  name: string
+  category: string
+  pricePerPerson: money
+  createdAt: datetime
+}
+
+event DishUpdated: "kitchen.dish.updated" {
+  dishId: string
+  name: string
+  category: string
+  updatedAt: datetime
+}
+
+event DishRecipeChanged: "kitchen.dish.recipe-changed" {
+  dishId: string
+  tenantId: string
+  recipeId: string
+  name: string
+  updatedAt: datetime
+}
+
+event DishActivated: "kitchen.dish.activated" {
+  dishId: string
+  name: string
+  activatedAt: datetime
+}
+
+event DishDeactivated: "kitchen.dish.deactivated" {
+  dishId: string
+  name: string
+  reason: string
+  userId: string
+  deactivatedAt: datetime
+}
+
+event DishPricingUpdated: "kitchen.dish.pricing.updated" {
+  dishId: string
+  name: string
+  oldPrice: money
+  newPrice: money
+  oldCost: money
+  newCost: money
+  userId: string
+  updatedAt: datetime
+}
+
+event DishLeadTimeUpdated: "kitchen.dish.leadtime.updated" {
+  dishId: string
+  name: string
+  minPrepLeadDays: number
+  maxPrepLeadDays: number
+  userId: string
+  updatedAt: datetime
+}
+
+event DishMarkedSeasonal: "kitchen.dish.marked-seasonal" {
+  dishId: string
+  tenantId: string
+  name: string
+  seasonLabel: string
+  seasonStartMonth: number
+  seasonEndMonth: number
+  updatedAt: datetime
+}
+
+event DishUnmarkedSeasonal: "kitchen.dish.unmarked-seasonal" {
+  dishId: string
+  tenantId: string
+  name: string
+  updatedAt: datetime
+}
+
+event DishEightySixed: "kitchen.dish.eighty-sixed" {
+  dishId: string
+  tenantId: string
+  name: string
+  reason: string
+  userId: string
+  eightySixAt: datetime
+}
+
+event DishReinstated: "kitchen.dish.reinstated" {
+  dishId: string
+  tenantId: string
+  name: string
+  userId: string
+  reinstatedAt: datetime
+}
+
+event DishDefaultContainerCleared: "kitchen.dish.defaultcontainer.cleared" {
+  dishId: string
+  tenantId: string
+  containerId: string
+  userId: string
+  clearedAt: datetime
+}

@@ -1,0 +1,379 @@
+use "../../_base.manifest"
+// Warehouse / logistics — shipment tracking and receiving.
+// Create = draft shell only. Tracking, costs, and internal notes belong on update.
+// locationId is never a caller param: inherited from Event when eventId is set
+// (parent-context-resolver). Standalone shipments leave locationId empty.
+
+// U7: Closed-vocabulary status enum for Shipment lifecycle.
+enum ShipmentStatus {
+  draft
+  scheduled
+  preparing
+  in_transit
+  delivered
+  returned
+  cancelled
+}
+
+entity Shipment mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  unique property required shipmentNumber: string
+  indexed property status: ShipmentStatus = draft
+  property eventId: uuid? = ""
+  property supplierId: uuid? = ""
+  property locationId: uuid? = ""
+  property scheduledDate: datetime?
+  property shippedDate: datetime?
+  property estimatedDeliveryDate: datetime?
+  property actualDeliveryDate: datetime?
+  property totalItems: int = 0
+  property shippingCost: money? = 0
+  property totalValue: decimal? = 0
+  property trackingNumber: string? = ""
+  property carrier: string? = ""
+  property shippingMethod: string? = ""
+  property deliveredBy: uuid? = ""
+  property receivedBy: string? = ""
+  property signatureData: string = ""
+  property signatureText: string?
+  searchable property notes: string? = ""
+  property internalNotes: string? = ""
+  property reference: string? = ""
+  timestamps
+
+  computed isDraft: boolean = self.status == "draft"
+  computed isScheduled: boolean = self.status == "scheduled"
+  computed isInTransit: boolean = self.status == "in_transit"
+  computed isDelivered: boolean = self.status == "delivered"
+  computed isCancelled: boolean = self.status == "cancelled"
+  computed hasItems: boolean = self.totalItems > 0
+  computed hasTracking: boolean = self.trackingNumber != ""
+
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+  relationship belongsTo supplier: InventorySupplier fields [tenantId, supplierId] references [tenantId, id]
+  relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Shipment
+  relationship hasMany items: ShipmentItem
+
+  constraint validStatus: self.status in ["draft", "scheduled", "preparing", "in_transit", "delivered", "returned", "cancelled"] "Invalid shipment status"
+
+  default policy ShipmentDefaultAccess execute: user.role in ["driver", "logistics_manager", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Shipment management"
+
+  // Draft create — matches warehouse "new shipment" form fields only.
+  command create(scheduledDate: datetime, carrier: string, shippingMethod: string, notes: string, shipmentNumber: string, supplierId: string, eventId: string) {
+    guard scheduledDate != null "Scheduled date is required"
+
+    mutate scheduledDate = scheduledDate
+    mutate carrier = carrier != null ? carrier : ""
+    mutate shippingMethod = shippingMethod != null and shippingMethod != "" ? shippingMethod : "standard"
+    mutate notes = notes != null ? notes : ""
+    mutate supplierId = supplierId != null ? supplierId : ""
+    mutate eventId = eventId != null ? eventId : ""
+    mutate shipmentNumber = shipmentNumber != null and shipmentNumber != "" ? shipmentNumber : "SHP-" + now()
+    mutate status = "draft"
+    mutate totalItems = 0
+    mutate shippingCost = 0
+    mutate totalValue = 0
+
+    emit ShipmentCreated
+  }
+
+  command update(trackingNumber: string, carrier: string, shippingMethod: string, estimatedDeliveryDate: datetime, shippingCost: money, notes: string, internalNotes: string) {
+    guard self.status != "delivered" "Cannot update a delivered shipment"
+    guard self.status != "cancelled" "Cannot update a cancelled shipment"
+
+    mutate trackingNumber = trackingNumber != null ? trackingNumber : self.trackingNumber
+    mutate carrier = carrier != null ? carrier : self.carrier
+    mutate shippingMethod = shippingMethod != null ? shippingMethod : self.shippingMethod
+    mutate estimatedDeliveryDate = estimatedDeliveryDate != null ? estimatedDeliveryDate : self.estimatedDeliveryDate
+    mutate shippingCost = shippingCost != null ? shippingCost : self.shippingCost
+    mutate notes = notes != null ? notes : self.notes
+    mutate internalNotes = internalNotes != null ? internalNotes : self.internalNotes
+
+    emit ShipmentUpdated
+  }
+
+  command schedule(userId: string, scheduledDate: datetime) {
+    guard self.status == "draft" "Can only schedule draft shipments"
+
+    constraint blockNoItems:block self.totalItems > 0 {
+      messageTemplate: "Cannot schedule shipment with no items"
+      details: {
+        shipmentId: self.id
+        shipmentNumber: self.shipmentNumber
+      }
+    }
+
+    mutate status = "scheduled"
+    mutate scheduledDate = scheduledDate != null ? scheduledDate : self.scheduledDate
+
+    emit ShipmentScheduled
+  }
+
+  command startPreparing(userId: string) {
+    guard self.status == "scheduled" "Can only start preparing scheduled shipments"
+
+    mutate status = "preparing"
+
+    emit ShipmentPreparationStarted
+  }
+
+  command ship(userId: string, trackingNumber: string) {
+    guard self.status == "preparing" "Can only ship shipments that are being prepared"
+
+    mutate status = "in_transit"
+    mutate trackingNumber = trackingNumber != null and trackingNumber != "" ? trackingNumber : self.trackingNumber
+    mutate shippedDate = now()
+
+    emit ShipmentShipped
+  }
+
+  command markDelivered(userId: string, receivedBy: string, signatureData: string) {
+    guard self.status == "in_transit" or self.status == "scheduled" "Can only deliver in-transit or scheduled shipments"
+
+    constraint blockNoItems:block self.totalItems > 0 {
+      messageTemplate: "Cannot mark shipment '{shipmentNumber}' as delivered with no items received"
+      details: {
+        shipmentNumber: self.shipmentNumber
+      }
+    }
+
+    mutate status = "delivered"
+    mutate deliveredBy = userId
+    mutate receivedBy = receivedBy != null ? receivedBy : ""
+    mutate signatureData = signatureData != null ? signatureData : ""
+    mutate actualDeliveryDate = now()
+
+    emit ShipmentDelivered
+  }
+
+  command cancel(userId: string, reason: string) {
+    guard user.role in ["manager", "admin", "logistics_manager"] "Only managers and logistics staff can cancel shipments"
+    guard self.status != "delivered" "Cannot cancel a delivered shipment"
+    guard self.status != "cancelled" "Shipment is already cancelled"
+    guard reason != null and reason != "" "Cancellation reason is required"
+
+    constraint overrideable warnCancelInTransit:warn self.status == "in_transit" {
+      messageTemplate: "Cancelling in-transit shipment '{shipmentNumber}' - carrier may need notification"
+      details: {
+        shipmentNumber: self.shipmentNumber
+        carrier: self.carrier
+        trackingNumber: self.trackingNumber
+      }
+    }
+
+    mutate status = "cancelled"
+    mutate notes = reason
+
+    emit ShipmentCancelled
+  }
+
+  transition status from "draft" to ["scheduled", "cancelled"]
+  transition status from "scheduled" to ["preparing", "cancelled"]
+  transition status from "preparing" to ["in_transit", "cancelled"]
+  transition status from "in_transit" to ["delivered", "cancelled"]
+
+  store Shipment in durable
+}
+
+entity ShipmentItem mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property required shipmentId: uuid
+  property required itemId: uuid
+  property quantityShipped: decimal = 0
+  property quantityReceived: decimal = 0
+  property quantityDamaged: decimal = 0
+  property unitId: int? = 0
+  property unitCost: money? = 0
+  property totalCost: money = 0
+  property condition: string? = "good"
+  property conditionNotes: string? = ""
+  property lotNumber: string? = ""
+  property expirationDate: datetime?
+  timestamps
+
+  computed isFullyReceived: boolean = self.quantityReceived >= self.quantityShipped
+  computed hasDamage: boolean = self.quantityDamaged > 0
+  computed receivedPercentage: number = percent(self.quantityReceived, self.quantityShipped) cache request
+
+  constraint positiveQuantityShipped: self.quantityShipped >= 0 "Quantity shipped cannot be negative"
+
+  relationship belongsTo shipment: Shipment fields [tenantId, shipmentId] references [tenantId, id]
+  relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
+
+  default policy ShipmentItemDefaultAccess execute: user.role in ["driver", "logistics_manager", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Shipment management"
+
+  command create(shipmentId: string, itemId: string, quantityShipped: number, unitId: number, unitCost: money, lotNumber: string, expirationDate: datetime) {
+    guard shipmentId != null and shipmentId != "" "Shipment ID is required"
+    guard itemId != null and itemId != "" "Item ID is required"
+    guard quantityShipped != null and quantityShipped > 0 "Quantity shipped must be positive"
+
+    mutate shipmentId = shipmentId
+    mutate itemId = itemId
+    mutate quantityShipped = quantityShipped
+    mutate unitId = unitId
+    mutate unitCost = unitCost != null ? unitCost : 0
+    mutate totalCost = quantityShipped * unitCost
+    mutate quantityReceived = 0
+    mutate quantityDamaged = 0
+    mutate condition = "good"
+    mutate lotNumber = lotNumber != null ? lotNumber : ""
+    mutate expirationDate = expirationDate
+
+    emit ShipmentItemCreated
+  }
+
+  command updateReceived(quantityReceived: number, quantityDamaged: number, condition: string, conditionNotes: string, userId: string) {
+    guard quantityReceived != null and quantityReceived >= 0 "Quantity received cannot be negative"
+
+    constraint warnOverReceived:warn quantityReceived > self.quantityShipped {
+      messageTemplate: "Received quantity ({received}) exceeds shipped quantity ({shipped})"
+      details: {
+        itemId: self.itemId
+        received: quantityReceived
+        shipped: self.quantityShipped
+      }
+    }
+
+    constraint warnDamaged:warn quantityDamaged > 0 {
+      messageTemplate: "Damaged items reported: {damaged} of {shipped} shipped"
+      details: {
+        itemId: self.itemId
+        damaged: quantityDamaged
+        shipped: self.quantityShipped
+        condition: condition
+      }
+    }
+
+    mutate quantityReceived = quantityReceived
+    mutate quantityDamaged = quantityDamaged != null ? quantityDamaged : 0
+    mutate condition = condition != null and condition != "" ? condition : self.condition
+    mutate conditionNotes = conditionNotes != null ? conditionNotes : self.conditionNotes
+
+    emit ShipmentItemReceived
+  }
+
+  command update(quantityShipped: number, unitId: number, unitCost: money, condition: string, conditionNotes: string, lotNumber: string, expirationDate: datetime) {
+    guard quantityShipped == null or quantityShipped > 0 "Quantity shipped must be positive"
+
+    mutate quantityShipped = quantityShipped != null ? quantityShipped : self.quantityShipped
+    mutate unitId = unitId != null ? unitId : self.unitId
+    mutate unitCost = unitCost != null ? unitCost : self.unitCost
+    mutate totalCost = quantityShipped * unitCost
+    mutate condition = condition != null ? condition : self.condition
+    mutate conditionNotes = conditionNotes != null ? conditionNotes : self.conditionNotes
+    mutate lotNumber = lotNumber != null ? lotNumber : self.lotNumber
+    mutate expirationDate = expirationDate != null ? expirationDate : self.expirationDate
+
+    emit ShipmentItemUpdated
+  }
+
+  command softDelete(userId: string) {
+    guard self.deletedAt == null "Item is already deleted"
+
+    mutate deletedAt = now()
+
+    emit ShipmentItemDeleted
+  }
+
+  store ShipmentItem in durable
+}
+
+event ShipmentCreated: "purchasing.shipment.created" {
+  shipmentId: string
+  tenantId: string
+  shipmentNumber: string
+  supplierId: string
+  eventId: string
+  locationId: string
+  scheduledDate: datetime
+  createdAt: datetime
+}
+
+event ShipmentUpdated: "purchasing.shipment.updated" {
+  shipmentId: string
+  shipmentNumber: string
+  trackingNumber: string
+  carrier: string
+  updatedAt: datetime
+}
+
+event ShipmentDelivered: "purchasing.shipment.delivered" {
+  shipmentId: string
+  shipmentNumber: string
+  supplierId: string
+  deliveredBy: string
+  receivedBy: string
+  totalItems: number
+  totalValue: money
+  deliveredAt: datetime
+}
+
+event ShipmentCancelled: "purchasing.shipment.cancelled" {
+  shipmentId: string
+  shipmentNumber: string
+  userId: string
+  reason: string
+  cancelledAt: datetime
+}
+
+event ShipmentScheduled: "purchasing.shipment.scheduled" {
+  shipmentId: string
+  tenantId: string
+  userId: string
+  scheduledAt: datetime
+}
+
+event ShipmentPreparationStarted: "purchasing.shipment.preparation_started" {
+  shipmentId: string
+  tenantId: string
+  userId: string
+  startedAt: datetime
+}
+
+event ShipmentShipped: "purchasing.shipment.shipped" {
+  shipmentId: string
+  tenantId: string
+  trackingNumber: string
+  userId: string
+  shippedAt: datetime
+}
+
+event ShipmentItemCreated: "purchasing.shipment.item.created" {
+  shipmentItemId: string
+  shipmentId: string
+  itemId: string
+  quantityShipped: number
+  unitCost: money
+  createdAt: datetime
+}
+
+event ShipmentItemReceived: "purchasing.shipment.item.received" {
+  shipmentItemId: string
+  shipmentId: string
+  itemId: string
+  quantityReceived: number
+  quantityDamaged: number
+  condition: string
+  userId: string
+  receivedAt: datetime
+}
+
+event ShipmentItemUpdated: "purchasing.shipment.item.updated" {
+  shipmentItemId: string
+  shipmentId: string
+  itemId: string
+  quantityShipped: number
+  unitCost: money
+  totalCost: money
+  updatedAt: datetime
+}
+
+event ShipmentItemDeleted: "purchasing.shipment.item.deleted" {
+  shipmentItemId: string
+  shipmentId: string
+  itemId: string
+  userId: string
+  deletedAt: datetime
+}

@@ -1,0 +1,394 @@
+use "../_base.manifest"
+// CRM & Sales - Client Rules
+// Manifest spec for client, contact, and preference management
+
+entity Client mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property required clientType: string = "company"
+  searchable property companyName: string? = ""
+  property firstName: string? = ""
+  property lastName: string? = ""
+  encrypted property email: string? = ""
+  encrypted property phone: string? = ""
+  property website: string? = ""
+  encrypted property addressLine1: string? = ""
+  encrypted property addressLine2: string? = ""
+  property city: string? = ""
+  property stateProvince: string? = ""
+  property postalCode: string? = ""
+  property countryCode: string? = ""
+  property defaultPaymentTerms: int? = 30
+  property required taxExempt: boolean = false
+  private encrypted property taxId: string? = ""
+  searchable searchable property notes: string? = ""
+  property required tags: array<string>
+  property source: string? = ""
+  property assignedTo: uuid? = ""
+  timestamps
+
+  computed displayName: string = self.clientType == "company" ? self.companyName : self.firstName + " " + self.lastName
+  computed hasEmail: boolean = self.email != null and self.email != ""
+  computed isArchived: boolean = self.deletedAt != null
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Client
+  relationship hasMany contacts: ClientContact
+  relationship hasMany interactions: ClientInteraction
+  relationship hasMany preferences: ClientPreference
+  relationship hasMany proposals: Proposal
+  relationship hasMany invoices: Invoice
+  relationship hasMany payments: Payment
+
+  constraint validClientType: self.clientType in ["company", "individual"] "Client type must be 'company' or 'individual'"
+  constraint validPaymentTerms: self.defaultPaymentTerms >= 0 "Payment terms must be non-negative"
+
+  constraint warnNoEmail:warn self.email == "" and self.phone == "" {
+    messageTemplate: "Client '{clientName}' has no email or phone on file"
+    details: {
+      clientName: self.displayName
+      clientType: self.clientType
+    }
+  }
+
+  constraint warnNoSource:warn self.source == "" {
+    messageTemplate: "Client '{clientName}' has no lead source recorded"
+    details: {
+      clientName: self.displayName
+    }
+  }
+
+  default policy ClientDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Client management"
+  command create(clientType: string, companyName: string, firstName: string, lastName: string, email: string, phone: string, website: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, defaultPaymentTerms: int, taxExempt: boolean, taxId: string, notes: string, tags: array<string>, source: string, assignedTo: string) {
+    guard clientType != null and clientType != "" "Client type is required"
+
+    // Guards (command params) — not block constraints on `self`, which still
+    // carries entity defaults (clientType=company, companyName="") before mutates.
+    guard clientType != "company" or (companyName != null and companyName != "") "Company clients require a company name"
+    guard clientType != "individual" or (firstName != null and firstName != "") "Individual clients require a first name"
+
+    mutate clientType = clientType
+    mutate companyName = companyName
+    mutate firstName = firstName
+    mutate lastName = lastName
+    mutate email = email
+    mutate phone = phone
+    mutate website = website
+    mutate addressLine1 = addressLine1
+    mutate addressLine2 = addressLine2
+    mutate city = city
+    mutate stateProvince = stateProvince
+    mutate postalCode = postalCode
+    mutate countryCode = countryCode
+    mutate defaultPaymentTerms = defaultPaymentTerms
+    mutate taxExempt = taxExempt
+    mutate taxId = taxId
+    mutate notes = notes
+    mutate tags = tags
+    mutate source = source
+    mutate assignedTo = assignedTo
+
+    emit ClientCreated
+  }
+
+  command update(companyName: string, firstName: string, lastName: string, email: string, phone: string, website: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, defaultPaymentTerms: int, taxExempt: boolean, taxId: string, notes: string, tags: array<string>, source: string, assignedTo: string) {
+    guard self.deletedAt == null "Cannot update an archived client"
+
+    mutate companyName = companyName
+    mutate firstName = firstName
+    mutate lastName = lastName
+    mutate email = email
+    mutate phone = phone
+    mutate website = website
+    mutate addressLine1 = addressLine1
+    mutate addressLine2 = addressLine2
+    mutate city = city
+    mutate stateProvince = stateProvince
+    mutate postalCode = postalCode
+    mutate countryCode = countryCode
+    mutate defaultPaymentTerms = defaultPaymentTerms
+    mutate taxExempt = taxExempt
+    mutate taxId = taxId
+    mutate notes = notes
+    mutate tags = tags
+    mutate source = source
+    mutate assignedTo = assignedTo
+
+    emit ClientUpdated
+  }
+
+  command archive(reason: string, userId: string) {
+    guard self.deletedAt == null "Client is already archived"
+
+    constraint warnArchiveWithAssignment:warn self.assignedTo != "" {
+      messageTemplate: "Archiving client '{clientName}' who is assigned to a sales rep"
+      details: {
+        clientName: self.displayName
+        assignedTo: self.assignedTo
+      }
+    }
+
+    mutate deletedAt = now()
+
+    emit ClientArchived
+  }
+
+  command reactivate(userId: string) {
+    guard self.deletedAt != null "Client is not archived"
+
+    mutate deletedAt = null
+
+    emit ClientReactivated
+  }
+
+  store Client in durable
+}
+
+entity ClientContact mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property required clientId: uuid
+  property firstName: string = ""
+  property lastName: string = ""
+  searchable property title: string? = ""
+  encrypted property email: string? = ""
+  encrypted property phone: string? = ""
+  property phoneMobile: string? = ""
+  property isPrimary: boolean = false
+  property isBillingContact: boolean = false
+  searchable property notes: string? = ""
+  timestamps
+
+  computed fullName: string = self.firstName + " " + self.lastName
+  computed hasContactInfo: boolean = self.email != "" or self.phone != "" or self.phoneMobile != ""
+
+  constraint validClientId: self.clientId != null and self.clientId != "" "Client ID is required"
+  constraint validFirstName: self.firstName != null and self.firstName != "" "First name is required"
+  constraint validLastName: self.lastName != null and self.lastName != "" "Last name is required"
+
+  relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
+
+  constraint warnNoContactInfo:warn self.email == "" and self.phone == "" and self.phoneMobile == "" {
+    messageTemplate: "Contact '{contactName}' has no email or phone number"
+    details: {
+      contactName: self.fullName
+      clientId: self.clientId
+    }
+  }
+
+  default policy ClientContactDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Client management"
+  command create(clientId: string, firstName: string, lastName: string, title: string, email: string, phone: string, phoneMobile: string, isPrimary: boolean, isBillingContact: boolean, notes: string) {
+    guard clientId != null and clientId != "" "Client ID is required"
+    guard firstName != null and firstName != "" "First name is required"
+    guard lastName != null and lastName != "" "Last name is required"
+
+    mutate clientId = clientId
+    mutate firstName = firstName
+    mutate lastName = lastName
+    mutate title = title
+    mutate email = email
+    mutate phone = phone
+    mutate phoneMobile = phoneMobile
+    mutate isPrimary = isPrimary
+    mutate isBillingContact = isBillingContact
+    mutate notes = notes
+
+    emit ClientContactCreated
+  }
+
+  command update(firstName: string, lastName: string, title: string, email: string, phone: string, phoneMobile: string, isBillingContact: boolean, notes: string) {
+    guard self.deletedAt == null "Cannot update a removed contact"
+
+    mutate firstName = firstName
+    mutate lastName = lastName
+    mutate title = title
+    mutate email = email
+    mutate phone = phone
+    mutate phoneMobile = phoneMobile
+    mutate isBillingContact = isBillingContact
+    mutate notes = notes
+
+    emit ClientContactUpdated
+  }
+
+  command remove(reason: string, userId: string) {
+    guard self.deletedAt == null "Contact is already removed"
+
+    constraint warnRemovePrimary:warn self.isPrimary {
+      messageTemplate: "Removing primary contact '{contactName}' from client"
+      details: {
+        contactName: self.fullName
+        clientId: self.clientId
+      }
+    }
+
+    mutate deletedAt = now()
+
+    emit ClientContactRemoved
+  }
+
+  command setPrimary(userId: string) {
+    guard self.deletedAt == null "Cannot set a removed contact as primary"
+    guard self.isPrimary == false "Contact is already primary"
+
+    mutate isPrimary = true
+
+    emit ClientContactSetPrimary
+  }
+
+  store ClientContact in durable
+}
+
+entity ClientPreference mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property required clientId: uuid
+  property preferenceType: string = ""
+  property preferenceKey: string = ""
+  property preferenceValue: json = {}
+  searchable property notes: string? = ""
+  timestamps
+
+  constraint validClientId: self.clientId != null and self.clientId != "" "Client ID is required"
+  constraint validPreferenceType: self.preferenceType != null and self.preferenceType != "" "Preference type is required"
+  constraint validPreferenceKey: self.preferenceKey != null and self.preferenceKey != "" "Preference key is required"
+
+  relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
+
+  default policy ClientPreferenceDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Client management"
+  command create(clientId: string, preferenceType: string, preferenceKey: string, preferenceValue: json, notes: string) {
+    guard clientId != null and clientId != "" "Client ID is required"
+    guard preferenceType != null and preferenceType != "" "Preference type is required"
+    guard preferenceKey != null and preferenceKey != "" "Preference key is required"
+
+    mutate clientId = clientId
+    mutate preferenceType = preferenceType
+    mutate preferenceKey = preferenceKey
+    mutate preferenceValue = preferenceValue
+    mutate notes = notes
+
+    emit ClientPreferenceCreated
+  }
+
+  command update(preferenceValue: json, notes: string) {
+    guard self.deletedAt == null "Cannot update a removed preference"
+
+    mutate preferenceValue = preferenceValue
+    mutate notes = notes
+
+    emit ClientPreferenceUpdated
+  }
+
+  command remove(userId: string) {
+    guard self.deletedAt == null "Preference is already removed"
+
+    mutate deletedAt = now()
+
+    emit ClientPreferenceRemoved
+  }
+
+  store ClientPreference in durable
+}
+
+// Policy definitions
+policy SalesCanManageClients execute: user.role in ["sales", "manager", "admin"] "Sales staff can manage clients"
+policy ManagerCanArchiveClients execute: user.role in ["manager", "admin"] "Only managers can archive clients"
+policy SalesCanManageContacts execute: user.role in ["sales", "manager", "admin"] "Sales staff can manage contacts"
+policy SalesCanManagePreferences execute: user.role in ["sales", "manager", "admin"] "Sales staff can manage preferences"
+
+// Client events
+event ClientCreated: "crm.client.created" {
+  clientId: string
+  tenantId: string
+  clientType: string
+  displayName: string
+  source: string
+  assignedTo: string
+  createdAt: datetime
+}
+
+event ClientUpdated: "crm.client.updated" {
+  clientId: string
+  tenantId: string
+  displayName: string
+  updatedAt: datetime
+}
+
+event ClientArchived: "crm.client.archived" {
+  clientId: string
+  tenantId: string
+  displayName: string
+  reason: string
+  userId: string
+  archivedAt: datetime
+}
+
+event ClientReactivated: "crm.client.reactivated" {
+  clientId: string
+  tenantId: string
+  displayName: string
+  userId: string
+  reactivatedAt: datetime
+}
+
+// ClientContact events
+event ClientContactCreated: "crm.client_contact.created" {
+  contactId: string
+  tenantId: string
+  clientId: string
+  fullName: string
+  isPrimary: boolean
+  createdAt: datetime
+}
+
+event ClientContactUpdated: "crm.client_contact.updated" {
+  contactId: string
+  tenantId: string
+  clientId: string
+  fullName: string
+  updatedAt: datetime
+}
+
+event ClientContactRemoved: "crm.client_contact.removed" {
+  contactId: string
+  tenantId: string
+  clientId: string
+  fullName: string
+  reason: string
+  userId: string
+  removedAt: datetime
+}
+
+event ClientContactSetPrimary: "crm.client_contact.set_primary" {
+  contactId: string
+  tenantId: string
+  clientId: string
+  fullName: string
+  userId: string
+  updatedAt: datetime
+}
+
+// ClientPreference events
+event ClientPreferenceCreated: "crm.client_preference.created" {
+  preferenceId: string
+  tenantId: string
+  clientId: string
+  preferenceType: string
+  preferenceKey: string
+  createdAt: datetime
+}
+
+event ClientPreferenceUpdated: "crm.client_preference.updated" {
+  preferenceId: string
+  tenantId: string
+  clientId: string
+  preferenceType: string
+  preferenceKey: string
+  updatedAt: datetime
+}
+
+event ClientPreferenceRemoved: "crm.client_preference.removed" {
+  preferenceId: string
+  tenantId: string
+  clientId: string
+  preferenceType: string
+  preferenceKey: string
+  userId: string
+  removedAt: datetime
+}

@@ -1,0 +1,310 @@
+use "../../_base.manifest"
+// Kitchen Ops - Station Rules
+// Manifest spec for station capacity and equipment management
+// Enriched with: maintenance mode (put station in/out of maintenance without full deactivate)
+// Bug fix: entity-level :block constraints for isAtCapacity/isOverCapacity removed —
+//   they would block ALL commands including removeTask/deactivate. Kept as command-level only.
+
+entity Station mixin TenantScoped, SoftDeletable {
+  // No relationships: locationId is a loose location reference, not a direct FK to a Manifest entity
+  // (relationship added below for parent-context resolution)
+  relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
+
+  // NOTE: no hasMany prepTasks/prepListItems — those entities carry a LOGICAL
+  // station-type slug in stationId ("prep-station", ...), not a FK to Station.id.
+
+  key [tenantId, id]
+  property required locationId: uuid
+  searchable property required name: string
+  property required stationType: string = "prep-station"
+  property capacitySimultaneousTasks: int = 1
+  property equipmentList: array<string>? = []
+  property isActive: boolean = true
+  // Maintenance mode: station is temporarily taken offline for cleaning/repair
+  // without full deactivation — tasks cannot be assigned but existing ones aren't dropped.
+  property inMaintenance: boolean? = false
+  property maintenanceReason: string? = ""
+  property maintenanceStartAt: datetime?
+  property currentTaskCount: int? = 0
+  searchable property notes: string? = ""
+  timestamps
+
+  computed isAtCapacity: boolean = self.currentTaskCount >= self.capacitySimultaneousTasks
+  computed isOverCapacity: boolean = self.currentTaskCount > self.capacitySimultaneousTasks
+  computed capacityRemaining: int = self.capacitySimultaneousTasks - self.currentTaskCount
+  computed availablePercentage: number = percent(self.capacityRemaining, self.capacitySimultaneousTasks)
+  computed isAvailable: boolean = self.isActive and self.inMaintenance == false
+
+  constraint positiveCapacity: self.capacitySimultaneousTasks > 0 "Station capacity must be positive"
+  constraint validStationType: self.stationType in ["hot-line", "cold-prep", "bakery", "garnish", "prep-station"] "Invalid station type"
+
+  // NOTE: constraints/guards must reference STORED properties — the runtime does NOT
+  // resolve computed properties inside constraint expressions (verified against the
+  // ManifestRuntimeEngine + storeProvider path). Referencing `self.capacityRemaining`
+  // (a computed) here left this warning permanently dead. Inlined the stored-prop
+  // expression so it actually evaluates. Same applies to assignTask's warn/block below.
+  constraint warnNearCapacity:warn (self.capacitySimultaneousTasks - self.currentTaskCount) == 1 and self.capacitySimultaneousTasks > 1 {
+    messageTemplate: "Station '{stationName}' is near capacity ({current}/{max} tasks)"
+    details: {
+      stationName: self.name
+      current: self.currentTaskCount
+      max: self.capacitySimultaneousTasks
+    }
+  }
+
+  default policy StationDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Station management"
+  command create(locationId: string, name: string, stationType: string, capacitySimultaneousTasks: number, equipmentList: array<string>, notes: string) {
+    guard name != null and name != "" "Station name is required"
+    guard locationId != null and locationId != "" "Location ID is required"
+    guard capacitySimultaneousTasks > 0 "Capacity must be positive"
+
+    mutate locationId = locationId
+    mutate name = name
+    mutate stationType = stationType
+    mutate capacitySimultaneousTasks = capacitySimultaneousTasks
+    mutate equipmentList = equipmentList
+    mutate notes = notes
+    mutate isActive = true
+    mutate inMaintenance = false
+    mutate currentTaskCount = 0
+
+    emit StationCreated
+  }
+
+  command assignTask(taskId: string, taskName: string) {
+    guard taskId != null and taskId != "" "Task ID is required"
+    guard taskName != null and taskName != "" "Task name is required"
+    guard self.isActive "Cannot assign tasks to an inactive station"
+    guard self.inMaintenance == false "Cannot assign tasks to a station in maintenance"
+
+    constraint warnNearCapacity:warn (self.capacitySimultaneousTasks - self.currentTaskCount) == 1 {
+      messageTemplate: "Assigning task '{taskName}' to near-capacity station '{stationName}'"
+      details: {
+        stationName: self.name
+        taskName: taskName
+        current: self.currentTaskCount
+        max: self.capacitySimultaneousTasks
+      }
+    }
+
+    constraint blockFull:block self.currentTaskCount < self.capacitySimultaneousTasks {
+      messageTemplate: "Cannot assign task — station '{stationName}' is at full capacity ({current}/{max})"
+      details: {
+        stationName: self.name
+        current: self.currentTaskCount
+        max: self.capacitySimultaneousTasks
+      }
+    }
+
+    mutate currentTaskCount = self.currentTaskCount + 1
+
+    emit StationTaskAssigned
+  }
+
+  command removeTask(taskId: string, taskName: string) {
+    guard taskId != null and taskId != "" "Task ID is required"
+
+    constraint warnNoTasks:warn self.currentTaskCount == 0 {
+      messageTemplate: "Removing task from empty station '{stationName}'"
+      details: {
+        stationName: self.name
+      }
+    }
+
+    mutate currentTaskCount = self.currentTaskCount > 0 ? self.currentTaskCount - 1 : 0
+
+    emit StationTaskRemoved
+  }
+
+  // System reconciliation: set the ABSOLUTE active-task count for the station.
+  // Dispatched by the prep-task-station-count middleware after a PrepTask
+  // lifecycle event (claim/complete/cancel/unclaim/release/reassign), which
+  // recomputes the true count = in_progress PrepTasks assigned to this station.
+  // Absolute (not the +1/-1 assignTask/removeTask deltas) and free of the
+  // capacity block so it can correct drift in EITHER direction — the deltas
+  // cannot decrement on unclaim/release (those commands clear stationId before
+  // the after-emit hook runs, so a delta middleware loses the station link).
+  command syncTaskCount(count: int) {
+    guard count != null and count >= 0 "Task count must be non-negative"
+
+    mutate currentTaskCount = count
+
+    emit StationTaskCountSynced
+  }
+
+  command updateCapacity(newCapacity: number, userId: string) {
+    guard newCapacity != null and newCapacity > 0 "Capacity must be positive"
+
+    constraint warnCapacityReduction:warn newCapacity < self.capacitySimultaneousTasks and self.currentTaskCount > newCapacity {
+      messageTemplate: "Reducing capacity from {oldMax} to {newMax} with {current} active tasks"
+      details: {
+        stationName: self.name
+        oldMax: self.capacitySimultaneousTasks
+        newMax: newCapacity
+        current: self.currentTaskCount
+      }
+    }
+
+    mutate capacitySimultaneousTasks = newCapacity
+
+    emit StationCapacityUpdated
+  }
+
+  command deactivate(reason: string, userId: string) {
+    guard self.isActive "Station is already inactive"
+
+    constraint warnDeactivateWithTasks:warn self.currentTaskCount > 0 {
+      messageTemplate: "Deactivating station '{stationName}' with {current} active tasks"
+      details: {
+        stationName: self.name
+        currentTaskCount: self.currentTaskCount
+        reason: reason
+      }
+    }
+
+    mutate isActive = false
+
+    emit StationDeactivated
+  }
+
+  command activate(userId: string) {
+    guard self.isActive == false "Station is already active"
+
+    mutate isActive = true
+    mutate inMaintenance = false
+    mutate maintenanceReason = ""
+
+    emit StationActivated
+  }
+
+  command updateEquipment(equipmentList: array<string>, userId: string) {
+    guard equipmentList != null "Equipment list cannot be null"
+
+    mutate equipmentList = equipmentList
+
+    emit StationEquipmentUpdated
+  }
+
+  // Put station into maintenance mode: blocks new task assignments without full deactivation.
+  command startMaintenance(reason: string, userId: string) {
+    guard self.isActive "Cannot put an inactive station into maintenance"
+    guard self.inMaintenance == false "Station is already in maintenance"
+    guard reason != null and reason != "" "Maintenance reason is required"
+
+    constraint warnActiveTasks:warn self.currentTaskCount > 0 {
+      messageTemplate: "Starting maintenance on station '{stationName}' with {current} active tasks"
+      details: {
+        stationName: self.name
+        currentTaskCount: self.currentTaskCount
+        reason: reason
+      }
+    }
+
+    mutate inMaintenance = true
+    mutate maintenanceReason = reason
+    mutate maintenanceStartAt = now()
+
+    emit StationMaintenanceStarted
+  }
+
+  // Clear maintenance mode: station is back online and accepting tasks.
+  command endMaintenance(userId: string) {
+    guard self.inMaintenance "Station is not in maintenance"
+
+    mutate inMaintenance = false
+    mutate maintenanceReason = ""
+    mutate maintenanceStartAt = null
+
+    emit StationMaintenanceEnded
+  }
+
+  store Station in durable
+}
+
+policy ManagersCanModifyStation execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can modify station settings"
+policy KitchenStaffCanAssign execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can assign tasks to stations"
+
+event StationCreated: "kitchen.station.created" {
+  stationId: string
+  tenantId: string
+  locationId: string
+  name: string
+  stationType: string
+  capacity: number
+  createdAt: datetime
+}
+
+event StationTaskAssigned: "kitchen.station.task.assigned" {
+  stationId: string
+  stationName: string
+  taskId: string
+  taskName: string
+  currentTaskCount: number
+  capacity: number
+  assignedAt: datetime
+}
+
+event StationTaskRemoved: "kitchen.station.task.removed" {
+  stationId: string
+  stationName: string
+  taskId: string
+  currentTaskCount: number
+  removedAt: datetime
+}
+
+event StationTaskCountSynced: "kitchen.station.task.count.synced" {
+  stationId: string
+  tenantId: string
+  currentTaskCount: number
+  syncedAt: datetime
+}
+
+event StationCapacityUpdated: "kitchen.station.capacity.updated" {
+  stationId: string
+  stationName: string
+  oldCapacity: number
+  newCapacity: number
+  userId: string
+  updatedAt: datetime
+}
+
+event StationDeactivated: "kitchen.station.deactivated" {
+  stationId: string
+  stationName: string
+  reason: string
+  activeTaskCount: number
+  userId: string
+  deactivatedAt: datetime
+}
+
+event StationActivated: "kitchen.station.activated" {
+  stationId: string
+  stationName: string
+  userId: string
+  activatedAt: datetime
+}
+
+event StationEquipmentUpdated: "kitchen.station.equipment.updated" {
+  stationId: string
+  stationName: string
+  equipmentList: array<string>
+  userId: string
+  updatedAt: datetime
+}
+
+event StationMaintenanceStarted: "kitchen.station.maintenance.started" {
+  stationId: string
+  tenantId: string
+  stationName: string
+  reason: string
+  userId: string
+  startedAt: datetime
+}
+
+event StationMaintenanceEnded: "kitchen.station.maintenance.ended" {
+  stationId: string
+  tenantId: string
+  stationName: string
+  userId: string
+  endedAt: datetime
+}

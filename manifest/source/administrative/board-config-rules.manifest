@@ -1,0 +1,76 @@
+use "../_base.manifest"
+// Administrative Domain - Board Config Rules
+// Manifest spec for managing kanban board configuration per tenant
+
+entity BoardConfig mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  searchable property name: string = "Default Board"
+  // columns/settings: JSON-as-string payloads (Manifest IR grammar has no
+  // object/array<object> kind; same pattern as CommandBoard.metadata).
+  property columns: json = []
+  property settings: json = {}
+  property createdBy: uuid? = ""
+  timestamps
+
+  computed isDeleted: boolean = self.deletedAt != null
+
+  default policy BoardConfigDefaultAccess execute: user.role in ["manager", "admin"] "Kanban board config management"
+
+  command create(name: string, columns: json, settings: json, createdBy: string) {
+    guard name != null and name != "" "Board name is required"
+
+    mutate name = name
+    mutate columns = columns
+    mutate settings = settings
+    mutate createdBy = createdBy
+
+    emit BoardConfigCreated
+  }
+
+  command updateColumns(columns: json) {
+    guard self.deletedAt == null "Cannot update a deleted config"
+    guard columns != null "Columns are required"
+
+    mutate columns = columns
+
+    emit BoardConfigUpdated
+  }
+
+  command updateSettings(settings: json) {
+    guard self.deletedAt == null "Cannot update a deleted config"
+    guard settings != null "Settings are required"
+
+    mutate settings = settings
+
+    emit BoardConfigUpdated
+  }
+
+  command softDelete() {
+    guard self.deletedAt == null "Config is already deleted"
+
+    mutate deletedAt = now()
+
+    emit BoardConfigDeleted
+  }
+
+  store BoardConfig in durable
+}
+
+policy BoardConfigManagement execute: user.role in ["manager", "admin"] "Managers can manage board config"
+
+event BoardConfigCreated: "admin.board-config.created" {
+  configId: string
+  tenantId: string
+  name: string
+  createdAt: datetime
+}
+
+event BoardConfigUpdated: "admin.board-config.updated" {
+  configId: string
+  updatedAt: datetime
+}
+
+event BoardConfigDeleted: "admin.board-config.deleted" {
+  configId: string
+  deletedAt: datetime
+}

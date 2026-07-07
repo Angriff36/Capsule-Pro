@@ -1,0 +1,1192 @@
+use "../../_base.manifest"
+// Inventory / Procurement — Extended Domain Entities
+// Physical storage slots, stock levels, alerts, forecasting, vendor contacts,
+// transfer line items, procurement budgets, and audit scheduling for a
+// catering-company inventory cluster.
+
+// ─────────────────────────────────────────────────────────────────────────────
+// StorageLocation — a named physical slot (cooler, freezer, dry shelf) inside
+// a Location.  Tracks temperature zone and active/inactive state.
+// ─────────────────────────────────────────────────────────────────────────────
+entity StorageLocation mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property required locationId: uuid
+  searchable property required name: string
+  property required storageType: string
+  property temperatureZone: string = ""
+  property isActive: boolean = true
+  timestamps
+
+  computed isDeactivated: boolean = self.isActive == false
+
+  relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo StorageLocation
+  relationship hasMany stockLevels: InventoryStock
+  relationship hasMany transactions: InventoryTransaction
+  relationship hasMany cycleCountRecords: CycleCountRecord
+
+  constraint requireName: self.name != "" "Storage location name is required"
+  constraint requireStorageType: self.storageType != "" "Storage type is required"
+  constraint validStorageType: self.storageType in ["cooler", "freezer", "dry_shelf", "ambient", "walk_in", "other"] "Invalid storage type"
+
+  default policy StorageLocationDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
+  command create(locationId: string, name: string, storageType: string, temperatureZone: string) {
+    guard locationId != null and locationId != "" "Location ID is required"
+    guard name != null and name != "" "Storage location name is required"
+    guard storageType != null and storageType != "" "Storage type is required"
+
+    mutate locationId = locationId
+    mutate name = name
+    mutate storageType = storageType
+    mutate temperatureZone = temperatureZone
+    mutate isActive = true
+
+    emit StorageLocationCreated
+  }
+
+  command update(name: string, storageType: string, temperatureZone: string) {
+    guard self.isActive "Cannot update a deactivated storage location"
+    guard name != null and name != "" "Storage location name is required"
+    guard storageType != null and storageType != "" "Storage type is required"
+
+    mutate name = name
+    mutate storageType = storageType
+    mutate temperatureZone = temperatureZone
+
+    emit StorageLocationUpdated
+  }
+
+  command deactivate(reason: string) {
+    guard self.isActive "Storage location is already deactivated"
+
+    mutate isActive = false
+
+    emit StorageLocationDeactivated
+  }
+
+  store StorageLocation in durable
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// InventoryStock — current on-hand quantity of a specific item at a specific
+// storage location, including the unit of measure and last physical count
+// timestamp.
+// ─────────────────────────────────────────────────────────────────────────────
+entity InventoryStock mixin TenantScoped {
+  key [tenantId, id]
+  property required itemId: uuid
+  property required storageLocationId: uuid
+  property required quantityOnHand: decimal = 0
+  property required unitId: int
+  property lastCountedAt: datetime?
+  timestamps
+
+  computed isZeroStock: boolean = self.quantityOnHand <= 0
+
+  relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
+  relationship belongsTo storageLocation: StorageLocation fields [tenantId, storageLocationId] references [tenantId, id]
+
+  constraint nonNegativeQty: self.quantityOnHand >= 0 "Quantity on hand cannot be negative"
+
+  constraint warnZeroStock:warn self.quantityOnHand == 0 {
+    messageTemplate: "Stock for item '{itemId}' at location '{storageLocationId}' is zero"
+    details: {
+      itemId: self.itemId
+      storageLocationId: self.storageLocationId
+    }
+  }
+
+  default policy InventoryStockDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
+  command create(itemId: string, storageLocationId: string, quantityOnHand: decimal, unitId: int) {
+    guard itemId != null and itemId != "" "Inventory item ID is required"
+    guard storageLocationId != null and storageLocationId != "" "Storage location ID is required"
+    guard quantityOnHand >= 0 "Initial quantity cannot be negative"
+    guard unitId != null "Unit ID is required"
+
+    mutate itemId = itemId
+    mutate storageLocationId = storageLocationId
+    mutate quantityOnHand = quantityOnHand
+    mutate unitId = unitId
+    mutate lastCountedAt = now()
+
+    emit InventoryStockCreated
+  }
+
+  command adjust(delta: decimal, reason: string) {
+    guard reason != null and reason != "" "Adjustment reason is required"
+
+    constraint blockNegativeResult:block (self.quantityOnHand + delta) >= 0 {
+      messageTemplate: "Adjustment would result in negative stock ({result})"
+      details: {
+        itemId: self.itemId
+        currentQty: self.quantityOnHand
+        delta: delta
+        result: self.quantityOnHand + delta
+      }
+    }
+
+    mutate quantityOnHand = self.quantityOnHand + delta
+
+    emit InventoryStockAdjusted
+  }
+
+  command recount(newQuantity: decimal, countedBy: string) {
+    guard newQuantity >= 0 "Recounted quantity cannot be negative"
+    guard countedBy != null and countedBy != "" "Counter ID is required"
+
+    constraint warnLargeVariance:warn (newQuantity - self.quantityOnHand) > (self.quantityOnHand * 0.2) or (self.quantityOnHand - newQuantity) > (self.quantityOnHand * 0.2) and self.quantityOnHand > 0 {
+      messageTemplate: "Recount shows variance of more than 20% for item '{itemId}'"
+      details: {
+        itemId: self.itemId
+        previousQty: self.quantityOnHand
+        newQty: newQuantity
+        delta: newQuantity - self.quantityOnHand
+      }
+    }
+
+    mutate quantityOnHand = newQuantity
+    mutate lastCountedAt = now()
+
+    emit InventoryStockRecounted
+  }
+
+  store InventoryStock in durable
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// InventoryAlert — a system-generated low-stock or expiry alert that staff
+// must acknowledge and resolve.
+// ─────────────────────────────────────────────────────────────────────────────
+entity InventoryAlert mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property required itemId: uuid
+  property required alertType: string
+  property required severity: string?
+  property required thresholdValue: decimal
+  property required notes: string?
+  indexed property required status: string? = "active"
+  property triggeredAt: datetime
+  property acknowledgedAt: datetime?
+  property resolvedAt: datetime?
+  property acknowledgedBy: string? = ""
+  property resolvedBy: string? = ""
+  timestamps
+
+  computed isActive: boolean = self.status == "active"
+  computed isAcknowledged: boolean = self.status == "acknowledged"
+  computed isResolved: boolean = self.status == "resolved"
+
+  relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
+
+  constraint validStatus: self.status in ["active", "acknowledged", "resolved"] "Invalid alert status"
+  constraint validSeverity: self.severity in ["low", "medium", "high", "critical"] "Invalid alert severity"
+  constraint validAlertType: self.alertType in ["low_stock", "out_of_stock", "expiry_warning", "expiry_critical", "overstock"] "Invalid alert type"
+
+  // State transitions
+  // resolved added: markResolved guards only status!=resolved, so active alerts resolve without acknowledge
+  transition status from "active" to ["acknowledged", "resolved"]
+  transition status from "acknowledged" to ["resolved"]
+
+  default policy InventoryAlertDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
+  command create(itemId: string, alertType: string, severity: string, thresholdValue: decimal, notes: string) {
+    guard itemId != null and itemId != "" "Inventory item ID is required"
+    guard alertType != null and alertType != "" "Alert type is required"
+    guard severity != null and severity != "" "Severity is required"
+    guard thresholdValue != null "Threshold value is required"
+    guard notes != null and notes != "" "Alert message is required"
+
+    mutate itemId = itemId
+    mutate alertType = alertType
+    mutate severity = severity
+    mutate thresholdValue = thresholdValue
+    mutate notes = notes
+    mutate triggeredAt = now()
+
+    emit InventoryAlertTriggered
+  }
+
+  // Escalate an acknowledged alert to a higher severity (e.g. medium → high → critical).
+  command escalate(escalatedBy: string, newSeverity: string) {
+    guard self.status in ["active", "acknowledged"] "Can only escalate active or acknowledged alerts"
+    guard newSeverity in ["low", "medium", "high", "critical"] "Invalid severity"
+    guard escalatedBy != null and escalatedBy != "" "Escalating user is required"
+
+    mutate severity = newSeverity
+
+    emit InventoryAlertEscalated
+  }
+
+  command acknowledge(acknowledgedBy: string) {
+    guard self.status == "active" "Can only acknowledge active alerts"
+    guard acknowledgedBy != null and acknowledgedBy != "" "Acknowledging user is required"
+
+    mutate status = "acknowledged"
+    mutate acknowledgedBy = acknowledgedBy
+    mutate acknowledgedAt = now()
+
+    emit InventoryAlertAcknowledged
+  }
+
+  command markResolved(resolvedBy: string) {
+    guard self.status != "resolved" "Alert is already resolved"
+    guard resolvedBy != null and resolvedBy != "" "Resolving user is required"
+
+    mutate status = "resolved"
+    mutate resolvedBy = resolvedBy
+    mutate resolvedAt = now()
+
+    emit InventoryAlertResolved
+  }
+
+  store InventoryAlert in durable
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// InventoryForecast — a projected quantity-on-hand for an item at a future
+// date, with a confidence score.  Used for event planning and reorder
+// decision support.
+// ─────────────────────────────────────────────────────────────────────────────
+entity InventoryForecast mixin TenantScoped {
+  key [tenantId, id]
+  property date: datetime = today()
+  property sku: string
+  property required inventoryItemId: string
+  property required forecastDate: datetime
+  property required projectedQuantity: decimal = 0
+  property required confidence: decimal = 0
+  indexed property status: string = "draft"
+  property publishedAt: datetime?
+  property approvedAt: datetime?
+  property approvedBy: string = ""
+  timestamps
+
+  computed isHighConfidence: boolean = self.confidence >= 0.8
+  computed isLowConfidence: boolean = self.confidence < 0.5
+  computed isDraft: boolean = self.status == "draft"
+  computed isPublished: boolean = self.status == "published"
+  computed isApproved: boolean = self.status == "approved"
+
+  relationship belongsTo item: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
+
+  constraint confidenceRange: between(self.confidence, 0, 1) "Confidence must be between 0 and 1"
+  constraint nonNegativeProjection: self.projectedQuantity >= 0 "Projected quantity cannot be negative"
+
+  // State transitions
+  transition status from "draft" to ["published"]
+  transition status from "published" to ["approved"]
+
+  default policy InventoryForecastDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
+  command create(inventoryItemId: string, forecastDate: datetime, projectedQuantity: decimal, confidence: decimal) {
+    guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
+    guard forecastDate != null "Forecast date is required"
+    guard projectedQuantity >= 0 "Projected quantity cannot be negative"
+    guard between(confidence, 0, 1) "Confidence must be between 0 and 1"
+
+    mutate inventoryItemId = inventoryItemId
+    mutate forecastDate = forecastDate
+    mutate projectedQuantity = projectedQuantity
+    mutate confidence = confidence
+
+    emit InventoryForecastCreated
+  }
+
+  command update(projectedQuantity: decimal, confidence: decimal) {
+    guard self.status == "draft" "Can only update draft forecasts"
+    guard projectedQuantity >= 0 "Projected quantity cannot be negative"
+    guard between(confidence, 0, 1) "Confidence must be between 0 and 1"
+
+    mutate projectedQuantity = projectedQuantity
+    mutate confidence = confidence
+
+    emit InventoryForecastUpdated
+  }
+
+  // Make the forecast visible to planners for event scheduling decisions.
+  command markPublished() {
+    guard self.status == "draft" "Only draft forecasts can be published"
+
+    constraint warnLowConfidence:warn (self.confidence < 0.5) {
+      messageTemplate: "Publishing low-confidence forecast ({confidence}) for item '{inventoryItemId}'"
+      details: {
+        inventoryItemId: self.inventoryItemId
+        confidence: self.confidence
+      }
+    }
+
+    mutate status = "published"
+    mutate publishedAt = now()
+
+    emit InventoryForecastPublished
+  }
+
+  // Approve a published forecast so it drives reorder and event-planning automation.
+  command approve(approvedBy: string) {
+    guard self.status == "published" "Only published forecasts can be approved"
+    guard approvedBy != null and approvedBy != "" "Approver is required"
+
+    mutate status = "approved"
+    mutate approvedBy = approvedBy
+    mutate approvedAt = now()
+
+    emit InventoryForecastApproved
+  }
+
+  store InventoryForecast in durable
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ForecastInput — a historical usage data point used to train or refine
+// inventory demand forecasting models.
+// ─────────────────────────────────────────────────────────────────────────────
+entity ForecastInput mixin TenantScoped {
+  key [tenantId, id]
+  property date: datetime = today()
+  property sku: string
+  property events: json = {}
+  property promotions: json = {}
+  property required inventoryItemId: string
+  property required inputDate: datetime
+  property required actualUsage: decimal = 0
+  property required source: string
+  timestamps
+
+  constraint nonNegativeUsage: self.actualUsage >= 0 "Actual usage cannot be negative"
+  constraint requireSource: self.source != "" "Data source is required"
+
+  relationship belongsTo item: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
+
+  default policy ForecastInputDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
+  command create(inventoryItemId: string, inputDate: datetime, actualUsage: decimal, source: string) {
+    guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
+    guard inputDate != null "Input date is required"
+    guard actualUsage >= 0 "Actual usage cannot be negative"
+    guard source != null and source != "" "Data source is required"
+
+    mutate inventoryItemId = inventoryItemId
+    mutate inputDate = inputDate
+    mutate actualUsage = actualUsage
+    mutate source = source
+
+    emit ForecastInputCreated
+  }
+
+  store ForecastInput in durable
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ReorderSuggestion — a system-recommended purchase to replenish an item,
+// with a lifecycle of pending → accepted or dismissed.
+// ─────────────────────────────────────────────────────────────────────────────
+entity ReorderSuggestion mixin TenantScoped {
+  key [tenantId, id]
+  property sku: string
+  property required inventoryItemId: string
+  property required suggestedQuantity: decimal = 0
+  property required reason: string
+  indexed property required status: string = "pending"
+  timestamps
+
+  computed isPending: boolean = self.status == "pending"
+  computed isAccepted: boolean = self.status == "accepted"
+  computed isDismissed: boolean = self.status == "dismissed"
+
+  constraint validStatus: self.status in ["pending", "accepted", "dismissed"] "Invalid reorder suggestion status"
+  constraint positiveSuggestedQty: self.suggestedQuantity > 0 "Suggested quantity must be positive"
+
+  // State transitions
+  transition status from "pending" to ["accepted", "dismissed"]
+
+  relationship belongsTo item: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
+
+  default policy ReorderSuggestionDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
+  command create(inventoryItemId: string, suggestedQuantity: decimal, reason: string) {
+    guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
+    guard suggestedQuantity != null and suggestedQuantity > 0 "Suggested quantity must be positive"
+    guard reason != null and reason != "" "Reason is required"
+
+    mutate inventoryItemId = inventoryItemId
+    mutate suggestedQuantity = suggestedQuantity
+    mutate reason = reason
+
+    emit ReorderSuggestionCreated
+  }
+
+  command accept(acceptedBy: string) {
+    guard self.status == "pending" "Can only accept pending suggestions"
+    guard acceptedBy != null and acceptedBy != "" "Accepting user is required"
+
+    mutate status = "accepted"
+
+    emit ReorderSuggestionAccepted
+  }
+
+  command dismiss(dismissedBy: string, reason: string) {
+    guard self.status == "pending" "Can only dismiss pending suggestions"
+    guard dismissedBy != null and dismissedBy != "" "Dismissing user is required"
+
+    mutate status = "dismissed"
+
+    emit ReorderSuggestionDismissed
+  }
+
+  // System-driven auto-accept: fires when a tenant has enabled auto-reorder rules
+  // and the suggestion meets all par/budget thresholds without human review.
+  command autoAccept(triggeredBy: string) {
+    guard self.status == "pending" "Can only auto-accept pending suggestions"
+    guard triggeredBy != null and triggeredBy != "" "Trigger source is required"
+
+    mutate status = "accepted"
+
+    emit ReorderSuggestionAutoAccepted
+  }
+
+  store ReorderSuggestion in durable
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VendorContact — a named contact person at a supplier (InventorySupplier),
+// with communication details and a primary-contact flag.
+// ─────────────────────────────────────────────────────────────────────────────
+entity VendorContact mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property notes: string?
+  property required supplierId: uuid
+  searchable property required contactName: string
+  encrypted property contactEmail: string? = ""
+  encrypted property contactPhone: string? = ""
+  property contactRole: string? = ""
+  property isPrimary: boolean = false
+  timestamps
+
+  constraint requireName: self.contactName != "" "Contact name is required"
+  constraint requireSupplier: self.supplierId != "" "Supplier ID is required"
+
+  relationship belongsTo supplier: InventorySupplier fields [tenantId, supplierId] references [tenantId, id]
+
+  default policy VendorContactDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
+  command create(supplierId: string, contactName: string, contactEmail: string, contactPhone: string, contactRole: string, isPrimary: boolean) {
+    guard supplierId != null and supplierId != "" "Supplier ID is required"
+    guard contactName != null and contactName != "" "Contact name is required"
+
+    mutate supplierId = supplierId
+    mutate contactName = contactName
+    mutate contactEmail = contactEmail
+    mutate contactPhone = contactPhone
+    mutate contactRole = contactRole
+    mutate isPrimary = isPrimary
+
+    emit VendorContactCreated
+  }
+
+  command update(contactName: string, contactEmail: string, contactPhone: string, contactRole: string, isPrimary: boolean) {
+    guard contactName != null and contactName != "" "Contact name is required"
+
+    mutate contactName = contactName
+    mutate contactEmail = contactEmail
+    mutate contactPhone = contactPhone
+    mutate contactRole = contactRole
+    mutate isPrimary = isPrimary
+
+    emit VendorContactUpdated
+  }
+
+  command remove(removedBy: string) {
+    guard removedBy != null and removedBy != "" "Removing user is required"
+
+    mutate deletedAt = now()
+
+    emit VendorContactRemoved
+  }
+
+  store VendorContact in durable
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VendorRating — a scored evaluation of a supplier on a particular category
+// (e.g. delivery reliability, product quality).
+// ─────────────────────────────────────────────────────────────────────────────
+entity VendorRating mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property required supplierId: uuid
+  property required category: string
+  property required rating: int = 0
+  property comment: string? = ""
+  property ratedAt: datetime?
+  property ratedBy: uuid? = ""
+  timestamps
+
+  computed isHighScore: boolean = self.rating >= 4
+  computed isLowScore: boolean = self.rating < 2
+
+  constraint scoreRange: between(self.rating, 0, 5) "Score must be between 0 and 5"
+  constraint requireCategory: self.category != "" "Rating category is required"
+
+  relationship belongsTo supplier: InventorySupplier fields [tenantId, supplierId] references [tenantId, id]
+
+  constraint warnLowScore:warn (self.rating < 2) {
+    messageTemplate: "Low vendor rating ({rating}/5) for category '{category}' — consider reviewing supplier"
+    details: {
+      supplierId: self.supplierId
+      category: self.category
+      rating: self.rating
+    }
+  }
+
+  default policy VendorRatingDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
+  command create(supplierId: string, category: string, rating: int, comment: string, ratedBy: string) {
+    guard supplierId != null and supplierId != "" "Supplier ID is required"
+    guard category != null and category != "" "Rating category is required"
+    guard between(rating, 0, 5) "Score must be between 0 and 5"
+
+    mutate supplierId = supplierId
+    mutate category = category
+    mutate rating = rating
+    mutate comment = comment
+    mutate ratedBy = ratedBy
+    mutate ratedAt = now()
+
+    emit VendorRatingCreated
+  }
+
+  command update(rating: int, comment: string) {
+    guard between(rating, 0, 5) "Score must be between 0 and 5"
+
+    mutate rating = rating
+    mutate comment = comment
+    mutate ratedAt = now()
+
+    emit VendorRatingUpdated
+  }
+
+  store VendorRating in durable
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// InventoryTransferItem — a single line item within an InventoryTransfer,
+// specifying which item moves, how much, and in what unit.
+// ─────────────────────────────────────────────────────────────────────────────
+entity InventoryTransferItem mixin TenantScoped {
+  key [tenantId, id]
+  property notes: string?
+  property required transferId: uuid
+  property required itemId: uuid
+  property required quantity: decimal = 0
+  property required unitId: string?
+  timestamps
+
+  computed isZeroQuantity: boolean = self.quantity <= 0
+
+  constraint positiveQuantity: self.quantity > 0 "Transfer quantity must be positive"
+  constraint requireTransfer: self.transferId != "" "Transfer ID is required"
+  constraint requireItem: self.itemId != "" "Inventory item ID is required"
+
+  relationship belongsTo transfer: InventoryTransfer fields [tenantId, transferId] references [tenantId, id]
+  relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
+
+  default policy InventoryTransferItemDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
+  command addItem(transferId: string, itemId: string, quantity: decimal, unitId: string) {
+    guard transferId != null and transferId != "" "Transfer ID is required"
+    guard itemId != null and itemId != "" "Inventory item ID is required"
+    guard quantity != null and quantity > 0 "Quantity must be positive"
+    guard unitId != null and unitId != "" "Unit ID is required"
+
+    mutate transferId = transferId
+    mutate itemId = itemId
+    mutate quantity = quantity
+    mutate unitId = unitId
+
+    emit TransferItemAdded
+  }
+
+  command updateQuantity(quantity: decimal) {
+    guard quantity != null and quantity > 0 "Quantity must be positive"
+
+    mutate quantity = quantity
+
+    emit TransferItemQuantityUpdated
+  }
+
+  command removeItem(removedBy: string) {
+    guard removedBy != null and removedBy != "" "Removing user is required"
+
+
+    emit TransferItemRemoved
+  }
+
+  store InventoryTransferItem in durable
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ProcurementBudget — a named spending envelope for procurement over a
+// calendar period; tracks how much has been spent against the approved amount.
+// ─────────────────────────────────────────────────────────────────────────────
+entity ProcurementBudget mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property category: string?
+  property committedAmount: money = 0
+  property description: string?
+  property notes: string?
+  property periodType: string = "annual"
+  property thresholdCriticalPct: int = 100
+  property thresholdWarningPct: int = 80
+  searchable property required name: string
+  property required fiscalYear: int
+  property required periodStart: datetime?
+  property required periodEnd: datetime?
+  property required budgetAmount: money = 0
+  property spentAmount: money = 0
+  indexed property required status: string = "active"
+  timestamps
+
+  computed remainingAmount: decimal = self.budgetAmount - self.spentAmount
+  computed utilizationPct: decimal = percent(self.spentAmount, self.budgetAmount) cache request
+  computed isOverBudget: boolean = self.spentAmount > self.budgetAmount
+  computed isActive: boolean = self.status == "active"
+  computed isClosed: boolean = self.status == "closed"
+
+  constraint validStatus: self.status in ["active", "closed"] "Invalid budget status"
+  constraint positiveBudget: self.budgetAmount > 0 "Budget amount must be positive"
+  constraint nonNegativeSpent: self.spentAmount >= 0 "Spent amount cannot be negative"
+
+  // State transitions
+  transition status from "active" to ["closed"]
+
+  constraint warnOverBudget:warn (self.spentAmount > self.budgetAmount) {
+    messageTemplate: "Procurement budget '{name}' is over budget (spent {spent}, limit {limit})"
+    details: {
+      name: self.name
+      spent: self.spentAmount
+      limit: self.budgetAmount
+      overage: self.spentAmount - self.budgetAmount
+    }
+  }
+
+  default policy ProcurementBudgetDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
+  command create(name: string, fiscalYear: int, periodStart: datetime, periodEnd: datetime, budgetAmount: money) {
+    guard flag("procurement.budget_management") "Procurement budget management is not enabled"
+    guard name != null and name != "" "Budget name is required"
+    guard fiscalYear != null "Fiscal year is required"
+    guard periodStart != null "Period start date is required"
+    guard periodEnd != null and periodEnd > periodStart "Period end must be after period start"
+    guard budgetAmount != null and budgetAmount > 0 "Budget amount must be positive"
+
+    mutate name = name
+    mutate fiscalYear = fiscalYear
+    mutate periodStart = periodStart
+    mutate periodEnd = periodEnd
+    mutate budgetAmount = budgetAmount
+    mutate spentAmount = 0
+
+    emit BudgetCreated
+  }
+
+  command update(name: string, budgetAmount: money) {
+    guard self.status == "active" "Cannot update a closed budget"
+    guard name != null and name != "" "Budget name is required"
+    guard budgetAmount != null and budgetAmount > 0 "Budget amount must be positive"
+
+    constraint blockReduceBelowSpent:block budgetAmount >= self.spentAmount {
+      messageTemplate: "Cannot reduce budget below already-spent amount ({spent})"
+      details: {
+        name: self.name
+        requested: budgetAmount
+        spent: self.spentAmount
+      }
+    }
+
+    mutate name = name
+    mutate budgetAmount = budgetAmount
+
+    emit BudgetUpdated
+  }
+
+  command recordSpend(amount: money, reference: string) {
+    guard self.status == "active" "Cannot record spend against a closed budget"
+    guard amount != null and amount > 0 "Spend amount must be positive"
+
+    mutate spentAmount = self.spentAmount + amount
+
+    emit ProcurementBudgetSpendRecorded
+  }
+
+  command close(closedBy: string) {
+    guard self.status == "active" "Budget is already closed"
+    guard closedBy != null and closedBy != "" "Closing user is required"
+
+    mutate status = "closed"
+
+    emit ProcurementBudgetClosed
+  }
+
+  store ProcurementBudget in durable
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ProcurementBudgetAlert — fired when cumulative spend crosses a configured
+// percentage threshold of a ProcurementBudget.
+// ─────────────────────────────────────────────────────────────────────────────
+entity ProcurementBudgetAlert mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property resolved: boolean = false
+  property resolvedAt: datetime?
+  property required budgetId: uuid
+  property required utilizationPct: decimal = 0
+  property required alertType: string
+  property required message: string
+  property triggeredAt: datetime?
+  property acknowledgedAt: datetime?
+  property acknowledgedBy: uuid? = ""
+  property isAcknowledged: boolean = false
+  timestamps
+
+  computed isCritical: boolean = self.utilizationPct >= 100
+
+  relationship belongsTo budget: ProcurementBudget fields [tenantId, budgetId] references [tenantId, id]
+
+  constraint validThreshold: self.utilizationPct > 0 "Utilization percentage must be positive"
+
+  default policy ProcurementBudgetAlertDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
+  command create(budgetId: string, utilizationPct: decimal, alertType: string, message: string) {
+    guard budgetId != null and budgetId != "" "Budget ID is required"
+    guard utilizationPct != null and utilizationPct > 0 "Utilization percentage must be positive"
+    guard alertType != null and alertType != "" "Alert type is required"
+    guard message != null and message != "" "Alert message is required"
+
+    mutate budgetId = budgetId
+    mutate utilizationPct = utilizationPct
+    mutate alertType = alertType
+    mutate message = message
+    mutate triggeredAt = now()
+    mutate isAcknowledged = false
+
+    emit ProcurementBudgetAlertTriggered
+  }
+
+  command acknowledge(acknowledgedBy: string) {
+    guard not self.isAcknowledged "Alert is already acknowledged"
+    guard acknowledgedBy != null and acknowledgedBy != "" "Acknowledging user is required"
+
+    mutate isAcknowledged = true
+    mutate acknowledgedBy = acknowledgedBy
+    mutate acknowledgedAt = now()
+
+    emit ProcurementBudgetAlertAcknowledged
+  }
+
+  store ProcurementBudgetAlert in durable
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AuditSchedule — a recurring cadence configuration that drives automatic
+// cycle-count audit creation (e.g. weekly freezer count, monthly dry-goods
+// full count).
+// ─────────────────────────────────────────────────────────────────────────────
+entity AuditSchedule mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property dayOfMonth: int?
+  property dayOfWeek: int?
+  searchable property required name: string
+  property required frequency: string
+  property required time: string
+  property required createdBy: uuid
+  property nextRunAt: datetime?
+  property lastRunAt: datetime?
+  property isActive: boolean = true
+  timestamps
+
+  computed isDeactivated: boolean = self.isActive == false
+
+  constraint requireName: self.name != "" "Audit schedule name is required"
+  constraint validFrequency: self.frequency in ["daily", "weekly", "biweekly", "monthly", "quarterly"] "Invalid audit frequency"
+
+  constraint warnInactive:warn (self.isActive == false) {
+    messageTemplate: "Audit schedule '{name}' is inactive — cycle counts will not run automatically"
+    details: {
+      name: self.name
+      frequency: self.frequency
+    }
+  }
+
+  default policy AuditScheduleDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
+  command create(name: string, frequency: string, time: string, nextRunAt: datetime, createdBy: string) {
+    guard name != null and name != "" "Audit schedule name is required"
+    guard frequency != null and frequency != "" "Frequency is required"
+    guard time != null and time != "" "Audit time is required"
+    guard nextRunAt != null "Next run date is required"
+    guard createdBy != null and createdBy != "" "Creator is required"
+
+    mutate name = name
+    mutate frequency = frequency
+    mutate time = time
+    mutate nextRunAt = nextRunAt
+    mutate createdBy = createdBy
+    mutate isActive = true
+
+    emit AuditScheduleCreated
+  }
+
+  command update(name: string, frequency: string, nextRunAt: decimal) {
+    guard self.isActive "Cannot update a deactivated audit schedule"
+    guard name != null and name != "" "Audit schedule name is required"
+    guard frequency != null and frequency != "" "Frequency is required"
+
+    mutate name = name
+    mutate frequency = frequency
+    mutate nextRunAt = nextRunAt
+
+    emit AuditScheduleUpdated
+  }
+
+  command deactivate(reason: string) {
+    guard self.isActive "Audit schedule is already deactivated"
+
+    mutate isActive = false
+
+    emit AuditScheduleDeactivated
+  }
+
+  command activate() {
+    guard (self.isActive == false) "Audit schedule is already active"
+
+    mutate isActive = true
+
+    emit AuditScheduleActivated
+  }
+
+  // Record a completed run and advance the next scheduled run date.
+  command recordRun(nextRunAt: datetime) {
+    guard self.isActive "Cannot record a run for an inactive schedule"
+    guard nextRunAt != null "Next run date is required"
+
+    mutate lastRunAt = now()
+    mutate nextRunAt = nextRunAt
+
+    emit AuditScheduleRunRecorded
+  }
+
+  store AuditSchedule in durable
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POLICIES
+// ─────────────────────────────────────────────────────────────────────────────
+
+policy InventoryManagersCanManageStorage execute: user.role in ["inventory_manager", "manager", "admin"] "Inventory managers can manage storage locations"
+policy InventoryStaffCanViewStock execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Staff can view stock levels"
+policy InventoryManagersCanAdjustStock execute: user.role in ["inventory_manager", "manager", "admin"] "Inventory managers can adjust stock"
+policy InventoryManagersCanManageAlerts execute: user.role in ["inventory_manager", "manager", "admin"] "Inventory managers can manage alerts"
+policy InventoryStaffCanAcknowledgeAlerts execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Staff can acknowledge alerts"
+policy SystemCanCreateForecasts execute: user.role in ["inventory_manager", "manager", "admin"] "Managers can create and update forecasts"
+policy InventoryManagersCanManageReorders execute: user.role in ["inventory_manager", "manager", "admin"] "Inventory managers can manage reorder suggestions"
+policy ManagersCanManageVendorContacts execute: user.role in ["manager", "admin"] "Managers can manage vendor contacts"
+policy ManagersCanRateVendors execute: user.role in ["manager", "admin"] "Managers can rate vendors"
+policy InventoryManagersCanManageTransferItems execute: user.role in ["inventory_manager", "manager", "admin"] "Inventory managers can manage transfer line items"
+policy ManagersCanManageAuditSchedules execute: user.role in ["inventory_manager", "manager", "admin"] "Managers can manage audit schedules"
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EVENTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+event StorageLocationCreated: "inventory.storage_location.created" {
+  storageLocationId: string
+  tenantId: string
+  locationId: string
+  name: string
+  storageType: string
+  createdAt: datetime
+}
+
+event StorageLocationUpdated: "inventory.storage_location.updated" {
+  storageLocationId: string
+  name: string
+  storageType: string
+  updatedAt: datetime
+}
+
+event StorageLocationDeactivated: "inventory.storage_location.deactivated" {
+  storageLocationId: string
+  name: string
+  reason: string
+  deactivatedAt: datetime
+}
+
+event InventoryStockCreated: "inventory.stock.created" {
+  stockId: string
+  tenantId: string
+  inventoryItemId: string
+  storageLocationId: string
+  quantityOnHand: number
+  unitId: number
+  createdAt: datetime
+}
+
+event InventoryStockAdjusted: "inventory.stock.adjusted" {
+  stockId: string
+  inventoryItemId: string
+  storageLocationId: string
+  previousQty: number
+  delta: number
+  newQty: number
+  reason: string
+  adjustedAt: datetime
+}
+
+event InventoryStockRecounted: "inventory.stock.recounted" {
+  stockId: string
+  inventoryItemId: string
+  storageLocationId: string
+  previousQty: number
+  newQty: number
+  countedBy: string
+  recountedAt: datetime
+}
+
+event InventoryAlertTriggered: "inventory.alert.triggered" {
+  alertId: string
+  tenantId: string
+  inventoryItemId: string
+  alertType: string
+  severity: string
+  message: string
+  triggeredAt: datetime
+}
+
+event InventoryAlertAcknowledged: "inventory.alert.acknowledged" {
+  alertId: string
+  inventoryItemId: string
+  acknowledgedBy: string
+  acknowledgedAt: datetime
+}
+
+event InventoryAlertResolved: "inventory.alert.resolved" {
+  alertId: string
+  inventoryItemId: string
+  resolvedBy: string
+  resolvedAt: datetime
+}
+
+event InventoryForecastCreated: "inventory.forecast.created" {
+  forecastId: string
+  tenantId: string
+  inventoryItemId: string
+  forecastDate: datetime
+  projectedQuantity: number
+  confidence: number
+  createdAt: datetime
+}
+
+event InventoryForecastUpdated: "inventory.forecast.updated" {
+  forecastId: string
+  inventoryItemId: string
+  projectedQuantity: number
+  confidence: number
+  updatedAt: datetime
+}
+
+event ForecastInputCreated: "inventory.forecast.input.created" {
+  inputId: string
+  tenantId: string
+  inventoryItemId: string
+  inputDate: datetime
+  actualUsage: number
+  source: string
+  createdAt: datetime
+}
+
+event ReorderSuggestionCreated: "inventory.reorder.suggestion.created" {
+  suggestionId: string
+  tenantId: string
+  inventoryItemId: string
+  suggestedQuantity: number
+  reason: string
+  createdAt: datetime
+}
+
+event ReorderSuggestionAccepted: "inventory.reorder.suggestion.accepted" {
+  suggestionId: string
+  inventoryItemId: string
+  suggestedQuantity: number
+  acceptedBy: string
+  acceptedAt: datetime
+}
+
+event ReorderSuggestionDismissed: "inventory.reorder.suggestion.dismissed" {
+  suggestionId: string
+  inventoryItemId: string
+  dismissedBy: string
+  dismissedAt: datetime
+}
+
+event VendorContactCreated: "inventory.vendor.contact.created" {
+  contactId: string
+  tenantId: string
+  inventorySupplierId: string
+  name: string
+  role: string
+  isPrimary: boolean
+  createdAt: datetime
+}
+
+event VendorContactUpdated: "inventory.vendor.contact.updated" {
+  contactId: string
+  inventorySupplierId: string
+  name: string
+  role: string
+  isPrimary: boolean
+  updatedAt: datetime
+}
+
+event VendorContactRemoved: "inventory.vendor.contact.removed" {
+  contactId: string
+  inventorySupplierId: string
+  removedBy: string
+  removedAt: datetime
+}
+
+event VendorRatingCreated: "inventory.vendor.rating.created" {
+  ratingId: string
+  tenantId: string
+  inventorySupplierId: string
+  category: string
+  score: number
+  ratedBy: string
+  ratedAt: datetime
+}
+
+event VendorRatingUpdated: "inventory.vendor.rating.updated" {
+  ratingId: string
+  inventorySupplierId: string
+  category: string
+  score: number
+  updatedAt: datetime
+}
+
+event TransferItemAdded: "inventory.transfer.item.added" {
+  transferItemId: string
+  tenantId: string
+  inventoryTransferId: string
+  inventoryItemId: string
+  quantity: number
+  unitId: string
+  createdAt: datetime
+}
+
+event TransferItemQuantityUpdated: "inventory.transfer.item.quantity_updated" {
+  transferItemId: string
+  inventoryTransferId: string
+  inventoryItemId: string
+  newQuantity: number
+  updatedAt: datetime
+}
+
+event TransferItemRemoved: "inventory.transfer.item.removed" {
+  transferItemId: string
+  inventoryTransferId: string
+  inventoryItemId: string
+  removedBy: string
+  removedAt: datetime
+}
+
+event ProcurementBudgetSpendRecorded: "procurement.budget.spend_recorded" {
+  budgetId: string
+  amount: money
+  reference: string
+  newSpentAmount: money
+  recordedAt: datetime
+}
+
+event ProcurementBudgetClosed: "procurement.budget.closed" {
+  budgetId: string
+  name: string
+  closedBy: string
+  finalSpentAmount: money
+  closedAt: datetime
+}
+
+event ProcurementBudgetAlertTriggered: "procurement.budget.alert.triggered" {
+  alertId: string
+  tenantId: string
+  procurementBudgetId: string
+  thresholdPct: number
+  message: string
+  triggeredAt: datetime
+}
+
+event ProcurementBudgetAlertAcknowledged: "procurement.budget.alert.acknowledged" {
+  alertId: string
+  procurementBudgetId: string
+  acknowledgedBy: string
+  acknowledgedAt: datetime
+}
+
+event AuditScheduleCreated: "inventory.audit_schedule.created" {
+  scheduleId: string
+  tenantId: string
+  name: string
+  frequency: string
+  nextRunAt: datetime
+  createdAt: datetime
+}
+
+event AuditScheduleUpdated: "inventory.audit_schedule.updated" {
+  scheduleId: string
+  name: string
+  frequency: string
+  nextRunAt: datetime
+  updatedAt: datetime
+}
+
+event AuditScheduleDeactivated: "inventory.audit_schedule.deactivated" {
+  scheduleId: string
+  name: string
+  reason: string
+  deactivatedAt: datetime
+}
+
+event AuditScheduleActivated: "inventory.audit_schedule.activated" {
+  scheduleId: string
+  name: string
+  activatedAt: datetime
+}
+
+event AuditScheduleRunRecorded: "inventory.audit_schedule.run-recorded" {
+  scheduleId: string
+  name: string
+  lastRunAt: datetime
+  nextRunAt: datetime
+}
+
+event InventoryAlertEscalated: "inventory.alert.escalated" {
+  alertId: string
+  inventoryItemId: string
+  newSeverity: string
+  escalatedBy: string
+  escalatedAt: datetime
+}
+
+event InventoryForecastPublished: "inventory.forecast.published" {
+  forecastId: string
+  tenantId: string
+  inventoryItemId: string
+  projectedQuantity: number
+  confidence: number
+  publishedAt: datetime
+}
+
+event InventoryForecastApproved: "inventory.forecast.approved" {
+  forecastId: string
+  tenantId: string
+  inventoryItemId: string
+  approvedBy: string
+  approvedAt: datetime
+}
+
+event ReorderSuggestionAutoAccepted: "inventory.reorder.suggestion.auto-accepted" {
+  suggestionId: string
+  tenantId: string
+  inventoryItemId: string
+  suggestedQuantity: number
+  triggeredBy: string
+  acceptedAt: datetime
+}

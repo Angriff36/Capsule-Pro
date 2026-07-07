@@ -1,0 +1,68 @@
+use "../_base.manifest"
+// Administrative Domain - Admin Task Comment Rules
+// Manifest spec for managing comments on admin tasks
+
+entity AdminTaskComment mixin TenantScoped, SoftDeletable {
+  // No relationships: taskId is a loose key by design; AdminTask declares no
+  // child relationships (see core/admin-task-rules.manifest).
+  key [tenantId, id]
+  indexed property taskId: uuid = ""
+  property authorId: uuid? = ""
+  property authorName: string = ""
+  searchable property text: string = ""
+  timestamps
+
+  computed isDeleted: boolean = self.deletedAt != null
+
+  default policy AdminTaskCommentDefaultAccess execute: user.role in ["manager", "admin"] "Admin task comment management"
+
+  command create(taskId: string, authorId: string, authorName: string, text: string) {
+    guard taskId != null and taskId != "" "Task ID is required"
+    guard text != null and text != "" "Comment text is required"
+
+    mutate taskId = taskId
+    mutate authorId = authorId
+    mutate authorName = authorName
+    mutate text = text
+
+    emit AdminTaskCommentCreated
+  }
+
+  command update(text: string) {
+    guard self.deletedAt == null "Cannot update a deleted comment"
+    guard text != null and text != "" "Comment text is required"
+
+    mutate text = text
+
+    emit AdminTaskCommentUpdated
+  }
+
+  command softDelete() {
+    guard self.deletedAt == null "Comment is already deleted"
+
+    mutate deletedAt = now()
+
+    emit AdminTaskCommentDeleted
+  }
+
+  store AdminTaskComment in durable
+}
+
+policy AdminTaskCommentManagement execute: user.role in ["manager", "admin"] "Managers can manage comments"
+
+event AdminTaskCommentCreated: "admin.task-comment.created" {
+  commentId: string
+  taskId: string
+  authorId: string
+  createdAt: datetime
+}
+
+event AdminTaskCommentUpdated: "admin.task-comment.updated" {
+  commentId: string
+  updatedAt: datetime
+}
+
+event AdminTaskCommentDeleted: "admin.task-comment.deleted" {
+  commentId: string
+  deletedAt: datetime
+}

@@ -1,0 +1,435 @@
+use "../../_base.manifest"
+use "./training-module-rules.manifest"
+
+// NOTE: `StaffMemberCreated` is defined ONCE — in staff-member-rules.manifest
+// (topic "staff.staff-member.created"), the event StaffMember.create actually
+// emits. A duplicate stub used to live here (topic "staff.member.created") purely
+// to give the old `on StaffMemberCreated run TrainingAssignment.create` reaction
+// firstShiftAt/dueAt fields, but that reaction was a silent no-op (see the comment
+// where it used to be, below) and is now staff-member-created-training-assignment
+// middleware. The duplicate is removed so the two definitions no longer conflict.
+
+// `StaffMemberFirstShiftScheduled` event removed: it had no emitter and its only
+// consumer was the orphan applyFirstShiftDueDate reaction (now
+// schedule-shift-first-shift-due-date-middleware, triggered by ScheduleShiftCreated).
+
+event SelOnboardingTrainingDefinitionCreated: "training.sel-onboarding.definition-created" {
+  id: string
+}
+
+event SelOnboardingTrainingQuestionDefinitionCreated: "training.sel-onboarding.question-definition-created" {
+  id: string
+}
+
+entity SelOnboardingTrainingModuleDefinition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
+  key [tenantId, id]
+
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
+  property code: string = "sel_event_staff_onboarding"
+  searchable property title: string = "SEL Event Staff — Onboarding Training"
+  searchable property description: string = "Required pre-shift training for all Mangia staff working SEL Friday Lunch events. Covers client context, compliance requirements, pre-event workflow, buffet service, and wrap-up procedures. Must be completed before first shift."
+  property contentType: string = "interactive"
+  property contentUrl: string = "TBD"
+  property durationMinutes: int = 20
+  property category: string = "onboarding"
+  property isRequired: boolean = true
+  property passThresholdPercent: int = 80
+  property maxAttempts: int = 3
+  property requiredRole: string = "staff"
+
+  timestamps
+
+  default policy SelOnboardingTrainingModuleDefinitionAccess execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingDefinitionCreated
+  }
+
+  store SelOnboardingTrainingModuleDefinition in durable
+}
+
+entity SelOnboardingTrainingQuestion01Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
+  key [tenantId, id]
+
+  property questionId: string = "1a4f8a91-f4ee-48cd-9178-171c9c75fceb"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
+  property code: string = "Q1"
+  property sectionTitle: string = "Context"
+  property displayOrder: int = 1
+  property prompt: string = "Mangia is SEL's only catering vendor on Friday Lunch events."
+  property optionA: string = "True"
+  property optionB: string = "False"
+  property optionC: string = ""
+  property optionD: string = ""
+  property correctOptionKey: string = "B"
+  property explanation: string = "False. Mangia is not SEL's only Friday Lunch vendor."
+  property whyItMatters: string = "Staff need to understand we earn our spot."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion01Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store SelOnboardingTrainingQuestion01Definition in durable
+}
+
+entity SelOnboardingTrainingQuestion02Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
+  key [tenantId, id]
+
+  property questionId: string = "cad9ca72-2f74-430f-9b04-d9956b865509"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
+  property code: string = "Q2"
+  property sectionTitle: string = "Context"
+  property displayOrder: int = 2
+  property prompt: string = "What is SEL's primary reason for choosing Mangia over other vendors?"
+  property optionA: string = "We are the cheapest option"
+  property optionB: string = "We are the closest to campus"
+  property optionC: string = "Professionalism, quality, and consistency"
+  property optionD: string = "We have the most staff available"
+  property correctOptionKey: string = "C"
+  property explanation: string = "SEL chooses Mangia for professionalism, quality, and consistency."
+  property whyItMatters: string = "This is the service standard every SEL shift must reinforce."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion02Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store SelOnboardingTrainingQuestion02Definition in durable
+}
+
+entity SelOnboardingTrainingQuestion03Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
+  key [tenantId, id]
+
+  property questionId: string = "c0d36c00-3b06-4d74-a026-b619883d0578"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
+  property code: string = "Q3"
+  property sectionTitle: string = "Compliance"
+  property displayOrder: int = 3
+  property prompt: string = "Your WA State Food Worker Card must be current..."
+  property optionA: string = "Within 30 days of your first shift"
+  property optionB: string = "Before your first shift"
+  property optionC: string = "Within your first week"
+  property optionD: string = "By the end of your first month"
+  property correctOptionKey: string = "B"
+  property explanation: string = "Your WA State Food Worker Card must be current before your first shift."
+  property whyItMatters: string = "No current card means you are not shift-ready."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion03Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store SelOnboardingTrainingQuestion03Definition in durable
+}
+
+entity SelOnboardingTrainingQuestion04Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
+  key [tenantId, id]
+
+  property questionId: string = "05e4752c-e786-42d0-91e8-c0b638e0ba33"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
+  property code: string = "Q4"
+  property sectionTitle: string = "Compliance"
+  property displayOrder: int = 4
+  property prompt: string = "Where do you pick up your SEL visitor badge?"
+  property optionA: string = "At your assigned building"
+  property optionB: string = "At the Mangia vehicle"
+  property optionC: string = "At Building One security desk"
+  property optionD: string = "The BOH Lead brings it to you"
+  property correctOptionKey: string = "C"
+  property explanation: string = "Pick up the badge at Building One security desk."
+  property whyItMatters: string = "Arriving at the right check-in point prevents delays."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion04Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store SelOnboardingTrainingQuestion04Definition in durable
+}
+
+entity SelOnboardingTrainingQuestion05Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
+  key [tenantId, id]
+
+  property questionId: string = "2c8fb412-5928-4410-97fe-c8d3fa90fd5f"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
+  property code: string = "Q5"
+  property sectionTitle: string = "Compliance"
+  property displayOrder: int = 5
+  property prompt: string = "Where must your visitor badge be worn at all times on SEL campus?"
+  property optionA: string = "In your pocket for safekeeping"
+  property optionB: string = "Clipped to your bag"
+  property optionC: string = "Above the waistline, visible at all times"
+  property optionD: string = "Anywhere comfortable"
+  property correctOptionKey: string = "C"
+  property explanation: string = "Wear the badge above the waistline and keep it visible."
+  property whyItMatters: string = "Campus badge rules are mandatory, not optional."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion05Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store SelOnboardingTrainingQuestion05Definition in durable
+}
+
+entity SelOnboardingTrainingQuestion06Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
+  key [tenantId, id]
+
+  property questionId: string = "504c8378-1eee-4e4c-a489-a746c417d489"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
+  property code: string = "Q6"
+  property sectionTitle: string = "Pre-Event Workflow"
+  property displayOrder: int = 6
+  property prompt: string = "Put the pre-event steps in the correct order:"
+  property optionA: string = "Badge → Clock in → Arrive → Meet crew"
+  property optionB: string = "Arrive → Clock in → Badge → Meet crew"
+  property optionC: string = "Arrive → Badge → Clock in → Meet crew"
+  property optionD: string = "Clock in → Arrive → Badge → Meet crew"
+  property correctOptionKey: string = "B"
+  property explanation: string = "The correct order is Arrive → Clock in → Badge → Meet crew."
+  property whyItMatters: string = "The sequence matters for timekeeping, access, and crew readiness."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion06Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store SelOnboardingTrainingQuestion06Definition in durable
+}
+
+entity SelOnboardingTrainingQuestion07Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
+  key [tenantId, id]
+
+  property questionId: string = "fab41a4d-86bb-4587-991f-8a60f02466df"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
+  property code: string = "Q7"
+  property sectionTitle: string = "Pre-Event Workflow"
+  property displayOrder: int = 7
+  property prompt: string = "When do you clock in on Nowsta?"
+  property optionA: string = "After you pick up your badge"
+  property optionB: string = "When the BOH Lead arrives"
+  property optionC: string = "At your scheduled start time when you arrive on site"
+  property optionD: string = "When service begins"
+  property correctOptionKey: string = "C"
+  property explanation: string = "Clock in at your scheduled start time when you arrive on site."
+  property whyItMatters: string = "Nowsta timekeeping starts when you are on site and ready to work."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion07Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store SelOnboardingTrainingQuestion07Definition in durable
+}
+
+entity SelOnboardingTrainingQuestion08Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
+  key [tenantId, id]
+
+  property questionId: string = "d7cbf992-dde5-4af1-8f96-a25e162ab385"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
+  property code: string = "Q8"
+  property sectionTitle: string = "Buffet Service"
+  property displayOrder: int = 8
+  property prompt: string = "During buffet service, which portion do Mangia staff always serve?"
+  property optionA: string = "Side dishes only"
+  property optionB: string = "Everything equally"
+  property optionC: string = "The protein"
+  property optionD: string = "Whatever the BOH Lead decides on the day"
+  property correctOptionKey: string = "C"
+  property explanation: string = "Mangia staff always serve the protein during buffet service."
+  property whyItMatters: string = "Serving responsibilities need to stay consistent across lines."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion08Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store SelOnboardingTrainingQuestion08Definition in durable
+}
+
+entity SelOnboardingTrainingQuestion09Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
+  key [tenantId, id]
+
+  property questionId: string = "4f71378e-8c1d-4f01-b4a7-9393df1da0f8"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
+  property code: string = "Q9"
+  property sectionTitle: string = "Buffet Service"
+  property displayOrder: int = 9
+  property prompt: string = "What is the typical staffing configuration per buffet line?"
+  property optionA: string = "1 Server + 1 Runner"
+  property optionB: string = "3 Servers"
+  property optionC: string = "2 Servers + 1 Runner"
+  property optionD: string = "2 Runners + 1 Server"
+  property correctOptionKey: string = "C"
+  property explanation: string = "A typical line uses 2 Servers and 1 Runner."
+  property whyItMatters: string = "Knowing the standard line build helps staff slot in quickly."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion09Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store SelOnboardingTrainingQuestion09Definition in durable
+}
+
+entity SelOnboardingTrainingQuestion10Definition mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
+  key [tenantId, id]
+
+  property questionId: string = "67760aa3-4fca-4c3d-92ef-bdad9c8d7b89"
+  property moduleId: string = "f8c17fcf-54fb-4e41-9bea-cbb13a353ebb"
+  property code: string = "Q10"
+  property sectionTitle: string = "Wrap-Up"
+  property displayOrder: int = 10
+  property prompt: string = "Which of the following is the correct final checkout sequence?"
+  property optionA: string = "Clock out → Return badge → Sign out → Check in with BOH Lead"
+  property optionB: string = "Check in with BOH Lead → Sign out of staff sheet → Return SEL badge → Clock out of Nowsta"
+  property optionC: string = "Return badge → Clock out → Sign out → Check in with BOH Lead"
+  property optionD: string = "Sign out → Return badge → Check in with BOH Lead → Clock out"
+  property correctOptionKey: string = "B"
+  property explanation: string = "The correct sequence is Check in with BOH Lead → Sign out → Return badge → Clock out."
+  property whyItMatters: string = "The checkout order closes accountability and campus access correctly."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion10Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store SelOnboardingTrainingQuestion10Definition in durable
+}
+
+// REMOVED: saga InstallSelOnboardingTraining — was vestigial; no code caller
+// (runManifestSaga / runSaga) ever invoked it. SEL onboarding seed data is
+// installed via direct command dispatch through the middleware pipeline, so
+// this 12-step saga was dead IR with no runtime path.
+
+on SelOnboardingTrainingDefinitionCreated run TrainingModule.create
+  resolve payload.result.moduleId
+  params {
+    id: payload.result.moduleId
+    code: payload.result.code
+    title: payload.result.title
+    description: payload.result.description
+    contentUrl: payload.result.contentUrl
+    contentType: payload.result.contentType
+    durationMinutes: payload.result.durationMinutes
+    category: payload.result.category
+    isRequired: payload.result.isRequired
+    passThresholdPercent: payload.result.passThresholdPercent
+    maxAttempts: payload.result.maxAttempts
+    requiredRole: payload.result.requiredRole
+    createdBy: "system"
+    publishImmediately: true
+  }
+
+on SelOnboardingTrainingQuestionDefinitionCreated run TrainingQuestion.create
+  resolve payload.result.questionId
+  params {
+    id: payload.result.questionId
+    moduleId: payload.result.moduleId
+    code: payload.result.code
+    sectionTitle: payload.result.sectionTitle
+    displayOrder: payload.result.displayOrder
+    prompt: payload.result.prompt
+    optionA: payload.result.optionA
+    optionB: payload.result.optionB
+    optionC: payload.result.optionC
+    optionD: payload.result.optionD
+    correctOptionKey: payload.result.correctOptionKey
+    explanation: payload.result.explanation
+    whyItMatters: payload.result.whyItMatters
+  }
+
+// StaffMemberCreated -> TrainingAssignment.create is handled by
+// staff-member-created-training-assignment-middleware (registered in
+// manifest-runtime-factory). It was a reaction reading payload.staffMemberId /
+// firstShiftAt / dueAt off StaffMember.create (a MUTATE; payload = {...input, result}).
+// None of those ride the payload: `staffMemberId` is a COMPUTED (self.id), and
+// `firstShiftAt`/`dueAt` are not knowable at staff-create time (the first shift is
+// scheduled later) — so the reaction silently no-op'd and no onboarding assignment
+// was ever auto-created. It also passed `staffRole: payload.role`, but
+// TrainingAssignment.create guards `staffRole == "staff"` while role defaults to
+// "server", so the create would have been blocked even if the field were reachable.
+// The middleware reads the new StaffMember id from _subject.id, pins staffRole to
+// the literal "staff", and dispatches the governed TrainingAssignment.create with
+// dueDateReviewNeeded=true (firstShiftAt/dueAt are pinned later by the
+// StaffMemberFirstShiftScheduled -> applyFirstShiftDueDate path below).
+
+// StaffMemberFirstShiftScheduled -> TrainingAssignment.applyFirstShiftDueDate is
+// handled by schedule-shift-first-shift-due-date-middleware (registered in
+// manifest-runtime-factory). It was an ORPHAN reaction: no command ever emitted
+// `StaffMemberFirstShiftScheduled`, so it could never fire (the lone remaining
+// reaction-payload-baseline entry). It could not be salvaged as a reaction either —
+// applyFirstShiftDueDate resolves its target via `guard assignmentId == self.id`
+// (the assignment id is not on a shift payload), the would-be emitter
+// `ScheduleShift.create` is a MUTATE whose payload {...commandInput, result} carries
+// only employeeId/shiftStart (no assignmentId/dueAt), and "first shift" is a stateful
+// fact a declarative reaction cannot express. The middleware triggers on the real
+// `ScheduleShiftCreated`, finds the employee's open SEL onboarding assignment still
+// needing its due date pinned (dueDateReviewNeeded == true), and dispatches the
+// governed applyFirstShiftDueDate(dueAt = shiftStart). The command clears
+// dueDateReviewNeeded, so later shifts don't re-pin (first-shift-only idempotency).
+// The now-dead StaffMemberFirstShiftScheduled event declaration is removed too.

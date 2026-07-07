@@ -1,0 +1,61 @@
+use "../_base.manifest"
+// Administrative Domain - Admin Task Dev Meta Rules
+// Manifest spec for dev mode bug tracking metadata on admin tasks
+
+entity AdminTaskDevMeta mixin TenantScoped, SoftDeletable {
+  // No relationships: taskId is a loose key by design; AdminTask declares no
+  // child relationships (see core/admin-task-rules.manifest).
+  key [tenantId, id]
+  indexed property taskId: uuid = ""
+  property severity: string = "medium"
+  property environment: string? = ""
+  searchable property stepsToRepro: string? = ""
+  property expectedResult: string? = ""
+  property actualResult: string? = ""
+  timestamps
+
+  computed isDeleted: boolean = self.deletedAt != null
+
+  default policy AdminTaskDevMetaDefaultAccess execute: user.role in ["manager", "admin"] "Admin task dev metadata management"
+
+  command create(taskId: string, severity: string, environment: string, stepsToRepro: string, expectedResult: string, actualResult: string) {
+    guard taskId != null and taskId != "" "Task ID is required"
+
+    mutate taskId = taskId
+    mutate severity = severity
+    mutate environment = environment
+    mutate stepsToRepro = stepsToRepro
+    mutate expectedResult = expectedResult
+    mutate actualResult = actualResult
+
+    emit AdminTaskDevMetaCreated
+  }
+
+  command update(severity: string, environment: string, stepsToRepro: string, expectedResult: string, actualResult: string) {
+    guard self.deletedAt == null "Cannot update deleted dev metadata"
+
+    mutate severity = severity
+    mutate environment = environment
+    mutate stepsToRepro = stepsToRepro
+    mutate expectedResult = expectedResult
+    mutate actualResult = actualResult
+
+    emit AdminTaskDevMetaUpdated
+  }
+
+  store AdminTaskDevMeta in durable
+}
+
+policy AdminTaskDevMetaManagement execute: user.role in ["manager", "admin"] "Managers can manage dev metadata"
+
+event AdminTaskDevMetaCreated: "admin.task-dev-meta.created" {
+  metaId: string
+  taskId: string
+  severity: string
+  createdAt: datetime
+}
+
+event AdminTaskDevMetaUpdated: "admin.task-dev-meta.updated" {
+  metaId: string
+  updatedAt: datetime
+}

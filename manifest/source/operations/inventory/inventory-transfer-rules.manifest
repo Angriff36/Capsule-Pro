@@ -1,0 +1,187 @@
+use "../../_base.manifest"
+// Inventory Transfer Rules
+// Manifest spec for inter-location inventory movements
+
+entity InventoryTransfer mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property requestedAt: datetime = now()
+  property fromLocationId: uuid = ""
+  property toLocationId: uuid = ""
+  indexed property status: string = "draft"
+  property requestedBy: uuid? = ""
+  property approvedBy: uuid? = ""
+  property shippedBy: uuid? = ""
+  property receivedBy: uuid? = ""
+  property shippedAt: datetime?
+  property receivedAt: datetime?
+  property discrepancyNotes: string? = ""
+  property hasDiscrepancy: boolean? = false
+  searchable property notes: string? = ""
+  timestamps
+  // items: JSON-array-as-string payload. The InventoryTransferPrismaStore
+  // accepts both a real array (from the UI dispatcher) and a JSON string
+  // (from server-to-server callers), parses it, and fans out to
+  // inventory_transfer_items rows inside the same $transaction as the parent
+  // row. Manifest IR grammar has no `array<object>` kind yet; documented as
+  // adapter-derived in scripts/manifest/schema-drift-allowlist.json.
+  property items: string = "[]"
+
+  computed isApproved: boolean = self.status == "approved"
+  computed isInTransit: boolean = self.status == "in_transit"
+
+  relationship hasMany lineItems: InventoryTransferItem
+  relationship belongsTo fromLocation: StorageLocation fields [tenantId, fromLocationId] references [tenantId, id]
+  relationship belongsTo toLocation: StorageLocation fields [tenantId, toLocationId] references [tenantId, id]
+
+  constraint validStatus: self.status in ["draft", "pending_approval", "approved", "in_transit", "received", "cancelled"] "Invalid transfer status"
+
+  transition status from "draft" to ["pending_approval", "cancelled"]
+  transition status from "pending_approval" to ["approved", "cancelled"]
+  transition status from "approved" to ["in_transit", "cancelled"]
+  transition status from "in_transit" to ["received"]
+
+  // requestedBy + transferNumber are intentionally NOT command params here.
+  //   - requestedBy is adapter-derived from RuntimeContext.user.id by
+  //     InventoryTransferPrismaStore (see inventory-transfer-prisma-store.ts).
+  //   - transferNumber is generated server-side as `TRF-<count+1, zero-padded>`
+  //     by the same store. The UI does not send either field.
+  // Both decisions documented in scripts/manifest/schema-drift-allowlist.json
+  // under adapterDerived.InventoryTransfer.* with reviewBy/owner.
+  default policy InventoryTransferDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
+  command create(fromLocationId: string, toLocationId: string, notes: string, items: string) {
+    guard fromLocationId != null and fromLocationId != "" "Source location is required"
+    guard toLocationId != null and toLocationId != "" "Destination location is required"
+    guard fromLocationId != toLocationId "Source and destination must be different"
+
+    mutate fromLocationId = fromLocationId
+    mutate toLocationId = toLocationId
+    mutate notes = notes
+    mutate items = items
+    // Initial status must be in validStatus and reachable by `approve`
+    // (which requires self.status == "pending_approval"). Without an
+    // explicit submit-for-approval command in the manifest, starting in
+    // "pending_approval" is the only state from which the workflow can
+    // progress. "pending" (the Prisma column default) is NOT in
+    // validStatus and would violate the constraint.
+    mutate status = "pending_approval"
+
+    emit TransferCreated
+  }
+
+  command approve(approvedBy: string) {
+    guard self.status == "pending_approval" "Transfer must be pending approval"
+
+    mutate approvedBy = approvedBy
+    mutate status = "approved"
+
+    emit TransferApproved
+  }
+
+  command ship(shippedBy: string) {
+    guard self.status == "approved" "Transfer must be approved before shipping"
+
+    mutate shippedBy = shippedBy
+    mutate shippedAt = now()
+    mutate status = "in_transit"
+
+    emit TransferShipped
+  }
+
+  command receive(receivedBy: string) {
+    guard self.status == "in_transit" "Transfer must be in transit before receiving"
+
+    mutate receivedBy = receivedBy
+    mutate receivedAt = now()
+    mutate status = "received"
+
+    emit TransferReceived
+  }
+
+  command cancel(reason: string) {
+    guard self.status in ["draft", "pending_approval"] "Cannot cancel a transfer already in progress"
+
+    mutate status = "cancelled"
+    mutate notes = reason
+
+    emit TransferCancelled
+  }
+
+  // Record a partial receipt when the delivered quantities are less than requested.
+  // The transfer stays open (in_transit) so the remainder can be received later or
+  // a discrepancy can be flagged.
+  command partialReceive(receivedBy: string, receivedItems: string, notes: string) {
+    guard self.status == "in_transit" "Transfer must be in transit to record a partial receipt"
+    guard receivedBy != null and receivedBy != "" "Receiving user is required"
+
+    mutate receivedBy = receivedBy
+    mutate receivedAt = now()
+    mutate notes = notes
+
+    emit TransferPartiallyReceived
+  }
+
+  // Flag a quantity or quality discrepancy discovered at receipt time.
+  // Keeps the transfer in received state while the issue is investigated.
+  command flagDiscrepancy(reportedBy: string, discrepancyNotes: string) {
+    guard self.status in ["in_transit", "received"] "Can only flag discrepancies on in-transit or received transfers"
+    guard reportedBy != null and reportedBy != "" "Reporting user is required"
+    guard discrepancyNotes != null and discrepancyNotes != "" "Discrepancy notes are required"
+
+    mutate hasDiscrepancy = true
+    mutate discrepancyNotes = discrepancyNotes
+
+    emit TransferDiscrepancyFlagged
+  }
+
+  store InventoryTransfer in durable
+}
+
+policy InventoryManagersCanTransfer execute: user.role in ["inventory_manager", "manager", "admin"] "Only inventory managers can manage transfers"
+
+event TransferCreated: "inventory.transfer.created" {
+  transferId: string
+  tenantId: string
+  fromLocationId: string
+  toLocationId: string
+  requestedBy: string
+  createdAt: datetime
+}
+
+event TransferApproved: "inventory.transfer.approved" {
+  transferId: string
+  approvedBy: string
+  approvedAt: datetime
+}
+
+event TransferShipped: "inventory.transfer.shipped" {
+  transferId: string
+  shippedBy: string
+  shippedAt: datetime
+}
+
+event TransferReceived: "inventory.transfer.received" {
+  transferId: string
+  receivedBy: string
+  receivedAt: datetime
+}
+
+event TransferCancelled: "inventory.transfer.cancelled" {
+  transferId: string
+  reason: string
+  cancelledAt: datetime
+}
+
+event TransferPartiallyReceived: "inventory.transfer.partially-received" {
+  transferId: string
+  receivedBy: string
+  receivedItems: string
+  notes: string
+  receivedAt: datetime
+}
+
+event TransferDiscrepancyFlagged: "inventory.transfer.discrepancy-flagged" {
+  transferId: string
+  reportedBy: string
+  discrepancyNotes: string
+  flaggedAt: datetime
+}

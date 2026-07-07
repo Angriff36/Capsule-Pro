@@ -1,0 +1,265 @@
+use "../../_base.manifest"
+// Inventory - Supplier Rules
+// Manifest spec for inventory supplier management
+
+entity InventorySupplier mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property addressLine1: string?
+  property addressLine2: string?
+  property city: string?
+  property country: string = "US"
+  property performanceRating: decimal?
+  property postalCode: string?
+  property state: string?
+  property taxId: string?
+  property website: string?
+  searchable property required name: string
+  unique property supplierNumber: string = ""
+  property contactPerson: string? = ""
+  encrypted property email: string? = ""
+  encrypted property phone: string? = ""
+  property paymentTerms: string = "NET_30"
+  searchable property notes: string? = ""
+  property tags: array<string>? = []
+  property isActive: boolean? = true
+  property openPOCount: int? = 0
+  property approvedAt: datetime?
+  property approvedBy: string? = ""
+  property suspendedAt: datetime?
+  property suspendedReason: string? = ""
+  property blacklistedAt: datetime?
+  property blacklistedReason: string? = ""
+  property qualificationStatus: string? = "pending"
+  // Bridge to the procurement-side Vendor identity (2026-07-04): purchasing
+  // (PurchaseOrder.vendorId) uses Vendor while inventory uses InventorySupplier;
+  // this optional link declares "this inventory supplier IS this purchasing vendor".
+  property vendorId: string? = ""
+  timestamps
+
+  computed hasContact: boolean = self.contactPerson != "" or self.email != ""
+  computed hasOpenPOs: boolean = self.openPOCount > 0
+  computed isApproved: boolean = self.qualificationStatus == "approved"
+  computed isSuspended: boolean = self.qualificationStatus == "suspended"
+  computed isBlacklisted: boolean = self.qualificationStatus == "blacklisted"
+
+  relationship hasMany items: InventoryItem
+  relationship hasMany contacts: VendorContact
+  relationship hasMany ratings: VendorRating
+  // Back-relations (U11): additional inverse hasMany for children that belongTo InventorySupplier
+  relationship hasMany shipments: Shipment
+  relationship hasMany catalogs: VendorCatalog
+  relationship hasMany requisitions: PurchaseRequisition
+  relationship belongsTo vendor: Vendor fields [vendorId, tenantId] references [id, tenantId]
+
+  constraint validPaymentTerms: self.paymentTerms in ["NET_15", "NET_30", "NET_45", "NET_60", "COD", "PREPAID"] "Invalid payment terms"
+  constraint validQualificationStatus: self.qualificationStatus in ["pending", "approved", "suspended", "blacklisted"] "Invalid qualification status"
+
+  default policy InventorySupplierDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
+  command create(name: string, supplierNumber: string, contactPerson: string, email: string, phone: string, paymentTerms: string, notes: string, tags: array<string>) {
+    guard name != null and name != "" "Supplier name is required"
+
+    constraint warnNoContact:warn (contactPerson == null or contactPerson == "") and (email == null or email == "") {
+      messageTemplate: "Creating supplier '{name}' without contact information"
+      details: {
+        name: name
+      }
+    }
+
+    mutate name = name
+    mutate supplierNumber = supplierNumber
+    mutate contactPerson = contactPerson
+    mutate email = email
+    mutate phone = phone
+    mutate paymentTerms = paymentTerms
+    mutate notes = notes
+    mutate tags = tags
+    mutate isActive = true
+    mutate openPOCount = 0
+
+    emit InventorySupplierCreated
+  }
+
+  command update(name: string, contactPerson: string, email: string, phone: string, paymentTerms: string, notes: string, tags: array<string>) {
+    guard name != null and name != "" "Supplier name is required"
+
+    mutate name = name
+    mutate contactPerson = contactPerson
+    mutate email = email
+    mutate phone = phone
+    mutate paymentTerms = paymentTerms
+    mutate notes = notes
+    mutate tags = tags
+
+    emit InventorySupplierUpdated
+  }
+
+  command deactivate(userId: string, reason: string) {
+    guard self.isActive "Supplier is already inactive"
+
+    constraint warnOpenPOs:warn self.openPOCount > 0 {
+      messageTemplate: "Deactivating supplier '{name}' with {count} open purchase orders"
+      details: {
+        name: self.name
+        count: self.openPOCount
+        reason: reason
+      }
+    }
+
+    mutate isActive = false
+
+    emit InventorySupplierDeactivated
+  }
+
+  // Approve a supplier after vetting — required before they can be used on purchase orders.
+  command approve(approvedBy: string) {
+    guard self.qualificationStatus == "pending" "Only pending suppliers can be approved"
+    guard approvedBy != null and approvedBy != "" "Approving user is required"
+
+    mutate qualificationStatus = "approved"
+    mutate approvedBy = approvedBy
+    mutate approvedAt = now()
+    mutate isActive = true
+
+    emit InventorySupplierApproved
+  }
+
+  // Temporarily suspend a supplier (e.g. quality issue, delivery failure).
+  // Existing open POs remain but new ones are blocked upstream.
+  command suspend(suspendedBy: string, reason: string) {
+    guard self.qualificationStatus == "approved" "Only approved suppliers can be suspended"
+    guard reason != null and reason != "" "Suspension reason is required"
+
+    constraint warnOpenPOs:warn self.openPOCount > 0 {
+      messageTemplate: "Suspending supplier '{name}' with {count} open purchase orders"
+      details: {
+        name: self.name
+        count: self.openPOCount
+        reason: reason
+      }
+    }
+
+    mutate qualificationStatus = "suspended"
+    mutate suspendedReason = reason
+    mutate suspendedAt = now()
+
+    emit InventorySupplierSuspended
+  }
+
+  // Reinstate a suspended supplier once the issue is resolved.
+  command reinstate(reinstatedBy: string, notes: string) {
+    guard self.qualificationStatus == "suspended" "Only suspended suppliers can be reinstated"
+    guard reinstatedBy != null and reinstatedBy != "" "Reinstating user is required"
+
+    mutate qualificationStatus = "approved"
+    mutate suspendedReason = ""
+
+    emit InventorySupplierReinstated
+  }
+
+  // Blacklist a supplier permanently — cannot be reversed without admin override.
+  command blacklist(blacklistedBy: string, reason: string) {
+    guard self.qualificationStatus != "blacklisted" "Supplier is already blacklisted"
+    guard reason != null and reason != "" "Blacklist reason is required"
+
+    constraint warnOpenPOs:warn self.openPOCount > 0 {
+      messageTemplate: "Blacklisting supplier '{name}' with {count} open purchase orders — manual PO cancellation required"
+      details: {
+        name: self.name
+        count: self.openPOCount
+        reason: reason
+      }
+    }
+
+    mutate qualificationStatus = "blacklisted"
+    mutate blacklistedReason = reason
+    mutate blacklistedAt = now()
+    mutate isActive = false
+
+    emit InventorySupplierBlacklisted
+  }
+
+  // Link this inventory supplier to its procurement-side Vendor identity.
+  command linkVendor(vendorId: string) {
+    guard vendorId != null and vendorId != "" "Vendor ID is required"
+
+    mutate vendorId = vendorId
+
+    emit InventorySupplierVendorLinked
+  }
+
+  store InventorySupplier in durable
+}
+
+policy ManagersCanCreateSupplier execute: user.role in ["manager", "admin"] "Only managers can create suppliers"
+policy ManagersCanUpdateSupplier execute: user.role in ["kitchen_lead", "manager", "admin"] "Leads and managers can update suppliers"
+policy ManagersCanDeactivateSupplier execute: user.role in ["manager", "admin"] "Only managers can deactivate suppliers"
+
+event InventorySupplierCreated: "inventory.supplier.created" {
+  supplierId: string
+  tenantId: string
+  name: string
+  supplierNumber: string
+  paymentTerms: string
+  createdAt: datetime
+}
+
+event InventorySupplierVendorLinked: "inventory.supplier.vendor.linked" {
+  supplierId: string
+  tenantId: string
+  name: string
+  vendorId: string
+  updatedAt: datetime
+}
+
+event InventorySupplierUpdated: "inventory.supplier.updated" {
+  supplierId: string
+  name: string
+  contactPerson: string
+  email: string
+  updatedAt: datetime
+}
+
+event InventorySupplierDeactivated: "inventory.supplier.deactivated" {
+  supplierId: string
+  name: string
+  userId: string
+  reason: string
+  openPOCount: number
+  deactivatedAt: datetime
+}
+
+event InventorySupplierApproved: "inventory.supplier.approved" {
+  supplierId: string
+  tenantId: string
+  name: string
+  approvedBy: string
+  approvedAt: datetime
+}
+
+event InventorySupplierSuspended: "inventory.supplier.suspended" {
+  supplierId: string
+  tenantId: string
+  name: string
+  suspendedBy: string
+  reason: string
+  openPOCount: number
+  suspendedAt: datetime
+}
+
+event InventorySupplierReinstated: "inventory.supplier.reinstated" {
+  supplierId: string
+  tenantId: string
+  name: string
+  reinstatedBy: string
+  reinstatedAt: datetime
+}
+
+event InventorySupplierBlacklisted: "inventory.supplier.blacklisted" {
+  supplierId: string
+  tenantId: string
+  name: string
+  blacklistedBy: string
+  reason: string
+  openPOCount: number
+  blacklistedAt: datetime
+}

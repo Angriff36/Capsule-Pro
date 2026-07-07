@@ -1,0 +1,147 @@
+use "../../_base.manifest"
+// Kitchen Ops - Prep Comment Rules
+// Manifest spec for prep task comment threading, resolution, and moderation
+// Bug fixes:
+//   - resolvedAt: removed = now() default (lifecycle timestamp, must be nullable)
+//   - hasBeenResolved computed: was != 0 (invalid for datetime) → now uses != null
+//   - unresolve command: was mutate resolvedAt = 0 (invalid) → mutate resolvedAt = null
+
+entity PrepComment mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property required taskId: uuid
+  property required employeeId: uuid
+  property required commentText: string
+  property isResolved: boolean = false
+  // BUG FIX: lifecycle timestamp — no default (nullable until resolved)
+  property resolvedAt: datetime?
+  property resolvedBy: uuid? = ""
+  timestamps
+
+  computed isActive: boolean = self.deletedAt == null
+  // BUG FIX: was != 0, invalid for datetime — use != null
+  computed hasBeenResolved: boolean = self.resolvedAt != null
+
+  relationship belongsTo task: PrepTask with taskId
+  relationship belongsTo employee: User with employeeId
+
+  default policy PrepCommentDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Prep comment management"
+  command create(taskId: string, employeeId: string, commentText: string) {
+    guard taskId != null and taskId != "" "Task ID is required"
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard commentText != null and commentText != "" "Comment text is required"
+
+    mutate taskId = taskId
+    mutate employeeId = employeeId
+    mutate commentText = commentText
+    mutate isResolved = false
+
+    emit PrepCommentCreated
+  }
+
+  // Edit the text of an unresolved comment (e.g. to fix a typo or add context).
+  command edit(newText: string, userId: string) {
+    guard userId != null and userId != "" "User ID is required"
+    guard newText != null and newText != "" "Comment text cannot be empty"
+    guard (self.deletedAt == null) "Cannot edit a deleted comment"
+    guard self.isResolved == false "Cannot edit a resolved comment"
+
+    mutate commentText = newText
+
+    emit PrepCommentEdited
+  }
+
+  command markResolved(resolvedBy: string) {
+    guard resolvedBy != null and resolvedBy != "" "Resolver ID is required"
+    guard (self.deletedAt == null) "Cannot resolve a deleted comment"
+
+    constraint warnAlreadyResolved:warn self.isResolved {
+      messageTemplate: "Comment '{commentId}' is already resolved by '{resolvedBy}'"
+      details: {
+        commentId: self.id
+        taskId: self.taskId
+        resolvedBy: self.resolvedBy
+      }
+    }
+
+    mutate isResolved = true
+    mutate resolvedAt = now()
+    mutate resolvedBy = resolvedBy
+
+    emit PrepCommentResolved
+  }
+
+  command unresolve(userId: string) {
+    guard userId != null and userId != "" "User ID is required"
+    guard self.isResolved "Comment is not resolved"
+    guard (self.deletedAt == null) "Cannot unresolve a deleted comment"
+
+    // BUG FIX: was `mutate resolvedAt = 0` — datetime cannot be set to 0; use null
+    mutate isResolved = false
+    mutate resolvedAt = null
+    mutate resolvedBy = ""
+
+    emit PrepCommentUnresolved
+  }
+
+  command softDelete(userId: string) {
+    guard userId != null and userId != "" "User ID is required"
+    guard (self.deletedAt == null) "Comment is already deleted"
+
+    constraint blockDeleteIfResolved:block !self.isResolved {
+      messageTemplate: "Cannot delete resolved comment '{commentId}' — unresolve it first"
+      details: {
+        commentId: self.id
+        taskId: self.taskId
+        resolvedBy: self.resolvedBy
+      }
+    }
+
+    mutate deletedAt = now()
+
+    emit PrepCommentDeleted
+  }
+
+  store PrepComment in durable
+}
+
+policy KitchenStaffCanComment execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can create and manage comments"
+policy ManagersCanDelete execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can delete comments"
+policy KitchenStaffCanResolve execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can resolve comments"
+
+event PrepCommentCreated: "kitchen.prepcomment.created" {
+  commentId: string
+  tenantId: string
+  taskId: string
+  employeeId: string
+  commentText: string
+  createdAt: datetime
+}
+
+event PrepCommentEdited: "kitchen.prepcomment.edited" {
+  commentId: string
+  tenantId: string
+  taskId: string
+  userId: string
+  updatedAt: datetime
+}
+
+event PrepCommentResolved: "kitchen.prepcomment.resolved" {
+  commentId: string
+  taskId: string
+  resolvedBy: string
+  resolvedAt: datetime
+}
+
+event PrepCommentUnresolved: "kitchen.prepcomment.unresolved" {
+  commentId: string
+  taskId: string
+  unresolvedBy: string
+  unresolvedAt: datetime
+}
+
+event PrepCommentDeleted: "kitchen.prepcomment.deleted" {
+  commentId: string
+  taskId: string
+  deletedBy: string
+  deletedAt: datetime
+}

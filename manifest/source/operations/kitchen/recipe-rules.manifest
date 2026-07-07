@@ -1,0 +1,616 @@
+use "../../_base.manifest"
+// Kitchen Ops - Recipe Rules
+// Manifest spec for recipe operations with constraints, guards, and events
+// Lifecycle: Recipe is a catalog header. RecipeVersion moves draft -> published (->approved).
+// RecipeIngredient and RecipeStep are line-item detail rows — simple CRUD.
+
+// U7: Closed-vocabulary status enum for RecipeVersion lifecycle.
+// Values: draft -> published (with approved flag on top of published).
+enum RecipeVersionStatus {
+  draft
+  published
+}
+
+// Cookbook-integration: step execution phase, mirrors the cookbook UI's
+// grouping (prep tasks / method / finish at event / packaging & event build).
+enum RecipeStepPhase {
+  prep
+  method
+  finish
+  packaging
+}
+
+entity Recipe mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  searchable property required name: string
+  property category: string? = ""
+  property cuisineType: string? = ""
+  searchable property description: string? = ""
+  property required tags: string[]
+  property required isActive: boolean = true
+  // Cookbook-integration: distinguishes a component sub-recipe from a plated dish.
+  property required isSubrecipe: boolean = false
+  timestamps
+
+  computed hasVersion: boolean = count_of(self.versions) > 0 cache request
+  computed tagCount: int = count(self.tags) cache request
+
+  relationship hasMany versions: RecipeVersion
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Recipe
+  relationship hasMany dishes: Dish
+
+  constraint validName: self.name != null and self.name != "" "Recipe name is required"
+
+  default policy RecipeDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Recipe management"
+  command update(newName: string, newCategory: string, newCuisineType: string, newDescription: string, newTags: string[]) {
+    guard newName != null and newName != "" "Recipe name is required"
+
+    constraint warnNameChange:warn self.name != newName {
+      messageTemplate: "Renaming recipe from '{oldName}' to '{newName}'"
+      details: {
+        oldName: self.name
+        newName: newName
+      }
+    }
+
+    mutate name = newName
+    mutate category = newCategory
+    mutate cuisineType = newCuisineType
+    mutate description = newDescription
+    mutate tags = newTags
+
+    emit RecipeUpdated
+  }
+
+  command deactivate(reason: string) {
+    guard self.isActive == true "Recipe is already inactive"
+
+    mutate isActive = false
+
+    emit RecipeDeactivated
+  }
+
+  // Cookbook-integration: flip a recipe between plated-dish and sub-recipe.
+  command setSubrecipe(isSubrecipe: boolean) {
+    mutate isSubrecipe = isSubrecipe
+
+    emit RecipeSubrecipeSet
+  }
+
+  command activate() {
+    guard self.isActive == false "Recipe is already active"
+
+    mutate isActive = true
+
+    emit RecipeActivated
+  }
+
+  command create(name: string, category: string, cuisineType: string, description: string, tags: string[]) {
+    guard name != null and name != "" "Recipe name is required"
+
+    mutate name = name
+    mutate category = category
+    mutate cuisineType = cuisineType
+    mutate description = description
+    mutate tags = tags
+    mutate isActive = true
+
+    emit RecipeCreated
+  }
+
+  store Recipe in durable
+}
+
+entity RecipeVersion mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property required recipeId: uuid
+  searchable property required name: string
+  property versionNumber: int = 1
+  property category: string? = ""
+  property cuisineType: string? = ""
+  searchable property description: string? = ""
+  property required tags: string[] = []
+  property yieldQuantity: decimal = 1
+  property yieldUnitId: int = 1
+  property yieldDescription: string? = ""
+  property prepTimeMinutes: int? = 0
+  property cookTimeMinutes: int? = 0
+  property restTimeMinutes: int? = 0
+  property difficultyLevel: int? = 1
+  property instructions: string? = ""
+  searchable property notes: string? = ""
+  property totalCost: money = 0
+  property costPerYield: money = 0
+  // Status lifecycle: draft -> published. Approved is a separate flag on top of published.
+  indexed property status: RecipeVersionStatus? = draft
+  property publishedAt: datetime?
+  property approvedAt: datetime?
+  property approvedBy: string? = ""
+  // Cookbook-integration: packaging / event-build instructions per service mode.
+  property dropOffNotes: string? = ""
+  property bringHotNotes: string? = ""
+  property cookOnSiteNotes: string? = ""
+  timestamps
+
+  computed totalTimeMinutes: int = self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes
+  computed isVersion1: boolean = self.versionNumber == 1
+  computed isHighDifficulty: boolean = self.difficultyLevel >= 4
+  computed isDraft: boolean = self.status == "draft"
+  computed isPublished: boolean = self.status == "published"
+  computed isApproved: boolean = self.approvedAt != null
+
+  relationship belongsTo recipe: Recipe fields [tenantId, recipeId] references [tenantId, id]
+  relationship hasMany ingredients: RecipeIngredient
+  relationship hasMany steps: RecipeStep
+
+  // Back-relations (U11): inverse hasMany for children that belongTo RecipeVersion
+  relationship hasMany prepListItems: PrepListItem
+
+  transition status from "draft" to ["published"]
+  transition status from "published" to ["draft"]
+
+  constraint validVersionNumber: self.versionNumber > 0 "Version number must be positive"
+  constraint positiveYield: self.yieldQuantity > 0 "Yield quantity must be positive"
+  // validDifficulty/validStatus were entity-level :block constraints — the documented
+  // anti-pattern (v0.12.58): they re-validate on EVERY mutate, and live rows with NULL
+  // difficulty_level (and no status column yet — Phase 2b drift) blocked updateCosts
+  // silently. Difficulty range is now a create guard; status values are enforced by
+  // the transitions below.
+  constraint validTimes: self.prepTimeMinutes >= 0 and self.cookTimeMinutes >= 0 and self.restTimeMinutes >= 0 "Time values must be non-negative"
+  constraint nonNegativeCost: self.totalCost >= 0 "Total cost cannot be negative"
+
+  constraint warnLongRecipe:warn self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes > 480 {
+    messageTemplate: "Recipe takes 8+ hours to complete"
+    details: {
+      prepTimeMinutes: self.prepTimeMinutes
+      cookTimeMinutes: self.cookTimeMinutes
+      restTimeMinutes: self.restTimeMinutes
+    }
+  }
+
+  constraint warnHighDifficulty:warn self.difficultyLevel >= 4 {
+    messageTemplate: "High difficulty recipe (level {difficulty}) - requires skilled staff"
+    details: {
+      difficultyLevel: self.difficultyLevel
+    }
+  }
+
+  default policy RecipeVersionDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Recipe management"
+  command create(yieldQty: decimal, yieldUnit: number, prepTime: number, cookTime: number, restTime: number, difficulty: number, instructionsText: string, notesText: string) {
+    guard yieldQty != null and yieldQty > 0 "Yield quantity must be positive"
+    guard yieldUnit != null and yieldUnit > 0 "Yield unit is required"
+    guard difficulty == null or (difficulty >= 1 and difficulty <= 5) "Difficulty must be between 1 (easy) and 5 (expert)"
+
+    mutate yieldQuantity = yieldQty
+    mutate yieldUnitId = yieldUnit
+    mutate prepTimeMinutes = prepTime
+    mutate cookTimeMinutes = cookTime
+    mutate restTimeMinutes = restTime
+    mutate difficultyLevel = difficulty
+    mutate instructions = instructionsText
+    mutate notes = notesText
+
+    emit RecipeVersionCreated
+  }
+
+  // Publish a version so it becomes the live recipe available for catering orders.
+  // Ingredient presence is validated at the publish call site (count the hasMany
+  // ingredients relationship) — the old ingredientCount property was a phantom
+  // (no column, never mutated) so its guard always read 0 and blocked publishing.
+  command markPublished(publishedBy: string) {
+    guard self.status == "draft" "Only a draft version can be published"
+
+    mutate status = "published"
+    mutate publishedAt = now()
+
+    emit RecipeVersionPublished
+  }
+
+  // Retract a published version back to draft (e.g. for corrections before re-publishing).
+  command retract(reason: string) {
+    guard self.status == "published" "Only a published version can be retracted"
+
+    constraint warnRetract:warn true {
+      messageTemplate: "Retracting published recipe version — verify no active event orders reference this version"
+      details: {
+        versionId: self.id
+        recipeId: self.recipeId
+        reason: reason
+      }
+    }
+
+    mutate status = "draft"
+    mutate publishedAt = null
+
+    emit RecipeVersionRetracted
+  }
+
+  // Kitchen lead sign-off: stamps a published version as kitchen-approved for catering service.
+  command approve(approvedBy: string) {
+    guard self.status == "published" "Only a published version can be approved"
+    guard approvedBy != null and approvedBy != "" "Approver ID is required"
+    guard self.approvedAt == null "Version is already approved"
+
+    mutate approvedAt = now()
+    mutate approvedBy = approvedBy
+
+    emit RecipeVersionApproved
+  }
+
+  command restore(sourceId: string, newVersionNum: number) {
+    guard sourceId != null and sourceId != "" "Source version ID is required"
+    guard newVersionNum != null and newVersionNum > 0 "Version number must be positive"
+
+    mutate versionNumber = newVersionNum
+    mutate status = "draft"
+    mutate publishedAt = null
+    mutate approvedAt = null
+    mutate approvedBy = ""
+
+    emit RecipeVersionRestored
+  }
+
+  command updateCosts(newTotalCost: money, newCostPerYield: money) {
+    guard newTotalCost != null and newTotalCost >= 0 "Total cost cannot be negative"
+
+    constraint warnHighCost:warn newTotalCost > 1000 {
+      messageTemplate: "Recipe total cost is high (${cost}) — verify ingredient pricing"
+      details: {
+        totalCost: newTotalCost
+        costPerYield: newCostPerYield
+      }
+    }
+
+    mutate totalCost = newTotalCost
+    mutate costPerYield = newCostPerYield
+
+    emit RecipeVersionCostUpdated
+  }
+
+  // Cookbook-integration: set the packaging / event-build notes shown on the
+  // recipe detail page (drop-off, bring-hot, cook-on-site service modes).
+  command setPackaging(dropOff: string, bringHot: string, cookOnSite: string) {
+    mutate dropOffNotes = dropOff
+    mutate bringHotNotes = bringHot
+    mutate cookOnSiteNotes = cookOnSite
+
+    emit RecipeVersionPackagingSet
+  }
+
+  store RecipeVersion in durable
+}
+
+entity RecipeIngredient mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property required recipeVersionId: uuid
+  property required ingredientId: uuid
+  property required quantity: decimal
+  property required unitId: int
+  property required sortOrder: int
+  property preparationNotes: string? = ""
+  property isOptional: boolean = false
+  property wasteFactor: decimal = 1.0
+  timestamps
+
+  relationship belongsTo recipeVersion: RecipeVersion fields [tenantId, recipeVersionId] references [tenantId, id]
+  relationship belongsTo ingredient: Ingredient fields [tenantId, ingredientId] references [tenantId, id]
+
+  constraint positiveQuantity: self.quantity > 0 "Ingredient quantity must be positive"
+  constraint validOrder: self.sortOrder > 0 "Sort order must be positive"
+  constraint validWasteFactor: self.wasteFactor > 0 "Waste factor must be greater than 0"
+
+  default policy RecipeIngredientDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Recipe management"
+  command updateQuantity(newQuantity: decimal, newUnit: number) {
+    guard newQuantity != null and newQuantity > 0 "Quantity must be positive"
+
+    constraint warnQuantityIncrease:warn newQuantity > self.quantity * 1.5 {
+      messageTemplate: "Ingredient quantity increased by 50% or more"
+      details: {
+        oldQuantity: self.quantity
+        newQuantity: newQuantity
+        increasePercent: ((newQuantity - self.quantity) / self.quantity) * 100
+      }
+    }
+
+    mutate quantity = newQuantity
+    mutate unitId = newUnit
+
+    emit RecipeIngredientUpdated
+  }
+
+  command updateWasteFactor(newWasteFactor: number) {
+    guard newWasteFactor != null and newWasteFactor > 0 "Waste factor must be greater than 0"
+
+    constraint warnHighWasteFactor:warn newWasteFactor > 1.5 {
+      messageTemplate: "Waste factor is high ({factor}) — verify this is intended"
+      details: {
+        oldWasteFactor: self.wasteFactor
+        newWasteFactor: newWasteFactor
+      }
+    }
+
+    mutate wasteFactor = newWasteFactor
+
+    emit RecipeIngredientWasteFactorUpdated
+  }
+
+  command create(recipeVersionId: string, ingredientId: string, quantity: decimal, unitId: number, sortOrder: number, preparationNotes: string, isOptional: boolean) {
+    guard recipeVersionId != null and recipeVersionId != "" "Recipe version ID is required"
+    guard ingredientId != null and ingredientId != "" "Ingredient ID is required"
+    guard quantity > 0 "Quantity must be positive"
+    guard unitId > 0 "Unit is required"
+
+    mutate recipeVersionId = recipeVersionId
+    mutate ingredientId = ingredientId
+    mutate quantity = quantity
+    mutate unitId = unitId
+    mutate sortOrder = sortOrder
+    mutate preparationNotes = preparationNotes
+    mutate isOptional = isOptional
+
+    emit RecipeIngredientCreated
+  }
+
+  command remove(userId: string) {
+    mutate deletedAt = now()
+
+    emit RecipeIngredientRemoved
+  }
+
+  store RecipeIngredient in durable
+}
+
+entity RecipeStep mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property required recipeVersionId: uuid
+  property required stepNumber: int
+  property required instruction: string
+  property durationMinutes: int? = 0
+  property temperatureValue: decimal? = 0
+  property temperatureUnit: string? = ""
+  property equipmentNeeded: array<string>? = []
+  property tips: string? = ""
+  property videoUrl: string? = ""
+  property imageUrl: string? = ""
+  // Cookbook-integration: execution phase + optional links to a sub-recipe and
+  // a technique reference, mirroring the cookbook step card.
+  property phase: RecipeStepPhase? = method
+  property linkedRecipeId: string? = ""
+  property linkedTechniqueId: string? = ""
+  timestamps
+
+  relationship belongsTo recipeVersion: RecipeVersion fields [tenantId, recipeVersionId] references [tenantId, id]
+
+  constraint positiveStepNumber: self.stepNumber > 0 "Step number must be positive"
+  constraint validInstruction: self.instruction != null and self.instruction != "" "Instruction is required"
+
+  default policy RecipeStepDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Recipe management"
+  command create(recipeVersionId: string, stepNumber: number, instruction: string, durationMinutes: int, temperatureValue: number, temperatureUnit: string, equipmentNeeded: string[], tips: string, videoUrl: string, imageUrl: string, phase: string = "method", linkedRecipeId: string = "", linkedTechniqueId: string = "") {
+    guard recipeVersionId != null and recipeVersionId != "" "Recipe version ID is required"
+    guard stepNumber > 0 "Step number must be positive"
+    guard instruction != null and instruction != "" "Instruction is required"
+
+    mutate recipeVersionId = recipeVersionId
+    mutate stepNumber = stepNumber
+    mutate instruction = instruction
+    mutate durationMinutes = durationMinutes
+    mutate temperatureValue = temperatureValue
+    mutate temperatureUnit = temperatureUnit
+    mutate equipmentNeeded = equipmentNeeded
+    mutate tips = tips
+    mutate videoUrl = videoUrl
+    mutate imageUrl = imageUrl
+    mutate phase = phase
+    mutate linkedRecipeId = linkedRecipeId
+    mutate linkedTechniqueId = linkedTechniqueId
+
+    emit RecipeStepCreated
+  }
+
+  command updateInstruction(newInstruction: string, newDurationMinutes: int, newTips: string) {
+    guard newInstruction != null and newInstruction != "" "Instruction is required"
+
+    mutate instruction = newInstruction
+    mutate durationMinutes = newDurationMinutes
+    mutate tips = newTips
+
+    emit RecipeStepUpdated
+  }
+
+  // Cookbook-integration: set a step's phase and its sub-recipe / technique links.
+  command setStepDetails(newPhase: string, newLinkedRecipeId: string, newLinkedTechniqueId: string) {
+    mutate phase = newPhase
+    mutate linkedRecipeId = newLinkedRecipeId
+    mutate linkedTechniqueId = newLinkedTechniqueId
+
+    emit RecipeStepDetailsSet
+  }
+
+  command remove(userId: string) {
+    mutate deletedAt = now()
+
+    emit RecipeStepRemoved
+  }
+
+  store RecipeStep in durable
+}
+
+// Policy definitions
+policy RecipeManagement execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage recipes"
+policy RecipeDelete execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and above can delete recipes"
+policy PricingUpdate execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and above can update pricing"
+
+// Event definitions
+event RecipeCreated: "kitchen.recipe.created" {
+  recipeId: string
+  tenantId: string
+  name: string
+  createdAt: datetime
+}
+
+event RecipeUpdated: "kitchen.recipe.updated" {
+  recipeId: string
+  tenantId: string
+  oldName: string
+  newName: string
+  updatedAt: datetime
+}
+
+event RecipeDeactivated: "kitchen.recipe.deactivated" {
+  recipeId: string
+  tenantId: string
+  name: string
+  reason: string
+  deactivatedAt: datetime
+}
+
+event RecipeActivated: "kitchen.recipe.activated" {
+  recipeId: string
+  tenantId: string
+  name: string
+  activatedAt: datetime
+}
+
+event RecipeVersionCreated: "kitchen.recipe.version.created" {
+  versionId: string
+  recipeId: string
+  tenantId: string
+  versionNumber: number
+  yieldQuantity: decimal
+  createdAt: datetime
+}
+
+event RecipeVersionPublished: "kitchen.recipe.version.published" {
+  versionId: string
+  recipeId: string
+  tenantId: string
+  versionNumber: number
+  publishedBy: string
+  publishedAt: datetime
+}
+
+event RecipeVersionRetracted: "kitchen.recipe.version.retracted" {
+  versionId: string
+  recipeId: string
+  tenantId: string
+  versionNumber: number
+  reason: string
+  retractedAt: datetime
+}
+
+event RecipeVersionApproved: "kitchen.recipe.version.approved" {
+  versionId: string
+  recipeId: string
+  tenantId: string
+  versionNumber: number
+  approvedBy: string
+  approvedAt: datetime
+}
+
+event RecipeVersionRestored: "kitchen.recipe.version.restored" {
+  newVersionId: string
+  sourceVersionId: string
+  recipeId: string
+  tenantId: string
+  versionNumber: number
+  restoredAt: datetime
+}
+
+event RecipeVersionCostUpdated: "kitchen.recipe.version.cost.updated" {
+  recipeVersionId: string
+  recipeId: string
+  tenantId: string
+  totalCost: money
+  costPerYield: money
+  updatedAt: datetime
+}
+
+event RecipeIngredientCreated: "kitchen.recipe.ingredient.created" {
+  recipeIngredientId: string
+  recipeVersionId: string
+  ingredientId: string
+  tenantId: string
+  quantity: decimal
+  createdAt: datetime
+}
+
+event RecipeIngredientUpdated: "kitchen.recipe.ingredient.updated" {
+  recipeIngredientId: string
+  recipeVersionId: string
+  ingredientId: string
+  oldQuantity: number
+  newQuantity: number
+  updatedAt: datetime
+}
+
+event RecipeIngredientRemoved: "kitchen.recipeingredient.removed" {
+  recipeIngredientId: string
+  recipeVersionId: string
+  ingredientId: string
+  tenantId: string
+  userId: string
+  removedAt: datetime
+}
+
+event RecipeIngredientWasteFactorUpdated: "kitchen.recipe.ingredient.wastefactor.updated" {
+  recipeIngredientId: string
+  recipeVersionId: string
+  tenantId: string
+  oldWasteFactor: number
+  newWasteFactor: number
+  updatedAt: datetime
+}
+
+event RecipeStepCreated: "kitchen.recipe.step.created" {
+  recipeStepId: string
+  recipeVersionId: string
+  tenantId: string
+  stepNumber: number
+  instruction: string
+  createdAt: datetime
+}
+
+event RecipeStepUpdated: "kitchen.recipe.step.updated" {
+  recipeStepId: string
+  recipeVersionId: string
+  tenantId: string
+  stepNumber: number
+  oldInstruction: string
+  newInstruction: string
+  updatedAt: datetime
+}
+
+event RecipeStepRemoved: "kitchen.recipe.step.removed" {
+  recipeStepId: string
+  recipeVersionId: string
+  tenantId: string
+  stepNumber: number
+  removedAt: datetime
+}
+
+// Cookbook-integration events
+event RecipeSubrecipeSet: "kitchen.recipe.subrecipe.set" {
+  recipeId: string
+  tenantId: string
+  isSubrecipe: boolean
+  updatedAt: datetime
+}
+
+event RecipeVersionPackagingSet: "kitchen.recipe.version.packaging.set" {
+  recipeVersionId: string
+  recipeId: string
+  tenantId: string
+  updatedAt: datetime
+}
+
+event RecipeStepDetailsSet: "kitchen.recipe.step.details.set" {
+  recipeStepId: string
+  recipeVersionId: string
+  tenantId: string
+  phase: string
+  linkedRecipeId: string
+  linkedTechniqueId: string
+  updatedAt: datetime
+}
+

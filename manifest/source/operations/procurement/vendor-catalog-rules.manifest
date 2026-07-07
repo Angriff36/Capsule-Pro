@@ -1,0 +1,256 @@
+use "../../_base.manifest"
+// Vendor Catalog Rules
+// Manifest spec for vendor catalog management
+// Version: @angriff36/manifest v0.3.35
+
+entity VendorCatalog mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property required supplierId: uuid
+  // Mapping to the stock item this supplier product fulfills (2026-07-04):
+  // the load-bearing link for prep-demand ordering and catalog-priced purchasing.
+  property inventoryItemId: string? = ""
+  unique property required itemNumber: string = ""
+  searchable searchable property required itemName: string = ""
+  searchable property description: string? = ""
+  property category: string? = ""
+  property required baseUnitCost: money = 0
+  property required currency: string = "USD"
+  property required unitOfMeasure: string = "each"
+  property leadTimeDays: int? = 0
+  property leadTimeMinDays: int? = 0
+  property leadTimeMaxDays: int? = 0
+  property minimumOrderQuantity: decimal? = 0
+  property orderMultiple: decimal? = 0
+  property required isActive: boolean = true
+  property effectiveFrom: datetime?
+  property effectiveTo: datetime?
+  property supplierSku: string? = ""
+  searchable property notes: string? = ""
+  property required tags: array<string>
+  property lastCostUpdate: datetime?
+  timestamps
+
+  computed isDeleted: boolean = self.deletedAt != null
+  computed isEffective: boolean = (self.effectiveFrom == null or self.effectiveFrom <= now()) and (self.effectiveTo == null or self.effectiveTo >= now()) cache request
+
+  constraint requireItemNumber: self.itemNumber != null and self.itemNumber != "" "Item number is required"
+  constraint requireItemName: self.itemName != null and self.itemName != "" "Item name is required"
+  constraint requireUnitOfMeasure: self.unitOfMeasure in ["each", "case", "lb", "oz", "kg", "units", "cases"] "Invalid unit of measure"
+  constraint validCurrency: self.currency in ["USD", "EUR", "JPY", "CAD"] "Invalid currency"
+  constraint validUnitCost: self.baseUnitCost >= 0 "Unit cost must be non-negative"
+
+  default policy VendorCatalogDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Vendor catalog"
+  command create(supplierId: string, itemNumber: string, itemName: string, description: string, category: string, baseUnitCost: money, currency: string, unitOfMeasure: string, leadTimeDays: int, leadTimeMinDays: int, leadTimeMaxDays: int, minimumOrderQuantity: decimal, orderMultiple: decimal, effectiveFrom: datetime, effectiveTo: datetime, supplierSku: string, notes: string, tags: string) {
+    guard itemNumber != null and itemNumber != "" "Item number is required"
+    guard itemName != null and itemName != "" "Item name is required"
+    guard unitOfMeasure in ["each", "case", "lb", "oz", "kg", "units", "cases"] "Invalid unit of measure"
+    guard baseUnitCost >= 0 "Unit cost must be non-negative"
+
+    mutate supplierId = supplierId
+    mutate itemNumber = itemNumber
+    mutate itemName = itemName
+    mutate description = description
+    mutate category = category
+    mutate baseUnitCost = baseUnitCost
+    mutate currency = currency
+    mutate unitOfMeasure = unitOfMeasure
+    mutate leadTimeDays = leadTimeDays
+    mutate leadTimeMinDays = leadTimeMinDays
+    mutate leadTimeMaxDays = leadTimeMaxDays
+    mutate minimumOrderQuantity = minimumOrderQuantity
+    mutate orderMultiple = orderMultiple
+    mutate effectiveFrom = effectiveFrom
+    mutate effectiveTo = effectiveTo
+    mutate supplierSku = supplierSku
+    mutate notes = notes
+    mutate tags = tags
+    mutate isActive = true
+
+    emit VendorCatalogCreated
+  }
+
+  command update(supplierId: string, itemNumber: string, itemName: string, description: string, category: string, baseUnitCost: money, currency: string, unitOfMeasure: string, leadTimeDays: int, leadTimeMinDays: int, leadTimeMaxDays: int, minimumOrderQuantity: decimal, orderMultiple: decimal, isActive: boolean, effectiveFrom: datetime, effectiveTo: datetime, supplierSku: string, notes: string, tags: string, lastCostUpdate: datetime) {
+    guard self.deletedAt == null "Cannot update a deleted catalog entry"
+
+    mutate supplierId = supplierId
+    mutate itemNumber = itemNumber
+    mutate itemName = itemName
+    mutate description = description
+    mutate category = category
+    mutate baseUnitCost = baseUnitCost
+    mutate currency = currency
+    mutate unitOfMeasure = unitOfMeasure
+    mutate leadTimeDays = leadTimeDays
+    mutate leadTimeMinDays = leadTimeMinDays
+    mutate leadTimeMaxDays = leadTimeMaxDays
+    mutate minimumOrderQuantity = minimumOrderQuantity
+    mutate orderMultiple = orderMultiple
+    mutate isActive = isActive
+    mutate effectiveFrom = effectiveFrom
+    mutate effectiveTo = effectiveTo
+    mutate supplierSku = supplierSku
+    mutate notes = notes
+    mutate tags = tags
+    mutate lastCostUpdate = lastCostUpdate
+
+    emit VendorCatalogUpdated
+  }
+
+  // Update price with an automatic warn when the change exceeds 10% — surfaces
+  // unexpected cost spikes before they flow into event budgets.
+  command updatePrice(newBaseUnitCost: money, effectiveFrom: datetime, reason: string) {
+    guard self.deletedAt == null "Cannot update price on a deleted catalog entry"
+    guard self.isActive "Cannot update price on an inactive catalog entry"
+    guard newBaseUnitCost >= 0 "Unit cost must be non-negative"
+
+    constraint overrideable warnLargePriceIncrease:warn self.baseUnitCost > 0 and (newBaseUnitCost - self.baseUnitCost) / self.baseUnitCost > 0.1 {
+      messageTemplate: "Price increase of more than 10% for '{itemName}' (from {old} to {new})"
+      details: {
+        itemName: self.itemName
+        itemNumber: self.itemNumber
+        supplierId: self.supplierId
+        old: self.baseUnitCost
+        new: newBaseUnitCost
+      }
+    }
+
+    constraint warnLargePriceDecrease:warn self.baseUnitCost > 0 and (self.baseUnitCost - newBaseUnitCost) / self.baseUnitCost > 0.15 {
+      messageTemplate: "Price drop of more than 15% for '{itemName}' — verify with supplier"
+      details: {
+        itemName: self.itemName
+        itemNumber: self.itemNumber
+        supplierId: self.supplierId
+        old: self.baseUnitCost
+        new: newBaseUnitCost
+      }
+    }
+
+    mutate baseUnitCost = newBaseUnitCost
+    mutate effectiveFrom = effectiveFrom
+    mutate lastCostUpdate = now()
+
+    emit VendorCatalogPriceUpdated
+  }
+
+  command deactivate(reason: string) {
+    guard self.isActive "Catalog entry is already inactive"
+    guard self.deletedAt == null "Catalog entry is deleted"
+
+    mutate isActive = false
+
+    emit VendorCatalogItemDeactivated
+  }
+
+  command reactivate(reactivatedBy: string) {
+    guard self.isActive == false "Catalog entry is already active"
+    guard self.deletedAt == null "Cannot reactivate a deleted catalog entry"
+    guard reactivatedBy != null and reactivatedBy != "" "Reactivating user is required"
+
+    mutate isActive = true
+
+    emit VendorCatalogItemReactivated
+  }
+
+  command softDelete(reason: string) {
+    guard self.deletedAt == null "Catalog entry is already deleted"
+
+    constraint warnActiveEntry:warn self.isActive {
+      messageTemplate: "Deleting active catalog entry '{itemName}'"
+      details: {
+        itemNumber: self.itemNumber
+        itemName: self.itemName
+        reason: reason
+      }
+    }
+
+    mutate isActive = false
+    mutate deletedAt = now()
+
+    emit VendorCatalogDeactivated
+  }
+
+  relationship belongsTo supplier: InventorySupplier fields [supplierId, tenantId] references [id, tenantId]
+  relationship belongsTo inventoryItem: InventoryItem fields [inventoryItemId, tenantId] references [id, tenantId]
+
+  command linkInventoryItem(inventoryItemId: string) {
+    guard self.isActive "Cannot link inventory item on an inactive catalog entry"
+    guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
+
+    mutate inventoryItemId = inventoryItemId
+
+    emit VendorCatalogInventoryItemLinked
+  }
+
+  store VendorCatalog in durable
+}
+
+event VendorCatalogInventoryItemLinked: "inventory.vendor-catalog.inventory-item.linked" {
+  catalogId: string
+  tenantId: string
+  supplierId: string
+  itemNumber: string
+  inventoryItemId: string
+  updatedAt: datetime
+}
+
+event VendorCatalogCreated: "inventory.vendor-catalog.created" {
+  catalogId: string
+  tenantId: string
+  supplierId: string
+  itemNumber: string
+  itemName: string
+  baseUnitCost: money
+  currency: string
+  unitOfMeasure: string
+  createdAt: datetime
+}
+
+event VendorCatalogUpdated: "inventory.vendor-catalog.updated" {
+  catalogId: string
+  tenantId: string
+  supplierId: string
+  itemNumber: string
+  itemName: string
+  baseUnitCost: money
+  updatedAt: datetime
+}
+
+event VendorCatalogDeactivated: "inventory.vendor-catalog.deactivated" {
+  catalogId: string
+  tenantId: string
+  supplierId: string
+  itemNumber: string
+  itemName: string
+  reason: string
+  deletedAt: datetime
+}
+
+event VendorCatalogPriceUpdated: "inventory.vendor-catalog.price-updated" {
+  catalogId: string
+  tenantId: string
+  supplierId: string
+  itemNumber: string
+  itemName: string
+  oldBaseUnitCost: money
+  newBaseUnitCost: money
+  updatedAt: datetime
+}
+
+event VendorCatalogItemDeactivated: "inventory.vendor-catalog.item-deactivated" {
+  catalogId: string
+  tenantId: string
+  supplierId: string
+  itemNumber: string
+  itemName: string
+  deactivatedAt: datetime
+}
+
+event VendorCatalogItemReactivated: "inventory.vendor-catalog.item-reactivated" {
+  catalogId: string
+  tenantId: string
+  supplierId: string
+  itemNumber: string
+  itemName: string
+  reactivatedBy: string
+  reactivatedAt: datetime
+}

@@ -1,0 +1,160 @@
+use "../../_base.manifest"
+// Workforce AI - Rules
+// Manifest spec for AI-powered workforce optimization features
+
+entity WorkforceOptimization mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
+  key [tenantId, id]
+  property locationId: string? = ""
+  property optimizationType: string? = "" // "schedule", "assignment", "performance"
+  indexed property status: string? = "pending" // "pending", "in_progress", "completed", "failed"
+  timestamps
+  property completedAt: datetime?
+
+  computed isPending: boolean = self.status == "pending"
+  computed isInProgress: boolean = self.status == "in_progress"
+  computed isCompleted: boolean = self.status == "completed"
+  computed isFailed: boolean = self.status == "failed"
+
+  constraint validOptimizationType: self.optimizationType in ["schedule", "assignment", "performance"] "Invalid optimization type"
+  constraint validStatus: self.status in ["pending", "in_progress", "completed", "failed"] "Invalid status"
+
+  relationship belongsTo location: Facility with locationId
+
+  // State transitions
+  transition status from "pending" to ["in_progress", "failed"]
+  transition status from "in_progress" to ["completed", "failed"]
+
+  default policy WorkforceOptimizationDefaultAccess execute: user.role in ["manager", "admin"] "Workforce AI"
+  command create(locationId: string, optimizationType: string) {
+    guard locationId != null "Location ID is required"
+    guard optimizationType != null "Optimization type is required"
+
+    mutate locationId = locationId
+    mutate optimizationType = optimizationType
+
+    emit WorkforceOptimizationCreated
+  }
+
+  command start() {
+    guard self.status == "pending" "Can only start pending optimizations"
+
+    mutate status = "in_progress"
+
+    emit WorkforceOptimizationStarted
+  }
+
+  command complete(results: string) {
+    guard self.status == "in_progress" "Can only complete in-progress optimizations"
+
+    mutate status = "completed"
+    mutate completedAt = now()
+
+    emit WorkforceOptimizationCompleted
+  }
+
+  command fail(error: string) {
+    mutate status = "failed"
+
+    emit WorkforceOptimizationFailed
+  }
+
+  store WorkforceOptimization in durable
+}
+
+entity PerformancePrediction mixin TenantScoped {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
+  key [tenantId, id]
+  property employeeId: string? = ""
+  property predictionType: string? = "" // "productivity", "attendance", "overtime_risk", "skill_match"
+  property predictionHorizon: int? = 0 // days
+  property predictionScore: decimal? = 0 // 0-100
+  property confidence: string? = "medium" // "low", "medium", "high"
+  property factors: string? = "" // JSON string of factors
+  // No `timestamps` keyword: public.PerformancePrediction is write-once (createdAt + expiresAt only, no updatedAt column)
+  property createdAt: datetime? = now()
+  property expiresAt: datetime? = now()
+
+  computed isExpired: boolean = self.expiresAt < now() cache request
+
+  constraint validPredictionType: self.predictionType in ["productivity", "attendance", "overtime_risk", "skill_match"] "Invalid prediction type"
+  constraint validConfidence: self.confidence in ["low", "medium", "high"] "Invalid confidence level"
+  constraint validScore: self.predictionScore >= 0 and self.predictionScore <= 100 "Prediction score must be 0-100"
+
+  relationship belongsTo employee: User with employeeId
+
+  default policy PerformancePredictionDefaultAccess execute: user.role in ["manager", "admin"] "Workforce AI"
+  command create(employeeId: string, predictionType: string, predictionHorizon: number, predictionScore: number, confidence: string, factors: string) {
+    guard employeeId != null "Employee ID is required"
+    guard predictionType != null "Prediction type is required"
+    guard predictionScore >= 0 and predictionScore <= 100 "Prediction score must be 0-100"
+
+    mutate employeeId = employeeId
+    mutate predictionType = predictionType
+    mutate predictionHorizon = predictionHorizon
+    mutate predictionScore = predictionScore
+    mutate confidence = confidence
+    mutate factors = factors
+    // Predictions expire after 7 days
+    mutate expiresAt = addDays(now(), 7)
+
+    emit PerformancePredictionCreated
+  }
+
+  store PerformancePrediction in durable
+}
+
+// Policies for workforce AI operations
+policy ManagersCanRunOptimization execute: user.role in ["manager", "admin"] "Only managers can run workforce optimization"
+policy AllUsersCanViewPredictions execute: true "All authenticated users can view performance predictions"
+policy ManagersCanViewAnalytics execute: user.role in ["manager", "admin"] "Only managers can view workforce analytics"
+
+// Events
+event WorkforceOptimizationCreated: "workforce.optimization.created" {
+  optimizationId: string
+  tenantId: string
+  locationId: string
+  optimizationType: string
+  createdAt: datetime
+}
+
+event WorkforceOptimizationStarted: "workforce.optimization.started" {
+  optimizationId: string
+  tenantId: string
+  startedAt: datetime
+}
+
+event WorkforceOptimizationCompleted: "workforce.optimization.completed" {
+  optimizationId: string
+  tenantId: string
+  completedAt: datetime
+}
+
+event WorkforceOptimizationFailed: "workforce.optimization.failed" {
+  optimizationId: string
+  tenantId: string
+  failedAt: datetime
+  error: string
+}
+
+event PerformancePredictionCreated: "workforce.prediction.created" {
+  predictionId: string
+  tenantId: string
+  employeeId: string
+  predictionType: string
+  predictionScore: number
+  confidence: string
+  createdAt: datetime
+}
+
+event ScheduleAutoOptimized: "workforce.schedule.auto_optimized" {
+  scheduleId: string
+  tenantId: string
+  assignmentsCount: number
+  totalEstimatedCost: money
+  optimizedAt: datetime
+}

@@ -1,0 +1,146 @@
+use "../../_base.manifest"
+// Staff Domain - Employee Certification Rules
+// Manifest spec for managing employee certifications and credentials
+
+entity EmployeeCertification mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property employeeId: uuid = ""
+  property certificationType: string = ""
+  property certificationName: string = ""
+  property required issuedDate: datetime
+  property expiryDate: datetime?
+  property documentUrl: string? = ""
+  indexed property status: string? = "active"
+  timestamps
+
+  computed isDeleted: boolean = self.deletedAt != null
+  computed isActive: boolean = self.status == "active"
+  computed isExpired: boolean = self.status == "expired"
+  computed isRevoked: boolean = self.status == "revoked"
+
+  transition status from "active" to ["expired", "revoked", "active"]
+  transition status from "expired" to ["active", "revoked"]
+
+  constraint requireEmployee: self.employeeId != "" "Employee ID is required"
+  constraint requireType: self.certificationType != "" "Certification type is required"
+  constraint requireName: self.certificationName != "" "Certification name is required"
+  constraint requireIssuedDate: self.issuedDate != null "Issued date is required"
+  constraint validStatus: self.status in ["active", "expired", "revoked"] "Invalid certification status"
+
+  relationship belongsTo employee: User with employeeId
+
+  default policy EmployeeCertificationDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Employee certifications"
+  command create(employeeId: string, certificationType: string, certificationName: string, issuedDate: string, expiryDate: string, documentUrl: string) {
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard certificationType != null and certificationType != "" "Certification type is required"
+    guard certificationName != null and certificationName != "" "Certification name is required"
+    guard issuedDate != null and issuedDate != "" "Issued date is required"
+
+    mutate employeeId = employeeId
+    mutate certificationType = certificationType
+    mutate certificationName = certificationName
+    mutate issuedDate = issuedDate
+    mutate expiryDate = expiryDate
+    mutate documentUrl = documentUrl
+
+    emit EmployeeCertificationCreated
+  }
+
+  command update(certificationType: string, certificationName: string, issuedDate: string, expiryDate: string, documentUrl: string) {
+    guard self.deletedAt == null "Cannot update a deleted certification"
+
+    mutate certificationType = certificationType
+    mutate certificationName = certificationName
+    mutate issuedDate = issuedDate
+    mutate expiryDate = expiryDate
+    mutate documentUrl = documentUrl
+
+    emit EmployeeCertificationUpdated
+  }
+
+  // Renew an expired (or soon-to-expire) credential with fresh issue/expiry dates.
+  command renew(issuedDate: string, expiryDate: string, documentUrl: string) {
+    guard self.deletedAt == null "Cannot renew a deleted certification"
+    guard self.status in ["active", "expired"] "Cannot renew a revoked certification"
+    guard issuedDate != null and issuedDate != "" "Issued date is required"
+
+    mutate issuedDate = issuedDate
+    mutate expiryDate = expiryDate
+    mutate documentUrl = documentUrl
+    mutate status = "active"
+
+    emit EmployeeCertificationRenewed
+  }
+
+  // Mark lapsed once past its expiry date (typically driven by a scheduled job).
+  command expire() {
+    guard self.status == "active" "Only an active certification can expire"
+
+    mutate status = "expired"
+
+    emit EmployeeCertificationExpired
+  }
+
+  command revoke(reason: string, revokedBy: string) {
+    guard self.status in ["active", "expired"] "Certification is already revoked"
+    guard reason != null and reason != "" "Revocation reason is required"
+
+    mutate status = "revoked"
+
+    emit EmployeeCertificationRevoked
+  }
+
+  command softDelete() {
+    guard self.deletedAt == null "Certification is already deleted"
+
+    mutate deletedAt = now()
+
+    emit EmployeeCertificationDeleted
+  }
+
+  store EmployeeCertification in durable
+}
+
+policy CertificationManagement execute: user.role in ["kitchen_lead", "manager", "admin"] "Leads and managers can manage certifications"
+
+event EmployeeCertificationCreated: "staff.employee-certification.created" {
+  certificationId: string
+  tenantId: string
+  employeeId: string
+  certificationType: string
+  certificationName: string
+  createdAt: datetime
+}
+
+event EmployeeCertificationUpdated: "staff.employee-certification.updated" {
+  certificationId: string
+  updatedAt: datetime
+}
+
+event EmployeeCertificationRenewed: "staff.employee-certification.renewed" {
+  certificationId: string
+  tenantId: string
+  employeeId: string
+  expiryDate: string
+  renewedAt: datetime
+}
+
+event EmployeeCertificationExpired: "staff.employee-certification.expired" {
+  certificationId: string
+  tenantId: string
+  employeeId: string
+  expiredAt: datetime
+}
+
+event EmployeeCertificationRevoked: "staff.employee-certification.revoked" {
+  certificationId: string
+  tenantId: string
+  employeeId: string
+  reason: string
+  revokedAt: datetime
+}
+
+event EmployeeCertificationDeleted: "staff.employee-certification.deleted" {
+  certificationId: string
+  deletedAt: datetime
+}

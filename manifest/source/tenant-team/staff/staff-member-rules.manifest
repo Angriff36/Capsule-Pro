@@ -1,0 +1,124 @@
+use "../../_base.manifest"
+// Staff - StaffMember Rules
+// Manifest spec for catering staff members assignable to events.
+// Distinct from `User` (auth/employee lifecycle): StaffMember is the domain entity
+// that EventStaff assignments reference. Authored 2026-05-30 for the Manifest vertical slice.
+
+entity StaffMember mixin TenantScoped, SoftDeletable {
+  // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
+  property required id: string
+  indexed property required tenantId: string
+  // No relationships: role is a value string, no entity FKs beyond tenantId
+  key [tenantId, id]
+  property required displayName: string = "Unnamed"
+  encrypted property email: string? = ""
+  encrypted property phone: string? = ""
+  property role: string? = "server"
+  indexed property required status: string = "active"
+  searchable property notes: string? = ""
+  timestamps
+
+  computed isActive: boolean = self.status == "active"
+  // Populates StaffMemberCreated.staffMemberId for reactions (entity uses `id`).
+  computed staffMemberId: string = self.id
+
+  constraint requireDisplayName: self.displayName != null and self.displayName != "" "Display name is required"
+  constraint validStatus: self.status in ["active", "inactive"] "Status must be active or inactive"
+
+  // State transitions
+  transition status from "active" to ["inactive"]
+  transition status from "inactive" to ["active"]
+
+  default policy StaffMemberDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff member management"
+  command create(displayName: string, email: string, phone: string, role: string) {
+    guard displayName != null and displayName != "" "Display name is required"
+
+    mutate displayName = displayName
+    mutate email = email
+    mutate phone = phone
+    mutate role = role
+
+    emit StaffMemberCreated
+  }
+
+  command updateProfile(displayName: string, email: string, phone: string, role: string) {
+    guard (self.status == "active") "Cannot update an inactive staff member"
+
+    mutate displayName = displayName
+    mutate email = email
+    mutate phone = phone
+    mutate role = role
+
+    emit StaffMemberUpdated
+  }
+
+  command deactivate(reason: string) {
+    guard (self.status == "active") "Staff member is already inactive"
+
+    mutate status = "inactive"
+
+    emit StaffMemberDeactivated
+  }
+
+  command reactivate() {
+    guard self.status == "inactive" "Staff member is already active"
+
+    mutate status = "active"
+
+    emit StaffMemberReactivated
+  }
+
+  command changeRole(role: string, changedBy: string) {
+    guard (self.status == "active") "Cannot change the role of an inactive staff member"
+    guard role != null and role != "" "Role is required"
+
+    mutate role = role
+
+    emit StaffMemberRoleChanged
+  }
+
+  relationship hasMany eventStaff: EventStaff
+  relationship hasMany trainingSignals: StaffTrainingSignal
+  relationship hasMany trainingAttempts: TrainingAttempt
+
+  store StaffMember in durable
+}
+
+policy StaffMemberManagement execute: user.role in ["event_coordinator", "manager", "admin"] "Event coordinators and above can manage staff members"
+
+event StaffMemberCreated: "staff.staff-member.created" {
+  staffMemberId: string
+  tenantId: string
+  displayName: string
+  role: string
+  createdAt: datetime
+}
+
+event StaffMemberUpdated: "staff.staff-member.updated" {
+  staffMemberId: string
+  tenantId: string
+  displayName: string
+  role: string
+  updatedAt: datetime
+}
+
+event StaffMemberDeactivated: "staff.staff-member.deactivated" {
+  staffMemberId: string
+  tenantId: string
+  reason: string
+  deactivatedAt: datetime
+}
+
+event StaffMemberReactivated: "staff.staff-member.reactivated" {
+  staffMemberId: string
+  tenantId: string
+  reactivatedAt: datetime
+}
+
+event StaffMemberRoleChanged: "staff.staff-member.role-changed" {
+  staffMemberId: string
+  tenantId: string
+  role: string
+  changedBy: string
+  changedAt: datetime
+}

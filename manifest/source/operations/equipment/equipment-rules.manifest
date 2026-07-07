@@ -1,0 +1,473 @@
+use "../../_base.manifest"
+// Equipment Maintenance Scheduler - Equipment Rules
+// Manifest spec for equipment management, maintenance tracking, and predictive failure alerts
+
+entity Equipment mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property connectionStatus: string = "disconnected"
+  property iotDeviceId: string?
+  property required locationId: uuid
+  searchable property required name: string
+  property required type: string = "general"
+  indexed property required status: string = "active"
+  unique property serialNumber: string? = ""
+  property manufacturer: string? = ""
+  property model: string? = ""
+  property purchaseDate: datetime? = now()
+  property warrantyExpiry: datetime?
+  property lastMaintenanceDate: datetime?
+  property nextMaintenanceDate: datetime?
+  property maintenanceIntervalDays: int = 90
+  property usageHours: float = 0
+  property maxUsageHours: float = 1000
+  property condition: string = "good"
+  searchable property notes: string? = ""
+  property isActive: boolean = true
+  timestamps
+
+  computed isOverdueForMaintenance: boolean = self.nextMaintenanceDate != null and now() > self.nextMaintenanceDate cache request
+  computed daysUntilMaintenance: number = self.nextMaintenanceDate != null ? daysBetween(now(), self.nextMaintenanceDate) : -1 cache request
+  computed usagePercentage: number = percent(self.usageHours, self.maxUsageHours) cache request
+  computed isNearEndOfLife: boolean = self.usagePercentage >= 80
+  computed predictiveFailureRisk: string = self.isOverdueForMaintenance ? "critical" : self.daysUntilMaintenance >= 0 and self.daysUntilMaintenance <= 7 ? "high" : self.condition == "poor" ? "high" : self.isNearEndOfLife ? "medium" : self.daysUntilMaintenance >= 0 and self.daysUntilMaintenance <= 14 ? "low" : "none"
+  // Maintenance-burden rollups over the Equipment's work-order children (the
+  // hasMany workOrders back-relation). The FILTERS carry the business meaning —
+  // count ONLY open work orders (not assigned/in_progress/awaiting_parts/
+  // completed/cancelled) as the unaddressed maintenance backlog, and sum ONLY
+  // completed work orders' actual cost (not estimates on still-open ones) as
+  // lifetime maintenance spend per asset. Drop or flip a predicate literal and
+  // the rollup silently reports the wrong number with no compile error; the
+  // equipment-aggregate-computeds regression test locks the shape. IR-only
+  // computeds (no stored column, no migration); request-cached like the
+  // Event/Client/Invoice/Lead precedent.
+  computed openWorkOrderCount: int = count_of(filter(self.workOrders, (w) => w.status == "open")) cache request
+  computed completedWorkOrderCost: money = sum(filter(self.workOrders, (w) => w.status == "completed"), (w) => w.totalCost) cache request
+
+  relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Equipment
+  relationship hasMany temperatureLogs: TemperatureLog
+  relationship hasMany qaTemperatureLogs: QATemperatureLog
+  relationship hasMany workOrders: MaintenanceWorkOrder
+  relationship hasMany iotAlertRules: IotAlertRule
+  relationship hasMany preventiveMaintenanceSchedules: PreventiveMaintenanceSchedule
+  relationship hasMany equipmentWorkOrders: WorkOrder
+
+  constraint validEquipmentType: self.type in ["cooking", "refrigeration", "prep", "baking", "cleaning", "transport", "general"] "Invalid equipment type"
+  constraint validStatus: self.status in ["active", "maintenance", "out_of_service", "retired"] "Invalid equipment status"
+  constraint validCondition: self.condition in ["excellent", "good", "fair", "poor"] "Invalid equipment condition"
+  constraint positiveMaintenanceInterval: self.maintenanceIntervalDays > 0 "Maintenance interval must be positive"
+  constraint positiveMaxUsage: self.maxUsageHours > 0 "Max usage hours must be positive"
+
+  constraint warnMaintenanceDue:warn (self.nextMaintenanceDate != null ? daysBetween(now(), self.nextMaintenanceDate) : -1) >= 0 and (self.nextMaintenanceDate != null ? daysBetween(now(), self.nextMaintenanceDate) : -1) <= 7 and self.status == "active" {
+    messageTemplate: "Equipment '{equipmentName}' is due for maintenance in {days} day(s)"
+    details: {
+      equipmentName: self.name
+      days: self.daysUntilMaintenance
+      nextMaintenanceDate: self.nextMaintenanceDate
+    }
+  }
+
+  constraint warnOverdueMaintenance:warn (self.nextMaintenanceDate != null and now() > self.nextMaintenanceDate) and self.status == "active" {
+    messageTemplate: "Equipment '{equipmentName}' is overdue for maintenance by {days} day(s)"
+    details: {
+      equipmentName: self.name
+      days: abs(self.daysUntilMaintenance)
+      nextMaintenanceDate: self.nextMaintenanceDate
+    }
+  }
+
+  constraint warnHighUsage:warn (percent(self.usageHours, self.maxUsageHours)) >= 80 and self.status == "active" {
+    messageTemplate: "Equipment '{equipmentName}' has reached {usage}% of its recommended usage limit"
+    details: {
+      equipmentName: self.name
+      usage: round(self.usagePercentage, 1)
+      usageHours: self.usageHours
+      maxUsageHours: self.maxUsageHours
+    }
+  }
+
+  constraint warnPoorCondition:warn self.condition == "poor" and self.status == "active" {
+    messageTemplate: "Equipment '{equipmentName}' is in poor condition and should be inspected"
+    details: {
+      equipmentName: self.name
+      condition: self.condition
+    }
+  }
+
+  default policy EquipmentDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Equipment management"
+  command scheduleMaintenance(scheduledDate: datetime, maintenanceType: string, notes: string, userId: string) {
+    guard self.status != "retired" "Cannot schedule maintenance for retired equipment"
+    guard scheduledDate != null "Scheduled date is required"
+    guard maintenanceType in ["preventive", "corrective", "emergency"] "Invalid maintenance type"
+
+    constraint warnConflictWithEvents:warn self.status == "active" and maintenanceType != "emergency" {
+      messageTemplate: "Scheduling {maintenanceType} maintenance for '{equipmentName}' - check for event conflicts"
+      details: {
+        equipmentName: self.name
+        maintenanceType: maintenanceType
+        scheduledDate: scheduledDate
+      }
+    }
+
+    mutate nextMaintenanceDate = scheduledDate
+
+    emit EquipmentMaintenanceScheduled
+  }
+
+  command recordMaintenance(maintenanceDate: datetime, maintenanceType: string, performedBy: string, cost: money, notes: string) {
+    guard maintenanceDate != null "Maintenance date is required"
+    guard maintenanceType in ["preventive", "corrective", "emergency"] "Invalid maintenance type"
+
+    mutate lastMaintenanceDate = maintenanceDate
+    mutate nextMaintenanceDate = addDays(maintenanceDate, self.maintenanceIntervalDays)
+    mutate status = "active"
+
+    emit EquipmentMaintenanceRecorded
+  }
+
+  command updateStatus(newStatus: string, reason: string, userId: string) {
+    guard newStatus in ["active", "maintenance", "out_of_service", "retired"] "Invalid status"
+    guard newStatus != self.status "Status is already set to {newStatus}"
+
+    constraint warnDeactivateActiveEquipment:warn self.status == "active" and newStatus != "active" {
+      messageTemplate: "Taking '{equipmentName}' out of service - ensure no events are dependent on it"
+      details: {
+        equipmentName: self.name
+        oldStatus: self.status
+        newStatus: newStatus
+        reason: reason
+      }
+    }
+
+    mutate status = newStatus
+
+    emit EquipmentStatusUpdated
+  }
+
+  command updateCondition(newCondition: string, notes: string, userId: string) {
+    guard newCondition in ["excellent", "good", "fair", "poor"] "Invalid condition"
+
+    constraint warnConditionDegraded:warn self.condition != "poor" and newCondition == "poor" {
+      messageTemplate: "Equipment '{equipmentName}' condition has degraded to poor - schedule maintenance"
+      details: {
+        equipmentName: self.name
+        oldCondition: self.condition
+        newCondition: newCondition
+      }
+    }
+
+    mutate condition = newCondition
+
+    emit EquipmentConditionUpdated
+  }
+
+  command recordUsage(hours: number, userId: string) {
+    guard hours != null and hours > 0 "Usage hours must be positive"
+
+    mutate usageHours = self.usageHours + hours
+
+    emit EquipmentUsageRecorded
+  }
+
+  command create(locationId: string, name: string, type: string, serialNumber: string, manufacturer: string, model: string, purchaseDate: datetime, warrantyExpiry: datetime, maintenanceIntervalDays: int, maxUsageHours: float, notes: string) {
+    guard name != null and name != "" "Equipment name is required"
+    guard locationId != null and locationId != "" "Location ID is required"
+    guard type in ["cooking", "refrigeration", "prep", "baking", "cleaning", "transport", "general"] "Invalid equipment type"
+    guard maintenanceIntervalDays != null and maintenanceIntervalDays > 0 "Maintenance interval must be positive"
+    guard maxUsageHours != null and maxUsageHours > 0 "Max usage hours must be positive"
+
+    mutate locationId = locationId
+    mutate name = name
+    mutate type = type
+    mutate serialNumber = serialNumber
+    mutate manufacturer = manufacturer
+    mutate model = model
+    mutate purchaseDate = purchaseDate
+    mutate warrantyExpiry = warrantyExpiry
+    mutate maintenanceIntervalDays = maintenanceIntervalDays
+    mutate maxUsageHours = maxUsageHours
+    mutate notes = notes
+    mutate condition = "good"
+    mutate usageHours = 0
+    mutate lastMaintenanceDate = null
+    mutate nextMaintenanceDate = addDays(now(), maintenanceIntervalDays)
+    mutate isActive = true
+
+    emit EquipmentCreated
+  }
+
+  command retire(reason: string, userId: string) {
+    guard self.status != "retired" "Equipment is already retired"
+
+    constraint warnRetireFunctionalEquipment:warn self.condition in ["excellent", "good"] {
+      messageTemplate: "Retiring equipment '{equipmentName}' in {condition} condition - consider transfer or sale"
+      details: {
+        equipmentName: self.name
+        condition: self.condition
+        reason: reason
+      }
+    }
+
+    mutate status = "retired"
+    mutate isActive = false
+
+    emit EquipmentRetired
+  }
+
+  // State transitions
+  // "active" includes a self-loop so recordMaintenance (which unconditionally
+  // mutates status = "active") succeeds when equipment is already active — the
+  // common case, since MaintenanceWorkOrderCreated → maintenance is not wired, so
+  // equipment stays active through the work-order lifecycle. The engine does not
+  // exempt no-op self-transitions, so without this the whole recordMaintenance
+  // update (incl. lastMaintenanceDate/nextMaintenanceDate) is dropped.
+  transition status from "active" to ["active", "maintenance", "out_of_service", "retired"]
+  transition status from "maintenance" to ["active", "out_of_service", "retired"]
+  transition status from "out_of_service" to ["active", "maintenance", "retired"]
+  // "retired" is terminal
+
+  store Equipment in durable
+}
+
+entity MaintenanceWorkOrder mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property startedAt: datetime?
+  property workOrderNumber: string = ""
+  property areaId: uuid? = ""
+  property equipmentId: uuid? = ""
+  searchable property required title: string
+  property required workOrderType: string = "corrective"
+  property required priority: string = "medium"
+  indexed property required status: string = "open"
+  searchable property description: string? = ""
+  property reportedBy: uuid? = ""
+  property assignedTo: uuid? = ""
+  property scheduledDate: datetime?
+  property completedAt: datetime?
+  property estimatedCost: money? = 0
+  property totalCost: money? = 0
+  property partsUsed: string? = ""
+  searchable property notes: string? = ""
+  timestamps
+
+  computed isOverdue: boolean = self.scheduledDate != null and self.status in ["open", "in_progress"] and now() > self.scheduledDate cache request
+  computed daysUntilDue: number = self.scheduledDate != null ? daysBetween(now(), self.scheduledDate) : -1 cache request
+
+  constraint validWorkOrderType: self.workOrderType in ["corrective", "repair", "replacement", "inspection", "upgrade", "preventive", "emergency"] "Invalid work order type"
+  constraint validPriority: self.priority in ["low", "medium", "high", "critical"] "Invalid priority"
+  constraint validStatus: self.status in ["open", "assigned", "in_progress", "awaiting_parts", "completed", "cancelled"] "Invalid status"
+
+  constraint warnOverdueWorkOrder:warn (self.scheduledDate != null and self.status in ["open", "in_progress"] and now() > self.scheduledDate) {
+    messageTemplate: "Work order '{title}' for {equipment} is overdue by {days} day(s)"
+    details: {
+      title: self.title
+      equipment: self.equipmentId
+      days: abs(self.daysUntilDue)
+      scheduledDate: self.scheduledDate
+    }
+  }
+
+  default policy MaintenanceWorkOrderDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Equipment management"
+  command assign(assignedTo: string, scheduledDate: datetime, estimatedCost: money) {
+    guard assignedTo != null and assignedTo != "" "Assignee is required"
+    guard self.status == "open" "Can only assign open work orders"
+
+    mutate assignedTo = assignedTo
+    mutate scheduledDate = scheduledDate
+    mutate estimatedCost = estimatedCost
+    mutate status = "assigned"
+
+    emit MaintenanceWorkOrderAssigned
+  }
+
+  command startWork(userId: string) {
+    guard self.status in ["assigned", "open"] "Work order must be assigned or open to start"
+
+    mutate status = "in_progress"
+
+    emit MaintenanceWorkOrderStarted
+  }
+
+  command completeWork(totalCost: money, partsUsed: string, notes: string, userId: string) {
+    guard self.status == "in_progress" "Work order must be in progress to complete"
+
+    mutate status = "completed"
+    mutate totalCost = totalCost
+    mutate partsUsed = partsUsed
+    mutate completedAt = now()
+
+    emit MaintenanceWorkOrderCompleted
+  }
+
+  command updateStatus(newStatus: string, reason: string, userId: string) {
+    guard newStatus in ["open", "assigned", "in_progress", "awaiting_parts", "completed", "cancelled"] "Invalid status"
+    guard newStatus != self.status "Status is already set to {newStatus}"
+
+    constraint warnCancelWorkOrder:warn newStatus == "cancelled" and self.status != "completed" {
+      messageTemplate: "Cancelling work order '{title}' - ensure equipment is properly addressed"
+      details: {
+        title: self.title
+        equipment: self.equipmentId
+        status: self.status
+        reason: reason
+      }
+    }
+
+    mutate status = newStatus
+
+    emit MaintenanceWorkOrderStatusUpdated
+  }
+
+  command create(title: string, workOrderType: string, priority: string, description: string, areaId: string, optional equipmentId: string, assignedTo: string, reportedBy: string, scheduledDate: datetime, notes: string) {
+    guard title != null and title != "" "Work order title is required"
+    guard workOrderType in ["corrective", "repair", "replacement", "inspection", "upgrade", "preventive", "emergency"] "Invalid work order type"
+    guard priority in ["low", "medium", "high", "critical"] "Invalid priority"
+
+    constraint warnCriticalWithoutSchedule:warn priority == "critical" and (scheduledDate == null or scheduledDate > now() + 86400000) {
+      messageTemplate: "Critical work order '{title}' should be scheduled within 24 hours"
+      details: {
+        title: self.title
+        priority: priority
+        scheduledDate: scheduledDate
+      }
+    }
+
+    mutate title = title
+    mutate workOrderType = workOrderType
+    mutate priority = priority
+    mutate description = description
+    mutate areaId = areaId
+    mutate equipmentId = equipmentId
+    mutate assignedTo = assignedTo
+    mutate reportedBy = reportedBy
+    mutate scheduledDate = scheduledDate
+    mutate notes = notes
+    mutate workOrderNumber = "WO-" + substring(id, 0, 8)
+    mutate status = "open"
+    mutate estimatedCost = 0
+    mutate totalCost = 0
+    mutate completedAt = null
+
+    emit MaintenanceWorkOrderCreated
+  }
+
+  relationship belongsTo area: FacilityArea with areaId
+  relationship belongsTo equipment: Equipment with equipmentId
+
+  store MaintenanceWorkOrder in durable
+}
+
+policy ManagersCanManageEquipment execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can manage equipment"
+policy KitchenStaffCanViewEquipment execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can view equipment"
+policy ManagersCanManageMaintenanceWorkOrders execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can manage work orders"
+
+event EquipmentCreated: "equipment.created" {
+  equipmentId: string
+  tenantId: string
+  locationId: string
+  name: string
+  type: string
+  createdAt: datetime
+}
+
+event EquipmentMaintenanceScheduled: "equipment.maintenance.scheduled" {
+  equipmentId: string
+  equipmentName: string
+  scheduledDate: datetime
+  maintenanceType: string
+  scheduledBy: string
+  scheduledAt: datetime
+}
+
+event EquipmentMaintenanceRecorded: "equipment.maintenance.recorded" {
+  equipmentId: string
+  equipmentName: string
+  maintenanceDate: datetime
+  maintenanceType: string
+  performedBy: string
+  cost: money
+  recordedAt: datetime
+}
+
+event EquipmentStatusUpdated: "equipment.status.updated" {
+  equipmentId: string
+  equipmentName: string
+  oldStatus: string
+  newStatus: string
+  reason: string
+  updatedBy: string
+  updatedAt: datetime
+}
+
+event EquipmentConditionUpdated: "equipment.condition.updated" {
+  equipmentId: string
+  equipmentName: string
+  oldCondition: string
+  newCondition: string
+  notes: string
+  updatedBy: string
+  updatedAt: datetime
+}
+
+event EquipmentUsageRecorded: "equipment.usage.recorded" {
+  equipmentId: string
+  equipmentName: string
+  hours: number
+  totalUsageHours: number
+  usagePercentage: number
+  recordedBy: string
+  recordedAt: datetime
+}
+
+event EquipmentRetired: "equipment.retired" {
+  equipmentId: string
+  equipmentName: string
+  condition: string
+  reason: string
+  retiredBy: string
+  retiredAt: datetime
+}
+
+event MaintenanceWorkOrderCreated: "maintenance.workorder.created" {
+  workOrderId: string
+  equipmentId: string
+  title: string
+  workOrderType: string
+  priority: string
+  createdAt: datetime
+}
+
+event MaintenanceWorkOrderAssigned: "maintenance.workorder.assigned" {
+  workOrderId: string
+  equipmentId: string
+  assignedTo: string
+  scheduledDate: datetime
+  estimatedCost: money
+  assignedAt: datetime
+}
+
+event MaintenanceWorkOrderStarted: "maintenance.workorder.started" {
+  workOrderId: string
+  equipmentId: string
+  startedBy: string
+  startedAt: datetime
+}
+
+event MaintenanceWorkOrderCompleted: "maintenance.workorder.completed" {
+  workOrderId: string
+  equipmentId: string
+  totalCost: money
+  partsUsed: string
+  completedBy: string
+  completedAt: datetime
+}
+
+event MaintenanceWorkOrderStatusUpdated: "maintenance.workorder.status.updated" {
+  workOrderId: string
+  oldStatus: string
+  newStatus: string
+  reason: string
+  updatedBy: string
+  updatedAt: datetime
+}

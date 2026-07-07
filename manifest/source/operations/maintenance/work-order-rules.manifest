@@ -1,0 +1,200 @@
+use "../../_base.manifest"
+// Kitchen Domain - Work Order Rules
+// Manifest spec for equipment maintenance work orders
+// Lifecycle: open -> assigned -> in_progress -> completed (or cancelled from any non-terminal state)
+
+// U7: Closed-vocabulary status enum for WorkOrder lifecycle.
+enum WorkOrderStatus {
+  open
+  assigned
+  in_progress
+  completed
+  cancelled
+}
+
+entity WorkOrder mixin TenantScoped, SoftDeletable {
+  key [tenantId, id]
+  property required equipmentId: uuid
+  property equipmentName: string = ""
+  searchable property required title: string
+  property type: string = "repair"
+  property priority: string = "medium"
+  indexed property status: WorkOrderStatus = open
+  searchable property description: string? = ""
+  // scheduledDate: nullable — no default; set when known
+  property scheduledDate: datetime?
+  property assignedTo: uuid? = ""
+  // completedDate: nullable — only set when work finishes
+  property completedDate: datetime?
+  timestamps
+
+  computed isCompleted: boolean = self.status == "completed"
+  computed isCancelled: boolean = self.status == "cancelled"
+  computed isAssigned: boolean = self.assignedTo != ""
+  // null-safe datetime checks (fixes original != 0 bug on datetime)
+  computed isScheduled: boolean = self.scheduledDate != null
+  computed isOverdue: boolean = self.scheduledDate != null and now() > self.scheduledDate and not (self.status in ["completed", "cancelled"]) cache request
+  computed isCritical: boolean = self.priority == "critical"
+
+  transition status from "open" to ["assigned", "in_progress", "cancelled"]
+  transition status from "assigned" to ["in_progress", "cancelled"]
+  transition status from "in_progress" to ["completed", "cancelled"]
+
+  constraint validStatus: self.status in ["open", "assigned", "in_progress", "completed", "cancelled"] "Invalid work order status"
+  constraint validPriority: self.priority in ["critical", "high", "medium", "low"] "Invalid priority level"
+  constraint validType: self.type in ["repair", "inspection", "replacement", "installation"] "Invalid work order type"
+  constraint requireTitle: self.title != "" "Title is required"
+
+  constraint warnOverdue:warn (self.scheduledDate != null and now() > self.scheduledDate and not (self.status in ["completed", "cancelled"])) {
+    messageTemplate: "Work order '{title}' is past scheduled date"
+    details: {
+      title: self.title
+      scheduledDate: self.scheduledDate
+    }
+  }
+
+  constraint warnCriticalUnassigned:warn (self.priority == "critical") and self.status == "open" {
+    messageTemplate: "Critical work order '{title}' has not been assigned"
+    details: {
+      title: self.title
+      priority: self.priority
+    }
+  }
+
+  default policy WorkOrderDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Work order management"
+  command create(equipmentId: string, equipmentName: string, title: string, type: string, priority: string, description: string, scheduledDate: datetime) {
+    guard title != null and title != "" "Title is required"
+    guard equipmentId != null and equipmentId != "" "Equipment ID is required"
+    guard type in ["repair", "inspection", "replacement", "installation"] "Invalid work order type"
+    guard priority in ["critical", "high", "medium", "low"] "Invalid priority level"
+
+    mutate equipmentId = equipmentId
+    mutate equipmentName = equipmentName
+    mutate title = title
+    mutate type = type
+    mutate priority = priority
+    mutate description = description
+    mutate scheduledDate = scheduledDate
+
+    emit WorkOrderCreated
+  }
+
+  // Assign the work order to a technician before work begins
+  command assign(userId: string, scheduledDate: datetime) {
+    guard userId != null and userId != "" "Assignee is required"
+    guard self.status == "open" "Work order must be open to assign"
+
+    mutate assignedTo = userId
+    mutate scheduledDate = scheduledDate
+    mutate status = "assigned"
+
+    emit WorkOrderAssigned
+  }
+
+  command start(userId: string) {
+    guard userId != null and userId != "" "User ID is required"
+    guard self.status in ["open", "assigned"] "Work order must be open or assigned to start"
+
+    mutate status = "in_progress"
+    mutate assignedTo = userId
+
+    emit WorkOrderStarted
+  }
+
+  command complete(userId: string, notes: string) {
+    guard userId != null and userId != "" "User ID is required"
+    guard self.status == "in_progress" "Work order must be in progress to complete"
+
+    mutate status = "completed"
+    mutate completedDate = now()
+
+    emit WorkOrderCompleted
+  }
+
+  command cancel(reason: string, canceledBy: string) {
+    guard not (self.status in ["completed", "cancelled"]) "Cannot cancel a completed or already cancelled work order"
+    guard reason != null and reason != "" "Cancellation reason is required"
+
+    mutate status = "cancelled"
+
+    emit WorkOrderCancelled
+  }
+
+  command updatePriority(priority: string) {
+    guard priority in ["critical", "high", "medium", "low"] "Invalid priority level"
+    guard not (self.status in ["completed", "cancelled"]) "Cannot reprioritize a closed work order"
+
+    mutate priority = priority
+
+    emit WorkOrderPriorityUpdated
+  }
+
+  command reschedule(scheduledDate: datetime, reason: string) {
+    guard scheduledDate != null "Scheduled date must be valid"
+    guard not (self.status in ["completed", "cancelled"]) "Cannot reschedule a closed work order"
+
+    mutate scheduledDate = scheduledDate
+
+    emit WorkOrderRescheduled
+  }
+
+  relationship belongsTo equipment: Equipment fields [equipmentId, tenantId] references [id, tenantId]
+
+  store WorkOrder in durable
+}
+
+policy KitchenStaffCanManageWorkOrders execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage work orders"
+policy ManagersCanCancelWorkOrders execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can cancel work orders"
+
+event WorkOrderCreated: "kitchen.workorder.created" {
+  workOrderId: string
+  tenantId: string
+  equipmentId: string
+  title: string
+  type: string
+  priority: string
+  createdAt: datetime
+}
+
+event WorkOrderAssigned: "kitchen.workorder.assigned" {
+  workOrderId: string
+  tenantId: string
+  equipmentId: string
+  assignedTo: string
+  scheduledDate: datetime
+  assignedAt: datetime
+}
+
+event WorkOrderStarted: "kitchen.workorder.started" {
+  workOrderId: string
+  userId: string
+  startedAt: datetime
+}
+
+event WorkOrderCompleted: "kitchen.workorder.completed" {
+  workOrderId: string
+  userId: string
+  completedDate: datetime
+}
+
+event WorkOrderCancelled: "kitchen.workorder.cancelled" {
+  workOrderId: string
+  reason: string
+  canceledBy: string
+  canceledAt: datetime
+}
+
+event WorkOrderPriorityUpdated: "kitchen.workorder.priority.updated" {
+  workOrderId: string
+  oldPriority: string
+  newPriority: string
+  updatedAt: datetime
+}
+
+event WorkOrderRescheduled: "kitchen.workorder.rescheduled" {
+  workOrderId: string
+  oldDate: datetime
+  newDate: datetime
+  reason: string
+  updatedAt: datetime
+}
