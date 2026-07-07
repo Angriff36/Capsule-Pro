@@ -1,0 +1,23 @@
+{
+  "schema": "manifest/generation-manifest",
+  "version": 1,
+  "artifacts": [
+    {
+      "artifactId": "prisma.config.ts",
+      "surface": "prisma.schema",
+      "entity": null,
+      "command": null,
+      "pathHint": "prisma.config.ts",
+      "outputFile": "packages/database/prisma/prisma.config.ts"
+    },
+    {
+      "artifactId": "prisma.schema",
+      "surface": "prisma.schema",
+      "entity": null,
+      "command": null,
+      "pathHint": "schema/manifest.prisma",
+      "outputFile": "packages/database/prisma/schema/manifest.prisma"
+    }
+  ],
+  "dispatchers": []
+}

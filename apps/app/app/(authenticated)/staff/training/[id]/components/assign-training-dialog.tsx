@@ -137,7 +137,7 @@ export function AssignTrainingDialog({
             trainingAssignmentCreate({
               moduleId,
               moduleTitle: moduleName,
-              staffMemberId: employee.id,
+              employeeId: employee.id,
               dueAt,
             })
           )
@@ -154,7 +154,7 @@ export function AssignTrainingDialog({
         await trainingAssignmentCreate({
           moduleId,
           moduleTitle: moduleName,
-          staffMemberId: values.employeeId,
+          employeeId: values.employeeId,
           dueAt,
         });
         toast.success("Training assigned successfully");

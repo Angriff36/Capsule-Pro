@@ -6162,12 +6162,12 @@ model TrainingAssignment {
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at")
   assignedAt DateTime @map("assigned_at") @default(now())
-  assignedBy String @map("assigned_by") @db.Uuid
+  assignedBy String? @map("assigned_by") @db.Uuid
   assignedToAll Boolean @map("assigned_to_all") @default(false)
   moduleId String @map("module_id") @db.Uuid
   moduleCode String? @map("module_code") @default("")
   moduleTitle String? @map("module_title") @default("")
-  employeeId String? @map("employee_id") @db.Uuid @default("")
+  employeeId String @map("employee_id") @db.Uuid
   staffRole String? @map("staff_role") @default("staff")
   status String @default("assigned")
   dueDate DateTime? @map("due_date") @db.Timestamptz(6)
@@ -6190,7 +6190,7 @@ model TrainingAssignment {
 
   module TrainingModule @relation(fields: [tenantId, moduleId], references: [tenantId, id])
   attempts TrainingAttempt[] @relation("TrainingAttempt_assignment")
-  employee User? @relation(fields: [employeeId], references: [id])
+  employee User @relation(fields: [employeeId], references: [id])
   lastAttempt TrainingAttempt? @relation("TrainingAssignment_lastAttempt", fields: [lastAttemptId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   staffTrainingSignals StaffTrainingSignal[]
 

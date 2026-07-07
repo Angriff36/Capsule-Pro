@@ -43,6 +43,7 @@ import type {
 } from "@angriff36/manifest";
 
 import { SEL_ONBOARDING_MODULE_ID as SEL_MODULE_ID } from "../training/sel-onboarding-ids";
+
 const SEL_MODULE_CODE = "sel_event_staff_onboarding";
 const SEL_MODULE_TITLE = "SEL Event Staff — Onboarding Training";
 const SEL_PASS_THRESHOLD_PERCENT = 80;
@@ -104,8 +105,11 @@ const defaultDiagnostic = (diag: StaffTrainingAssignDiagnostic): void => {
 export function createStaffMemberCreatedTrainingAssignmentMiddleware(
   options: StaffMemberCreatedTrainingAssignmentMiddlewareOptions
 ): Middleware {
-  const { storeProvider, dispatchCommand, onDiagnostic = defaultDiagnostic } =
-    options;
+  const {
+    storeProvider,
+    dispatchCommand,
+    onDiagnostic = defaultDiagnostic,
+  } = options;
 
   return {
     hooks: ["after-emit"],
@@ -113,7 +117,9 @@ export function createStaffMemberCreatedTrainingAssignmentMiddleware(
     async handler(ctx: MiddlewareContext): Promise<MiddlewareResult> {
       // Anchor to a genuine StaffMember.create, not a look-alike event from
       // another entity/command.
-      if (!(ctx.entityName === "StaffMember" && ctx.command.name === "create")) {
+      if (
+        !(ctx.entityName === "StaffMember" && ctx.command.name === "create")
+      ) {
         return {};
       }
 
@@ -148,7 +154,8 @@ export function createStaffMemberCreatedTrainingAssignmentMiddleware(
         if (!assignmentStore) {
           onDiagnostic({
             stage: "stores",
-            reason: "TrainingAssignment store unavailable — assignment not created",
+            reason:
+              "TrainingAssignment store unavailable — assignment not created",
             staffMemberId,
             tenantId,
           });
@@ -168,7 +175,8 @@ export function createStaffMemberCreatedTrainingAssignmentMiddleware(
         if (existing) {
           onDiagnostic({
             stage: "dedupe",
-            reason: "onboarding assignment already exists for this staff member — skip",
+            reason:
+              "onboarding assignment already exists for this staff member — skip",
             staffMemberId,
             tenantId,
           });
@@ -187,7 +195,9 @@ export function createStaffMemberCreatedTrainingAssignmentMiddleware(
             moduleId: SEL_MODULE_ID,
             moduleCode: SEL_MODULE_CODE,
             moduleTitle: SEL_MODULE_TITLE,
-            staffMemberId,
+            // TrainingAssignment.create's employee foreign key. The create param
+            // is named `employeeId` (matches the field) so it seeds at insert.
+            employeeId: staffMemberId,
             // Pinned literal: the module is the generic all-staff onboarding and
             // TrainingAssignment.create guards `staffRole == "staff"`. The staff
             // member's own role (server/cook/…) is irrelevant to this field.

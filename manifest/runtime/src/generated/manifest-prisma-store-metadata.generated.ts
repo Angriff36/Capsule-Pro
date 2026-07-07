@@ -35618,8 +35618,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "type": "String",
         "isEnum": false,
         "isList": false,
-        "optional": true,
-        "hasDefault": true,
+        "optional": false,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },

@@ -856,6 +856,10 @@
   "Dish.activate": [
     "Dish is already active"
   ],
+  "Dish.changeRecipe": [
+    "Recipe ID is required",
+    "Dish is already linked to this recipe"
+  ],
   "Dish.clearDefaultContainer": [
     "Dish has no default container to clear"
   ],
@@ -2772,7 +2776,7 @@
   ],
   "PurchaseRequisition.completeDraftFromPrepDemand": [
     "Can only complete draft requisitions",
-    "At least one line item is required",
+    "At least one line item is required (unresolved prep drafts may be notes-only)",
     "Subtotal cannot be negative",
     "Estimated total cannot be negative"
   ],

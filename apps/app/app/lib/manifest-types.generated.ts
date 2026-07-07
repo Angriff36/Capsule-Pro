@@ -3649,12 +3649,12 @@ export interface TrainingAssignment {
   tenantId: string;
   deletedAt?: string | null;
   assignedAt: string;
-  assignedBy: string;
+  assignedBy?: string | null;
   assignedToAll?: boolean;
   moduleId: string;
   moduleCode?: string | null;
   moduleTitle?: string | null;
-  employeeId?: string | null;
+  employeeId: string;
   staffRole?: string | null;
   status?: string;
   dueDate?: string | null;

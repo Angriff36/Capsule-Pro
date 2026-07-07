@@ -344,13 +344,13 @@ entity TrainingQuestion mixin TenantScoped {
 entity TrainingAssignment mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property assignedAt: datetime = now()
-  property assignedBy: uuid
+  property assignedBy: uuid?
   property assignedToAll: boolean = false
 
   property required moduleId: uuid
   property moduleCode: string? = ""
   property moduleTitle: string? = ""
-  property employeeId: uuid? = ""
+  property required employeeId: uuid
   property staffRole: string? = "staff"
   indexed property status: string = "assigned"
   property dueDate: datetime?
@@ -394,9 +394,9 @@ entity TrainingAssignment mixin TenantScoped, SoftDeletable {
 
   default policy TrainingAssignmentDefaultAccess execute: user.role in ["staff", "hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
 
-  command create(optional id: string, moduleId: string, optional moduleCode: string, optional moduleTitle: string, staffMemberId: string, optional staffRole: string, optional passThresholdPercent: number, optional maxAttempts: number, optional firstShiftAt: datetime, optional dueAt: datetime, optional dueDateReviewNeeded: boolean) {
+  command create(optional id: string, moduleId: string, optional moduleCode: string, optional moduleTitle: string, employeeId: string, optional staffRole: string, optional passThresholdPercent: number, optional maxAttempts: number, optional firstShiftAt: datetime, optional dueAt: datetime, optional dueDateReviewNeeded: boolean) {
     guard moduleId != ""
-    guard staffMemberId != ""
+    guard employeeId != ""
     guard staffRole == null or staffRole == "staff"
     guard passThresholdPercent == null or (passThresholdPercent >= 0 and passThresholdPercent <= 100)
     guard maxAttempts == null or maxAttempts >= 1
@@ -404,7 +404,7 @@ entity TrainingAssignment mixin TenantScoped, SoftDeletable {
     mutate moduleId = moduleId
     mutate moduleCode = moduleCode != null ? moduleCode : ""
     mutate moduleTitle = moduleTitle != null ? moduleTitle : ""
-    mutate employeeId = staffMemberId
+    mutate employeeId = employeeId
     mutate staffRole = staffRole != null ? staffRole : "staff"
     mutate passThresholdPercent = passThresholdPercent != null ? passThresholdPercent : 80
     mutate maxAttempts = maxAttempts != null ? maxAttempts : 3

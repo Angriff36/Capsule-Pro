@@ -4349,7 +4349,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   moduleId: z.string(),
   moduleCode: z.string().optional(),
   moduleTitle: z.string().optional(),
-  staffMemberId: z.string(),
+  employeeId: z.string(),
   staffRole: z.string().optional(),
   passThresholdPercent: z.number().optional(),
   maxAttempts: z.number().optional(),

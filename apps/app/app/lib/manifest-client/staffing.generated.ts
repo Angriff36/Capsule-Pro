@@ -449,7 +449,7 @@ export interface TrainingAssignmentCreateInput {
   moduleId?: string;
   moduleCode?: string;
   moduleTitle?: string;
-  staffMemberId?: string;
+  employeeId?: string;
   staffRole?: string;
   passThresholdPercent?: number;
   maxAttempts?: number;
