@@ -1,5 +1,7 @@
 # Handoff — Manifest 3.3.1 create-regression fix + the empty-UUID create bug
 
+> **✅ EXECUTED 2026-07-07** — Part 4 (WS0 pilot) done: commits `f01e8c2a7` (manifest fix + regen + migration `20260707125708_training_assignment_uuid_not_null`) and `70f364cd9` (training route: phantom `user_id`→`auth_user_id` + scoreless-complete score default). Assign→start→complete→refresh proven in the real UI against Postgres. Results + batch recipes stamped in `manifest/NATIVE-REWRITE-PLAN.md` WS0 and memory `ws0-pilot-complete-2026-07-07`. Remaining: Ryan decides whether to sweep the other ~187 uuid="" sites.
+
 **Date:** 2026-07-07 · **Author:** prior Fable session · **Capsule branch:** `feat/manifest-3.0-native`
 
 ---
