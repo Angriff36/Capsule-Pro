@@ -721,5 +721,6 @@ Verified present-and-correct or genuinely not-needed; recorded so they're not re
 
 **Blocked on upstream Manifest (won't yield a working system otherwise):**
 - **Resolved in 2.5.0:** ~~U5 native-merge completeness (saga/webhook/schedule merge + `mergeIR` export, D9/D11/D12)~~ and ~~D25 projection exports~~ — both shipped; now capsule-side only.
-- **Still open:** U7 enum DB emission (`ir.enums → Prisma enum`, D22 — confirmed still absent in 2.5.0); U13 configurable direct-write detector identifier/roots; the D23 client projection options (`entityRouteBase`/`readEnvelopeKey`/`fetchAdapter`/command-envelope); D27 status-based soft-delete.
+- ~~U7 enum DB emission (`ir.enums → Prisma enum`, D22)~~ — **RESOLVED: shipped in 2.5.1** (verified 2026-07-06 on 3.2.1: 17 `enum` blocks emitted in generated `manifest.prisma`). Remaining U7 work is capsule-side source authoring — see `manifest/NATIVE-REWRITE-PLAN.md` WS7.
+- **Still open:** U13 configurable direct-write detector identifier/roots; the D23 client projection options (`entityRouteBase`/`readEnvelopeKey`/`fetchAdapter`/command-envelope); D27 status-based soft-delete.
 - **Not upstream at all (capsule-side keystone):** U6 tenant consolidation — the duplicate-`tenant` error still fires in 2.5.0, so this stays the single real gate for U4/U5 + D10/D11/D12.
