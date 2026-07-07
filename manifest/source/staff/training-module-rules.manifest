@@ -394,25 +394,26 @@ entity TrainingAssignment mixin TenantScoped, SoftDeletable {
 
   default policy TrainingAssignmentDefaultAccess execute: user.role in ["staff", "hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
 
-  command create(id: string, moduleId: string, moduleCode: string, moduleTitle: string, staffMemberId: string, staffRole: string, passThresholdPercent: number, maxAttempts: number, firstShiftAt: datetime, dueAt: datetime, dueDateReviewNeeded: boolean) {
+  command create(optional id: string, moduleId: string, optional moduleCode: string, optional moduleTitle: string, staffMemberId: string, optional staffRole: string, optional passThresholdPercent: number, optional maxAttempts: number, optional firstShiftAt: datetime, optional dueAt: datetime, optional dueDateReviewNeeded: boolean) {
     guard moduleId != ""
     guard staffMemberId != ""
-    guard staffRole == "staff"
-    guard passThresholdPercent >= 0 and passThresholdPercent <= 100
-    guard maxAttempts >= 1
+    guard staffRole == null or staffRole == "staff"
+    guard passThresholdPercent == null or (passThresholdPercent >= 0 and passThresholdPercent <= 100)
+    guard maxAttempts == null or maxAttempts >= 1
 
     mutate moduleId = moduleId
-    mutate moduleCode = moduleCode
-    mutate moduleTitle = moduleTitle
+    mutate moduleCode = moduleCode != null ? moduleCode : ""
+    mutate moduleTitle = moduleTitle != null ? moduleTitle : ""
     mutate employeeId = staffMemberId
-    mutate staffRole = staffRole
-    mutate passThresholdPercent = passThresholdPercent
-    mutate maxAttempts = maxAttempts
+    mutate staffRole = staffRole != null ? staffRole : "staff"
+    mutate passThresholdPercent = passThresholdPercent != null ? passThresholdPercent : 80
+    mutate maxAttempts = maxAttempts != null ? maxAttempts : 3
     mutate firstShiftAt = firstShiftAt
     mutate dueDate = dueAt
-    mutate dueDateReviewNeeded = dueDateReviewNeeded
+    mutate dueDateReviewNeeded = dueDateReviewNeeded != null ? dueDateReviewNeeded : false
     mutate attemptCount = 0
     mutate managerReviewRequired = false
+    mutate assignedBy = user.id
 
     emit TrainingAssignmentCreated
   }

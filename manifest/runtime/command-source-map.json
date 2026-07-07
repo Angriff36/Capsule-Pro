@@ -3623,11 +3623,11 @@
     },
     "command:StaffTrainingSignal.recordSchedulabilityGranted": {
       "file": "staff/training-module-rules.manifest",
-      "line": 605
+      "line": 606
     },
     "command:StaffTrainingSignal.recordWaiverLogged": {
       "file": "staff/training-module-rules.manifest",
-      "line": 619
+      "line": 620
     },
     "command:Station.activate": {
       "file": "kitchen/station-rules.manifest",
@@ -3855,7 +3855,7 @@
     },
     "command:TrainingAssignment.applyFirstShiftDueDate": {
       "file": "staff/training-module-rules.manifest",
-      "line": 492
+      "line": 493
     },
     "command:TrainingAssignment.create": {
       "file": "staff/training-module-rules.manifest",
@@ -3863,31 +3863,31 @@
     },
     "command:TrainingAssignment.markOverdue": {
       "file": "staff/training-module-rules.manifest",
-      "line": 506
+      "line": 507
     },
     "command:TrainingAssignment.start": {
       "file": "staff/training-module-rules.manifest",
-      "line": 420
+      "line": 421
     },
     "command:TrainingAssignment.submitFailedAttempt": {
       "file": "staff/training-module-rules.manifest",
-      "line": 453
+      "line": 454
     },
     "command:TrainingAssignment.submitFinalFailedAttempt": {
       "file": "staff/training-module-rules.manifest",
-      "line": 472
+      "line": 473
     },
     "command:TrainingAssignment.submitPassingAttempt": {
       "file": "staff/training-module-rules.manifest",
-      "line": 432
+      "line": 433
     },
     "command:TrainingAssignment.waive": {
       "file": "staff/training-module-rules.manifest",
-      "line": 521
+      "line": 522
     },
     "command:TrainingAttempt.create": {
       "file": "staff/training-module-rules.manifest",
-      "line": 567
+      "line": 568
     },
     "command:TrainingCompletion.create": {
       "file": "staff/staff-logistics-extended-rules.manifest",
@@ -6743,7 +6743,7 @@
     },
     "constraint:StaffTrainingSignal.validSignalType": {
       "file": "staff/training-module-rules.manifest",
-      "line": 601
+      "line": 602
     },
     "constraint:Station.blockFull": {
       "file": "kitchen/station-rules.manifest",
@@ -6923,11 +6923,11 @@
     },
     "constraint:TrainingAttempt.validAttemptNumber": {
       "file": "staff/training-module-rules.manifest",
-      "line": 562
+      "line": 563
     },
     "constraint:TrainingAttempt.validScore": {
       "file": "staff/training-module-rules.manifest",
-      "line": 563
+      "line": 564
     },
     "constraint:TrainingCompletion.scoreRange": {
       "file": "staff/staff-logistics-extended-rules.manifest",
@@ -7899,7 +7899,7 @@
     },
     "entity:StaffTrainingSignal": {
       "file": "staff/training-module-rules.manifest",
-      "line": 590
+      "line": 591
     },
     "entity:Station": {
       "file": "kitchen/station-rules.manifest",
@@ -7963,7 +7963,7 @@
     },
     "entity:TrainingAttempt": {
       "file": "staff/training-module-rules.manifest",
-      "line": 541
+      "line": 542
     },
     "entity:TrainingCompletion": {
       "file": "staff/staff-logistics-extended-rules.manifest",

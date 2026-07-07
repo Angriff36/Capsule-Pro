@@ -7,7 +7,7 @@
 // canonical command dispatcher (run-manifest-command-core) as a pre-flight gate
 // that rejects malformed requests with a 400 before the runtime is created.
 //
-// Commands: 1065
+// Commands: 1066
 
 import { z } from "zod";
 
@@ -1104,6 +1104,9 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   escalationReason: z.string(),
 }),
   "Dish.activate": z.object({}),
+  "Dish.changeRecipe": z.object({
+  recipeId: z.string(),
+}),
   "Dish.clearDefaultContainer": z.object({
   userId: z.string(),
 }),
@@ -4342,17 +4345,17 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   dueAt: z.coerce.date(),
 }),
   "TrainingAssignment.create": z.object({
-  id: z.string(),
+  id: z.string().optional(),
   moduleId: z.string(),
-  moduleCode: z.string(),
-  moduleTitle: z.string(),
+  moduleCode: z.string().optional(),
+  moduleTitle: z.string().optional(),
   staffMemberId: z.string(),
-  staffRole: z.string(),
-  passThresholdPercent: z.number(),
-  maxAttempts: z.number(),
-  firstShiftAt: z.coerce.date(),
-  dueAt: z.coerce.date(),
-  dueDateReviewNeeded: z.boolean(),
+  staffRole: z.string().optional(),
+  passThresholdPercent: z.number().optional(),
+  maxAttempts: z.number().optional(),
+  firstShiftAt: z.coerce.date().optional(),
+  dueAt: z.coerce.date().optional(),
+  dueDateReviewNeeded: z.boolean().optional(),
 }),
   "TrainingAssignment.markOverdue": z.object({
   assignmentId: z.string(),

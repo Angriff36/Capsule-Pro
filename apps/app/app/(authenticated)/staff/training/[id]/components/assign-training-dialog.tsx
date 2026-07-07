@@ -43,7 +43,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import {
-  listStaffMembers,
+  listUsers,
   trainingAssignmentCreate,
 } from "@/app/lib/manifest-client.generated";
 
@@ -91,16 +91,18 @@ export function AssignTrainingDialog({
   useEffect(() => {
     if (open) {
       setLoadingEmployees(true);
-      listStaffMembers({ limit: 200 })
+      listUsers({ limit: 200 })
         .then((result) => {
           if (result.data) {
             setEmployees(
-              result.data.map((s) => ({
-                id: s.id,
-                firstName: s.displayName ?? null,
-                lastName: null,
-                email: s.email ?? "",
-              }))
+              result.data
+                .filter((u) => u.isActive !== false && !u.deletedAt)
+                .map((u) => ({
+                  id: u.id,
+                  firstName: u.firstName ?? null,
+                  lastName: u.lastName ?? null,
+                  email: u.email ?? "",
+                }))
             );
           }
         })
@@ -119,19 +121,45 @@ export function AssignTrainingDialog({
       return;
     }
 
+    const dueAt = values.dueDate?.toISOString();
+
     setIsSubmitting(true);
     try {
-      await trainingAssignmentCreate({
-        moduleId,
-        staffMemberId: values.assignToAll ? undefined : values.employeeId,
-        dueAt: values.dueDate?.toISOString(),
-      });
+      if (values.assignToAll) {
+        if (employees.length === 0) {
+          toast.error("No employees available to assign");
+          return;
+        }
+        // The create command targets a single staff member, so "assign to all"
+        // fans out to one assignment per employee.
+        const results = await Promise.allSettled(
+          employees.map((employee) =>
+            trainingAssignmentCreate({
+              moduleId,
+              moduleTitle: moduleName,
+              staffMemberId: employee.id,
+              dueAt,
+            })
+          )
+        );
+        const failed = results.filter((r) => r.status === "rejected").length;
+        if (failed > 0) {
+          toast.error(
+            `Assigned to ${employees.length - failed} of ${employees.length}; ${failed} failed`
+          );
+        } else {
+          toast.success(`Training assigned to ${employees.length} employees`);
+        }
+      } else {
+        await trainingAssignmentCreate({
+          moduleId,
+          moduleTitle: moduleName,
+          staffMemberId: values.employeeId,
+          dueAt,
+        });
+        toast.success("Training assigned successfully");
+      }
 
-      toast.success(
-        values.assignToAll
-          ? "Training assigned to all employees"
-          : "Training assigned successfully"
-      );
       setOpen(false);
       form.reset();
       router.refresh();

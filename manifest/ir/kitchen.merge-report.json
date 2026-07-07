@@ -1,6 +1,6 @@
 {
   "strategy": "native-compileProjectToIR",
-  "compilerVersion": "3.2.0",
+  "compilerVersion": "3.3.1",
   "sources": [
     "_base.manifest",
     "ai/ai-event-setup-rules.manifest",
@@ -143,7 +143,6 @@
     "[C:\\Projects\\capsule-pro\\manifest\\source\\staff\\payroll-rules.manifest] Command 'PayrollRun.create' takes a manual 'payrollPeriodId' with no nested create on 'PayrollPeriod' (e.g. addMilestone) and no event reaction that supplies it. Consider a parent command that sets the FK from self.id, or an on Event reaction with params { payrollPeriodId: ... }.",
     "[C:\\Projects\\capsule-pro\\manifest\\source\\staff\\schedule-rules.manifest] Command 'ScheduleShift.create' takes a manual 'scheduleId' with no nested create on 'Schedule' (e.g. addMilestone) and no event reaction that supplies it. Consider a parent command that sets the FK from self.id, or an on Event reaction with params { scheduleId: ... }.",
     "[C:\\Projects\\capsule-pro\\manifest\\source\\staff\\staff-logistics-extended-rules.manifest] Entity 'ActionMilestone' belongsTo 'DisciplinaryAction' but 'DisciplinaryAction' has no hasMany/hasOne back to 'ActionMilestone'. Add 'hasMany actionMilestones: ActionMilestone' on the parent, or a nested create command on the parent so the child FK is implicit.",
-    "[C:\\Projects\\capsule-pro\\manifest\\source\\staff\\staff-logistics-extended-rules.manifest] Command 'ActionMilestone.create' takes a manual 'disciplinaryActionId' with no nested create on 'DisciplinaryAction' (e.g. addMilestone) and no event reaction that supplies it. Consider a parent command that sets the FK from self.id, or an on Event reaction with params { disciplinaryActionId: ... }.",
-    "[C:\\Projects\\capsule-pro\\manifest\\source\\staff\\training-module-rules.manifest] Command 'TrainingAssignment.create' creates 'TrainingAssignment' but never sets non-null field 'assignedBy' (type 'uuid', no default). If no caller supplies it, persisting writes null and a non-null store column rejects it. Add 'mutate assignedBy = ...', give 'assignedBy' a default (e.g. '= now()'), or make it optional ('assignedBy: uuid?')."
+    "[C:\\Projects\\capsule-pro\\manifest\\source\\staff\\staff-logistics-extended-rules.manifest] Command 'ActionMilestone.create' takes a manual 'disciplinaryActionId' with no nested create on 'DisciplinaryAction' (e.g. addMilestone) and no event reaction that supplies it. Consider a parent command that sets the FK from self.id, or an on Event reaction with params { disciplinaryActionId: ... }."
   ]
 }
