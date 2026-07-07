@@ -69,8 +69,11 @@ const emptySurfaces = [];
 // Machine-readable generation provenance: every artifact actually written +
 // the dispatcher, so downstream analyzers (Codebase Explorer) can prove
 // GENERATES / DISPATCHES_TO edges instead of inferring from filenames.
-// ponytail: capsule-local proof of shape — the long-term owner is Manifest's
-// native projection write layer (ProjectionArtifact already carries pathHint).
+// Format matches @angriff36/manifest >= 3.3.0 native CLI emission
+// (packages/cli generation-manifest) byte-for-byte: sorted, deduped, NO
+// timestamp — unchanged inputs are byte-stable. This script still constructs
+// the JSON only because it writes files itself (capsule owns the dispatcher
+// template, so the CLI writer never runs here); the FORMAT is Manifest's.
 const generationRecords = [];
 const repoRelative = (absPath) =>
   relative(repoRoot, absPath).split("\\").join("/");
@@ -94,6 +97,7 @@ const writeArtifact = (artifact, surface, entityName) => {
   writeFileSync(destination, lintCleanRoute(artifact.code), "utf8");
   written += 1;
   generationRecords.push({
+    artifactId: artifact.id,
     surface,
     entity: entityName,
     command: null,
@@ -219,11 +223,25 @@ if (readRoutesEnabled) {
   console.log(`[manifest/generate] Wrote dispatcher → ${dispatcherPath}`);
 
   // Emit the generation manifest next to the other runtime artifacts.
+  // Deterministic (native-format contract): dedupe, sort by
+  // (outputFile, artifactId), no timestamp — reruns are byte-stable.
+  const dedupe = (records) => {
+    const seen = new Set();
+    return records.filter((r) => {
+      const key = JSON.stringify(r);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
   const generationManifest = {
     schema: "manifest/generation-manifest",
     version: 1,
-    generatedAt: new Date().toISOString(),
-    artifacts: generationRecords,
+    artifacts: dedupe(generationRecords).sort(
+      (a, b) =>
+        a.outputFile.localeCompare(b.outputFile) ||
+        a.artifactId.localeCompare(b.artifactId)
+    ),
     dispatchers: [
       {
         outputFile: repoRelative(dispatcherPath),
