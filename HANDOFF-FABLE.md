@@ -61,7 +61,7 @@ Committed in two commits (staged by explicit pathspec — this branch carries un
 - Four `package.json` pins + `pnpm-lock.yaml` — 3.3.1.
 - Regenerated artifacts: `manifest/ir/kitchen.ir.json`, `apps/api/lib/manifest/kitchen.ir.generated.json`, `manifest/runtime/src/generated/command-param-schemas.generated.ts`, `manifest/runtime/command-source-map.json`, `kitchen.merge-report.json`, `kitchen.provenance.json`, `module-graph.json`.
 
-NOT mine (leave alone / concurrent): `.agents/skills/capsule-manifest-rebuild/SKILL.md`.
+`.agents/skills/capsule-manifest-rebuild/SKILL.md` — DELETED 2026-07-07 per Ryan: its content (incl. the concurrent PR #78 native-ownership update) was folded into the single global manifest skill at `~/.claude/skills/manifest/SKILL.md`, which is now the one authority for DSL + capsule pipeline.
 
 **Committed as:** (1) `[deps]` 3.3.1 pin bump + regen + training command wiring, (2) `[docs]` plan + handoff. The WS0 training-source fix + migration is the next commit (not done yet). Per `AGENTS.md`, agents commit often without asking; only `git push` stays manual.
 
