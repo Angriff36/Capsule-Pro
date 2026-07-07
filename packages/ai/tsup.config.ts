@@ -5,6 +5,10 @@ export default defineConfig({
   outDir: "dist",
   sourcemap: true,
   minify: false,
+  esbuildOptions(options) {
+    options.legalComments = "none";
+    options.minifyWhitespace = true;
+  },
   dts: true,
   format: ["esm"],
   clean: true,
