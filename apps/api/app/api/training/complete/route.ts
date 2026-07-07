@@ -86,7 +86,7 @@ export async function POST(request: Request) {
       Prisma.sql`
         SELECT id FROM tenant_staff.employees
         WHERE tenant_id = ${tenantId}
-          AND user_id = ${userId}
+          AND auth_user_id = ${userId}
       `
     );
 
@@ -114,7 +114,10 @@ export async function POST(request: Request) {
         `
       );
 
-      if (existingCompletions.length > 0 && existingCompletions[0]?.started_at) {
+      if (
+        existingCompletions.length > 0 &&
+        existingCompletions[0]?.started_at
+      ) {
         return NextResponse.json({
           completion: existingCompletions[0],
           message: "Training already started",
@@ -126,7 +129,7 @@ export async function POST(request: Request) {
         Prisma.sql`
           SELECT id FROM tenant_staff.employees
           WHERE tenant_id = ${tenantId}
-            AND user_id = ${userId}
+            AND auth_user_id = ${userId}
         `
       );
 
@@ -207,7 +210,7 @@ export async function POST(request: Request) {
         Prisma.sql`
           SELECT id FROM tenant_staff.employees
           WHERE tenant_id = ${tenantId}
-            AND user_id = ${userId}
+            AND auth_user_id = ${userId}
         `
       );
 
@@ -222,8 +225,11 @@ export async function POST(request: Request) {
         );
       }
 
-      const score = body.score ?? 0;
       const passed = body.passed ?? true;
+      // Scoreless callers (document modules — the My Training "Complete" button
+      // sends no score): a passed completion must clear the command's
+      // scorePercent >= passThresholdPercent guard, so treat it as full marks.
+      const score = body.score ?? (passed ? 100 : 0);
 
       // Delegate governed write: submit passing attempt via Manifest runtime
       // The Manifest command transitions status -> completed, sets completedAt/score,
