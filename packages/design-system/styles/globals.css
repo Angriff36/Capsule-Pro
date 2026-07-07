@@ -7,7 +7,20 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* DESIGN.md (Cohere) palette. Brand-* aliases retained for backward-compatibility. */
+  /* Legacy editorial palette (pre-Anwe). Brand-* aliases retained for backward-compatibility. */
+  /* Anwe tokens — canonical app surfaces per root DESIGN.md §3 */
+  --anwe-gold: #d9b356;
+  --anwe-gold-bright: #f2d06b;
+  --anwe-tan: #a89b8d;
+  --anwe-app-bg: #0d0d0d;
+  --anwe-card-bg: #18181a;
+  --anwe-surface-lowest: #131313;
+  --anwe-gray-50: #1e1e1e;
+  --anwe-gray-100: #27272a;
+  --anwe-gray-200: #333338;
+  --anwe-gray-300: #44444a;
+  --anwe-on-surface: #e5e2e1;
+  --anwe-on-surface-variant: #d0c5af;
   --ds-primary: #17171c; /* near-black primary */
   --ds-ink: #212121; /* default body text */
   --ds-canvas: #ffffff; /* page surface */
@@ -331,6 +344,19 @@
   --color-hairline: var(--ds-hairline);
   --color-card-border: var(--ds-card-border);
   --color-slate-soft: var(--ds-slate);
+  /* Anwe palette utilities (bg-anwe-app-bg, text-anwe-gold, border-anwe-gray-200, …) */
+  --color-anwe-gold: var(--anwe-gold);
+  --color-anwe-gold-bright: var(--anwe-gold-bright);
+  --color-anwe-tan: var(--anwe-tan);
+  --color-anwe-app-bg: var(--anwe-app-bg);
+  --color-anwe-card-bg: var(--anwe-card-bg);
+  --color-anwe-surface-lowest: var(--anwe-surface-lowest);
+  --color-anwe-gray-50: var(--anwe-gray-50);
+  --color-anwe-gray-100: var(--anwe-gray-100);
+  --color-anwe-gray-200: var(--anwe-gray-200);
+  --color-anwe-gray-300: var(--anwe-gray-300);
+  --color-anwe-on-surface: var(--anwe-on-surface);
+  --color-anwe-on-surface-variant: var(--anwe-on-surface-variant);
   /* DESIGN.md radius scale (rounded-pill, rounded-card, rounded-media, ...) */
   --radius-xs: 4px;
   --radius-sm: 8px;
@@ -461,10 +487,39 @@
   --ring: var(--ds-focus-blue);
 }
 
-/* ─── DESIGN.md helpers ────────────────────────────────────────────────
-   Cohere-derived patterns: mono section labels, dark feature bands, and
-   editorial chip styles. Keep these as utilities so pages can opt in
-   without editing component internals. */
+/*
+ * Anwe product surface — scopes shadcn tokens to DESIGN.md §3 dark palette
+ * so Input/Select/Button inherit gold focus and near-black canvas.
+ */
+.anwe-surface-reset {
+  --background: var(--anwe-app-bg);
+  --foreground: var(--anwe-on-surface);
+  --card: var(--anwe-card-bg);
+  --card-foreground: var(--anwe-on-surface);
+  --popover: var(--anwe-card-bg);
+  --popover-foreground: var(--anwe-on-surface);
+  --primary: var(--anwe-gold);
+  --primary-foreground: #000000;
+  --secondary: var(--anwe-gray-50);
+  --secondary-foreground: var(--anwe-on-surface);
+  --muted: var(--anwe-gray-50);
+  --muted-foreground: var(--anwe-on-surface-variant);
+  --accent: var(--anwe-gray-100);
+  --accent-foreground: var(--anwe-on-surface);
+  --border: rgb(255 255 255 / 10%);
+  --input: var(--anwe-gray-200);
+  --ring: var(--anwe-gold);
+  color: var(--anwe-on-surface);
+  background-color: var(--anwe-app-bg);
+}
+
+.anwe-surface-reset
+  :is(a, button, [role="button"], input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--anwe-gold);
+  outline-offset: 2px;
+}
+
+/* ─── Legacy editorial helpers (page-shell / Cohere band pages) ─────── */
 
 @utility ds-mono-label {
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);

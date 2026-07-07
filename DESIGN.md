@@ -36,22 +36,22 @@ When exact and adapted rules conflict, preserve the visual identity rather than 
 
 ### Color
 
-| Token | Value | Use |
-|---|---:|---|
-| `gold` | `#D9B356` | primary accent, active navigation, focus, selected states |
-| `gold-bright` | `#F2D06B` | start of premium CTA gradient |
-| `tan` | `#A89B8D` | secondary text and inactive navigation |
-| `app-bg` | `#0D0D0D` | canonical dark page background |
-| `card-bg` | `#18181A` | elevated panels, sheets, cards |
-| `surface-lowest` | `#131313` | deep surfaces and nav shells |
-| `gray-50-dark` | `#1E1E1E` | subtle fills |
-| `gray-100-dark` | `#27272A` | secondary fills |
-| `gray-200-dark` | `#333338` | borders and inactive tracks |
-| `gray-300-dark` | `#44444A` | stronger separators |
-| `on-surface` | `#E5E2E1` | primary dark-theme text |
-| `on-surface-variant` | `#D0C5AF` | warm secondary text |
-| `white` | `#FFFFFF` | highest-emphasis text |
-| `black` | `#000000` | text on gold CTA |
+| Token                |     Value | Use                                                       |
+| -------------------- | --------: | --------------------------------------------------------- |
+| `gold`               | `#D9B356` | primary accent, active navigation, focus, selected states |
+| `gold-bright`        | `#F2D06B` | start of premium CTA gradient                             |
+| `tan`                | `#A89B8D` | secondary text and inactive navigation                    |
+| `app-bg`             | `#0D0D0D` | canonical dark page background                            |
+| `card-bg`            | `#18181A` | elevated panels, sheets, cards                            |
+| `surface-lowest`     | `#131313` | deep surfaces and nav shells                              |
+| `gray-50-dark`       | `#1E1E1E` | subtle fills                                              |
+| `gray-100-dark`      | `#27272A` | secondary fills                                           |
+| `gray-200-dark`      | `#333338` | borders and inactive tracks                               |
+| `gray-300-dark`      | `#44444A` | stronger separators                                       |
+| `on-surface`         | `#E5E2E1` | primary dark-theme text                                   |
+| `on-surface-variant` | `#D0C5AF` | warm secondary text                                       |
+| `white`              | `#FFFFFF` | highest-emphasis text                                     |
+| `black`              | `#000000` | text on gold CTA                                          |
 
 Canonical dark theme:
 
@@ -87,15 +87,15 @@ Use:
 
 Source mobile scale:
 
-| Role | Size | Weight | Notes |
-|---|---:|---:|---|
-| Page title | 30px | 800 | screenshots: “Vaults”, “Search”, “Settings” |
-| Large onboarding display | 48px | 800 | use sparingly |
-| Section headline | 20px | 800 | search empty state |
-| Large body/subtitle | 18px | 500–700 | welcome line |
-| Standard body | 14–16px | 500–700 | rows, descriptions |
-| Strong compact label | 13–14px | 900 | CTA/tab text |
-| Micro-label | 8–10px | 700–900 | uppercase, tracked |
+| Role                     |    Size |  Weight | Notes                                       |
+| ------------------------ | ------: | ------: | ------------------------------------------- |
+| Page title               |    30px |     800 | screenshots: “Vaults”, “Search”, “Settings” |
+| Large onboarding display |    48px |     800 | use sparingly                               |
+| Section headline         |    20px |     800 | search empty state                          |
+| Large body/subtitle      |    18px | 500–700 | welcome line                                |
+| Standard body            | 14–16px | 500–700 | rows, descriptions                          |
+| Strong compact label     | 13–14px |     900 | CTA/tab text                                |
+| Micro-label              |  8–10px | 700–900 | uppercase, tracked                          |
 
 Desktop adaptation:
 

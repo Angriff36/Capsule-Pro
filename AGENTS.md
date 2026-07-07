@@ -4,6 +4,8 @@ When hunting for occurrences of a string/pattern (bug source, enum value, usage 
 
 ---
 
+# Code
+
 # ⚠️ "BOARD" DISAMBIGUATION — READ BEFORE TOUCHING ANYTHING WITH "BOARD" IN THE NAME
 
 **Canonical product taxonomy:** [`VISION.md`](VISION.md) (`BOARD_TAXONOMY` block). Read it first.
@@ -28,9 +30,12 @@ RULES:
 
 # ⚠️ UI / STYLING — root `DESIGN.md` is the only design system for apps/app
 
-Before styling ANY product surface, read root **`DESIGN.md`** and compose pages
-from `packages/design-system/components/blocks/page-shell.tsx` blocks. Never
-hex colors or inline `style={{color}}` in app code — token classes only.
+Before styling ANY product surface, read root **`DESIGN.md`** (Anwe-derived dark
+system: `#0D0D0D` canvas, `#D9B356` gold accent) and compose pages from
+`packages/design-system/components/blocks/anwe-page-shell.tsx`. Legacy editorial
+`page-shell.tsx` blocks remain for older surfaces until migrated. Never use hex
+colors or inline `style={{color}}` in app code — use `anwe-*` / `bg-anwe-app-bg`
+token classes only.
 `DESIGN-sanity.md` is a MARKETING design kit (do not apply to app pages), and
 per-directory DESIGN.md files are not authoritative.
 

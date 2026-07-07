@@ -1,14 +1,15 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
+  AnweMetricGrid,
+  AnweMetricTile,
+  AnwePageCanvas,
+  AnwePageHeader,
+  AnwePanel,
+  AnwePanelRow,
+  AnweSecondaryButton,
+  AnweSectionLabel,
+} from "@repo/design-system/components/blocks/anwe-page-shell";
 import { Input } from "@repo/design-system/components/ui/input";
 import {
   Select,
@@ -17,20 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@repo/design-system/components/ui/table";
-import {
-  CalculatorIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  DollarSignIcon,
-} from "lucide-react";
+import { ArrowRight, DollarSignIcon, RefreshCw, Search } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -44,6 +33,76 @@ import {
   type Recipe,
   type RecipeCategory,
 } from "../../../lib/use-recipe-costing";
+
+const RECIPE_ROW_GRID =
+  "flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(180px,1.4fr)_100px_100px_72px_96px_96px_80px_88px] lg:items-center lg:gap-4";
+
+function RecipeCostRow({ recipe }: { readonly recipe: Recipe }) {
+  const detailHref = `/inventory/recipe-costs/${recipe.currentVersion?.id || recipe.id}`;
+
+  return (
+    <AnwePanelRow className={RECIPE_ROW_GRID}>
+      <div className="min-w-0">
+        <p className="truncate font-bold text-[15px] text-anwe-on-surface">
+          {recipe.name}
+        </p>
+        {recipe.description ? (
+          <p className="truncate text-[13px] text-anwe-on-surface-variant">
+            {recipe.description}
+          </p>
+        ) : null}
+      </div>
+      <div className="text-[13px] text-anwe-on-surface-variant">
+        {recipe.category ? getRecipeCategoryLabel(recipe.category) : "—"}
+      </div>
+      <div className="text-[13px] text-anwe-on-surface-variant">
+        {recipe.cuisineType ? getCuisineTypeLabel(recipe.cuisineType) : "—"}
+      </div>
+      <div className="text-right font-medium text-[13px] tabular-nums">
+        {recipe.yieldQuantity ? (
+          <>
+            {recipe.yieldQuantity}
+            {recipe.yieldUnitId ? " u" : ""}
+          </>
+        ) : (
+          <span className="text-anwe-on-surface-variant">—</span>
+        )}
+      </div>
+      <div className="text-right font-bold text-[13px] tabular-nums">
+        {recipe.currentVersion?.totalCost == null ? (
+          <span className="font-medium text-anwe-on-surface-variant">—</span>
+        ) : (
+          formatCurrency(recipe.currentVersion.totalCost)
+        )}
+      </div>
+      <div className="text-right text-[13px] text-anwe-on-surface-variant tabular-nums">
+        {recipe.currentVersion?.costPerYield == null
+          ? "—"
+          : formatCurrency(recipe.currentVersion.costPerYield)}
+      </div>
+      <div>
+        <span
+          className={
+            recipe.isActive
+              ? "font-black text-[10px] text-anwe-gold uppercase tracking-[0.18em]"
+              : "font-black text-[10px] text-anwe-tan uppercase tracking-[0.18em]"
+          }
+        >
+          {recipe.isActive ? "Active" : "Inactive"}
+        </span>
+      </div>
+      <div className="flex justify-end">
+        <Link
+          className="inline-flex items-center gap-1 rounded-2xl border border-white/10 bg-anwe-gray-50 px-3 py-1.5 font-bold text-[12px] text-anwe-on-surface uppercase tracking-[0.12em] transition-colors hover:border-anwe-gold/50 hover:text-anwe-gold focus-visible:outline-2 focus-visible:outline-anwe-gold focus-visible:outline-offset-2"
+          href={detailHref}
+        >
+          View
+          <ArrowRight className="size-3.5" />
+        </Link>
+      </div>
+    </AnwePanelRow>
+  );
+}
 
 export const RecipesPageClient = () => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -98,19 +157,6 @@ export const RecipesPageClient = () => {
     );
   });
 
-  const handlePreviousPage = () => {
-    if (page > 1) {
-      setPage(page - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (page < totalPages) {
-      setPage(page + 1);
-    }
-  };
-
-  // Calculate summary stats
   const recipesWithCost = recipes.filter(
     (r) => r.currentVersion?.totalCost !== null
   );
@@ -120,93 +166,74 @@ export const RecipesPageClient = () => {
   );
   const averageCostPerYield =
     recipesWithCost.length > 0 ? totalRecipeValue / recipesWithCost.length : 0;
+  const costCoveragePct =
+    recipes.length > 0
+      ? ((recipesWithCost.length / recipes.length) * 100).toFixed(0)
+      : "0";
+  const activeOnPage = recipes.filter((r) => r.isActive).length;
 
   return (
-    <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card tone="soft-stone">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">Total Recipes</CardTitle>
-            <CalculatorIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">{totalCount}</div>
-            <p className="text-muted-foreground text-xs">
-              {recipes.filter((r) => r.isActive).length} active
-            </p>
-          </CardContent>
-        </Card>
-        <Card tone="soft-stone">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">
-              With Cost Data
-            </CardTitle>
-            <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">{recipesWithCost.length}</div>
-            <p className="text-muted-foreground text-xs">
-              {((recipesWithCost.length / recipes.length) * 100).toFixed(0)}% of
-              total
-            </p>
-          </CardContent>
-        </Card>
-        <Card tone="soft-stone">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">Total Value</CardTitle>
-            <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">
-              {formatCurrency(totalRecipeValue)}
-            </div>
-            <p className="text-muted-foreground text-xs">
-              Sum of all recipe costs
-            </p>
-          </CardContent>
-        </Card>
-        <Card tone="soft-stone">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">
-              Avg Cost/Yield
-            </CardTitle>
-            <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">
-              {formatCurrency(averageCostPerYield)}
-            </div>
-            <p className="text-muted-foreground text-xs">
-              Per yield unit average
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+    <AnwePageCanvas>
+      <AnwePageHeader
+        actions={
+          <AnweSecondaryButton onClick={loadRecipes} type="button">
+            <RefreshCw className="size-4" />
+            Refresh
+          </AnweSecondaryButton>
+        }
+        description="View and manage recipe costs with detailed ingredient breakdowns."
+        eyebrow="Inventory / Recipe Costs"
+        title="Recipe Costs"
+      />
 
-      {/* Filters */}
-      <Card tone="canvas">
-        <CardHeader>
-          <CardTitle>Recipe Costing</CardTitle>
-          <CardDescription>
-            View and manage recipe costs with detailed ingredient breakdowns
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-4 md:flex-row md:items-center">
+      <AnweMetricGrid>
+        <AnweMetricTile
+          hint={`${activeOnPage} active on this page`}
+          label="Total recipes"
+          value={totalCount}
+        />
+        <AnweMetricTile
+          hint={`${costCoveragePct}% of loaded recipes`}
+          label="With cost data"
+          value={recipesWithCost.length}
+        />
+        <AnweMetricTile
+          hint="Sum of recipe costs"
+          label="Total value"
+          value={formatCurrency(totalRecipeValue)}
+        />
+        <AnweMetricTile
+          hint="Per yield unit average"
+          label="Avg cost / yield"
+          value={formatCurrency(averageCostPerYield)}
+        />
+      </AnweMetricGrid>
+
+      <section className="space-y-5">
+        <AnweSectionLabel tone="gold">Filter &amp; search</AnweSectionLabel>
+
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+          <div className="relative max-w-xl flex-1">
+            <Search
+              aria-hidden
+              className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-anwe-gold"
+            />
             <Input
-              className="max-w-sm"
+              className="h-12 rounded-[24px] border-white/10 bg-anwe-card-bg pl-12 text-[15px] placeholder:text-anwe-on-surface-variant/70 focus-visible:border-anwe-gold focus-visible:ring-anwe-gold/25"
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search recipes..."
               value={searchQuery}
             />
+          </div>
+          <div className="flex flex-wrap gap-3">
             <Select
-              onValueChange={(value) =>
-                setCategoryFilter(value as RecipeCategory | "all")
-              }
+              onValueChange={(value) => {
+                setCategoryFilter(value as RecipeCategory | "all");
+                setPage(1);
+              }}
               value={categoryFilter}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="h-11 w-[160px] rounded-2xl border-white/10 bg-anwe-gray-50">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
@@ -219,12 +246,13 @@ export const RecipesPageClient = () => {
               </SelectContent>
             </Select>
             <Select
-              onValueChange={(value) =>
-                setCuisineFilter(value as CuisineType | "all")
-              }
+              onValueChange={(value) => {
+                setCuisineFilter(value as CuisineType | "all");
+                setPage(1);
+              }}
               value={cuisineFilter}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="h-11 w-[160px] rounded-2xl border-white/10 bg-anwe-gray-50">
                 <SelectValue placeholder="Cuisine" />
               </SelectTrigger>
               <SelectContent>
@@ -237,12 +265,13 @@ export const RecipesPageClient = () => {
               </SelectContent>
             </Select>
             <Select
-              onValueChange={(value) =>
-                setActiveFilter(value === "all" ? "all" : value === "true")
-              }
+              onValueChange={(value) => {
+                setActiveFilter(value === "all" ? "all" : value === "true");
+                setPage(1);
+              }}
               value={activeFilter.toString()}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="h-11 w-[140px] rounded-2xl border-white/10 bg-anwe-gray-50">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -252,155 +281,86 @@ export const RecipesPageClient = () => {
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Recipe Table */}
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Recipe Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Cuisine</TableHead>
-                <TableHead className="text-right">Yield</TableHead>
-                <TableHead className="text-right">Total Cost</TableHead>
-                <TableHead className="text-right">Cost/Yield</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell className="py-8 text-center" colSpan={8}>
-                    Loading recipes...
-                  </TableCell>
-                </TableRow>
-              ) : filteredRecipes.length === 0 ? (
-                <TableRow>
-                  <TableCell className="py-8 text-center" colSpan={8}>
-                    No recipes found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredRecipes.map((recipe) => (
-                  <TableRow key={recipe.id}>
-                    <TableCell className="font-medium">
-                      <div>
-                        <div className="font-medium">{recipe.name}</div>
-                        {recipe.description && (
-                          <div className="max-w-md truncate text-muted-foreground text-sm">
-                            {recipe.description}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {recipe.category ? (
-                        <Badge variant="outline">
-                          {getRecipeCategoryLabel(recipe.category)}
-                        </Badge>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {recipe.cuisineType ? (
-                        <Badge variant="outline">
-                          {getCuisineTypeLabel(recipe.cuisineType)}
-                        </Badge>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {recipe.yieldQuantity ? (
-                        <span>
-                          {recipe.yieldQuantity}{" "}
-                          {recipe.yieldUnitId ? "units" : ""}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {recipe.currentVersion?.totalCost !== null &&
-                      recipe.currentVersion?.totalCost !== undefined ? (
-                        <span className="font-medium">
-                          {formatCurrency(recipe.currentVersion.totalCost)}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">
-                          Not calculated
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {recipe.currentVersion?.costPerYield !== null &&
-                      recipe.currentVersion?.costPerYield !== undefined ? (
-                        <span>
-                          {formatCurrency(recipe.currentVersion.costPerYield)}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={recipe.isActive ? "default" : "secondary"}
-                      >
-                        {recipe.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Button asChild size="sm" variant="ghost">
-                        <a
-                          href={`/inventory/recipe-costs/${recipe.currentVersion?.id || recipe.id}`}
-                        >
-                          View Details
-                        </a>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="text-muted-foreground text-sm">
-          Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, totalCount)} of{" "}
-          {totalCount} recipes
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            disabled={page === 1}
-            onClick={handlePreviousPage}
-            size="sm"
-            variant="outline"
-          >
-            <ChevronLeftIcon className="h-4 w-4" />
-            Previous
-          </Button>
-          <div className="text-sm">
-            Page {page} of {totalPages}
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <AnweSectionLabel>All recipes</AnweSectionLabel>
+            <h2 className="mt-2 font-extrabold text-2xl text-anwe-on-surface tracking-[0.01em]">
+              Cost breakdown
+            </h2>
           </div>
-          <Button
-            disabled={page === totalPages}
-            onClick={handleNextPage}
-            size="sm"
-            variant="outline"
-          >
-            Next
-            <ChevronRightIcon className="h-4 w-4" />
-          </Button>
+          <span className="font-black text-[10px] text-anwe-tan uppercase tracking-[0.24em]">
+            {totalCount} total
+          </span>
         </div>
-      </div>
-    </div>
+
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="size-8 animate-spin rounded-full border-2 border-anwe-gray-200 border-t-anwe-gold" />
+          </div>
+        ) : null}
+
+        {!isLoading && filteredRecipes.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-[24px] border border-anwe-gold/30 border-dashed bg-anwe-card-bg px-8 py-16 text-center">
+            <DollarSignIcon className="mb-4 size-10 text-anwe-gold/50" />
+            <p className="font-extrabold text-anwe-on-surface text-xl">
+              No recipes found
+            </p>
+            <p className="mt-2 max-w-sm text-[15px] text-anwe-on-surface-variant">
+              Adjust filters or add recipes in the kitchen module.
+            </p>
+          </div>
+        ) : null}
+
+        {!isLoading && filteredRecipes.length > 0 ? (
+          <AnwePanel>
+            <AnwePanelRow className="hidden gap-4 font-black text-[10px] text-anwe-tan uppercase tracking-[0.2em] lg:grid lg:grid-cols-[minmax(180px,1.4fr)_100px_100px_72px_96px_96px_80px_88px]">
+              <span>Recipe</span>
+              <span>Category</span>
+              <span>Cuisine</span>
+              <span className="text-right">Yield</span>
+              <span className="text-right">Total</span>
+              <span className="text-right">Per yield</span>
+              <span>Status</span>
+              <span className="text-right">Open</span>
+            </AnwePanelRow>
+            {filteredRecipes.map((recipe) => (
+              <RecipeCostRow key={recipe.id} recipe={recipe} />
+            ))}
+          </AnwePanel>
+        ) : null}
+
+        {!isLoading && totalPages > 1 ? (
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-2 text-[13px] text-anwe-on-surface-variant">
+            <span>
+              Showing {(page - 1) * 20 + 1}–{Math.min(page * 20, totalCount)} of{" "}
+              {totalCount}
+            </span>
+            <div className="flex items-center gap-2">
+              <AnweSecondaryButton
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
+                type="button"
+              >
+                Previous
+              </AnweSecondaryButton>
+              <span className="px-2 font-medium tabular-nums">
+                {page} / {totalPages}
+              </span>
+              <AnweSecondaryButton
+                disabled={page === totalPages}
+                onClick={() => setPage(page + 1)}
+                type="button"
+              >
+                Next
+              </AnweSecondaryButton>
+            </div>
+          </div>
+        ) : null}
+      </section>
+    </AnwePageCanvas>
   );
 };
