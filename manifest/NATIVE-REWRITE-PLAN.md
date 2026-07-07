@@ -1,6 +1,8 @@
 # Native Manifest Source Rewrite Plan
 
-**Date:** 2026-07-06 · **Installed compiler:** `@angriff36/manifest` 3.2.1 · **Scope:** `manifest/source/**/*.manifest` (104 files, ~212 entities)
+**Date:** 2026-07-06 (compiler bumped 2026-07-07) · **Installed compiler:** `@angriff36/manifest` 3.3.1 · **Scope:** `manifest/source/**/*.manifest` (104 files, ~212 entities)
+
+> **2026-07-07 — compiler 3.3.0→3.3.1 create-regression fix (shipped).** 3.3.0 introduced composite-key runtime identity and (in `RuntimeEngine.prepareCreateData`) wrote the encoded key tuple `"tenantId|id"` into the persisted `id` for every `key`-declaring entity, so `store.create()` received `id="tenantId|id"` → Postgres `invalid input syntax for type uuid` on every generic-store create. Fixed upstream in 3.3.1 (`!entity.key.includes("id")` guard; regression test added) and pinned here. **This fix UNMASKED the empty-string-UUID-default bug below** — creates now reach the DB and every `uuid … = ""` field fails. See new **WS0**.
 
 **Reference style:** `manifest/source/manifest-example.manifest.bak` (the Event-domain showcase) and `manifest/CLAUDE.md` (IR contract). This plan rewrites *source files only* — pipeline glue divergences live in `MANIFEST-DIVERGENCES.md` (D-series); this plan continues its U-series at the source-authoring level.
 
@@ -12,7 +14,8 @@
 
 | Construct | Example demonstrates | Capsule source today | Gap class |
 |---|---|---|---|
-| `enum` | every closed set | 17 enums; **82 `status: string` fields**; vocab repeated in `validStatus` constraints + transition strings | **Major (U7)** |
+| **`uuid` defaults** | `uuid?` (null) vs `uuid` (real value) | **188 `uuid … = ""` across 69 files** — empty string used as a fake UUID | **⛔ CRITICAL (WS0) — active create-breaking bug post-3.3.1** |
+| `enum` | every closed set | 17 enums; **82 `status: string` fields** (bare `rg 'status: string'` today = 151, incl. command params); vocab repeated in `validStatus` constraints + transition strings | **Major (U7)** |
 | roles + `roleAllows` | capability checks, no role lists | 28 roles declared in `_base`; **12 `roleAllows` vs 464 inline `user.role in [...]`** | **Major (U1)** |
 | `transition` FSM | every state has a rule incl. terminal `to []` | 295 transitions / 64 files; only 1 status-bearing file lacks an FSM; CI dead-command scanner exists | Minor |
 | named `constraint` w/ code, `messageTemplate`, `details`, `overrideable` | rich block constraints | 758 constraints exist, mostly inline one-liners; commands lean on guard-soup (e.g. `Event.update` = 9 bare guards) | Moderate |
@@ -61,6 +64,32 @@ Each item is a cheap check that gates a workstream. Record answers in this file.
 | P7 | **Webhook projection**: same question for `webhook` (route emission, HMAC verify, idempotency store) | WS14 | Scratch compile; grep runtime for signature/idempotency implementations — IR shape ≠ working feature (manifest/CLAUDE.md) |
 | P8 | **Async command runtime**: JobQueue adapter wired in capsule? (`durable` store / job drain) | WS14 | grep runtime factory for job queue setup |
 | P9 | **`fanOut` + `count()` on 3.2.1**: conformance-test one fanOut reaction end-to-end in the capsule runtime harness | WS3 | Port one existing cascade middleware to `fanOut` in a test IR |
+
+---
+
+## WS0 — Empty-string UUID defaults (⛔ CRITICAL, do FIRST — active create-breaking bug)
+
+**What:** 188 `uuid … = ""` defaults across 69 source files. An empty string is not a UUID; when a create persists such a field it hits a `@db.Uuid` column and Postgres rejects it (`invalid input syntax for type uuid: ""`). Hidden until now by the 3.3.0 composite-id regression (creates never reached the DB); the 3.3.1 fix exposed all 188.
+
+**Why FIRST:** every governed create touching one of these fields is currently broken (verified: `TrainingAssignment.create` → `employeeId=""`; `Notification.create` succeeds only because it has no such field). This blocks real user flows today — it is not modernization, it is a live regression surface.
+
+**The persist-before-mutate wrinkle (important — a blind `s/= ""//` is NOT sufficient):** the engine inserts the row from the create *bootstrap* (defaults + same-named params) and runs the command's `mutate` actions *afterward* as an update. So a field whose value is supplied by a `mutate` from a **differently-named param or context** (`mutate employeeId = staffMemberId`, `mutate assignedBy = user.id`) is NOT populated at the first insert — it lands on its default.
+
+> **PROVEN (2026-07-07, engine store-op trace of `TrainingAssignment.create`):** `[ ["CREATE", ""], ["UPDATE", "c4a2402f-…"] ]`. The INSERT carries `employeeId=""` (default; param is `staffMemberId`, field is `employeeId` — names differ, so no bootstrap seed), then a second UPDATE writes the real value. In-memory stores accept the `""` insert then update (unit tests pass, hiding the bug); Postgres `@db.Uuid` rejects the `""` INSERT before the UPDATE runs. Contrast `TimeOffRequest.create`, whose param IS `employeeId` (matches the field) → filled at insert, no separate update needed. **Rule of thumb: a create param that feeds a `@db.Uuid`/required field via a rename-mutate (`field = otherParam`) or context (`= user.id`) is broken against Postgres.**
+
+Two cases:
+- **Nullable UUID (`uuid? = ""`):** drop the `= ""` → inserts as `null` (valid), the later `mutate` fills it. IR/projection change; the column loses its `@default("")` → **needs a migration** (drop default). Phase-2-style.
+- **Required/NOT-NULL UUID set only by a mutate (e.g. `assignedBy`):** null/`""` both fail at insert. Fix at the source so the value is present at bootstrap — rename the create param to match the field (so it seeds), OR accept the field as a create param, OR make the column nullable. Decide per field; don't auto-null a NOT-NULL column.
+
+**How:**
+1. Enumerate: `rg 'uuid.*= ""' manifest/source` (188 lines / 69 files). Classify each as nullable-vs-required and mutate-filled-vs-param-seeded.
+2. Pilot on `TrainingAssignment` (the known-broken one): `employeeId: uuid? = ""` → `uuid?`; ensure `staffMemberId`→`employeeId` and the actor→`assignedBy` are seeded at bootstrap (param-name match or nullable). Prove the full assign→start→complete→refresh flow.
+3. Batch per domain, each: manifest edit → full regen (`compile · generate-metadata · schema:full · client · generate-hooks`) → `pnpm db:dev --create-only` → review SQL (dropped defaults / nullability) → deploy → `db:check`.
+4. Pre-flight per table: `SELECT DISTINCT <col>` — reconcile any rows already holding `""` before the column default is dropped.
+
+**Gates:** `manifest:audit:strict` (schema-drift), `db:check`, and a real create smoke-test per touched entity (unit tests miss it — they use in-memory stores that accept `""`; the failure only appears against Postgres `@db.Uuid`).
+
+**Ordering vs the rest:** WS0 precedes WS1. It overlaps WS7 (enum) mechanically (both are schema-touching per-domain batches) — interleave per domain if convenient, but do not gate WS0 behind the enum pilot.
 
 ---
 
@@ -181,6 +210,7 @@ Phase 3: survey docs → NEEDS-RYAN forks
 
 ## Success criteria
 
+0. `uuid … = ""` count in source: 188 → 0 (WS0); every touched entity has a passing Postgres-backed create smoke-test.
 1. `user.role in [` count in source: 464 → 0 (WS1).
 2. `status: string` count: 82 → 0 for true closed sets (WS7).
 3. Wired middleware count reduced by every portable handler, each with a ported passing test (WS3).
