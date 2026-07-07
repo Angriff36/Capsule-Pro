@@ -1,0 +1,2339 @@
+{
+  "schema": "manifest/generation-manifest",
+  "version": 1,
+  "generatedAt": "2026-07-07T05:13:08.846Z",
+  "artifacts": [
+    {
+      "surface": "nextjs.route",
+      "entity": "ActionMilestone",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/action-milestones/list/route.ts",
+      "outputFile": "apps/api/app/api/staff/action-milestones/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "ActionMilestone",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/action-milestones/[id]/route.ts",
+      "outputFile": "apps/api/app/api/staff/action-milestones/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "AdminChatMessage",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/chat/messages/list/route.ts",
+      "outputFile": "apps/api/app/api/administrative/chat/messages/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "AdminChatMessage",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/chat/messages/[id]/route.ts",
+      "outputFile": "apps/api/app/api/administrative/chat/messages/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "AdminChatParticipant",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/chat/participants/list/route.ts",
+      "outputFile": "apps/api/app/api/administrative/chat/participants/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "AdminChatParticipant",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/chat/participants/[id]/route.ts",
+      "outputFile": "apps/api/app/api/administrative/chat/participants/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "AdminChatThread",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/chat/threads/list/route.ts",
+      "outputFile": "apps/api/app/api/administrative/chat/threads/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "AiEventSetupSession",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/ai-setup-sessions/list/route.ts",
+      "outputFile": "apps/api/app/api/events/ai-setup-sessions/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "AiEventSetupSession",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/ai-setup-sessions/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/ai-setup-sessions/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "AlertsConfig",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/alerts-config/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/alerts-config/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "AlertsConfig",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/alerts-config/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/alerts-config/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "AllergenWarning",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/allergen-warnings/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/allergen-warnings/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "AllergenWarning",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/allergen-warnings/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/allergen-warnings/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "ApiKey",
+      "command": null,
+      "pathHint": "apps/api/app/api/settings/api-keys/list/route.ts",
+      "outputFile": "apps/api/app/api/settings/api-keys/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "AuditSchedule",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/audit-schedules/list/route.ts",
+      "outputFile": "apps/api/app/api/inventory/audit-schedules/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "AuditSchedule",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/audit-schedules/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/audit-schedules/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "AutomatedFollowup",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/automated-followups/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/automated-followups/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "BankAccount",
+      "command": null,
+      "pathHint": "apps/api/app/api/accounting/bank-accounts/list/route.ts",
+      "outputFile": "apps/api/app/api/accounting/bank-accounts/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "BankAccount",
+      "command": null,
+      "pathHint": "apps/api/app/api/accounting/bank-accounts/[id]/route.ts",
+      "outputFile": "apps/api/app/api/accounting/bank-accounts/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "BattleBoard",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/battle-boards/list/route.ts",
+      "outputFile": "apps/api/app/api/events/battle-boards/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "BattleBoard",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/battle-boards/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/battle-boards/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "BoardAnnotation",
+      "command": null,
+      "pathHint": "apps/api/app/api/command-board/annotations/list/route.ts",
+      "outputFile": "apps/api/app/api/command-board/annotations/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "BoardAnnotation",
+      "command": null,
+      "pathHint": "apps/api/app/api/command-board/annotations/[id]/route.ts",
+      "outputFile": "apps/api/app/api/command-board/annotations/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "BoardProjection",
+      "command": null,
+      "pathHint": "apps/api/app/api/command-board/projections/list/route.ts",
+      "outputFile": "apps/api/app/api/command-board/projections/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "BoardProjection",
+      "command": null,
+      "pathHint": "apps/api/app/api/command-board/projections/[id]/route.ts",
+      "outputFile": "apps/api/app/api/command-board/projections/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Budget",
+      "command": null,
+      "pathHint": "apps/api/app/api/accounting/budgets/list/route.ts",
+      "outputFile": "apps/api/app/api/accounting/budgets/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Budget",
+      "command": null,
+      "pathHint": "apps/api/app/api/accounting/budgets/[id]/route.ts",
+      "outputFile": "apps/api/app/api/accounting/budgets/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "BudgetAlert",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/budget-alerts/list/route.ts",
+      "outputFile": "apps/api/app/api/events/budget-alerts/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "BudgetAlert",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/budget-alerts/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/budget-alerts/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "BudgetLineItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/budget-line-items/list/route.ts",
+      "outputFile": "apps/api/app/api/events/budget-line-items/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "BudgetLineItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/budget-line-items/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/budget-line-items/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "BulkCombineRule",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/bulk-combine-rules/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/bulk-combine-rules/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "BulkCombineRule",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/bulk-combine-rules/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/bulk-combine-rules/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "BulkOrderRule",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/bulk-order-rules/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/bulk-order-rules/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "CateringOrder",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/catering-orders/list/route.ts",
+      "outputFile": "apps/api/app/api/events/catering-orders/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "CateringOrder",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/catering-orders/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/catering-orders/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "ClientContact",
+      "command": null,
+      "pathHint": "apps/api/app/api/crm/client-contacts/list/route.ts",
+      "outputFile": "apps/api/app/api/crm/client-contacts/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "ClientContact",
+      "command": null,
+      "pathHint": "apps/api/app/api/crm/client-contacts/[id]/route.ts",
+      "outputFile": "apps/api/app/api/crm/client-contacts/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "ClientInteraction",
+      "command": null,
+      "pathHint": "apps/api/app/api/crm/client-interactions/list/route.ts",
+      "outputFile": "apps/api/app/api/crm/client-interactions/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "ClientInteraction",
+      "command": null,
+      "pathHint": "apps/api/app/api/crm/client-interactions/[id]/route.ts",
+      "outputFile": "apps/api/app/api/crm/client-interactions/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "ClientPreference",
+      "command": null,
+      "pathHint": "apps/api/app/api/crm/client-preferences/list/route.ts",
+      "outputFile": "apps/api/app/api/crm/client-preferences/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "ClientPreference",
+      "command": null,
+      "pathHint": "apps/api/app/api/crm/client-preferences/[id]/route.ts",
+      "outputFile": "apps/api/app/api/crm/client-preferences/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "CollectionAction",
+      "command": null,
+      "pathHint": "apps/api/app/api/accounting/collections/actions/list/route.ts",
+      "outputFile": "apps/api/app/api/accounting/collections/actions/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "CollectionAction",
+      "command": null,
+      "pathHint": "apps/api/app/api/accounting/collections/actions/[id]/route.ts",
+      "outputFile": "apps/api/app/api/accounting/collections/actions/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "CollectionCase",
+      "command": null,
+      "pathHint": "apps/api/app/api/accounting/collections/cases/list/route.ts",
+      "outputFile": "apps/api/app/api/accounting/collections/cases/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "CollectionPaymentPlan",
+      "command": null,
+      "pathHint": "apps/api/app/api/accounting/collections/payment-plans/list/route.ts",
+      "outputFile": "apps/api/app/api/accounting/collections/payment-plans/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "CollectionPaymentPlan",
+      "command": null,
+      "pathHint": "apps/api/app/api/accounting/collections/payment-plans/[id]/route.ts",
+      "outputFile": "apps/api/app/api/accounting/collections/payment-plans/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "CommandBoard",
+      "command": null,
+      "pathHint": "apps/api/app/api/command-board/boards/list/route.ts",
+      "outputFile": "apps/api/app/api/command-board/boards/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "CommandBoard",
+      "command": null,
+      "pathHint": "apps/api/app/api/command-board/boards/[id]/route.ts",
+      "outputFile": "apps/api/app/api/command-board/boards/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "CommandBoardCard",
+      "command": null,
+      "pathHint": "apps/api/app/api/command-board/cards/list/route.ts",
+      "outputFile": "apps/api/app/api/command-board/cards/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "CommandBoardCard",
+      "command": null,
+      "pathHint": "apps/api/app/api/command-board/cards/[id]/route.ts",
+      "outputFile": "apps/api/app/api/command-board/cards/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "CommandBoardConnection",
+      "command": null,
+      "pathHint": "apps/api/app/api/command-board/connections/list/route.ts",
+      "outputFile": "apps/api/app/api/command-board/connections/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "CommandBoardConnection",
+      "command": null,
+      "pathHint": "apps/api/app/api/command-board/connections/[id]/route.ts",
+      "outputFile": "apps/api/app/api/command-board/connections/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "CommandBoardGroup",
+      "command": null,
+      "pathHint": "apps/api/app/api/command-board/groups/list/route.ts",
+      "outputFile": "apps/api/app/api/command-board/groups/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "CommandBoardGroup",
+      "command": null,
+      "pathHint": "apps/api/app/api/command-board/groups/[id]/route.ts",
+      "outputFile": "apps/api/app/api/command-board/groups/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "CommandBoardLayout",
+      "command": null,
+      "pathHint": "apps/api/app/api/command-board/layouts/list/route.ts",
+      "outputFile": "apps/api/app/api/command-board/layouts/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "CommandBoardLayout",
+      "command": null,
+      "pathHint": "apps/api/app/api/command-board/layouts/[id]/route.ts",
+      "outputFile": "apps/api/app/api/command-board/layouts/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Container",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/containers/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/containers/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Container",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/containers/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/containers/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "ContractSignature",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/contract-signatures/list/route.ts",
+      "outputFile": "apps/api/app/api/events/contract-signatures/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "ContractSignature",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/contract-signatures/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/contract-signatures/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "CorrectiveAction",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/corrective-actions/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/corrective-actions/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "CorrectiveAction",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/corrective-actions/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/corrective-actions/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "CrmScoringRule",
+      "command": null,
+      "pathHint": "apps/api/app/api/crm/scoring-rules/list/route.ts",
+      "outputFile": "apps/api/app/api/crm/scoring-rules/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "CrmScoringRule",
+      "command": null,
+      "pathHint": "apps/api/app/api/crm/scoring-rules/[id]/route.ts",
+      "outputFile": "apps/api/app/api/crm/scoring-rules/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "CycleCountRecord",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/cycle-count/records/list/route.ts",
+      "outputFile": "apps/api/app/api/inventory/cycle-count/records/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "CycleCountSession",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/cycle-count/sessions/list/route.ts",
+      "outputFile": "apps/api/app/api/inventory/cycle-count/sessions/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "CycleCountSession",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/cycle-count/sessions/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/cycle-count/sessions/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Deal",
+      "command": null,
+      "pathHint": "apps/api/app/api/crm/deals/[id]/route.ts",
+      "outputFile": "apps/api/app/api/crm/deals/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "DeliveryRoute",
+      "command": null,
+      "pathHint": "apps/api/app/api/logistics/delivery-routes/list/route.ts",
+      "outputFile": "apps/api/app/api/logistics/delivery-routes/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "DeliveryRoute",
+      "command": null,
+      "pathHint": "apps/api/app/api/logistics/delivery-routes/[id]/route.ts",
+      "outputFile": "apps/api/app/api/logistics/delivery-routes/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "DisciplinaryAction",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/disciplinary-actions/list/route.ts",
+      "outputFile": "apps/api/app/api/staff/disciplinary-actions/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "DisciplinaryAction",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/disciplinary-actions/[id]/route.ts",
+      "outputFile": "apps/api/app/api/staff/disciplinary-actions/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Dish",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/dishes/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/dishes/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Dish",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/dishes/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/dishes/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Document",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/documents/list/route.ts",
+      "outputFile": "apps/api/app/api/administrative/documents/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Document",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/documents/[id]/route.ts",
+      "outputFile": "apps/api/app/api/administrative/documents/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "DocumentVersion",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/document-versions/list/route.ts",
+      "outputFile": "apps/api/app/api/administrative/document-versions/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "DocumentVersion",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/document-versions/[id]/route.ts",
+      "outputFile": "apps/api/app/api/administrative/document-versions/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Driver",
+      "command": null,
+      "pathHint": "apps/api/app/api/logistics/drivers/[id]/route.ts",
+      "outputFile": "apps/api/app/api/logistics/drivers/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EmailTemplate",
+      "command": null,
+      "pathHint": "apps/api/app/api/communications/email-templates/list/route.ts",
+      "outputFile": "apps/api/app/api/communications/email-templates/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "EmailTemplate",
+      "command": null,
+      "pathHint": "apps/api/app/api/communications/email-templates/[id]/route.ts",
+      "outputFile": "apps/api/app/api/communications/email-templates/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EmailWorkflow",
+      "command": null,
+      "pathHint": "apps/api/app/api/communications/email-workflows/list/route.ts",
+      "outputFile": "apps/api/app/api/communications/email-workflows/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "EmailWorkflow",
+      "command": null,
+      "pathHint": "apps/api/app/api/communications/email-workflows/[id]/route.ts",
+      "outputFile": "apps/api/app/api/communications/email-workflows/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EmployeeAvailability",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/availability/list/route.ts",
+      "outputFile": "apps/api/app/api/staff/availability/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EmployeeCertification",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/certifications/list/route.ts",
+      "outputFile": "apps/api/app/api/staff/certifications/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EmployeeDeduction",
+      "command": null,
+      "pathHint": "apps/api/app/api/payroll/deductions/list/route.ts",
+      "outputFile": "apps/api/app/api/payroll/deductions/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "EmployeeDeduction",
+      "command": null,
+      "pathHint": "apps/api/app/api/payroll/deductions/[id]/route.ts",
+      "outputFile": "apps/api/app/api/payroll/deductions/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EntityVersion",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/entity-versions/list/route.ts",
+      "outputFile": "apps/api/app/api/administrative/entity-versions/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "EntityVersion",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/entity-versions/[id]/route.ts",
+      "outputFile": "apps/api/app/api/administrative/entity-versions/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Equipment",
+      "command": null,
+      "pathHint": "apps/api/app/api/facilities/equipment/list/route.ts",
+      "outputFile": "apps/api/app/api/facilities/equipment/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Equipment",
+      "command": null,
+      "pathHint": "apps/api/app/api/facilities/equipment/[id]/route.ts",
+      "outputFile": "apps/api/app/api/facilities/equipment/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Event",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/event/list/route.ts",
+      "outputFile": "apps/api/app/api/events/event/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Event",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/event/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/event/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EventBudget",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/budgets/list/route.ts",
+      "outputFile": "apps/api/app/api/events/budgets/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EventContract",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/contracts/list/route.ts",
+      "outputFile": "apps/api/app/api/events/contracts/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EventDish",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/event-dishes/list/route.ts",
+      "outputFile": "apps/api/app/api/events/event-dishes/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "EventDish",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/event-dishes/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/event-dishes/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EventFollowup",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/followups/list/route.ts",
+      "outputFile": "apps/api/app/api/events/followups/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "EventFollowup",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/followups/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/followups/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EventGuest",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/guests/list/route.ts",
+      "outputFile": "apps/api/app/api/events/guests/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "EventGuest",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/guests/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/guests/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EventImport",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/imports/list/route.ts",
+      "outputFile": "apps/api/app/api/events/imports/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EventImportWorkflow",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/import-workflows/list/route.ts",
+      "outputFile": "apps/api/app/api/events/import-workflows/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "EventImportWorkflow",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/import-workflows/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/import-workflows/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EventProfitability",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/profitability/list/route.ts",
+      "outputFile": "apps/api/app/api/events/profitability/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "EventProfitability",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/profitability/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/profitability/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EventReport",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/reports/list/route.ts",
+      "outputFile": "apps/api/app/api/events/reports/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "EventReport",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/reports/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/reports/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EventStaff",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/staff/list/route.ts",
+      "outputFile": "apps/api/app/api/events/staff/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "EventStaff",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/staff/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/staff/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EventSummary",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/summaries/list/route.ts",
+      "outputFile": "apps/api/app/api/events/summaries/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "EventSummary",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/summaries/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/summaries/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EventTimeline",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/timelines/list/route.ts",
+      "outputFile": "apps/api/app/api/events/timelines/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "EventTimeline",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/timelines/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/timelines/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EventTimelineItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/timeline-items/list/route.ts",
+      "outputFile": "apps/api/app/api/events/timeline-items/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "EventTimelineItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/timeline-items/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/timeline-items/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "EventWaitlistEntry",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/waitlist-entries/list/route.ts",
+      "outputFile": "apps/api/app/api/events/waitlist-entries/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "EventWaitlistEntry",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/waitlist-entries/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/waitlist-entries/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Facility",
+      "command": null,
+      "pathHint": "apps/api/app/api/facilities/facilities/list/route.ts",
+      "outputFile": "apps/api/app/api/facilities/facilities/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Facility",
+      "command": null,
+      "pathHint": "apps/api/app/api/facilities/facilities/[id]/route.ts",
+      "outputFile": "apps/api/app/api/facilities/facilities/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "FacilityArea",
+      "command": null,
+      "pathHint": "apps/api/app/api/facilities/areas/[id]/route.ts",
+      "outputFile": "apps/api/app/api/facilities/areas/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "FacilityAsset",
+      "command": null,
+      "pathHint": "apps/api/app/api/facilities/assets/[id]/route.ts",
+      "outputFile": "apps/api/app/api/facilities/assets/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "FacilitySchedule",
+      "command": null,
+      "pathHint": "apps/api/app/api/facilities/schedules/[id]/route.ts",
+      "outputFile": "apps/api/app/api/facilities/schedules/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "FacilityWorkOrder",
+      "command": null,
+      "pathHint": "apps/api/app/api/facilities/work-orders/[id]/route.ts",
+      "outputFile": "apps/api/app/api/facilities/work-orders/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "ForecastInput",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/forecast-inputs/list/route.ts",
+      "outputFile": "apps/api/app/api/inventory/forecast-inputs/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "ForecastInput",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/forecast-inputs/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/forecast-inputs/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Ingredient",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/ingredients/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/ingredients/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "InteractionAttachment",
+      "command": null,
+      "pathHint": "apps/api/app/api/crm/interaction-attachments/list/route.ts",
+      "outputFile": "apps/api/app/api/crm/interaction-attachments/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "InteractionAttachment",
+      "command": null,
+      "pathHint": "apps/api/app/api/crm/interaction-attachments/[id]/route.ts",
+      "outputFile": "apps/api/app/api/crm/interaction-attachments/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "InventoryAlert",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/alerts/list/route.ts",
+      "outputFile": "apps/api/app/api/inventory/alerts/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "InventoryAlert",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/alerts/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/alerts/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "InventoryForecast",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/forecasts/list/route.ts",
+      "outputFile": "apps/api/app/api/inventory/forecasts/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "InventoryForecast",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/forecasts/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/forecasts/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "InventoryItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/inventory/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/inventory/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "InventoryItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/inventory/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/inventory/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "InventoryStock",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/stock/list/route.ts",
+      "outputFile": "apps/api/app/api/inventory/stock/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "InventoryStock",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/stock/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/stock/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "InventorySupplier",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/suppliers/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/suppliers/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "InventoryTransaction",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/transactions/list/route.ts",
+      "outputFile": "apps/api/app/api/inventory/transactions/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "InventoryTransaction",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/transactions/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/transactions/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "InventoryTransfer",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/transfers/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/transfers/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "InventoryTransferItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/transfer-items/list/route.ts",
+      "outputFile": "apps/api/app/api/inventory/transfer-items/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "InventoryTransferItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/transfer-items/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/transfer-items/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Invoice",
+      "command": null,
+      "pathHint": "apps/api/app/api/accounting/invoices/list/route.ts",
+      "outputFile": "apps/api/app/api/accounting/invoices/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "IoTAlert",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/iot-alerts/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/iot-alerts/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "IoTAlert",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/iot-alerts/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/iot-alerts/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "IotAlertRule",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/iot-alert-rules/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/iot-alert-rules/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "IotAlertRule",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/iot-alert-rules/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/iot-alert-rules/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "KitchenTask",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/kitchen-tasks/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/kitchen-tasks/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "KitchenTask",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/kitchen-tasks/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/kitchen-tasks/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "KitchenTaskClaim",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/task-claims/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/task-claims/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "KitchenTaskClaim",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/task-claims/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/task-claims/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "KitchenTaskProgress",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/task-progress/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/task-progress/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "KitchenTaskProgress",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/task-progress/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/task-progress/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "KnowledgeBaseEntry",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/knowledge-base/list/route.ts",
+      "outputFile": "apps/api/app/api/administrative/knowledge-base/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "KnowledgeBaseEntry",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/knowledge-base/[id]/route.ts",
+      "outputFile": "apps/api/app/api/administrative/knowledge-base/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "LaborBudget",
+      "command": null,
+      "pathHint": "apps/api/app/api/payroll/labor-budgets/list/route.ts",
+      "outputFile": "apps/api/app/api/payroll/labor-budgets/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "LaborBudget",
+      "command": null,
+      "pathHint": "apps/api/app/api/payroll/labor-budgets/[id]/route.ts",
+      "outputFile": "apps/api/app/api/payroll/labor-budgets/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Lead",
+      "command": null,
+      "pathHint": "apps/api/app/api/crm/leads/[id]/route.ts",
+      "outputFile": "apps/api/app/api/crm/leads/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "LogisticsDispatch",
+      "command": null,
+      "pathHint": "apps/api/app/api/logistics/dispatches/list/route.ts",
+      "outputFile": "apps/api/app/api/logistics/dispatches/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "LogisticsDispatch",
+      "command": null,
+      "pathHint": "apps/api/app/api/logistics/dispatches/[id]/route.ts",
+      "outputFile": "apps/api/app/api/logistics/dispatches/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "LogisticsRoute",
+      "command": null,
+      "pathHint": "apps/api/app/api/logistics/routes/[id]/route.ts",
+      "outputFile": "apps/api/app/api/logistics/routes/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "MaintenanceWorkOrder",
+      "command": null,
+      "pathHint": "apps/api/app/api/facilities/maintenance-work-orders/list/route.ts",
+      "outputFile": "apps/api/app/api/facilities/maintenance-work-orders/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "MaintenanceWorkOrder",
+      "command": null,
+      "pathHint": "apps/api/app/api/facilities/maintenance-work-orders/[id]/route.ts",
+      "outputFile": "apps/api/app/api/facilities/maintenance-work-orders/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Menu",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/menus/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/menus/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Menu",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/menus/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/menus/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "MenuDish",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/menu-dishes/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/menu-dishes/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "MenuDish",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/menu-dishes/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/menu-dishes/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "MethodVideo",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/method-videos/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/method-videos/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "MethodVideo",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/method-videos/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/method-videos/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Note",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/notes/list/route.ts",
+      "outputFile": "apps/api/app/api/administrative/notes/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Note",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/notes/[id]/route.ts",
+      "outputFile": "apps/api/app/api/administrative/notes/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Notification",
+      "command": null,
+      "pathHint": "apps/api/app/api/collaboration/notifications/list/route.ts",
+      "outputFile": "apps/api/app/api/collaboration/notifications/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Notification",
+      "command": null,
+      "pathHint": "apps/api/app/api/collaboration/notifications/[id]/route.ts",
+      "outputFile": "apps/api/app/api/collaboration/notifications/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "OnboardingCompletion",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/onboarding-completions/list/route.ts",
+      "outputFile": "apps/api/app/api/staff/onboarding-completions/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "OnboardingCompletion",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/onboarding-completions/[id]/route.ts",
+      "outputFile": "apps/api/app/api/staff/onboarding-completions/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "OnboardingTask",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/onboarding-tasks/list/route.ts",
+      "outputFile": "apps/api/app/api/staff/onboarding-tasks/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "OnboardingTask",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/onboarding-tasks/[id]/route.ts",
+      "outputFile": "apps/api/app/api/staff/onboarding-tasks/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "OpenShift",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/open-shifts/list/route.ts",
+      "outputFile": "apps/api/app/api/staff/open-shifts/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "OpenShift",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/open-shifts/[id]/route.ts",
+      "outputFile": "apps/api/app/api/staff/open-shifts/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "OverrideAudit",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/override-audits/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/override-audits/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "OverrideAudit",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/override-audits/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/override-audits/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Payment",
+      "command": null,
+      "pathHint": "apps/api/app/api/accounting/payments/list/route.ts",
+      "outputFile": "apps/api/app/api/accounting/payments/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PaymentMethod",
+      "command": null,
+      "pathHint": "apps/api/app/api/accounting/payment-methods/list/route.ts",
+      "outputFile": "apps/api/app/api/accounting/payment-methods/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PaymentRefundAttempt",
+      "command": null,
+      "pathHint": "apps/api/app/api/accounting/payment-refund-attempts/list/route.ts",
+      "outputFile": "apps/api/app/api/accounting/payment-refund-attempts/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "PaymentRefundAttempt",
+      "command": null,
+      "pathHint": "apps/api/app/api/accounting/payment-refund-attempts/[id]/route.ts",
+      "outputFile": "apps/api/app/api/accounting/payment-refund-attempts/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PayrollApprovalHistory",
+      "command": null,
+      "pathHint": "apps/api/app/api/payroll/approval-history/list/route.ts",
+      "outputFile": "apps/api/app/api/payroll/approval-history/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "PayrollApprovalHistory",
+      "command": null,
+      "pathHint": "apps/api/app/api/payroll/approval-history/[id]/route.ts",
+      "outputFile": "apps/api/app/api/payroll/approval-history/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PayrollLineItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/payroll-line-items/list/route.ts",
+      "outputFile": "apps/api/app/api/staff/payroll-line-items/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "PayrollLineItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/payroll-line-items/[id]/route.ts",
+      "outputFile": "apps/api/app/api/staff/payroll-line-items/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PayrollPeriod",
+      "command": null,
+      "pathHint": "apps/api/app/api/payroll/periods/list/route.ts",
+      "outputFile": "apps/api/app/api/payroll/periods/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "PayrollPeriod",
+      "command": null,
+      "pathHint": "apps/api/app/api/payroll/periods/[id]/route.ts",
+      "outputFile": "apps/api/app/api/payroll/periods/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PayrollRun",
+      "command": null,
+      "pathHint": "apps/api/app/api/payroll/runs/list/route.ts",
+      "outputFile": "apps/api/app/api/payroll/runs/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "PayrollRun",
+      "command": null,
+      "pathHint": "apps/api/app/api/payroll/runs/[id]/route.ts",
+      "outputFile": "apps/api/app/api/payroll/runs/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PerformancePrediction",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/performance-predictions/list/route.ts",
+      "outputFile": "apps/api/app/api/staff/performance-predictions/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "PerformancePrediction",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/performance-predictions/[id]/route.ts",
+      "outputFile": "apps/api/app/api/staff/performance-predictions/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PerformanceReview",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/performance-reviews/list/route.ts",
+      "outputFile": "apps/api/app/api/staff/performance-reviews/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "PerformanceReview",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/performance-reviews/[id]/route.ts",
+      "outputFile": "apps/api/app/api/staff/performance-reviews/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PrepComment",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/prep-comments/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/prep-comments/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "PrepComment",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/prep-comments/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/prep-comments/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PrepList",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/prep-lists/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/prep-lists/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PrepListImport",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/prep-list-imports/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/prep-list-imports/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "PrepListImport",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/prep-list-imports/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/prep-list-imports/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PrepListItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/prep-list-items/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/prep-list-items/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "PrepListItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/prep-list-items/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/prep-list-items/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PrepMethod",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/prep-methods/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/prep-methods/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "PrepMethod",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/prep-methods/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/prep-methods/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "PrepTask",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/prep-tasks/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/prep-tasks/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PrepTaskPlanWorkflow",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/prep-task-plan-workflows/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/prep-task-plan-workflows/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "PrepTaskPlanWorkflow",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/prep-task-plan-workflows/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/prep-task-plan-workflows/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PreventiveMaintenanceSchedule",
+      "command": null,
+      "pathHint": "apps/api/app/api/facilities/preventive-maintenance/list/route.ts",
+      "outputFile": "apps/api/app/api/facilities/preventive-maintenance/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "PreventiveMaintenanceSchedule",
+      "command": null,
+      "pathHint": "apps/api/app/api/facilities/preventive-maintenance/[id]/route.ts",
+      "outputFile": "apps/api/app/api/facilities/preventive-maintenance/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "PricingTier",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/pricing-tiers/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/pricing-tiers/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "ProcurementBudget",
+      "command": null,
+      "pathHint": "apps/api/app/api/procurement/budgets/list/route.ts",
+      "outputFile": "apps/api/app/api/procurement/budgets/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "ProcurementBudget",
+      "command": null,
+      "pathHint": "apps/api/app/api/procurement/budgets/[id]/route.ts",
+      "outputFile": "apps/api/app/api/procurement/budgets/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "ProcurementBudgetAlert",
+      "command": null,
+      "pathHint": "apps/api/app/api/procurement/budget-alerts/list/route.ts",
+      "outputFile": "apps/api/app/api/procurement/budget-alerts/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "ProcurementBudgetAlert",
+      "command": null,
+      "pathHint": "apps/api/app/api/procurement/budget-alerts/[id]/route.ts",
+      "outputFile": "apps/api/app/api/procurement/budget-alerts/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Proposal",
+      "command": null,
+      "pathHint": "apps/api/app/api/crm/proposals/list/route.ts",
+      "outputFile": "apps/api/app/api/crm/proposals/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "ProposalLineItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/crm/proposal-line-items/list/route.ts",
+      "outputFile": "apps/api/app/api/crm/proposal-line-items/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "ProposalLineItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/crm/proposal-line-items/[id]/route.ts",
+      "outputFile": "apps/api/app/api/crm/proposal-line-items/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "ProposalTemplate",
+      "command": null,
+      "pathHint": "apps/api/app/api/crm/proposal-templates/list/route.ts",
+      "outputFile": "apps/api/app/api/crm/proposal-templates/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "ProposalTemplate",
+      "command": null,
+      "pathHint": "apps/api/app/api/crm/proposal-templates/[id]/route.ts",
+      "outputFile": "apps/api/app/api/crm/proposal-templates/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PurchaseOrder",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/purchase-orders/list/route.ts",
+      "outputFile": "apps/api/app/api/inventory/purchase-orders/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PurchaseOrderItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/purchase-order-items/list/route.ts",
+      "outputFile": "apps/api/app/api/inventory/purchase-order-items/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "PurchaseOrderItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/purchase-order-items/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/purchase-order-items/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PurchaseRequisition",
+      "command": null,
+      "pathHint": "apps/api/app/api/procurement/requisitions/list/route.ts",
+      "outputFile": "apps/api/app/api/procurement/requisitions/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "PurchaseRequisition",
+      "command": null,
+      "pathHint": "apps/api/app/api/procurement/requisitions/[id]/route.ts",
+      "outputFile": "apps/api/app/api/procurement/requisitions/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "PurchaseRequisitionItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/procurement/requisition-items/list/route.ts",
+      "outputFile": "apps/api/app/api/procurement/requisition-items/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "PurchaseRequisitionItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/procurement/requisition-items/[id]/route.ts",
+      "outputFile": "apps/api/app/api/procurement/requisition-items/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "QACheck",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/qa-checks/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/qa-checks/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "QACheck",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/qa-checks/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/qa-checks/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "QACorrectiveAction",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/qa-corrective-actions/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/qa-corrective-actions/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "QACorrectiveAction",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/qa-corrective-actions/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/qa-corrective-actions/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "QATemperatureLog",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/qa-temperature-logs/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/qa-temperature-logs/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "QATemperatureLog",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/qa-temperature-logs/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/qa-temperature-logs/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "QualityCheck",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/quality-checks/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/quality-checks/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "QualityCheck",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/quality-checks/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/quality-checks/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "QualityCheckItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/quality-check-items/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/quality-check-items/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "QualityCheckItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/quality-check-items/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/quality-check-items/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "RateLimitConfig",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/rate-limits/list/route.ts",
+      "outputFile": "apps/api/app/api/administrative/rate-limits/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "RateLimitConfig",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/rate-limits/[id]/route.ts",
+      "outputFile": "apps/api/app/api/administrative/rate-limits/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Recipe",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/recipes/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/recipes/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "RecipeIngredient",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/recipe-ingredients/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/recipe-ingredients/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "RecipeIngredient",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/recipe-ingredients/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/recipe-ingredients/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "RecipeStep",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/recipe-steps/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/recipe-steps/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "RecipeStep",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/recipe-steps/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/recipe-steps/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "RecipeVersion",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/recipe-versions/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/recipe-versions/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "RecipeVersion",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/recipe-versions/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/recipe-versions/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "ReorderSuggestion",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/reorder-suggestions/list/route.ts",
+      "outputFile": "apps/api/app/api/inventory/reorder-suggestions/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "ReorderSuggestion",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/reorder-suggestions/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/reorder-suggestions/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Report",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/reports/list/route.ts",
+      "outputFile": "apps/api/app/api/administrative/reports/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Report",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/reports/[id]/route.ts",
+      "outputFile": "apps/api/app/api/administrative/reports/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "RevenueRecognitionLine",
+      "command": null,
+      "pathHint": "apps/api/app/api/accounting/revenue-recognition/lines/list/route.ts",
+      "outputFile": "apps/api/app/api/accounting/revenue-recognition/lines/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "RevenueRecognitionLine",
+      "command": null,
+      "pathHint": "apps/api/app/api/accounting/revenue-recognition/lines/[id]/route.ts",
+      "outputFile": "apps/api/app/api/accounting/revenue-recognition/lines/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "RevenueRecognitionSchedule",
+      "command": null,
+      "pathHint": "apps/api/app/api/accounting/revenue-recognition/schedules/list/route.ts",
+      "outputFile": "apps/api/app/api/accounting/revenue-recognition/schedules/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "RolePolicy",
+      "command": null,
+      "pathHint": "apps/api/app/api/rolepolicy/policies/list/route.ts",
+      "outputFile": "apps/api/app/api/rolepolicy/policies/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "RolePolicy",
+      "command": null,
+      "pathHint": "apps/api/app/api/rolepolicy/policies/[id]/route.ts",
+      "outputFile": "apps/api/app/api/rolepolicy/policies/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "RouteStop",
+      "command": null,
+      "pathHint": "apps/api/app/api/logistics/route-stops/list/route.ts",
+      "outputFile": "apps/api/app/api/logistics/route-stops/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "RouteStop",
+      "command": null,
+      "pathHint": "apps/api/app/api/logistics/route-stops/[id]/route.ts",
+      "outputFile": "apps/api/app/api/logistics/route-stops/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "SampleData",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/sample-data/list/route.ts",
+      "outputFile": "apps/api/app/api/administrative/sample-data/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "SampleData",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/sample-data/[id]/route.ts",
+      "outputFile": "apps/api/app/api/administrative/sample-data/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Schedule",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/schedules/[id]/route.ts",
+      "outputFile": "apps/api/app/api/staff/schedules/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "ScheduleShift",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/shifts/list/route.ts",
+      "outputFile": "apps/api/app/api/staff/shifts/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "ScheduleShift",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/shifts/[id]/route.ts",
+      "outputFile": "apps/api/app/api/staff/shifts/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Shipment",
+      "command": null,
+      "pathHint": "apps/api/app/api/shipments/shipment/list/route.ts",
+      "outputFile": "apps/api/app/api/shipments/shipment/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Shipment",
+      "command": null,
+      "pathHint": "apps/api/app/api/shipments/shipment/[id]/route.ts",
+      "outputFile": "apps/api/app/api/shipments/shipment/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "ShipmentItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/shipments/shipment-items/list/route.ts",
+      "outputFile": "apps/api/app/api/shipments/shipment-items/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "ShipmentItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/shipments/shipment-items/[id]/route.ts",
+      "outputFile": "apps/api/app/api/shipments/shipment-items/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "SmsAutomationRule",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/sms-automation-rules/list/route.ts",
+      "outputFile": "apps/api/app/api/administrative/sms-automation-rules/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "SmsAutomationRule",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/sms-automation-rules/[id]/route.ts",
+      "outputFile": "apps/api/app/api/administrative/sms-automation-rules/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "StaffMember",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/members/list/route.ts",
+      "outputFile": "apps/api/app/api/staff/members/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "StaffMember",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/members/[id]/route.ts",
+      "outputFile": "apps/api/app/api/staff/members/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "StaffPerformance",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/performance/[id]/route.ts",
+      "outputFile": "apps/api/app/api/staff/performance/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Station",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/stations/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/stations/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Station",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/stations/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/stations/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "StorageLocation",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/storage-locations/list/route.ts",
+      "outputFile": "apps/api/app/api/inventory/storage-locations/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "StorageLocation",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/storage-locations/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/storage-locations/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "TaskBundle",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/task-bundles/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/task-bundles/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "TaskBundle",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/task-bundles/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/task-bundles/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "TaskBundleItem",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/task-bundle-items/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/task-bundle-items/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "TemperatureLog",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/temperature-logs/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/temperature-logs/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "TemperatureLog",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/temperature-logs/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/temperature-logs/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "TemperatureProbe",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/temperature-probes/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/temperature-probes/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "TemperatureProbe",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/temperature-probes/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/temperature-probes/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "TemperatureReading",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/temperature-readings/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/temperature-readings/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "TemperatureReading",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/temperature-readings/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/temperature-readings/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "TimecardApproval",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/timecard-approvals/list/route.ts",
+      "outputFile": "apps/api/app/api/staff/timecard-approvals/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "TimecardApproval",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/timecard-approvals/[id]/route.ts",
+      "outputFile": "apps/api/app/api/staff/timecard-approvals/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "TimecardEditRequest",
+      "command": null,
+      "pathHint": "apps/api/app/api/timecards/edit-requests/list/route.ts",
+      "outputFile": "apps/api/app/api/timecards/edit-requests/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "TimecardEditRequest",
+      "command": null,
+      "pathHint": "apps/api/app/api/timecards/edit-requests/[id]/route.ts",
+      "outputFile": "apps/api/app/api/timecards/edit-requests/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "TimeEntry",
+      "command": null,
+      "pathHint": "apps/api/app/api/timecards/entries/list/route.ts",
+      "outputFile": "apps/api/app/api/timecards/entries/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "TimeEntry",
+      "command": null,
+      "pathHint": "apps/api/app/api/timecards/entries/[id]/route.ts",
+      "outputFile": "apps/api/app/api/timecards/entries/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "TimelineTask",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/timeline-tasks/list/route.ts",
+      "outputFile": "apps/api/app/api/events/timeline-tasks/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "TimelineTask",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/timeline-tasks/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/timeline-tasks/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "TimeOffRequest",
+      "command": null,
+      "pathHint": "apps/api/app/api/timecards/time-off-requests/list/route.ts",
+      "outputFile": "apps/api/app/api/timecards/time-off-requests/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "TimeOffRequest",
+      "command": null,
+      "pathHint": "apps/api/app/api/timecards/time-off-requests/[id]/route.ts",
+      "outputFile": "apps/api/app/api/timecards/time-off-requests/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "TipPool",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/tip-pools/list/route.ts",
+      "outputFile": "apps/api/app/api/staff/tip-pools/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "TipPool",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/tip-pools/[id]/route.ts",
+      "outputFile": "apps/api/app/api/staff/tip-pools/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "TrainingAssignment",
+      "command": null,
+      "pathHint": "apps/api/app/api/training/assignments/list/route.ts",
+      "outputFile": "apps/api/app/api/training/assignments/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "TrainingAssignment",
+      "command": null,
+      "pathHint": "apps/api/app/api/training/assignments/[id]/route.ts",
+      "outputFile": "apps/api/app/api/training/assignments/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "TrainingCompletion",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/training-completions/list/route.ts",
+      "outputFile": "apps/api/app/api/staff/training-completions/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "TrainingCompletion",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/training-completions/[id]/route.ts",
+      "outputFile": "apps/api/app/api/staff/training-completions/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "TrainingModule",
+      "command": null,
+      "pathHint": "apps/api/app/api/training/modules/list/route.ts",
+      "outputFile": "apps/api/app/api/training/modules/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "User",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/employees/list/route.ts",
+      "outputFile": "apps/api/app/api/staff/employees/list/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "VarianceReport",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/cycle-count/variance-reports/list/route.ts",
+      "outputFile": "apps/api/app/api/inventory/cycle-count/variance-reports/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "VarianceReport",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/cycle-count/variance-reports/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/cycle-count/variance-reports/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Vehicle",
+      "command": null,
+      "pathHint": "apps/api/app/api/logistics/vehicles/[id]/route.ts",
+      "outputFile": "apps/api/app/api/logistics/vehicles/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Vendor",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/vendors/list/route.ts",
+      "outputFile": "apps/api/app/api/inventory/vendors/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Vendor",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/vendors/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/vendors/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "VendorCatalog",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/vendor-catalogs/list/route.ts",
+      "outputFile": "apps/api/app/api/inventory/vendor-catalogs/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "VendorCatalog",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/vendor-catalogs/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/vendor-catalogs/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "VendorContact",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/vendor-contacts/list/route.ts",
+      "outputFile": "apps/api/app/api/inventory/vendor-contacts/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "VendorContact",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/vendor-contacts/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/vendor-contacts/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "VendorContract",
+      "command": null,
+      "pathHint": "apps/api/app/api/procurement/vendor-contracts/list/route.ts",
+      "outputFile": "apps/api/app/api/procurement/vendor-contracts/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "VendorContract",
+      "command": null,
+      "pathHint": "apps/api/app/api/procurement/vendor-contracts/[id]/route.ts",
+      "outputFile": "apps/api/app/api/procurement/vendor-contracts/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "VendorRating",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/vendor-ratings/list/route.ts",
+      "outputFile": "apps/api/app/api/inventory/vendor-ratings/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "VendorRating",
+      "command": null,
+      "pathHint": "apps/api/app/api/inventory/vendor-ratings/[id]/route.ts",
+      "outputFile": "apps/api/app/api/inventory/vendor-ratings/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Venue",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/venues/list/route.ts",
+      "outputFile": "apps/api/app/api/events/venues/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Venue",
+      "command": null,
+      "pathHint": "apps/api/app/api/events/venues/[id]/route.ts",
+      "outputFile": "apps/api/app/api/events/venues/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "VersionApproval",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/version-approvals/list/route.ts",
+      "outputFile": "apps/api/app/api/administrative/version-approvals/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "VersionApproval",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/version-approvals/[id]/route.ts",
+      "outputFile": "apps/api/app/api/administrative/version-approvals/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "VersionedEntity",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/versioned-entities/list/route.ts",
+      "outputFile": "apps/api/app/api/administrative/versioned-entities/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "VersionedEntity",
+      "command": null,
+      "pathHint": "apps/api/app/api/administrative/versioned-entities/[id]/route.ts",
+      "outputFile": "apps/api/app/api/administrative/versioned-entities/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "WasteEntry",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/waste-entries/list/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/waste-entries/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "WasteEntry",
+      "command": null,
+      "pathHint": "apps/api/app/api/kitchen/waste-entries/[id]/route.ts",
+      "outputFile": "apps/api/app/api/kitchen/waste-entries/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "Workflow",
+      "command": null,
+      "pathHint": "apps/api/app/api/collaboration/workflows/list/route.ts",
+      "outputFile": "apps/api/app/api/collaboration/workflows/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "Workflow",
+      "command": null,
+      "pathHint": "apps/api/app/api/collaboration/workflows/[id]/route.ts",
+      "outputFile": "apps/api/app/api/collaboration/workflows/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "WorkforceOptimization",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/workforce-optimization/list/route.ts",
+      "outputFile": "apps/api/app/api/staff/workforce-optimization/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "WorkforceOptimization",
+      "command": null,
+      "pathHint": "apps/api/app/api/staff/workforce-optimization/[id]/route.ts",
+      "outputFile": "apps/api/app/api/staff/workforce-optimization/[id]/route.ts"
+    },
+    {
+      "surface": "nextjs.route",
+      "entity": "WorkOrder",
+      "command": null,
+      "pathHint": "apps/api/app/api/facilities/general-work-orders/list/route.ts",
+      "outputFile": "apps/api/app/api/facilities/general-work-orders/list/route.ts"
+    },
+    {
+      "surface": "nextjs.detail",
+      "entity": "WorkOrder",
+      "command": null,
+      "pathHint": "apps/api/app/api/facilities/general-work-orders/[id]/route.ts",
+      "outputFile": "apps/api/app/api/facilities/general-work-orders/[id]/route.ts"
+    }
+  ],
+  "dispatchers": [
+    {
+      "outputFile": "apps/api/app/api/manifest/[entity]/commands/[command]/route.ts",
+      "mode": "interpreter",
+      "dispatchScope": "all-ir-commands",
+      "runtimeEntry": "runManifestCommand"
+    }
+  ]
+}

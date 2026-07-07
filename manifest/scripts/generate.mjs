@@ -18,7 +18,7 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname, relative, resolve } from "node:path";
 import { NextJsProjection } from "@angriff36/manifest/projections/nextjs";
 import { getConfigPaths, readConfig } from "./read-config.mjs";
 
@@ -66,8 +66,17 @@ let written = 0;
 let skippedNonGenerated = 0;
 const emptySurfaces = [];
 
+// Machine-readable generation provenance: every artifact actually written +
+// the dispatcher, so downstream analyzers (Codebase Explorer) can prove
+// GENERATES / DISPATCHES_TO edges instead of inferring from filenames.
+// ponytail: capsule-local proof of shape — the long-term owner is Manifest's
+// native projection write layer (ProjectionArtifact already carries pathHint).
+const generationRecords = [];
+const repoRelative = (absPath) =>
+  relative(repoRoot, absPath).split("\\").join("/");
+
 /** Write one artifact, never clobbering a hand-written (non-generated) route. */
-const writeArtifact = (artifact) => {
+const writeArtifact = (artifact, surface, entityName) => {
   if (!artifact.pathHint) {
     return;
   }
@@ -84,6 +93,13 @@ const writeArtifact = (artifact) => {
   mkdirSync(dirname(destination), { recursive: true });
   writeFileSync(destination, lintCleanRoute(artifact.code), "utf8");
   written += 1;
+  generationRecords.push({
+    surface,
+    entity: entityName,
+    command: null,
+    pathHint: artifact.pathHint,
+    outputFile: repoRelative(destination),
+  });
 };
 
 /**
@@ -123,7 +139,7 @@ const emit = (surface, entityName) => {
     return;
   }
   for (const artifact of result.artifacts) {
-    writeArtifact(artifact);
+    writeArtifact(artifact, surface, entityName);
   }
 };
 
@@ -201,6 +217,37 @@ if (readRoutesEnabled) {
   ].join("\n");
   writeFileSync(dispatcherPath, dispatcherCode, "utf8");
   console.log(`[manifest/generate] Wrote dispatcher → ${dispatcherPath}`);
+
+  // Emit the generation manifest next to the other runtime artifacts.
+  const generationManifest = {
+    schema: "manifest/generation-manifest",
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    artifacts: generationRecords,
+    dispatchers: [
+      {
+        outputFile: repoRelative(dispatcherPath),
+        mode: "interpreter",
+        // Explicit scope: this one dispatcher resolves EVERY IR command, so
+        // downstream analyzers can justify dispatcher→command edges from the
+        // artifact instead of hidden knowledge of what "interpreter" implies.
+        dispatchScope: "all-ir-commands",
+        runtimeEntry: dispatcherExecutorImportName,
+      },
+    ],
+  };
+  const generationManifestPath = resolve(
+    repoRoot,
+    "manifest/runtime/generation.manifest.json"
+  );
+  writeFileSync(
+    generationManifestPath,
+    JSON.stringify(generationManifest, null, 2) + "\n",
+    "utf8"
+  );
+  console.log(
+    `[manifest/generate] Wrote generation manifest (${generationRecords.length} artifact(s), 1 dispatcher) → ${generationManifestPath}`
+  );
 }
 
 console.log(
