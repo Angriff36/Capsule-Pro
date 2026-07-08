@@ -655,9 +655,145 @@ export const getRecipeForEdit = async (
 };
 
 // Governed soft-delete (Design B): "Delete" sets deletedAt via the Manifest
-// runtime — guards/policy/audit run, and DishDeleted/RecipeDeleted fire the
-// downstream prune. NOT a raw UPDATE, NOT deactivate (separate isActive axis).
+// runtime — guards/policy/audit run. It does NOT auto-remove committed
+// downstream work (EventDish / PrepListItem / PrepTask): a catalog record and a
+// confirmed event commitment are different business facts. Any removal of
+// committed work is explicit and user-chosen (see the dish-deletion impact flow
+// below). NOT a raw UPDATE, NOT deactivate (separate isActive axis).
 const DELETE_REASON = "Deleted from recipe catalog";
+
+/**
+ * Impact of deleting a catalog dish: how much CONFIRMED vs DRAFT commitment and
+ * active production work still references it. Reads only (bypass the runtime).
+ * "Upcoming" = event_date >= today. EventDish/PrepListItem have no status of
+ * their own — confirmation is read through the parent Event.status. Active prep
+ * tasks are those not already done/canceled.
+ */
+export interface DishDeletionImpact {
+  activePrepListItems: number;
+  activePrepTasks: number;
+  confirmedUpcomingEvents: number;
+  draftUpcomingEvents: number;
+  hasDependencies: boolean;
+}
+
+export const getDishDeletionImpact = async (
+  dishId: string
+): Promise<DishDeletionImpact> => {
+  const tenantId = await requireTenantId();
+  const [row] = await database.$queryRaw<
+    {
+      confirmed: bigint;
+      draft: bigint;
+      prep_items: bigint;
+      prep_tasks: bigint;
+    }[]
+  >`
+    SELECT
+      (SELECT COUNT(*) FROM tenant_events.event_dishes ed
+         JOIN tenant_events.events e
+           ON e.tenant_id = ed.tenant_id AND e.id = ed.event_id
+        WHERE ed.tenant_id = ${tenantId} AND ed.dish_id = ${dishId}::uuid
+          AND ed.deleted_at IS NULL AND e.deleted_at IS NULL
+          AND e.status = 'confirmed' AND e.event_date >= CURRENT_DATE) AS confirmed,
+      (SELECT COUNT(*) FROM tenant_events.event_dishes ed
+         JOIN tenant_events.events e
+           ON e.tenant_id = ed.tenant_id AND e.id = ed.event_id
+        WHERE ed.tenant_id = ${tenantId} AND ed.dish_id = ${dishId}::uuid
+          AND ed.deleted_at IS NULL AND e.deleted_at IS NULL
+          AND e.status = 'draft' AND e.event_date >= CURRENT_DATE) AS draft,
+      (SELECT COUNT(*) FROM tenant_kitchen.prep_list_items
+        WHERE tenant_id = ${tenantId} AND dish_id = ${dishId}::uuid
+          AND deleted_at IS NULL) AS prep_items,
+      (SELECT COUNT(*) FROM tenant_kitchen.prep_tasks
+        WHERE tenant_id = ${tenantId} AND dish_id = ${dishId}::uuid
+          AND deleted_at IS NULL AND status::text NOT IN ('done', 'canceled')) AS prep_tasks
+  `;
+  const confirmedUpcomingEvents = Number(row?.confirmed ?? 0);
+  const draftUpcomingEvents = Number(row?.draft ?? 0);
+  const activePrepListItems = Number(row?.prep_items ?? 0);
+  const activePrepTasks = Number(row?.prep_tasks ?? 0);
+  return {
+    confirmedUpcomingEvents,
+    draftUpcomingEvents,
+    activePrepListItems,
+    activePrepTasks,
+    hasDependencies:
+      confirmedUpcomingEvents +
+        draftUpcomingEvents +
+        activePrepListItems +
+        activePrepTasks >
+      0,
+  };
+};
+
+/** EventDish rows for this dish on UPCOMING DRAFT events (the only ones the V1
+ * "remove from draft events only" option retires). Reads only. */
+const loadUpcomingDraftEventDishIds = async (
+  tenantId: string,
+  dishId: string
+): Promise<string[]> => {
+  const rows = await database.$queryRaw<{ id: string }[]>`
+    SELECT ed.id::text AS id
+    FROM tenant_events.event_dishes ed
+    JOIN tenant_events.events e
+      ON e.tenant_id = ed.tenant_id AND e.id = ed.event_id
+    WHERE ed.tenant_id = ${tenantId} AND ed.dish_id = ${dishId}::uuid
+      AND ed.deleted_at IS NULL AND e.deleted_at IS NULL
+      AND e.status = 'draft' AND e.event_date >= CURRENT_DATE
+  `;
+  return rows.map((r) => r.id);
+};
+
+/** Delete mode chosen by the user when dependencies exist. */
+export type DishDeleteMode = "preserve" | "removeDrafts";
+
+/**
+ * Soft-delete a dish, honoring the chosen mode when commitments exist:
+ * - "preserve" (default): hide the catalog dish; leave ALL downstream work.
+ * - "removeDrafts": explicitly remove the dish from UPCOMING DRAFT event menus
+ *   (governed EventDish.remove), preserving confirmed events, then soft-delete.
+ * Never removes confirmed commitments or prep work in V1.
+ */
+const governedDeleteDish = async (dishId: string, mode: DishDeleteMode) => {
+  const user = await requireCurrentUser();
+  const actor = { id: user.id, tenantId: user.tenantId, role: user.role };
+  if (mode === "removeDrafts") {
+    const tenantId = await requireTenantId();
+    const draftEventDishIds = await loadUpcomingDraftEventDishIds(
+      tenantId,
+      dishId
+    );
+    for (const eventDishId of draftEventDishIds) {
+      const removed = await runManifestCommand({
+        entity: "EventDish",
+        command: "remove",
+        instanceId: eventDishId,
+        body: {
+          reason: "Dish removed from catalog (draft events only)",
+          userId: user.id,
+        },
+        user: actor,
+      });
+      if (!removed.ok) {
+        throw new Error(
+          removed.message ||
+            `Failed to remove dish from draft event menu ${eventDishId}`
+        );
+      }
+    }
+  }
+  const result = await runManifestCommand({
+    entity: "Dish",
+    command: "softDelete",
+    instanceId: dishId,
+    body: { reason: DELETE_REASON, userId: user.id },
+    user: actor,
+  });
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete dish");
+  }
+};
 
 export const deleteRecipe = async (recipeId: string) => {
   const user = await requireCurrentUser();
@@ -674,18 +810,11 @@ export const deleteRecipe = async (recipeId: string) => {
   revalidatePath("/kitchen/recipes");
 };
 
-export const deleteDish = async (dishId: string) => {
-  const user = await requireCurrentUser();
-  const result = await runManifestCommand({
-    entity: "Dish",
-    command: "softDelete",
-    instanceId: dishId,
-    body: { reason: DELETE_REASON, userId: user.id },
-    user: { id: user.id, tenantId: user.tenantId, role: user.role },
-  });
-  if (!result.ok) {
-    throw new Error(result.message || "Failed to delete dish");
-  }
+export const deleteDish = async (
+  dishId: string,
+  mode: DishDeleteMode = "preserve"
+) => {
+  await governedDeleteDish(dishId, mode);
   revalidatePath("/kitchen/recipes");
 };
 
@@ -706,19 +835,12 @@ export const bulkDeleteRecipes = async (recipeIds: string[]) => {
   revalidatePath("/kitchen/recipes");
 };
 
-export const bulkDeleteDishes = async (dishIds: string[]) => {
-  const user = await requireCurrentUser();
+export const bulkDeleteDishes = async (
+  dishIds: string[],
+  mode: DishDeleteMode = "preserve"
+) => {
   for (const id of dishIds) {
-    const result = await runManifestCommand({
-      entity: "Dish",
-      command: "softDelete",
-      instanceId: id,
-      body: { reason: DELETE_REASON, userId: user.id },
-      user: { id: user.id, tenantId: user.tenantId, role: user.role },
-    });
-    if (!result.ok) {
-      throw new Error(result.message || `Failed to delete dish ${id}`);
-    }
+    await governedDeleteDish(id, mode);
   }
   revalidatePath("/kitchen/recipes");
 };
@@ -729,12 +851,12 @@ export const bulkDeleteDishes = async (dishIds: string[]) => {
 // single-field edit loads the CURRENT row (a read — allowed to bypass the
 // runtime) and sends a full governed payload with only the target field changed.
 
-type RecipeUpdateFields = {
+interface RecipeUpdateFields {
   category: string | null;
   cuisine_type: string | null;
   description: string | null;
   tags: string[] | null;
-};
+}
 
 const loadRecipeUpdateFields = async (tenantId: string, recipeId: string) => {
   const [row] = await database.$queryRaw<RecipeUpdateFields[]>`
@@ -782,19 +904,19 @@ export const renameRecipe = async (recipeId: string, newName: string) => {
   await governedRenameRecipe(recipeId, newName);
 };
 
-type DishUpdateFields = {
-  name: string;
-  description: string | null;
-  category: string | null;
-  service_style: string | null;
-  default_container_id: string | null;
-  presentation_image_url: string | null;
-  portion_size_description: string | null;
-  dietary_tags: string[] | null;
+interface DishUpdateFields {
   allergens: string[] | null;
+  category: string | null;
   cost_per_person: number | null;
+  default_container_id: string | null;
+  description: string | null;
+  dietary_tags: string[] | null;
   is_active: boolean;
-};
+  name: string;
+  portion_size_description: string | null;
+  presentation_image_url: string | null;
+  service_style: string | null;
+}
 
 const loadDishUpdateFields = async (tenantId: string, dishId: string) => {
   const [row] = await database.$queryRaw<DishUpdateFields[]>`

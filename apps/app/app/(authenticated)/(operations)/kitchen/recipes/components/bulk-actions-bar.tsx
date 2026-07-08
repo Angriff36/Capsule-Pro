@@ -14,13 +14,16 @@ import {
 import { Button } from "@repo/design-system/components/ui/button";
 import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import { Trash2, X } from "lucide-react";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   bulkDeleteDishes,
   bulkDeleteRecipes,
+  type DishDeleteMode,
+  type DishDeletionImpact,
   deleteDish,
   deleteRecipe,
+  getDishDeletionImpact,
 } from "../actions";
 
 interface BulkActionsBarProps {
@@ -136,30 +139,68 @@ interface SingleDeleteButtonProps {
   type: "recipe" | "dish";
 }
 
+/** One-sentence summary of what still references the dish. */
+function impactSentence(impact: DishDeletionImpact): string {
+  const parts: string[] = [];
+  if (impact.confirmedUpcomingEvents > 0) {
+    parts.push(`${impact.confirmedUpcomingEvents} confirmed upcoming event(s)`);
+  }
+  if (impact.draftUpcomingEvents > 0) {
+    parts.push(`${impact.draftUpcomingEvents} draft upcoming event(s)`);
+  }
+  if (impact.activePrepListItems > 0) {
+    parts.push(`${impact.activePrepListItems} prep-list item(s)`);
+  }
+  if (impact.activePrepTasks > 0) {
+    parts.push(`${impact.activePrepTasks} active prep task(s)`);
+  }
+  return parts.join(", ");
+}
+
 export function SingleDeleteButton({
   id,
   name,
   type,
 }: SingleDeleteButtonProps) {
   const [isPending, startTransition] = useTransition();
+  const [open, setOpen] = useState(false);
+  const [impact, setImpact] = useState<DishDeletionImpact | null>(null);
+  const [loadingImpact, setLoadingImpact] = useState(false);
 
-  const handleDelete = () => {
+  // On open, look up what still references the dish so deletion can preserve
+  // existing commitments by default and offer an explicit draft-removal choice.
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (next && type === "dish") {
+      setImpact(null);
+      setLoadingImpact(true);
+      getDishDeletionImpact(id)
+        .then(setImpact)
+        .catch(() => setImpact(null))
+        .finally(() => setLoadingImpact(false));
+    }
+  };
+
+  const runDelete = (mode: DishDeleteMode) => {
     startTransition(async () => {
       try {
         if (type === "recipe") {
           await deleteRecipe(id);
         } else {
-          await deleteDish(id);
+          await deleteDish(id, mode);
         }
         toast.success(`Deleted "${name}"`);
+        setOpen(false);
       } catch {
         toast.error(`Failed to delete "${name}"`);
       }
     });
   };
 
+  const hasDeps = type === "dish" && (impact?.hasDependencies ?? false);
+
   return (
-    <AlertDialog>
+    <AlertDialog onOpenChange={handleOpenChange} open={open}>
       <AlertDialogTrigger asChild>
         <Button
           className="h-7 w-7 text-muted-foreground hover:text-destructive"
@@ -175,17 +216,42 @@ export function SingleDeleteButton({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete "{name}"?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will soft-delete the {type}. It can be recovered from the
-            cleanup page.
+            {type === "recipe" &&
+              "This will soft-delete the recipe. It can be recovered from the cleanup page."}
+            {type === "dish" &&
+              loadingImpact &&
+              "Checking existing event commitments and prep work…"}
+            {type === "dish" &&
+              !loadingImpact &&
+              hasDeps &&
+              impact &&
+              `This dish is still used by ${impactSentence(impact)}. By default these existing commitments are PRESERVED — only the catalog dish is hidden.`}
+            {type === "dish" &&
+              !(loadingImpact || hasDeps) &&
+              "No upcoming events or active prep work use this dish. It will be soft-deleted."}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
+          {hasDeps && impact && impact.draftUpcomingEvents > 0 && (
+            <Button
+              disabled={isPending}
+              onClick={() => runDelete("removeDrafts")}
+              variant="outline"
+            >
+              Delete & remove from {impact.draftUpcomingEvents} draft event(s)
+            </Button>
+          )}
           <AlertDialogAction
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            onClick={handleDelete}
+            disabled={type === "dish" && loadingImpact}
+            onClick={(e) => {
+              // Manage close ourselves so the async delete + toast complete.
+              e.preventDefault();
+              runDelete("preserve");
+            }}
           >
-            Delete
+            {hasDeps ? "Delete — keep commitments" : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
