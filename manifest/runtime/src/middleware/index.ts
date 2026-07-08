@@ -49,10 +49,8 @@ export {
 } from "./deal-lifecycle-propagation-middleware";
 export {
   createDishDeactivatedPruneMiddleware,
-  createDishDeletedPruneMiddleware,
   type DishDeactivatedPruneDiagnostic,
   type DishDeactivatedPruneMiddlewareOptions,
-  type DishPruneTrigger,
 } from "./dish-deactivated-prune-middleware";
 export {
   createEmailTemplateDeletedDeactivateWorkflowsMiddleware,

@@ -64,7 +64,6 @@ import {
   createContractSignedEventConfirmMiddleware,
   createDealLifecyclePropagationMiddleware,
   createDishDeactivatedPruneMiddleware,
-  createDishDeletedPruneMiddleware,
   createEmailTemplateDeletedDeactivateSmsRulesMiddleware,
   createEmailTemplateDeletedDeactivateWorkflowsMiddleware,
   createEmployeeCertificationLapsedNotifyMiddleware,
@@ -870,7 +869,6 @@ export async function createManifestRuntime(
     "event-guest-count-prep-rescale",
     "event-dish-prep-sync",
     "dish-deactivated-prune",
-    "dish-deleted-prune",
     "chart-of-account-deactivated-deactivate-children",
     "container-deactivated-dish-clear",
     "ingredient-recalled-quarantine-inventory",
@@ -1065,17 +1063,6 @@ export async function createManifestRuntime(
     // restore-on-reinstate provenance, so blanket irreversible pruning would strip
     // the dish from future events for a same-day stockout (deferred — see plan).
     createDishDeactivatedPruneMiddleware({
-      storeProvider,
-      dispatchCommand: (commandName, input, options) =>
-        engine.runCommand(commandName, input, options),
-    }),
-    // Kitchen→Kitchen/Menu: DishDeleted -> same downstream prune as deactivate
-    // (open PrepTasks cancel, draft PrepListItems remove, EventDish remove), but
-    // driven by the SEMANTICALLY DISTINCT Dish.softDelete/DishDeleted (Design B
-    // soft-delete on the deletedAt axis). Shares the cleanup body via the trigger
-    // config — NOT a DishDeactivated reuse. Same 1:N fan-out rationale for being
-    // middleware; delete is terminal so the permanent-cleanup rule applies.
-    createDishDeletedPruneMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

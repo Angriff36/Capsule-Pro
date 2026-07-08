@@ -533,23 +533,6 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
     executionMode: "sync",
   },
   {
-    name: "dish-deleted-prune",
-    description:
-      "DishDeleted (soft-delete) → retire dish from PrepTasks/PrepListItems/EventDishes",
-    category: "kitchen",
-    triggeringEvents: ["DishDeleted"],
-    triggeringEntity: "Dish",
-    hook: "after-emit",
-    targetEntity: "PrepTask/PrepListItem/EventDish",
-    targetCommand: ["cancel", "remove"],
-    inputMapping: "1:N-fan-out",
-    idempotencyKey: {
-      template: "dish-delete-prune:{tenantId}:{dishId}:{targetId}",
-      perTarget: true,
-    },
-    executionMode: "sync",
-  },
-  {
     name: "container-deactivated-dish-clear",
     description:
       "ContainerDeactivated → Dish.clearDefaultContainer per dependent dish",

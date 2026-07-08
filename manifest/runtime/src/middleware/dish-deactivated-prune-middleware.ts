@@ -98,43 +98,6 @@ export interface DishDeactivatedPruneDiagnostic {
   tenantId?: string;
 }
 
-/**
- * Which Dish lifecycle command/event drives the prune. The downstream cleanup
- * (open PrepTask / draft PrepListItem / EventDish menu rows) is IDENTICAL for
- * both discontinue paths — deactivate (isActive axis) and softDelete (deletedAt
- * axis) — so the two share this middleware's cleanup body, but the trigger
- * COMMAND and EVENT stay semantically distinct (no DishDeactivated reuse for a
- * delete). Add a trigger, not a copy of the loop.
- */
-export interface DishPruneTrigger {
-  /** The Dish command that anchors the prune (e.g. "deactivate" | "softDelete"). */
-  command: string;
-  /** Short diagnostic tag (e.g. "dish-deactivate-prune"). */
-  diagnosticTag: string;
-  /** The event whose emission means "the dish is gone" (e.g. "DishDeactivated" | "DishDeleted"). */
-  event: string;
-  /** Idempotency-key namespace so re-delivery of each trigger is deduped independently. */
-  idempotencyPrefix: string;
-  /** Human label for the downstream retirement reason (e.g. "Dish deactivated"). */
-  reasonLabel: string;
-}
-
-const DEACTIVATE_TRIGGER: DishPruneTrigger = {
-  command: "deactivate",
-  event: "DishDeactivated",
-  reasonLabel: "Dish deactivated",
-  idempotencyPrefix: "dish-deactivate-prune",
-  diagnosticTag: "dish-deactivate-prune",
-};
-
-const DELETE_TRIGGER: DishPruneTrigger = {
-  command: "softDelete",
-  event: "DishDeleted",
-  reasonLabel: "Dish deleted",
-  idempotencyPrefix: "dish-delete-prune",
-  diagnosticTag: "dish-delete-prune",
-};
-
 export interface DishDeactivatedPruneMiddlewareOptions {
   /** Dispatches a governed Manifest command, normally engine.runCommand. */
   dispatchCommand: DispatchCommand;
@@ -142,8 +105,6 @@ export interface DishDeactivatedPruneMiddlewareOptions {
   onDiagnostic?: (diag: DishDeactivatedPruneDiagnostic) => void;
   /** Manifest store provider already bound to the runtime. */
   storeProvider: (entityName: string) => Store | undefined;
-  /** Which Dish command/event drives the prune. Defaults to deactivate. */
-  trigger?: DishPruneTrigger;
 }
 
 interface DishLike {
@@ -171,9 +132,9 @@ const TERMINAL_PREP_TASK_STATUSES = new Set(["done", "canceled"]);
  * will accept; `buildInput` produces that command's params.
  */
 interface PruneLeg {
-  buildInput: (reason: string, userId: string) => Record<string, unknown>;
   command: string;
   entity: string;
+  buildInput: (reason: string, userId: string) => Record<string, unknown>;
   match: (row: DownstreamRowLike) => boolean;
 }
 
@@ -226,47 +187,41 @@ const defaultDiagnostic = (diag: DishDeactivatedPruneDiagnostic): void => {
 export function createDishDeactivatedPruneMiddleware(
   options: DishDeactivatedPruneMiddlewareOptions
 ): Middleware {
-  const {
-    storeProvider,
-    dispatchCommand,
-    onDiagnostic = defaultDiagnostic,
-    trigger = DEACTIVATE_TRIGGER,
-  } = options;
+  const { storeProvider, dispatchCommand, onDiagnostic = defaultDiagnostic } =
+    options;
 
   return {
     hooks: ["after-emit"],
 
     async handler(ctx: MiddlewareContext): Promise<MiddlewareResult> {
-      // Anchor to the genuine trigger command — not a look-alike event.
-      if (
-        !(ctx.entityName === "Dish" && ctx.command.name === trigger.command)
-      ) {
+      // Anchor to a genuine Dish.deactivate — not a look-alike event.
+      if (!(ctx.entityName === "Dish" && ctx.command.name === "deactivate")) {
         return {};
       }
 
-      const triggerEvents = ctx.emittedEvents.filter(
-        (event) => event.name === trigger.event
+      const deactivatedEvents = ctx.emittedEvents.filter(
+        (event) => event.name === "DishDeactivated"
       );
 
-      for (const event of triggerEvents) {
+      for (const event of deactivatedEvents) {
         const payload = event.payload as DishDeactivatedPayload | undefined;
 
         // The dish id IS the engine-stamped source instance id.
         const dishId =
           asNonEmptyString(event.subject?.id) ??
           asNonEmptyString(ctx.instanceId);
-        // `userId` is a genuine trigger-command input param, so it rides the
-        // payload; it becomes the actor of record on each downstream retirement.
+        // `userId` is a genuine `deactivate` input param, so it rides the payload;
+        // it becomes the actor of record on each downstream retirement.
         const userId = asNonEmptyString(payload?.userId) ?? "system";
-        const triggerReason = asNonEmptyString(payload?.reason);
-        const pruneReason = triggerReason
-          ? `${trigger.reasonLabel}: ${triggerReason}`
-          : trigger.reasonLabel;
+        const deactivateReason = asNonEmptyString(payload?.reason);
+        const pruneReason = deactivateReason
+          ? `Dish deactivated: ${deactivateReason}`
+          : "Dish deactivated";
 
         if (!dishId) {
           onDiagnostic({
             stage: "resolve",
-            reason: `${trigger.event} missing dishId (_subject.id)`,
+            reason: "DishDeactivated missing dishId (_subject.id)",
           });
           continue;
         }
@@ -339,8 +294,8 @@ export function createDishDeactivatedPruneMiddleware(
                 entityName: leg.entity,
                 instanceId: rowId,
                 correlationId: dishId,
-                causationId: trigger.event,
-                idempotencyKey: `${trigger.idempotencyPrefix}:${tenantId}:${dishId}:${leg.entity}:${rowId}`,
+                causationId: "DishDeactivated",
+                idempotencyKey: `dish-deactivate-prune:${tenantId}:${dishId}:${leg.entity}:${rowId}`,
               }
             );
 
@@ -361,7 +316,7 @@ export function createDishDeactivatedPruneMiddleware(
 
             onDiagnostic({
               stage: "pruned",
-              reason: `${leg.entity} retired for ${trigger.reasonLabel.toLowerCase()}`,
+              reason: `${leg.entity} retired for deactivated dish`,
               dishId,
               targetEntity: leg.entity,
               rowId,
@@ -374,23 +329,6 @@ export function createDishDeactivatedPruneMiddleware(
       return {};
     },
   };
-}
-
-/**
- * DishDeleted → prune the deleted dish from open prep tasks, draft prep-list
- * items, and event menus. Shares the exact cleanup body with the deactivate
- * prune (same food-safety dead-end) but is driven by the SEMANTICALLY DISTINCT
- * `Dish.softDelete` command / `DishDeleted` event (Design B soft-delete on the
- * `deletedAt` axis) — no DishDeactivated reuse. Register alongside the
- * deactivate prune in the runtime factory.
- */
-export function createDishDeletedPruneMiddleware(
-  options: Omit<DishDeactivatedPruneMiddlewareOptions, "trigger">
-): Middleware {
-  return createDishDeactivatedPruneMiddleware({
-    ...options,
-    trigger: DELETE_TRIGGER,
-  });
 }
 
 function asNonEmptyString(value: unknown): string | undefined {
