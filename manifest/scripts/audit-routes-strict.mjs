@@ -12,7 +12,8 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, unlinkSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -80,53 +81,62 @@ function isCommandRouteExempt(relPath, exemptionByPath) {
 
 function runAuditJson() {
   const bin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
-  const result = spawnSync(
-    bin,
-    [
-      "exec",
-      "manifest",
-      "audit-routes",
-      "--strict",
-      "--root",
-      "apps/api",
-      "--commands-manifest",
-      "manifest/ir/kitchen.commands.json",
-      "--exemptions",
-      "manifest/governance/audit-routes-exemptions.json",
-      "--format",
-      "json",
-    ],
-    {
-      cwd: PROJECT_ROOT,
-      encoding: "utf8",
-      shell: process.platform === "win32",
-    }
+  const outPath = path.join(
+    tmpdir(),
+    `capsule-audit-routes-${process.pid}.json`
   );
+  const args = [
+    "exec",
+    "manifest",
+    "audit-routes",
+    "--strict",
+    "--root",
+    "apps/api",
+    "--commands-manifest",
+    "manifest/ir/kitchen.commands.json",
+    "--exemptions",
+    "manifest/governance/audit-routes-exemptions.json",
+    "--format",
+    "json",
+  ];
 
-  const raw = (result.stdout || "") + (result.stderr || "");
-  const jsonStart = raw.indexOf('{\n  "root"');
+  const shellCmd =
+    process.platform === "win32"
+      ? `${bin} ${args.map((a) => `"${a.replace(/"/g, '\\"')}"`).join(" ")} > "${outPath}" 2>nul`
+      : `${bin} ${args.map((a) => `'${a.replace(/'/g, `'\\''`)}'`).join(" ")} > '${outPath}' 2>/dev/null`;
+
+  const result = spawnSync(shellCmd, {
+    cwd: PROJECT_ROOT,
+    encoding: "utf8",
+    shell: true,
+  });
+
+  let raw;
+  try {
+    raw = readFileSync(outPath, "utf8");
+  } finally {
+    try {
+      unlinkSync(outPath);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const jsonStart = raw.indexOf("{");
   if (jsonStart < 0) {
-    console.error(raw.slice(0, 2000));
+    console.error((result.stderr || "") + raw.slice(0, 2000));
     throw new Error("audit-routes did not emit JSON output");
   }
 
-  let depth = 0;
-  let jsonEnd = -1;
-  for (let i = jsonStart; i < raw.length; i++) {
-    if (raw[i] === "{") depth++;
-    else if (raw[i] === "}") {
-      depth--;
-      if (depth === 0) {
-        jsonEnd = i + 1;
-        break;
-      }
-    }
+  let payload;
+  try {
+    payload = JSON.parse(raw.slice(jsonStart));
+  } catch (err) {
+    console.error(raw.slice(0, 2000));
+    throw new Error(
+      `Could not parse audit-routes JSON payload: ${err instanceof Error ? err.message : err}`
+    );
   }
-  if (jsonEnd < 0) {
-    throw new Error("Could not parse audit-routes JSON payload");
-  }
-
-  const payload = JSON.parse(raw.slice(jsonStart, jsonEnd));
   return { payload, exitCode: result.status ?? 1 };
 }
 
