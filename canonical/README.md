@@ -71,6 +71,10 @@ canonical/
 
 Leaf folders are created **on demand** from the templates — by design. Git does not track empty directories, and a folder with no decision yet has no content. An agent that needs a decision area creates the folder + `README.md` from the template in one step.
 
+## Knowledge maintenance (mandatory)
+
+Agents **must** update authoritative docs when they learn something — not only when creating decisions. Internal/infra → amend the relevant canonical unit (or create one). Feature/public → `docs/`. Active plans → live-amend like [`manifest/NATIVE-REWRITE-PLAN.md`](../manifest/NATIVE-REWRITE-PLAN.md). Full spec: [`knowledge-maintenance/README.md`](knowledge-maintenance/README.md).
+
 ## How agents use this
 
 Full rules: [`canonical/_templates/agent-instructions.md`](_templates/agent-instructions.md). Summary:

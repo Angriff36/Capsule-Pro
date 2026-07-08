@@ -1,5 +1,19 @@
 # Canonical Agent Instructions
 
+## Mandatory: update docs as you work
+
+**No task is complete until authoritative files reflect what you learned.** Chat is not documentation.
+
+Full rules: [`canonical/knowledge-maintenance/README.md`](../knowledge-maintenance/README.md). Summary:
+
+1. **Discover or verify a fact** → amend the owning doc **this session** (canonical for internal/infra; `docs/` for feature/public).
+2. **Fix a bug or complete a plan slice** → update the plan/workstream file **and** the relevant canonical unit (NATIVE-REWRITE-PLAN pattern: dated `> **YYYY-MM-DD — …**` blockquote + section amend).
+3. **Doc contradicts code** → verify, then **fix the doc** before moving on. Never correct only in chat.
+4. **Encounter unknown feature/infra** → `cd canonical && treex`; create canonical unit (+ `docs/features/` stub if user-facing) before dependent work.
+5. **Completion gate** — before marking done: doc updated or N/A with reason; `INDEX.md` row if new unit; cross-links both ways.
+
+---
+
 Before changing any feature, route, generator, Manifest behavior, app wiring, integration, CI check, or data model, search `canonical/`.
 
 **Before adding any new entry, `cd` into `canonical/` and run `treex`.** Do not grep to check whether something already exists — an existing entry named differently will not match your search, and you will create a duplicate or a misnamed unit. `treex` shows the real on-disk structure (including empty directories that grep and git hide). Reconcile what you add to the tree it shows.

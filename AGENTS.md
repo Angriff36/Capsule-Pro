@@ -67,6 +67,19 @@ subordinate to it.) The manifest planning docs (`manifest/notes.md`, `manifest/I
 `manifest/phase-out-registry.md`, `manifest/task_plan*.md`) are historical snapshots, no longer
 required reading.
 
+## ⚠️ Knowledge maintenance — mandatory on every agent action
+
+**Fix the source, don't leave it.** When you discover, verify, fix, or contradict repo knowledge, update the authoritative file in the **same session**. Reference pattern: [`manifest/NATIVE-REWRITE-PLAN.md`](manifest/NATIVE-REWRITE-PLAN.md) (dated blockquote at top + amend the section addressed).
+
+| Content                                                              | Write to                                                                                               |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Architecture, wiring, infra, compiler/runtime, CI, naming, decisions | `canonical/` — create unit from `_templates/canonical-unit.md` if missing; append `canonical/INDEX.md` |
+| Feature behavior, user flows, product surfaces                       | `docs/features/<name>/` — see [`docs/README.md`](docs/README.md)                                       |
+| Active multi-step initiative                                         | Initiative plan file + cross-link to canonical                                                         |
+| Open question for Ryan                                               | `canonical/unresolved/` from `_templates/uncertainty.md`                                               |
+
+Rules: (1) verify counts/versions/paths against repo **this turn** before asserting; (2) stale doc → edit the doc, not just the chat; (3) new infra/feature you didn't know about → create the entry before continuing; (4) task is **not done** until docs updated or explicitly N/A with reason recorded. Full spec: [`canonical/knowledge-maintenance/README.md`](canonical/knowledge-maintenance/README.md).
+
 ## Capsule Pro Dev Server
 
 - **App**: `http://localhost:2221` (Tailscale: `https://pop-os.tail78dd9e.ts.net`)

@@ -65,6 +65,10 @@ If you genuinely think a convention is harmful, surface it. Don't fork silently.
 "Completed" is wrong if anything was skipped silently.
 "Tests pass" is wrong if any were skipped.
 Default to surfacing uncertainty, not hiding it.
+
+## Rule 13 — Document where you learned it
+Every discovery, verification, fix, or contradiction updates the authoritative file in the same session — not chat alone. Internal truth → `canonical/`; feature/public truth → `docs/`. Use the live-amendment pattern from `manifest/NATIVE-REWRITE-PLAN.md` (dated blockquote + amend the section touched). Encounter unknown infra or features → create the canonical entry (and `docs/features/` stub if user-facing) before continuing. Stale doc → fix the file. Task incomplete until docs reflect reality or N/A is recorded. See `canonical/knowledge-maintenance/README.md`.
+
 ## Operational Rules
 
 Operational rules (build commands, validation, manifest persistence, planning file discipline, known gotchas) are owned by `AGENTS.md`. Read it as part of session start.
@@ -259,8 +263,11 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-No changes or facts in this session.
+[proactive bridge @ 91% context — saved before compacting]
+Files (3):
+  C:/Users/Ryan/AppData/Local/Temp/claude/C--projects-capsule-pro/76f60e99-536f-4e25-b51c-b18d0cac6e85/scratchpad/extract-workqueue.mjs (create)
+  C:/Users/Ryan/AppData/Local/Temp/claude/C--projects-capsule-pro/76f60e99-536f-4e25-b51c-b18d0cac6e85/scratchpad/dump.mjs (create)
+  C:/Users/Ryan/.claude/projects/C--projects-capsule-pro/memory/manifest-bypass-audit-verdicts-2026-07-07.md (create)
 
 # === END COGNILAYER ===
 
