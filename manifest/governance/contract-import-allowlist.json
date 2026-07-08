@@ -50,5 +50,9 @@
   {
     "path": "apps/api/__tests__/kitchen/manifest-projection-snapshot.test.ts",
     "reason": "Test fixture loads merged IR for projection-snapshot comparison."
+  },
+  {
+    "path": "apps/api/__tests__/staff/employee-availability-lifecycle.test.ts",
+    "reason": "Test fixture loads merged IR as input data because the single-source test compiler cannot resolve shared _base.manifest mixins."
   }
 ]

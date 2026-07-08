@@ -65,7 +65,35 @@ function deterministicStringify(obj) {
           return sorted;
         }, {});
     }
+
     return value;
+  });
+}
+
+function normalizeDiagnosticMessage(message) {
+  const cwd = process.cwd();
+  const repoRootWin = cwd.replaceAll("/", "\\").toLowerCase();
+  const repoRootPosix = cwd.replaceAll("\\", "/").toLowerCase();
+  return message.replace(/\[([^\]]+)\]/g, (_match, rawPath) => {
+    const winPath = rawPath.replaceAll("/", "\\");
+    const posixPath = rawPath.replaceAll("\\", "/");
+    const winLower = winPath.toLowerCase();
+    const posixLower = posixPath.toLowerCase();
+
+    let relPath = null;
+    if (winLower === repoRootWin || winLower.startsWith(`${repoRootWin}\\`)) {
+      relPath = relative(cwd, winPath);
+    } else if (
+      posixLower === repoRootPosix ||
+      posixLower.startsWith(`${repoRootPosix}/`)
+    ) {
+      relPath = relative(cwd, posixPath);
+    }
+
+    if (!relPath) {
+      return `[${rawPath}]`;
+    }
+    return `[${relPath.split("\\").join("/")}]`;
   });
 }
 
@@ -407,7 +435,7 @@ async function compileMergedManifests() {
   if (!mergedIR || mergeErrors.length > 0) {
     console.error("[manifest/compile] Native multi-file merge failed:");
     for (const d of mergeErrors.slice(0, 30)) {
-      console.error(`  - ${d.message}`);
+      console.error(`  - ${normalizeDiagnosticMessage(d.message)}`);
     }
     if (mergeErrors.length > 30) {
       console.error(`  ... and ${mergeErrors.length - 30} more`);
@@ -429,7 +457,7 @@ async function compileMergedManifests() {
       sagas: mergedIR.sagas?.length ?? 0,
       reactions: mergedIR.reactions?.length ?? 0,
     },
-    warnings: mergeWarnings.map((d) => d.message),
+    warnings: mergeWarnings.map((d) => normalizeDiagnosticMessage(d.message)),
   };
 
   // Enrich computed-property dependencies (self.X → computed-to-computed chains)
@@ -466,7 +494,7 @@ async function compileMergedManifests() {
       `[manifest/compile] Native merge emitted ${mergeWarnings.length} warning(s)`
     );
     for (const w of mergeWarnings.slice(0, 20)) {
-      console.warn(`  ${w.message}`);
+      console.warn(`  ${normalizeDiagnosticMessage(w.message)}`);
     }
   }
 

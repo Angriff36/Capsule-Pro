@@ -41,7 +41,18 @@ function applyRoutePaths(manifest: any): any {
       path: `/api/manifest/${entity}/commands/${commandSegment}`,
     };
   });
-  return { ...manifest, routes: patched };
+  const existingGeneratedAt = (() => {
+    if (!existsSync(manifestOut)) {
+      return "1970-01-01T00:00:00.000Z";
+    }
+    try {
+      const existing = JSON.parse(readFileSync(manifestOut, "utf-8"));
+      return existing.generatedAt ?? "1970-01-01T00:00:00.000Z";
+    } catch {
+      return "1970-01-01T00:00:00.000Z";
+    }
+  })();
+  return { ...manifest, generatedAt: existingGeneratedAt, routes: patched };
 }
 
 /**

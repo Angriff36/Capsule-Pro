@@ -22,19 +22,18 @@ env:
   DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
   # Turbo remote cache credentials. turbo.json declares
   # `remoteCache: { enabled: true, signature: true }` plus the three vars in
-  # `globalPassThroughEnv`. Without these wired into the workflow env, each
-  # parallel `pnpm turbo run analyze` job (manifest-codegen-check,
-  # manifest-typescript-check, manifest-tests, snapshot-check) is a cache
-  # miss. Fork PRs and Dependabot do NOT receive repo secrets — the
-  # references resolve to empty strings and turbo silently falls back to
-  # local-only cache (verified locally with all three unset).
+  # `globalPassThroughEnv`. Without these wired into the workflow env, the
+  # `pnpm turbo run analyze` jobs (manifest-typescript-check, manifest-tests,
+  # snapshot-check) are cache misses. Fork PRs and Dependabot do NOT receive
+  # repo secrets — the references resolve to empty strings and turbo silently
+  # falls back to local-only cache (verified locally with all three unset).
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
 
 jobs:
-  manifest-validate:
-    name: Validate Manifest Files
+  manifest-blocking-audits:
+    name: Blocking Manifest Audits
     runs-on: ubuntu-latest
     timeout-minutes: 15
     if: github.actor != 'dependabot[bot]'
@@ -62,31 +61,11 @@ jobs:
         env:
           NPM_TOKEN: ${{ github.token }}
 
-      - name: Validate all manifest files compile
-        run: |
-          echo "Validating manifest files..."
-          pnpm manifest:compile
+      - name: Run blocking manifest audit chain
+        run: pnpm manifest:ci
 
-          echo "All manifest files validated successfully"
-
-      # Hard regression gate for the native-Manifest migrations: U6 tenant
-      # consolidation (single shared _base.manifest + use), native
-      # compileProjectToIR build (D11), no silent saga/reaction drop (D9),
-      # command ownership (D14), committed-IR integrity + irHash, and the
-      # 2.5.1 Prisma enum emission capability (D22) / public mergeIR (D12).
-      # See manifest/MANIFEST-DIVERGENCES.md.
-      - name: Verify Manifest invariants (U6 / native compile / 2.5.1 enum emission)
-        run: pnpm manifest:verify-invariants
-
-      - name: Validate IR schema + AI score + doctor
-        run: pnpm manifest:validate && pnpm manifest:validate-ai && pnpm manifest:doctor
-
-      # Kitchen conformance test run moved to the dedicated `manifest-tests` job
-      # below to avoid duplication. That job also excludes DB-dependent tests
-      # (prep-tasks.test.ts) since this CI tier has no Postgres service.
-
-  manifest-codegen-check:
-    name: Check Generated Code Is Up-to-Date
+  manifest-generated-artifact-drift:
+    name: Manifest Artifact Drift Check
     runs-on: ubuntu-latest
     timeout-minutes: 20
     if: github.actor != 'dependabot[bot]'
@@ -114,65 +93,22 @@ jobs:
         env:
           NPM_TOKEN: ${{ github.token }}
 
-      - name: Generate code (Prisma, etc.)
-        # Scope analyze away from apps/web + @repo/cms — their analyze step
-        # builds basehub types from the live CMS, and CI's BASEHUB_TOKEN
-        # points at a different branch than local dev (documented as
-        # environment-dependent in manifest-typescript-check). The
-        # manifest gates don't need basehub types — only Prisma + manifest
-        # codegen.
-        run: |
-          pnpm turbo run analyze --filter=!web --filter=!@repo/cms
+      - name: Regenerate manifest-owned artifacts
+        run: pnpm manifest:sync-artifacts && pnpm prisma:check
         env:
-          NODE_OPTIONS: "--max-old-space-size=8192"
-          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
-          SKIP_ENV_VALIDATION: true
-          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2kuZHVtbXkuYWNjb3VudHMuZGV2JA=="
-          NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
-          NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
-          NEXT_PUBLIC_APP_URL: "https://capsule-pro-app.vercel.app"
-          NEXT_PUBLIC_WEB_URL: "https://capsule-pro-web.vercel.app"
-          NEXT_PUBLIC_API_URL: "https://capsule-pro-api.vercel.app"
-          NEXT_PUBLIC_DOCS_URL: "https://capsule-pro-docs.vercel.app"
-          NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy"
-          NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com"
-          # Server env vars needed for api build (SDK constructors throw without keys)
-          RESEND_TOKEN: "re_dummy"
-          RESEND_FROM: "noreply@ci-build.local"
-          # CLERK_SECRET_KEY intentionally not set — SKIP_ENV_VALIDATION=true
-          # bypasses zod parsing (packages/auth/keys.ts declares it .optional()),
-          # and the Clerk SDK falls back to "" when absent. CI jobs here don't
-          # exercise authenticated runtime paths. Matches deploy.yml convention
-          # (see CI-drain Task 12 / 12b).
-          STRIPE_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-          STRIPE_WEBHOOK_SECRET: "webhook_secret_placeholder"
-          SVIX_TOKEN: "api_key_placeholder"
-          KNOCK_API_KEY: "dummy"
-          KNOCK_FEED_CHANNEL_ID: "dummy"
-          BETTERSTACK_API_KEY: "dummy"
-          BETTERSTACK_URL: "https://dummy.betterstack.com"
-          FLAGS_SECRET: "dummy"
-          ARCJET_KEY: "ajkey_dummy"
-          LIVEBLOCKS_SECRET: "api_key_placeholder"
-
-      - name: Check if generated code differs
+          DATABASE_URL: "******localhost:5432/dummy"
+      - name: Check if manifest artifacts differ
         run: |
-          echo "Checking if generated code is up-to-date..."
+          echo "Checking if manifest-owned generated artifacts are up-to-date..."
 
-          # Exclude environment-dependent generated files:
-          # - basehub-types.d.ts: regenerated against CI's BASEHUB_TOKEN branch
-          #   (different from local dev); content drift is environment, not code.
-          # - .npmrc: regenerated by scripts/ensure-github-packages-npmrc.sh in
-          #   the install step with the CI runner's auth token; 2-line drift on
-          #   every run.
+          # Exclude runner-specific files that change during install.
           git checkout -- '**/basehub-types.d.ts' 2>/dev/null || true
           git checkout -- '.npmrc' 2>/dev/null || true
 
           if ! git diff --quiet; then
-            echo "::error::Generated code is out of date. Please run 'pnpm run analyze' locally and commit the changes."
+            echo "::error::Manifest-owned generated artifacts are out of date. Please run 'pnpm manifest:sync-artifacts && pnpm prisma:check' locally and commit the changes."
             echo ""
-            echo "The following files have uncommitted changes after code generation:"
+            echo "The following files have uncommitted changes after regeneration:"
             git diff --name-only
             echo ""
             echo "Diff summary:"
@@ -180,7 +116,7 @@ jobs:
             exit 1
           fi
 
-          echo "Generated code is up-to-date"
+          echo "Manifest-owned generated artifacts are up-to-date"
 
   manifest-typescript-check:
     name: TypeScript Compilation Check
@@ -404,198 +340,9 @@ jobs:
           echo
           echo "::notice::audit-routes findings above are advisory until ownership errors are resolved or exempted."
 
-  manifest-registry-drift:
-    name: Governance Registry Drift Check
-    if: github.actor != 'dependabot[bot]'
-    # BLOCKING — proves the committed manifest/governance/{commands,entities}.json
-    # match the registries that the CURRENT manifest sources would produce.
-    # If a manifest source under manifest/source/ changes
-    # but neither kitchen.ir.json nor the governance registries are regenerated
-    # and committed, governance audits would run against stale data.
-    #
-    # Flow:
-    #   1. `manifest:compile` re-derives kitchen.ir.json (and siblings) from
-    #      the .manifest sources. Without this step, step 2 would consume the
-    #      committed (possibly stale) IR and could produce a false green:
-    #      stale-IR-in, stale-registry-out, matches stale-committed-registry.
-    #   2. `manifest:registries` emits manifest/governance/{commands,entities}.json
-    #      from the fresh IR.
-    #   3. `git diff` against the committed registries fails if either differs.
-    #
-    # We do NOT diff manifest/ir/ directly because
-    # manifest/scripts/compile.mjs stamps a fresh `compiledAt` ISO into the
-    # IR + provenance on every run, so a naive diff would always fire.
-    # The downstream commands/entities registries are timestamp-free derivations
-    # of the IR's substantive content, so they are the correct drift surface.
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      # Order matters: pnpm/action-setup MUST come before actions/setup-node when
-      # cache: pnpm is used. setup-node invokes pnpm to compute the cache key
-      # and fails with "Unable to locate executable file: pnpm" if pnpm isn't
-      # on PATH yet. See https://github.com/pnpm/action-setup#use-cache-to-reduce-installation-time
-      - name: Setup pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
-        env:
-          NPM_TOKEN: ${{ github.token }}
-
-      - name: Compile manifest IR
-        # Re-derive kitchen.ir.json from .manifest sources so the next step
-        # emits registries from the CURRENT source-of-truth IR — not from
-        # whatever IR was last committed. See header comment for rationale.
-        run: pnpm manifest:compile
-
-      - name: Re-emit governance registries
-        run: pnpm manifest:registries
-
-      - name: Verify no drift
-        run: |
-          if ! git diff --exit-code manifest/governance/commands.json manifest/governance/entities.json; then
-            echo "::error::manifest/governance registries are stale."
-            echo "Run 'pnpm manifest:compile && pnpm manifest:registries' locally and commit the result."
-            exit 1
-          fi
-          echo "Governance registries are in sync with IR."
-
-  manifest-openapi-drift:
-    name: OpenAPI Spec Drift Check
-    if: github.actor != 'dependabot[bot]'
-    # BLOCKING — proves the committed manifest/api-docs/openapi.json matches the
-    # spec the CURRENT manifest sources would produce. Without this, the OpenAPI
-    # spec (consumed by the /api-docs Scalar UI and agent tooling) silently rots
-    # whenever an entity/command changes but the spec isn't regenerated.
-    #
-    # Flow mirrors manifest-registry-drift:
-    #   1. `manifest:compile` re-derives kitchen.ir.json from .manifest sources,
-    #      so step 2 generates from the source-of-truth IR — not a stale committed
-    #      IR (which could yield a false green).
-    #   2. `manifest:openapi` regenerates the spec from the fresh IR.
-    #   3. `git diff` against the committed spec fails if it differs.
-    #
-    # The generator is deterministic (no `x-generated-at` timestamp), so this diff
-    # fires only on genuine substantive drift.
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
-        env:
-          NPM_TOKEN: ${{ github.token }}
-
-      - name: Compile manifest IR
-        # Re-derive kitchen.ir.json from .manifest sources so the spec is generated
-        # from the CURRENT source-of-truth IR. See header comment for rationale.
-        run: pnpm manifest:compile
-
-      - name: Regenerate OpenAPI spec
-        run: pnpm manifest:openapi
-
-      - name: Verify no drift
-        run: |
-          if ! git diff --exit-code manifest/api-docs/openapi.json; then
-            echo "::error::manifest/api-docs/openapi.json is stale."
-            echo "Run 'pnpm manifest:compile && pnpm manifest:openapi' locally and commit the result."
-            exit 1
-          fi
-          echo "OpenAPI spec is in sync with IR."
-
   # (Route Drift Gate retired 2026-07-02: route generation is now native
   # config-driven via manifest.config.yaml projections.nextjs.options.routeSegments
   # — the hand-rolled post-processing this gate policed no longer exists.)
-
-  manifest-schema-parity:
-    name: IR <-> Prisma Schema Parity Gate
-    if: github.actor != 'dependabot[bot]'
-    # BLOCKING — the two hand-authored masters (compiled IR and the live
-    # packages/database/prisma/schema.prisma) are compared field-by-field:
-    # required-column create coverage, phantom IR properties (silent
-    # persistence no-ops), and column type mismatches (datetime vs Int class).
-    # Fails ONLY on violations not in manifest/governance/
-    # schema-drift-baseline.json — the committed 2026-06-12 debt inventory.
-    # Fix new drift instead of adding baseline entries.
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
-        env:
-          NPM_TOKEN: ${{ github.token }}
-
-      - name: Run schema parity audit (strict, baseline-gated)
-        run: pnpm manifest:audit-schema-drift:strict
-
-  manifest-parent-context:
-    name: Parent-Context Inheritance Gate
-    if: github.actor != 'dependabot[bot]'
-    # BLOCKING — proves child entities inherit parent-owned fields server-side
-    # (Task 8.9/8.10). Catches regressions where a child create no longer
-    # propagates fields like facilityId from its parent Facility.
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
-        env:
-          NPM_TOKEN: ${{ github.token }}
-
-      - name: Run parent-context audit (strict)
-        run: pnpm manifest:audit-parent-context:strict
 
   quarantine-baseline:
     name: Quarantine Baseline Check
@@ -747,50 +494,6 @@ jobs:
           echo
           echo "::notice::integration-check findings above are advisory until governance backlog clears."
 
-  manifest-direct-writes-baseline:
-    name: Direct-Write Audit (Baseline + Block New)
-    if: github.actor != 'dependabot[bot]'
-    # BLOCKING — constitution §2 requires governed-entity writes to go through
-    # RuntimeEngine.runCommand. The upstream `direct-writes` detector only matches
-    # the literal `prisma.X.method` identifier, but Capsule writes via `database.X.method`
-    # (re-exported PrismaClient). This Capsule-local audit closes that blind spot.
-    #
-    # Existing debt is captured in manifest/governance/baselines/direct-writes.json
-    # (113 (file, entity) pairs across 76 files at the 2026-05-22 baseline). The
-    # baseline wrapper fails CI on ANY new (file, governedEntity) pair not present
-    # in the baseline. To intentionally accept a new state (e.g. after migrating
-    # a file off the list), regenerate locally with:
-    #   node scripts/manifest/audit-direct-writes-baseline.mjs --save-baseline
-    # and commit the updated baseline file.
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      # Order matters: pnpm/action-setup MUST come before actions/setup-node when
-      # cache: pnpm is used. setup-node invokes pnpm to compute the cache key
-      # and fails with "Unable to locate executable file: pnpm" if pnpm isn't
-      # on PATH yet. See https://github.com/pnpm/action-setup#use-cache-to-reduce-installation-time
-      - name: Setup pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
-        env:
-          NPM_TOKEN: ${{ github.token }}
-
-      - name: Audit direct writes vs baseline
-        run: pnpm manifest:audit-direct-writes:baseline
-
   manifest-enforce-surface:
     if: github.actor != 'dependabot[bot]'
     # Reporting gate (not blocking). Runs `manifest enforce-surface` so
@@ -936,3 +639,4 @@ jobs:
           fi
 
           echo "All snapshots are up-to-date"
+

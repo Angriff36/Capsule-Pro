@@ -1,6 +1,6 @@
 {
-  "irHash": "763a2778de200287589e1424f538abad69ea02ecfdfca0c503ad32b7c47ea2db",
-  "compilerVersion": "3.2.0",
+  "irHash": "e26a8d500529456c9f16c4f84c5ff5251d0b446b1e1bedc5bc4aa131efdcdd57",
+  "compilerVersion": "3.3.1",
   "entities": [
     {
       "name": "ActionMilestone",
@@ -1431,6 +1431,7 @@
       "tenantScoped": true,
       "commands": [
         "activate",
+        "changeRecipe",
         "clearDefaultContainer",
         "create",
         "deactivate",

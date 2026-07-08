@@ -33,6 +33,7 @@ session-ses_*.md
 # Agent-generated audit / report artifacts (local only, not app code)
 /manifest-audit/
 /reports/implementation-theatre/
+/package-scripts-audit.json
 # Manifest audit report output dir (canonical location going forward)
 /manifest/reports/*
 !/manifest/reports/README.md

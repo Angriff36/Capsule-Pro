@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-07-07T23:27:08.893Z",
+  "generatedAt": "2026-07-08T03:19:20.575Z",
   "basePath": "/api",
   "routes": [
     {
