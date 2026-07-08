@@ -48,11 +48,6 @@ export {
   type DealLifecyclePropagationMiddlewareOptions,
 } from "./deal-lifecycle-propagation-middleware";
 export {
-  createDishDeactivatedPruneMiddleware,
-  type DishDeactivatedPruneDiagnostic,
-  type DishDeactivatedPruneMiddlewareOptions,
-} from "./dish-deactivated-prune-middleware";
-export {
   createEmailTemplateDeletedDeactivateWorkflowsMiddleware,
   type EmailTemplateDeletedDeactivateWorkflowsDiagnostic,
   type EmailTemplateDeletedDeactivateWorkflowsMiddlewareOptions,

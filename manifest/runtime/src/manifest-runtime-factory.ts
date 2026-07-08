@@ -63,7 +63,6 @@ import {
   createContainerDeactivatedDishClearMiddleware,
   createContractSignedEventConfirmMiddleware,
   createDealLifecyclePropagationMiddleware,
-  createDishDeactivatedPruneMiddleware,
   createEmailTemplateDeletedDeactivateSmsRulesMiddleware,
   createEmailTemplateDeletedDeactivateWorkflowsMiddleware,
   createEmployeeCertificationLapsedNotifyMiddleware,
@@ -868,7 +867,6 @@ export async function createManifestRuntime(
     "prep-task-station-count",
     "event-guest-count-prep-rescale",
     "event-dish-prep-sync",
-    "dish-deactivated-prune",
     "chart-of-account-deactivated-deactivate-children",
     "container-deactivated-dish-clear",
     "ingredient-recalled-quarantine-inventory",
@@ -1054,19 +1052,12 @@ export async function createManifestRuntime(
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
     }),
-    // Kitchen→Kitchen/Menu: DishDeactivated -> retire the discontinued dish from
-    // open PrepTasks (cancel), draft PrepListItems (remove), and event menus
-    // (EventDish.remove). Middleware (not a reaction) because it is a 1:N fan-out
-    // across three entities keyed by the dish's OWN id (_subject.id) — a reaction
-    // resolves exactly one target. Scoped to deactivate (permanent discontinue),
-    // NOT the transient/reversible eightySix: an 86 has Dish.reinstate and no
-    // restore-on-reinstate provenance, so blanket irreversible pruning would strip
-    // the dish from future events for a same-day stockout (deferred — see plan).
-    createDishDeactivatedPruneMiddleware({
-      storeProvider,
-      dispatchCommand: (commandName, input, options) =>
-        engine.runCommand(commandName, input, options),
-    }),
+    // NOTE: the DishDeactivated -> prune middleware was REMOVED. Deactivating (or
+    // deleting) a catalog dish must NOT silently revoke committed downstream work
+    // (EventDish / PrepListItem / PrepTask) — a catalog record and a confirmed
+    // event commitment are different business facts. Any removal of committed work
+    // must be explicit and user-chosen (see the dish-deletion impact/choice flow),
+    // never a hidden cascade.
     // Accounting: ChartOfAccountDeactivated -> deactivate the account's child
     // accounts. Deactivating a parent GL account left every sub-account pointing
     // at it (parentId) ACTIVE, so retired sub-accounts stayed postable under a
