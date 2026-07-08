@@ -132,7 +132,7 @@ entity Dish mixin TenantScoped, SoftDeletable {
     emit DishRecipeChanged
   }
 
-  command update(name: string, description: string, category: string, serviceStyle: string, defaultContainerId: string, presentationImageUrl: string, portionSizeDescription: string, dietaryTags: array<string>, allergens: array<string>) {
+  command update(name: string, description: string?, category: string?, serviceStyle: string?, defaultContainerId: string?, presentationImageUrl: string?, portionSizeDescription: string?, dietaryTags: array<string>?, allergens: array<string>?) {
     guard name != null and name != "" "Dish name is required"
     guard self.isActive "Cannot update a deactivated dish"
 
