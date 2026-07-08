@@ -144,10 +144,12 @@ export const getEventDishes = cache(
           d.price_per_person AS "pricePerPerson",
           d.cost_per_person AS "costPerPerson"
         FROM tenant_events.event_dishes ed
+        -- Existing commitment read: a referenced dish must stay readable after
+        -- catalog soft-delete, so NO d.deleted_at filter here. (Catalog/picker
+        -- queries keep the filter so soft-deleted dishes aren't newly selectable.)
         JOIN tenant_kitchen.dishes d
           ON d.tenant_id = ed.tenant_id
           AND d.id = ed.dish_id
-          AND d.deleted_at IS NULL
         LEFT JOIN tenant_kitchen.recipes r
           ON r.tenant_id = d.tenant_id
           AND r.id = d.recipe_id

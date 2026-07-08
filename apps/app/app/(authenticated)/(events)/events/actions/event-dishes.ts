@@ -199,10 +199,13 @@ export async function getEventDishes(eventId: string) {
         ed.quantity_servings,
         d.dietary_tags
       FROM tenant_events.event_dishes ed
+      -- Existing commitment read: a referenced dish must stay readable after
+      -- catalog soft-delete, so NO d.deleted_at filter here. (getAvailableDishes
+      -- and other catalog/picker queries keep it — soft-deleted dishes must not
+      -- be selectable for NEW events.)
       JOIN tenant_kitchen.dishes d
         ON d.tenant_id = ed.tenant_id
         AND d.id = ed.dish_id
-        AND d.deleted_at IS NULL
       LEFT JOIN tenant_kitchen.recipes r
         ON r.tenant_id = d.tenant_id
         AND r.id = d.recipe_id
