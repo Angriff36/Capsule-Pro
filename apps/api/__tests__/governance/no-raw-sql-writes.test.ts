@@ -17,8 +17,8 @@ const KNOWN_VIOLATIONS: string[] = [
   // Seed scripts — infrastructure, not production routes
   "app/prisma/seed-recipe-ingredients.ts",
   "app/prisma/seed-dev.ts",
-  // Event setup — complex multi-entity transaction, not yet governed
-  "app/app/(authenticated)/events/actions/setup-event-completely.ts",
+  // Event setup — complex multi-entity transaction; prep list now uses Event.confirm
+  "app/app/(authenticated)/(events)/events/actions/setup-event-completely.ts",
   // Event summary — raw SQL aggregation, not yet governed
   "app/app/(authenticated)/events/actions/event-summary.ts",
   // Event importer — bulk import pipeline, not yet governed

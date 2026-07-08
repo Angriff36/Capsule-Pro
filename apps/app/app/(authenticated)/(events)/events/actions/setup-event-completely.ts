@@ -52,13 +52,13 @@ export async function setupEventCompletely(
   const events = await database.$queryRaw<
     Array<{
       id: string;
-      name: string;
+      title: string;
       client_id: string | null;
       venue_name: string | null;
       venue_entity_id: string | null;
       event_date: Date | null;
     }>
-  >`SELECT id, name, client_id, venue_name, venue_entity_id, event_date
+  >`SELECT id, title, client_id, venue_name, venue_entity_id, event_date
      FROM tenant_events.events
      WHERE tenant_id = ${tenantId}::uuid AND id = ${eventId}::uuid AND deleted_at IS NULL`;
 
@@ -75,7 +75,7 @@ export async function setupEventCompletely(
 
   const result: SetupEventCompletelyResult = {
     success: true,
-    eventName: event.name,
+    eventName: event.title,
     steps: {
       clientAssigned: { completed: false, skipped: false, detail: "" },
       venueVerified: { completed: false, skipped: false, detail: "" },
@@ -146,7 +146,7 @@ export async function setupEventCompletely(
   } else {
     // No venue — set a placeholder from the event name so the step turns green
     try {
-      const defaultVenueName = `${event.name} Venue`;
+      const defaultVenueName = `${event.title} Venue`;
       await database.$executeRaw`UPDATE tenant_events.events
          SET venue_name = ${defaultVenueName}, updated_at = NOW()
          WHERE tenant_id = ${tenantId}::uuid AND id = ${eventId}::uuid`;
@@ -337,14 +337,14 @@ export async function setupEventCompletely(
     result.success = false;
   }
 
-  // ── Step 5: Prep List ────────────────────────────────────────────────
+  // ── Step 5: Prep List (Event.confirm → reaction → prep-list-seed middleware) ──
 
   try {
     const existingPrepLists = await database.$queryRaw<
       Array<{ cnt: bigint }>
     >`SELECT COUNT(*) as cnt
        FROM tenant_kitchen.prep_lists
-       WHERE tenant_id = ${tenantId}::uuid AND event_id = ${eventId}::uuid`;
+       WHERE tenant_id = ${tenantId}::uuid AND event_id = ${eventId}::uuid AND deleted_at IS NULL`;
 
     if (Number(existingPrepLists[0]?.cnt ?? 0n) > 0) {
       result.steps.prepListGenerated = {
@@ -353,36 +353,95 @@ export async function setupEventCompletely(
         detail: "Prep list already exists",
       };
     } else {
-      // Create a minimal prep list record so the checklist step turns green.
-      // Full generation (ingredients from recipes) can happen separately.
-      const eventDate = await database.$queryRaw<
-        Array<{ event_date: Date | null }>
-      >`SELECT event_date FROM tenant_events.events
-         WHERE tenant_id = ${tenantId}::uuid AND id = ${eventId}::uuid`;
+      const statusRows = await database.$queryRaw<
+        Array<{ status: string }>
+      >`SELECT status FROM tenant_events.events
+         WHERE tenant_id = ${tenantId}::uuid AND id = ${eventId}::uuid AND deleted_at IS NULL`;
 
-      const serviceDate =
-        eventDate[0]?.event_date ?? new Date(Date.now() + 7 * 86_400_000);
+      const eventStatus = statusRows[0]?.status ?? "draft";
 
-      const prepListTitle = `${event.name} - Prep List`;
-      await database.$executeRaw`INSERT INTO tenant_kitchen.prep_lists (
-           tenant_id, id, event_id, title, status, service_date,
-           created_at, updated_at
-         ) VALUES (
-           ${tenantId}::uuid, gen_random_uuid(), ${eventId}::uuid, ${prepListTitle}, 'draft', ${serviceDate}::timestamptz, NOW(), NOW()
-         )`;
+      if (eventStatus === "confirmed") {
+        result.steps.prepListGenerated = {
+          completed: false,
+          skipped: false,
+          detail:
+            "Event is confirmed but no prep list exists — investigate the Event.confirm reaction chain",
+        };
+        result.success = false;
+      } else {
+        const currentUser = await requireCurrentUser();
+        const confirmResult = await runManifestCommand({
+          entity: "Event",
+          command: "confirm",
+          instanceId: eventId,
+          body: { id: eventId, userId: currentUser.id },
+          user: {
+            id: currentUser.id,
+            tenantId: currentUser.tenantId,
+            role: currentUser.role,
+          },
+        });
 
-      result.steps.prepListGenerated = {
-        completed: true,
-        skipped: false,
-        detail: "Prep list record created (draft)",
-      };
+        if (!confirmResult.ok) {
+          result.steps.prepListGenerated = {
+            completed: false,
+            skipped: false,
+            detail: "Failed to confirm event for prep list generation",
+            error: confirmResult.message ?? "Event.confirm failed",
+          };
+          result.success = false;
+        } else {
+          const prepListsAfter = await database.$queryRaw<
+            Array<{ id: string; notes: string | null; item_cnt: bigint }>
+          >`SELECT pl.id, pl.notes,
+               (SELECT COUNT(*) FROM tenant_kitchen.prep_list_items pli
+                WHERE pli.tenant_id = pl.tenant_id AND pli.prep_list_id = pl.id AND pli.deleted_at IS NULL) AS item_cnt
+             FROM tenant_kitchen.prep_lists pl
+             WHERE pl.tenant_id = ${tenantId}::uuid AND pl.event_id = ${eventId}::uuid AND pl.deleted_at IS NULL`;
+
+          if (prepListsAfter.length !== 1) {
+            result.steps.prepListGenerated = {
+              completed: false,
+              skipped: false,
+              detail:
+                prepListsAfter.length === 0
+                  ? "Event confirmed but no prep list was created by the reaction chain"
+                  : `Expected one prep list, found ${prepListsAfter.length}`,
+            };
+            result.success = false;
+          } else {
+            const prepList = prepListsAfter[0]!;
+            const notes = prepList.notes ?? "";
+            const itemCount = Number(prepList.item_cnt ?? 0n);
+
+            if (!notes.includes("[auto-seed:event-confirmed]")) {
+              result.steps.prepListGenerated = {
+                completed: false,
+                skipped: false,
+                detail:
+                  "Prep list exists but missing [auto-seed:event-confirmed] marker",
+              };
+              result.success = false;
+            } else {
+              result.steps.prepListGenerated = {
+                completed: true,
+                skipped: false,
+                detail:
+                  itemCount > 0
+                    ? `Prep list seeded via Event.confirm (${itemCount} item(s))`
+                    : "Prep list created via Event.confirm (no menu items to seed)",
+              };
+            }
+          }
+        }
+      }
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     result.steps.prepListGenerated = {
       completed: false,
       skipped: false,
-      detail: "Failed to create prep list",
+      detail: "Failed to generate prep list via Event.confirm",
       error: msg,
     };
     result.success = false;
@@ -406,7 +465,7 @@ export async function setupEventCompletely(
     } else {
       // Use event's client if assigned, otherwise null
       const clientId = event.client_id ?? null;
-      const contractTitle = `${event.name} - Standard Catering Agreement`;
+      const contractTitle = `${event.title} - Standard Catering Agreement`;
 
       await database.$executeRaw`INSERT INTO tenant_events.event_contracts (
            tenant_id, id, event_id, client_id, title, status,
