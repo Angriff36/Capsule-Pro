@@ -654,46 +654,71 @@ export const getRecipeForEdit = async (
   };
 };
 
+// Governed soft-delete (Design B): "Delete" sets deletedAt via the Manifest
+// runtime — guards/policy/audit run, and DishDeleted/RecipeDeleted fire the
+// downstream prune. NOT a raw UPDATE, NOT deactivate (separate isActive axis).
+const DELETE_REASON = "Deleted from recipe catalog";
+
 export const deleteRecipe = async (recipeId: string) => {
-  const tenantId = await requireTenantId();
-  await database.$executeRaw`
-    UPDATE tenant_kitchen.recipes
-    SET deleted_at = NOW()
-    WHERE tenant_id = ${tenantId} AND id = ${recipeId}::uuid
-  `;
+  const user = await requireCurrentUser();
+  const result = await runManifestCommand({
+    entity: "Recipe",
+    command: "softDelete",
+    instanceId: recipeId,
+    body: { reason: DELETE_REASON, userId: user.id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete recipe");
+  }
   revalidatePath("/kitchen/recipes");
 };
 
 export const deleteDish = async (dishId: string) => {
-  const tenantId = await requireTenantId();
-  await database.$executeRaw`
-    UPDATE tenant_kitchen.dishes
-    SET deleted_at = NOW()
-    WHERE tenant_id = ${tenantId} AND id = ${dishId}::uuid
-  `;
+  const user = await requireCurrentUser();
+  const result = await runManifestCommand({
+    entity: "Dish",
+    command: "softDelete",
+    instanceId: dishId,
+    body: { reason: DELETE_REASON, userId: user.id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete dish");
+  }
   revalidatePath("/kitchen/recipes");
 };
 
 export const bulkDeleteRecipes = async (recipeIds: string[]) => {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
   for (const id of recipeIds) {
-    await database.$executeRaw`
-      UPDATE tenant_kitchen.recipes
-      SET deleted_at = NOW()
-      WHERE tenant_id = ${tenantId} AND id = ${id}::uuid
-    `;
+    const result = await runManifestCommand({
+      entity: "Recipe",
+      command: "softDelete",
+      instanceId: id,
+      body: { reason: DELETE_REASON, userId: user.id },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+    if (!result.ok) {
+      throw new Error(result.message || `Failed to delete recipe ${id}`);
+    }
   }
   revalidatePath("/kitchen/recipes");
 };
 
 export const bulkDeleteDishes = async (dishIds: string[]) => {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
   for (const id of dishIds) {
-    await database.$executeRaw`
-      UPDATE tenant_kitchen.dishes
-      SET deleted_at = NOW()
-      WHERE tenant_id = ${tenantId} AND id = ${id}::uuid
-    `;
+    const result = await runManifestCommand({
+      entity: "Dish",
+      command: "softDelete",
+      instanceId: id,
+      body: { reason: DELETE_REASON, userId: user.id },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+    if (!result.ok) {
+      throw new Error(result.message || `Failed to delete dish ${id}`);
+    }
   }
   revalidatePath("/kitchen/recipes");
 };

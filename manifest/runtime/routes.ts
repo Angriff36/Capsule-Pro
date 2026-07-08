@@ -3381,6 +3381,11 @@ export function dishReinstatePath(): string {
   return "/api/manifest/Dish/commands/reinstate";
 }
 
+/** POST /api/manifest/Dish/commands/softDelete */
+export function dishSoftDeletePath(): string {
+  return "/api/manifest/Dish/commands/softDelete";
+}
+
 /** POST /api/manifest/Dish/commands/unmarkSeasonal */
 export function dishUnmarkSeasonalPath(): string {
   return "/api/manifest/Dish/commands/unmarkSeasonal";
@@ -6136,6 +6141,11 @@ export function recipeSetSubrecipePath(): string {
   return "/api/manifest/Recipe/commands/setSubrecipe";
 }
 
+/** POST /api/manifest/Recipe/commands/softDelete */
+export function recipeSoftDeletePath(): string {
+  return "/api/manifest/Recipe/commands/softDelete";
+}
+
 /** POST /api/manifest/Recipe/commands/update */
 export function recipeUpdatePath(): string {
   return "/api/manifest/Recipe/commands/update";
@@ -8159,6 +8169,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "Dish.eightySix", path: "/api/manifest/Dish/commands/eightySix", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.markSeasonal", path: "/api/manifest/Dish/commands/markSeasonal", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.reinstate", path: "/api/manifest/Dish/commands/reinstate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Dish.softDelete", path: "/api/manifest/Dish/commands/softDelete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.unmarkSeasonal", path: "/api/manifest/Dish/commands/unmarkSeasonal", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.update", path: "/api/manifest/Dish/commands/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.updateLeadTime", path: "/api/manifest/Dish/commands/updateLeadTime", method: "POST", source: "command", auth: true, tenant: true },
@@ -8710,6 +8721,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "Recipe.create", path: "/api/manifest/Recipe/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Recipe.deactivate", path: "/api/manifest/Recipe/commands/deactivate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Recipe.setSubrecipe", path: "/api/manifest/Recipe/commands/setSubrecipe", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Recipe.softDelete", path: "/api/manifest/Recipe/commands/softDelete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Recipe.update", path: "/api/manifest/Recipe/commands/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeIngredient.create", path: "/api/manifest/RecipeIngredient/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeIngredient.remove", path: "/api/manifest/RecipeIngredient/commands/remove", method: "POST", source: "command", auth: true, tenant: true },

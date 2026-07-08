@@ -71,6 +71,17 @@ entity Recipe mixin TenantScoped, SoftDeletable {
     emit RecipeDeactivated
   }
 
+  // Soft-delete (Design B): "Delete" in the UI. Sets deletedAt (the axis recipe
+  // lists filter on) — SEPARATE from deactivate's isActive axis. No downstream
+  // cascade: no source evidence of a required recipe-level prune (unlike Dish).
+  command softDelete(reason: string, userId: string) {
+    guard self.deletedAt == null "Recipe is already deleted"
+
+    mutate deletedAt = now()
+
+    emit RecipeDeleted
+  }
+
   // Cookbook-integration: flip a recipe between plated-dish and sub-recipe.
   command setSubrecipe(isSubrecipe: boolean) {
     mutate isSubrecipe = isSubrecipe
@@ -463,6 +474,15 @@ event RecipeDeactivated: "kitchen.recipe.deactivated" {
   name: string
   reason: string
   deactivatedAt: datetime
+}
+
+event RecipeDeleted: "kitchen.recipe.deleted" {
+  recipeId: string
+  tenantId: string
+  name: string
+  reason: string
+  userId: string
+  deletedAt: datetime
 }
 
 event RecipeActivated: "kitchen.recipe.activated" {

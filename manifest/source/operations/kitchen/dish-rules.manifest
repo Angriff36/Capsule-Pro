@@ -174,6 +174,18 @@ entity Dish mixin TenantScoped, SoftDeletable {
     emit DishDeactivated
   }
 
+  // Soft-delete (Design B): "Delete" in the UI. Sets deletedAt (the axis every
+  // dish/recipe list filters on) — SEPARATE from deactivate's isActive axis.
+  // Emits DishDeleted, which drives the downstream prune (open PrepTask /
+  // draft PrepListItem / EventDish menu rows) via the shared dish-prune cleanup.
+  command softDelete(reason: string, userId: string) {
+    guard self.deletedAt == null "Dish is already deleted"
+
+    mutate deletedAt = now()
+
+    emit DishDeleted
+  }
+
   command updatePricing(pricePerPerson: money, costPerPerson: money, userId: string) {
     guard self.isActive "Cannot update pricing on a deactivated dish"
     guard pricePerPerson >= 0 "Price per person cannot be negative"
@@ -334,6 +346,14 @@ event DishDeactivated: "kitchen.dish.deactivated" {
   reason: string
   userId: string
   deactivatedAt: datetime
+}
+
+event DishDeleted: "kitchen.dish.deleted" {
+  dishId: string
+  name: string
+  reason: string
+  userId: string
+  deletedAt: datetime
 }
 
 event DishPricingUpdated: "kitchen.dish.pricing.updated" {
