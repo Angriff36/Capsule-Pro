@@ -33,11 +33,10 @@ export const PRISMA_PG_POOL_OPTIONS = {
 
 /** Create a PrismaPg adapter with Neon-safe pool timeouts. */
 export function createPrismaPgAdapter(connectionString: string): PrismaPg {
+  // Do not pass onPoolError here — @types/pg PoolConfig / PrismaPg constructor
+  // reject it (TS2353), which broke Vercel @repo/realtime#build on Deploy.
   return new PrismaPg({
     connectionString,
     ...PRISMA_PG_POOL_OPTIONS,
-    onPoolError: (err) => {
-      console.error("[db] pg pool error:", err.message);
-    },
   });
 }
