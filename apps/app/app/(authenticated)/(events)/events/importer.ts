@@ -950,7 +950,7 @@ const importMenuToEvent = async (
           minPrepLeadDays: 0,
           maxPrepLeadDays: 0,
           portionSizeDescription: "",
-          dietaryTags: Array.from(entry.dietaryTags).join(","),
+          dietaryTags: Array.from(entry.dietaryTags),
           allergens: Array.from(entry.allergens),
           pricePerPerson: 0,
           costPerPerson: 0,

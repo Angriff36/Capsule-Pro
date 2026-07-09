@@ -68,7 +68,7 @@ The IR is the single semantic source of truth. Prisma models, API routes, runtim
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Vision (Part 1)** | Bridge code, DB, IR, API, hooks, UI into one interconnected system                                                                                                                                                                                                                                 |
 | **Script**          | `manifest/scripts/build.mjs`                                                                                                                                                                                                                                                                       |
-| **Steps**           | 1 → `manifest:compile`. 2 → `manifest:generate`. 3 → `manifest:routes:ir` → `manifest/runtime/routes.manifest.json`. 4 → `audit-routes-strict.mjs` (ownership rules + governance exemptions). 5 → `cleanup-generated-orphans.mjs`. Any step failure exits non-zero. |
+| **Steps**           | 1 → `manifest:compile`. 2 → `manifest:generate` (nextjs routes + dispatcher + `projections.wiring` contract/bindings). 3 → `manifest:routes:ir` → `manifest/runtime/routes.manifest.json`. 4 → `audit-routes-strict.mjs` (ownership rules + governance exemptions). 5 → `cleanup-generated-orphans.mjs`. Any step failure exits non-zero. |
 
 ### Schema & DB workflow (when vision requires persisted entities)
 
@@ -136,7 +136,10 @@ Run in order when changing domain semantics. Detailed implementation: Part 2.
 
 | Script                        | Entry point                       | What it does                                                |
 | ----------------------------- | --------------------------------- | ----------------------------------------------------------- |
-| `manifest:generate`           | `generate.mjs`                    | CLI nextjs route projection + `ENTITY_DOMAIN_MAP` remapping |
+| `manifest:generate`           | `generate.mjs`                    | Nextjs routes + dispatcher + wiring contract/bindings       |
+| `manifest:wiring`             | `generate-wiring.mjs`             | Wiring contract + bindings (also run from `manifest:generate`) |
+| `manifest:wiring:inspect`     | `wiring-inspect.mjs`              | Inspect apps against generated wiring contract              |
+| `manifest:wiring:remediate`   | `wiring-remediate.mjs`            | One-defect (default) automatic wiring repair                |
 | `manifest:client`             | `generate-capsule-client.mjs`     | Typed fetch client                                          |
 | `manifest:generate-metadata`  | chain of 4 scripts                | Prisma metadata, accessors, store options, store projection |
 | `manifest:openapi`            | `generate-openapi.mjs`            | OpenAPI spec                                                |
