@@ -16,6 +16,16 @@ on:
           recover a deploy that failed mid-migration. Leave blank normally.
         required: false
         default: ""
+      deploy_web:
+        description: Also deploy the marketing web project to Vercel production
+        type: boolean
+        required: false
+        default: false
+      deploy_docs:
+        description: Also deploy the docs project to Vercel production
+        type: boolean
+        required: false
+        default: false
 
 concurrency:
   group: deploy-production-manual
@@ -193,6 +203,7 @@ jobs:
             --token "$VERCEL_TOKEN"
 
   deploy-web:
+    if: ${{ inputs.deploy_web }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     continue-on-error: true
@@ -236,6 +247,7 @@ jobs:
             --token "$VERCEL_TOKEN"
 
   deploy-docs:
+    if: ${{ inputs.deploy_docs }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:

@@ -273,3 +273,5 @@ setPackaging cold ~1.4s / warm ~0.6s with DDL off the await path.
 1. Never assume prod schema/data matches a working local/dev DB.
 2. Data repairs in migrations must cover **every** column about to cast to that enum — not just the one table you saw fail once.
 3. After a failed prod migrate, use Deploy `resolve_migration=<name>` (rolled-back) then re-deploy the fixed SQL; do not invent a "copy from dev" path.
+
+4. Re-runnable enum migrations must compare via `col::text = 'legacy'` and CREATE TYPE with `duplicate_object` handlers — a column already typed as the enum will reject hyphenated string literals in WHERE.
