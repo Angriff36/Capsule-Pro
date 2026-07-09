@@ -111,6 +111,9 @@ describe("POST /api/kitchen/recipes/[id]/composite/update-with-version", () => {
       difficultyLevel: 2,
       instructions: "Cook it",
       notes: "Keep warm",
+      dropOffNotes: "Seal trays; label allergen",
+      bringHotNotes: "Hot box at 165F",
+      cookOnSiteNotes: "Finish sauce on site",
     });
 
     mocks.runCommand.mockImplementation((command, payload, options) =>
@@ -166,7 +169,42 @@ describe("POST /api/kitchen/recipes/[id]/composite/update-with-version", () => {
           recipeId: "recipe-1",
           tenantId: "tenant-1",
         }),
+        select: expect.objectContaining({
+          dropOffNotes: true,
+          bringHotNotes: true,
+          cookOnSiteNotes: true,
+        }),
       })
     );
+  });
+
+  it("carries packaging notes from the latest version onto the new version", async () => {
+    const request = new NextRequest(
+      "https://example.com/api/kitchen/recipes/recipe-1/composite/update-with-version",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          name: "Updated Recipe",
+        }),
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    const response = await POST(request, {
+      params: Promise.resolve({ id: "recipe-1" }),
+    });
+    expect(response.status).toBe(200);
+
+    const versionCreate = mocks.runCommand.mock.calls.find(
+      (call) =>
+        call[0] === "create" &&
+        (call[2] as { entityName?: string })?.entityName === "RecipeVersion"
+    );
+    expect(versionCreate).toBeDefined();
+    expect(versionCreate?.[1]).toMatchObject({
+      dropOffNotes: "Seal trays; label allergen",
+      bringHotNotes: "Hot box at 165F",
+      cookOnSiteNotes: "Finish sauce on site",
+    });
   });
 });

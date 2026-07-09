@@ -194,6 +194,12 @@ function loadLatestVersion(
       difficultyLevel: true,
       instructions: true,
       notes: true,
+      // Packaging notes are authored via RecipeVersion.setPackaging on the
+      // latest version; carry them forward so edit/version bumps do not wipe
+      // the cookbook "Packaging & event build" section.
+      dropOffNotes: true,
+      bringHotNotes: true,
+      cookOnSiteNotes: true,
     },
   });
 }
@@ -236,6 +242,9 @@ function buildVersionCreatePayload(
     body.difficultyLevel ?? latestVersion.difficultyLevel ?? 1;
   const instructions = body.instructions ?? latestVersion.instructions ?? "";
   const notes = body.notes ?? latestVersion.notes ?? "";
+  const dropOffNotes = latestVersion.dropOffNotes ?? "";
+  const bringHotNotes = latestVersion.bringHotNotes ?? "";
+  const cookOnSiteNotes = latestVersion.cookOnSiteNotes ?? "";
 
   return {
     id: newVersionId,
@@ -258,6 +267,9 @@ function buildVersionCreatePayload(
     difficultyLevel,
     instructions,
     notes,
+    dropOffNotes,
+    bringHotNotes,
+    cookOnSiteNotes,
     // RecipeVersion.create command params (see
     // manifest/source/kitchen/recipe-rules.manifest) — guards and mutates
     // read THESE names, not the column names above.
