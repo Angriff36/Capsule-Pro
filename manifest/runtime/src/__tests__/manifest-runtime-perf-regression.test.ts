@@ -1,14 +1,24 @@
 /**
  * Performance regressions for the Event.update latency fix (2026-06-19).
  *
- * Measured root cause: `createManifestRuntime` paid a one-time COLD cost
- * (`ensureManifestSchema` DDL ≈3.1s + first IR parse/provenance) on the first
- * request after a restart. All of that is process-memoized, so WARM runtime
- * construction is ~3ms. These tests pin the properties that keep it that way:
+ * Measured root cause (fixed): `createManifestRuntime` used to await
+ * `ensureManifestSchema` DDL (~2.7–3.1s Neon RTT) on the first request after a
+ * restart. The factory now fire-and-forgets via `kickoffManifestSchema` (core
+ * tables are Prisma-migrated). Do not reintroduce an awaited DDL call on the
+ * request path.
+ *
+ * A prior attempt also exported `@repo/manifest-runtime/pg-pool` and called
+ * bootstrap from API `instrumentation`. Real-app A/B (cleared Turbopack caches,
+ * `/kitchen` + API) did **not** show that boundary caused 40–85s compiles;
+ * keep DDL off the request path via in-factory kickoff only.
+ *
+ * Remaining process-memoized cold costs are first IR provenance + role-policy
+ * load. WARM runtime construction is ~2–3ms.
+ * These tests pin the properties that keep it that way:
  *
  *   1. Warm `createManifestRuntime` reuses the per-tenant role-policy cache
  *      (no extra DB query) and stays well under 100ms — no per-request rebuild
- *      of IR / schema / engine registries.
+ *      of IR / engine registries.
  *   2. A command with many `mutate` statements still performs exactly ONE store
  *      write (the engine's command buffer batches them) — Event.update has ~41
  *      mutates but must not issue ~41 writes.
@@ -31,8 +41,9 @@ import {
 
 // ---------------------------------------------------------------------------
 // 1. Warm-path role-policy caching — the per-request DB work that made warm
-//    createManifestRuntime drop to ~3ms (the cold 3.4s was one-time
-//    ensureManifestSchema DDL + IR parse, both process-memoized).
+//    createManifestRuntime drop to ~2–3ms (schema DDL is fire-and-forget via
+//    kickoffManifestSchema; first IR provenance + role-policy load remain
+//    process-memoized).
 //
 //    NOTE: createManifestRuntime itself can't be imported under vitest (it
 //    transitively pulls `server-only`), so we pin the actual warm-path cache it

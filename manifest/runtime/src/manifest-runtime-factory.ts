@@ -129,7 +129,7 @@ import {
   getAsyncRegistryEntries,
 } from "./middleware/middleware-registry";
 import { loadRolePolicies } from "./permission-guard";
-import { ensureManifestSchema, getPool } from "./pg-pool";
+import { getPool, kickoffManifestSchema } from "./pg-pool";
 import { PrismaIdempotencyStore } from "./prisma-idempotency-store";
 import { PrismaJsonStore } from "./prisma-json-store";
 import type { EntityInstance, PrismaStoreConfig } from "./prisma-store";
@@ -790,10 +790,14 @@ export async function createManifestRuntime(
   //     manifest_outbox_entries table had no drain — events piled up
   //     undelivered). The audit sink shares the singleton pg.Pool from
   //     pg-pool.ts.
-  //     Schema bootstrap (CREATE TABLE IF NOT EXISTS) is idempotent.
-  //     GRACEFUL: adapters are skipped when DATABASE_URL is absent (test envs,
-  //     CI without DB). The engine still works — just without persistent audit
-  //     or outbox delivery.
+  //
+  //     Schema bootstrap: do NOT await ensureManifestSchema here — that paid
+  //     ~2.7s Neon DDL RTT on the first user command. Core tables are owned by
+  //     Prisma migrations; kickoffManifestSchema() fills gaps (async_reaction_*)
+  //     in the background without blocking. Do not reintroduce awaited DDL on
+  //     the request path, and do not static-import pg-pool from Next
+  //     instrumentation solely for startup DDL (unproven compile-regression
+  //     risk; keep bootstrap in-factory via kickoff).
   //
   //     Async reaction queue — Capsule-owned durable queue for slow cross-
   //     entity reactions (battle board sync, inventory restock, …) deferred
@@ -810,7 +814,7 @@ export async function createManifestRuntime(
   let asyncReactionStore: PostgresAsyncReactionStore | undefined;
   let asyncDispatch: AsyncDispatch | undefined;
   if (dbUrl) {
-    await ensureManifestSchema();
+    kickoffManifestSchema();
     const pool = getPool();
     auditSink = new PostgresAuditSink({ pool });
     outboxStore = createOutboxAdapter({
