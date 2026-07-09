@@ -51,7 +51,7 @@ export interface UpdateTrainingModuleInput {
 
 export interface TrainingAssignment {
   assigned_at: Date;
-  assigned_by: string;
+  assigned_by: string | null;
   assigned_to_all: boolean;
   completion?: TrainingCompletion;
   created_at: Date;
