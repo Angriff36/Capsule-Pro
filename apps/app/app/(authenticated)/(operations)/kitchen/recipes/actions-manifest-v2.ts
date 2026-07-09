@@ -16,6 +16,7 @@ import { put } from "@repo/storage";
 import { revalidatePath } from "next/cache";
 import { apiPostJsonServer } from "../../../../lib/api-server";
 import { requireCurrentUser, requireTenantId } from "../../../../lib/tenant";
+import { dishUpdateBody, loadDishUpdateFields } from "./dish-update-fields";
 
 // ============ Helper Functions ============
 
@@ -276,7 +277,7 @@ export const updateDishPresentationImage = async (
 
 import {
   getRecipeForEdit as _getRecipeForEdit,
-  updateRecipeImage as _updateRecipeImage, dishUpdateBody, loadDishUpdateFields,
+  updateRecipeImage as _updateRecipeImage,
 } from "./actions";
 
 export const getRecipeForEdit = _getRecipeForEdit;
