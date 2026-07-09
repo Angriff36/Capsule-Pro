@@ -44,6 +44,7 @@ import {
   containerUpdate,
   listContainers,
 } from "@/app/lib/manifest-client.generated";
+import { buildContainerCreatePayload } from "./build-container-create-payload";
 
 interface ContainerRecord {
   capacityPortions: number | null;
@@ -189,24 +190,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
 
   const handleCreate = async () => {
     try {
-      const payload: Record<string, unknown> = {
-        name: form.name,
-        containerType: form.containerType,
-        isReusable: form.isReusable,
-      };
-      if (form.sizeDescription) {
-        payload.sizeDescription = form.sizeDescription;
-      }
-      if (form.capacityVolumeMl) {
-        payload.capacityVolumeMl = Number(form.capacityVolumeMl);
-      }
-      if (form.capacityWeightG) {
-        payload.capacityWeightG = Number(form.capacityWeightG);
-      }
-      if (form.capacityPortions) {
-        payload.capacityPortions = Number(form.capacityPortions);
-      }
-
+      const payload = buildContainerCreatePayload(form);
       await containerCreate(payload);
       toast.success("Container created");
       setCreateOpen(false);
