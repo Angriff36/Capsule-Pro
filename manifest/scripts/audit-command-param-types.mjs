@@ -40,9 +40,13 @@
  *                            and the type GROUPS conflict (temporal vs integer,
  *                            decimal vs string, …).
  *   - openapi_type_mismatch : the committed OpenAPI requestBody representation
- *                            for the param does not match the expected shape
- *                            for the IR type (e.g. datetime not emitted as
- *                            string/date-time; int not integer).
+ *                            for the param does not match the expected BASE
+ *                            shape for the IR type (e.g. datetime not emitted
+ *                            as string/date-time; int not integer).
+ *   - openapi_nullability_mismatch : OpenAPI nullability disagrees with the IR
+ *                                   (e.g. `string?` emitted as non-nullable).
+ *   - openapi_required_mismatch : OpenAPI required-vs-optional presence
+ *                                 disagrees with the IR.
  *   - openapi_missing       : param is absent from the OpenAPI requestBody.
  *   - zod_type_mismatch     : the regenerated Zod schema field for the param
  *                            does not match the expected Zod shape (only when
@@ -384,6 +388,11 @@ function irTypeName(param) {
   return typeof t === "string" ? t : t.name ?? "unknown";
 }
 
+function irTypeNullable(param) {
+  const t = param.type;
+  return typeof t === "object" && t !== null ? t.nullable === true : false;
+}
+
 function checkPrisma({
   entityName,
   paramName,
@@ -423,47 +432,141 @@ function checkPrisma({
   };
 }
 
-function checkOpenAPI({ entityName, commandName, paramName, irType, pathOp }) {
-  if (!pathOp) return null; // no OpenAPI path for this command
-  const props =
-    pathOp.post?.requestBody?.content?.["application/json"]?.schema
-      ?.properties ?? null;
-  if (!props) return null;
+function describeOpenApiField(fieldShape) {
+  const base =
+    fieldShape.format && fieldShape.baseTypes.length === 1
+      ? `${fieldShape.baseTypes[0]}/${fieldShape.format}`
+      : fieldShape.baseTypes.join("|") || "(unknown)";
+  const nullable = fieldShape.nullable ? ",null" : "";
+  const required = fieldShape.required ? "required" : "optional";
+  return `${base}${nullable} (${required})`;
+}
+
+function normalizeOpenApiField(oaField, required) {
+  const rawTypes = [];
+
+  const collectType = (candidate) => {
+    if (!candidate || typeof candidate !== "object") {
+      return;
+    }
+    if (Array.isArray(candidate.type)) {
+      for (const typeName of candidate.type) {
+        if (typeof typeName === "string") {
+          rawTypes.push(typeName);
+        }
+      }
+      return;
+    }
+    if (typeof candidate.type === "string") {
+      rawTypes.push(candidate.type);
+    }
+  };
+
+  collectType(oaField);
+  for (const variant of oaField.oneOf ?? []) {
+    collectType(variant);
+  }
+  for (const variant of oaField.anyOf ?? []) {
+    collectType(variant);
+  }
+
+  const types = [...new Set(rawTypes)];
+  const nullable =
+    oaField.nullable === true ||
+    types.includes("null") ||
+    (oaField.oneOf ?? []).some((variant) => variant?.type === "null") ||
+    (oaField.anyOf ?? []).some((variant) => variant?.type === "null");
+
+  return {
+    baseTypes: types.filter((typeName) => typeName !== "null"),
+    format: typeof oaField.format === "string" ? oaField.format : null,
+    nullable,
+    required,
+  };
+}
+
+export function checkOpenAPI({
+  entityName,
+  commandName,
+  paramName,
+  irType,
+  paramNullable,
+  paramRequired,
+  pathOp,
+}) {
+  if (!pathOp) return []; // no OpenAPI path for this command
+  const schema =
+    pathOp.post?.requestBody?.content?.["application/json"]?.schema ?? null;
+  const props = schema?.properties ?? null;
+  if (!props) return [];
   const oaField = props[paramName];
   if (!oaField) {
-    return {
-      surface: "openapi",
-      severity: "openapi_missing",
-      irType,
-      declared: "(absent)",
-      recommendation: `${entityName}.${commandName}.${paramName} (\`${irType}\`) is missing from the OpenAPI requestBody. Run \`pnpm manifest:openapi\` and commit the regenerated spec.`,
-    };
+    return [
+      {
+        surface: "openapi",
+        severity: "openapi_missing",
+        irType,
+        declared: "(absent)",
+        recommendation: `${entityName}.${commandName}.${paramName} (\`${irType}\`) is missing from the OpenAPI requestBody. Run \`pnpm manifest:openapi\` and commit the regenerated spec.`,
+      },
+    ];
   }
+
+  const fieldShape = normalizeOpenApiField(
+    oaField,
+    Array.isArray(schema.required) && schema.required.includes(paramName)
+  );
+  const declared = describeOpenApiField(fieldShape);
   const expected = IR_TYPE_EXPECTED_OPENAPI[irType];
-  if (!expected) return null;
-  // float is emitted as string by the current projection but number is also
-  // acceptable — accept either for the float case.
+  if (!expected) return [];
+
+  const violations = [];
   const typeOk =
     expected.type === "*" ||
-    oaField.type === expected.type ||
-    (irType === "float" && (oaField.type === "string" || oaField.type === "number"));
-  const formatOk = !expected.format || oaField.format === expected.format;
-  if (typeOk && formatOk) return null;
+    fieldShape.baseTypes.includes(expected.type) ||
+    (irType === "float" &&
+      (fieldShape.baseTypes.includes("string") ||
+        fieldShape.baseTypes.includes("number")));
+  const formatOk =
+    !expected.format ||
+    (fieldShape.baseTypes.length === 1 && fieldShape.format === expected.format);
+  if (!(typeOk && formatOk)) {
+    const wanted = expected.format
+      ? `${expected.type}/${expected.format}`
+      : expected.type;
+    violations.push({
+      surface: "openapi",
+      severity: "openapi_type_mismatch",
+      irType,
+      declared,
+      expected: paramNullable ? `${wanted},null` : wanted,
+      recommendation: `${entityName}.${commandName}.${paramName} is \`${irType}\` in the IR but OpenAPI declares \`${declared}\` (expected base type \`${wanted}\`). Run \`pnpm manifest:openapi\` and commit the regenerated spec.`,
+    });
+  }
 
-  const actual = oaField.format
-    ? `${oaField.type}/${oaField.format}`
-    : oaField.type;
-  const wanted = expected.format
-    ? `${expected.type}/${expected.format}`
-    : expected.type;
-  return {
-    surface: "openapi",
-    severity: "openapi_type_mismatch",
-    irType,
-    declared: actual,
-    expected: wanted,
-    recommendation: `${entityName}.${commandName}.${paramName} is \`${irType}\` in the IR but OpenAPI declares \`${actual}\` (expected \`${wanted}\`). Run \`pnpm manifest:openapi\` and commit the regenerated spec.`,
-  };
+  if (fieldShape.nullable !== paramNullable) {
+    violations.push({
+      surface: "openapi",
+      severity: "openapi_nullability_mismatch",
+      irType,
+      declared,
+      expected: paramNullable ? "nullable" : "non-nullable",
+      recommendation: `${entityName}.${commandName}.${paramName} nullability disagrees with the IR (OpenAPI declares \`${declared}\`, IR expects ${paramNullable ? "nullable" : "non-nullable"}). Run \`pnpm manifest:openapi\` and commit the regenerated spec.`,
+    });
+  }
+
+  if (fieldShape.required !== paramRequired) {
+    violations.push({
+      surface: "openapi",
+      severity: "openapi_required_mismatch",
+      irType,
+      declared,
+      expected: paramRequired ? "required" : "optional",
+      recommendation: `${entityName}.${commandName}.${paramName} presence disagrees with the IR (OpenAPI declares \`${declared}\`, IR expects the parameter to be ${paramRequired ? "required" : "optional"}). Run \`pnpm manifest:openapi\` and commit the regenerated spec.`,
+    });
+  }
+
+  return violations;
 }
 
 function checkZod({ entityName, paramName, irType, zodFields }) {
@@ -584,17 +687,20 @@ function runSelfTest() {
   assert("number ↔ Decimal is compatible (legacy ambiguous)", v === null);
 
   // OpenAPI
-  v = checkOpenAPI({
+  let openapiViolations = checkOpenAPI({
     entityName: "E",
     commandName: "create",
     paramName: "eventDate",
     irType: "datetime",
+    paramNullable: false,
+    paramRequired: true,
     pathOp: {
       post: {
         requestBody: {
           content: {
             "application/json": {
               schema: {
+                required: ["eventDate"],
                 properties: { eventDate: { type: "string", format: "date-time" } },
               },
             },
@@ -603,19 +709,27 @@ function runSelfTest() {
       },
     },
   });
-  assert("datetime → string/date-time is compatible", v === null);
+  assert(
+    "datetime → string/date-time is compatible",
+    Array.isArray(openapiViolations) && openapiViolations.length === 0
+  );
 
-  v = checkOpenAPI({
+  openapiViolations = checkOpenAPI({
     entityName: "E",
     commandName: "create",
     paramName: "guestCount",
     irType: "int",
+    paramNullable: false,
+    paramRequired: true,
     pathOp: {
       post: {
         requestBody: {
           content: {
             "application/json": {
-              schema: { properties: { guestCount: { type: "string" } } },
+              schema: {
+                required: ["guestCount"],
+                properties: { guestCount: { type: "string" } },
+              },
             },
           },
         },
@@ -624,14 +738,16 @@ function runSelfTest() {
   });
   assert(
     "int → string is a mismatch",
-    v !== null && v.severity === "openapi_type_mismatch"
+    openapiViolations.some((entry) => entry.severity === "openapi_type_mismatch")
   );
 
-  v = checkOpenAPI({
+  openapiViolations = checkOpenAPI({
     entityName: "E",
     commandName: "create",
     paramName: "missing",
     irType: "string",
+    paramNullable: false,
+    paramRequired: true,
     pathOp: {
       post: {
         requestBody: {
@@ -642,7 +758,67 @@ function runSelfTest() {
   });
   assert(
     "absent param → openapi_missing",
-    v !== null && v.severity === "openapi_missing"
+    openapiViolations.some((entry) => entry.severity === "openapi_missing")
+  );
+
+  openapiViolations = checkOpenAPI({
+    entityName: "Dish",
+    commandName: "update",
+    paramName: "description",
+    irType: "string",
+    paramNullable: true,
+    paramRequired: true,
+    pathOp: {
+      post: {
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                required: ["description"],
+                properties: {
+                  description: { type: ["string", "null"] },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+  assert(
+    "nullable required string accepts explicit null in OpenAPI",
+    openapiViolations.length === 0
+  );
+
+  openapiViolations = checkOpenAPI({
+    entityName: "Dish",
+    commandName: "update",
+    paramName: "description",
+    irType: "string",
+    paramNullable: true,
+    paramRequired: true,
+    pathOp: {
+      post: {
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                required: [],
+                properties: {
+                  description: { type: ["string", "null"] },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+  assert(
+    "nullable required string still fails when omitted from required list",
+    openapiViolations.some(
+      (entry) => entry.severity === "openapi_required_mismatch"
+    )
   );
 
   // Zod
@@ -754,6 +930,8 @@ async function main() {
         commandName,
         paramName: param.name,
         irType,
+        paramNullable: irTypeNullable(param),
+        paramRequired: param.required === true,
         entityProps: props,
         metaEntry,
         prismaModels,
@@ -762,7 +940,7 @@ async function main() {
       };
       const checks = [
         checkPrisma(ctx),
-        checkOpenAPI(ctx),
+        ...checkOpenAPI(ctx),
         checkZod(ctx),
       ].filter(Boolean);
       for (const v of checks) {
@@ -932,11 +1110,17 @@ function renderMarkdown(summary, violations) {
 
 // ---------------------------------------------------------------------------
 const args = process.argv.slice(2);
-if (args.includes("--self-test")) {
-  runSelfTest();
-} else {
-  main().catch((err) => {
-    console.error("[cmd-param-types] Fatal:", err);
-    process.exit(2);
-  });
+const IS_MAIN =
+  process.argv[1] !== undefined &&
+  resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (IS_MAIN) {
+  if (args.includes("--self-test")) {
+    runSelfTest();
+  } else {
+    main().catch((err) => {
+      console.error("[cmd-param-types] Fatal:", err);
+      process.exit(2);
+    });
+  }
 }

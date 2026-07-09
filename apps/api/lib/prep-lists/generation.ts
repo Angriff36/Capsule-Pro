@@ -62,14 +62,15 @@ async function getEventDishes(
         ed.course,
         ed.quantity_servings
       FROM tenant_events.event_dishes ed
+      -- Existing commitment read: prep for an event that already committed to a
+      -- dish must still include it after catalog soft-delete, so NO d.deleted_at
+      -- filter here. (Catalog/picker queries keep it.)
       JOIN tenant_kitchen.dishes d
         ON d.tenant_id = ed.tenant_id
         AND d.id = ed.dish_id
-        AND d.deleted_at IS NULL
       LEFT JOIN tenant_kitchen.recipes r
         ON r.tenant_id = d.tenant_id
         AND r.id = d.recipe_id
-        AND r.deleted_at IS NULL
       LEFT JOIN LATERAL (
         SELECT inner_rv.*
         FROM tenant_kitchen.recipe_versions inner_rv
@@ -204,8 +205,7 @@ function classifyUnresolvedDish(
     };
   }
 
-  const ingredients =
-    ingredientsByVersion.get(dish.recipeInfo.versionId) ?? [];
+  const ingredients = ingredientsByVersion.get(dish.recipeInfo.versionId) ?? [];
   if (ingredients.length === 0) {
     return {
       dishId: dish.id,

@@ -2,9 +2,17 @@ import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
 /**
- * Neon direct connections often drop with "Connection terminated unexpectedly"
- * in serverless/Next.js. Rewrite to the pooler URL and add timeouts so the same
- * DATABASE_URL works and Neon has time to wake from pause.
+ * Neon connection URL normalization for the app runtime.
+ *
+ * Official Neon guidance (https://neon.com/docs/connect/choose-connection):
+ * - App queries → pooled hostname (`-pooler`)
+ * - Migrations / Prisma CLI → direct hostname (`DIRECT_URL`, not rewritten here)
+ *
+ * `connect_timeout=15` gives Neon compute time to wake from scale-to-zero
+ * (https://neon.com/docs/guides/prisma — P1001 / wake timeouts).
+ *
+ * Pool idle lifetime is NOT set here — Prisma v7 driver adapters ignore URL
+ * `max_idle_connection_lifetime`. See `create-pg-adapter.ts` (`idleTimeoutMillis`).
  */
 function toNeonPoolerUrl(url: string): string {
   try {
@@ -21,8 +29,12 @@ function toNeonPoolerUrl(url: string): string {
     }
     // Give Neon time to wake from pause (avoids "Connection terminated unexpectedly" on first request)
     u.searchParams.set("connect_timeout", "15");
+    // Node pg treats require/prefer/verify-ca as verify-full; set explicitly to
+    // silence the deprecation warning from pg-connection-string.
     if (!u.searchParams.has("sslmode")) {
-      u.searchParams.set("sslmode", "require");
+      u.searchParams.set("sslmode", "verify-full");
+    } else if (u.searchParams.get("sslmode") === "require") {
+      u.searchParams.set("sslmode", "verify-full");
     }
     return u.toString();
   } catch {

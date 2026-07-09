@@ -1005,6 +1005,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                       minGuests={menu.minGuests}
                       name={menu.name}
                       pricePerPerson={menu.pricePerPerson}
+                      status={menu.status}
                     />
                   ))
                 )}

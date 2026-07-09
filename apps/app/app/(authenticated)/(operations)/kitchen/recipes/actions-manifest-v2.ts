@@ -16,6 +16,7 @@ import { put } from "@repo/storage";
 import { revalidatePath } from "next/cache";
 import { apiPostJsonServer } from "../../../../lib/api-server";
 import { requireCurrentUser, requireTenantId } from "../../../../lib/tenant";
+import { dishUpdateBody, loadDishUpdateFields } from "./dish-update-fields";
 
 // ============ Helper Functions ============
 
@@ -236,9 +237,13 @@ export const updateDishPresentationImage = async (
       imageFile
     );
 
+    const current = await loadDishUpdateFields(tenantId, dishId);
+    if (!current) {
+      return { success: false, error: "Dish not found." };
+    }
     const response = await apiPostJsonServer(
       "/api/manifest/Dish/commands/update",
-      { id: dishId, presentationImageUrl: imageUrl }
+      { id: dishId, ...dishUpdateBody(current), presentationImageUrl: imageUrl }
     );
     const result = (await response.json().catch(() => null)) as {
       error?: string;

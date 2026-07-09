@@ -14149,6 +14149,33 @@
       "tenant": true
     },
     {
+      "id": "Dish.softDelete",
+      "path": "/api/manifest/Dish/commands/soft-delete",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Dish",
+        "command": "softDelete",
+        "variant": "dispatcher"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "Dish.unmarkSeasonal",
       "path": "/api/manifest/Dish/commands/unmark-seasonal",
       "method": "POST",
@@ -31334,6 +31361,33 @@
         "kind": "command",
         "entity": "Recipe",
         "command": "setSubrecipe",
+        "variant": "dispatcher"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Recipe.softDelete",
+      "path": "/api/manifest/Recipe/commands/soft-delete",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Recipe",
+        "command": "softDelete",
         "variant": "dispatcher"
       },
       "auth": true,

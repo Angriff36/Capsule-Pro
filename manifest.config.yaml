@@ -291,6 +291,20 @@ projections:
     options:
       # Base path prefix prepended to every route entry.
       basePath: /api
+  # Product wiring contract + safe bindings (Manifest >= 3.4).
+  # Emitted by manifest/scripts/generate-wiring.mjs during `pnpm manifest:generate`
+  # (also via manifest:build). Artifacts are under manifest/generated/wiring/ and
+  # are gitignored like other IR projection outputs — regenerate, don't commit.
+  # Consumers: `pnpm manifest:wiring:inspect` / `pnpm manifest:wiring:remediate`.
+  wiring:
+    output: manifest/generated/wiring
+    options:
+      apiBasePath: /api
+      dispatcherBasePath: /api/manifest
+      dateSerialization: iso-string
+      runtimeImportPath: "@/lib/manifest/execute-command"
+      contractPathHint: src/generated/manifest-wiring-contract.json
+      bindingsPathHint: src/generated/manifest-wiring-bindings.ts
   prisma:
     # Native multi-schema schema generation (manifest >= 2.22.0). Manifest OWNS
     # packages/database/prisma/schema/manifest.prisma (the Manifest half of the

@@ -41,7 +41,9 @@ const computeEventRecipeCosts = async (
             AND pt.dish_id IS NOT NULL
         )
         AND d.tenant_id = ${tenantId}
-        AND d.deleted_at IS NULL
+        -- Existing commitment: a dish already committed to an event keeps
+        -- contributing to that event's cost after catalog soft-delete, so NO
+        -- d.deleted_at filter here.
       JOIN tenant_kitchen.recipe_versions rv
         ON rv.recipe_id = d.recipe_id
         AND rv.version_number = (

@@ -171,6 +171,11 @@ export interface DishReinstateInput {
   id?: string;
   userId?: string;
 }
+export interface DishSoftDeleteInput {
+  id?: string;
+  reason?: string;
+  userId?: string;
+}
 export interface DishUnmarkSeasonalInput {
   id?: string;
 }
@@ -976,6 +981,11 @@ export interface RecipeDeactivateInput {
 export interface RecipeSetSubrecipeInput {
   id?: string;
   isSubrecipe?: boolean;
+}
+export interface RecipeSoftDeleteInput {
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 export interface RecipeUpdateInput {
   id?: string;
@@ -1938,6 +1948,10 @@ export async function dishReinstate(input: DishReinstateInput = {}): Promise<Dis
   const r = await executeCommand<Dish>("Dish", "reinstate", input as Record<string, unknown>);
   return r.result;
 }
+export async function dishSoftDelete(input: DishSoftDeleteInput = {}): Promise<Dish | undefined> {
+  const r = await executeCommand<Dish>("Dish", "softDelete", input as Record<string, unknown>);
+  return r.result;
+}
 export async function dishUnmarkSeasonal(input: DishUnmarkSeasonalInput = {}): Promise<Dish | undefined> {
   const r = await executeCommand<Dish>("Dish", "unmarkSeasonal", input as Record<string, unknown>);
   return r.result;
@@ -2516,6 +2530,10 @@ export async function recipeDeactivate(input: RecipeDeactivateInput = {}): Promi
 }
 export async function recipeSetSubrecipe(input: RecipeSetSubrecipeInput = {}): Promise<Recipe | undefined> {
   const r = await executeCommand<Recipe>("Recipe", "setSubrecipe", input as Record<string, unknown>);
+  return r.result;
+}
+export async function recipeSoftDelete(input: RecipeSoftDeleteInput = {}): Promise<Recipe | undefined> {
+  const r = await executeCommand<Recipe>("Recipe", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function recipeUpdate(input: RecipeUpdateInput = {}): Promise<Recipe | undefined> {

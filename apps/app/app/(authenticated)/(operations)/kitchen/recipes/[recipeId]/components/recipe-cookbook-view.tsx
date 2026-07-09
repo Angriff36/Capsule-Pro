@@ -29,6 +29,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ConvertInstructionsButton } from "./convert-instructions-button";
+import { RecipePackagingEditor } from "./recipe-packaging-editor";
 import { StorageContainerSelect } from "./storage-container-select";
 import { UpdatePhotoControl } from "./update-photo-control";
 
@@ -408,32 +409,39 @@ export function RecipeCookbookView(recipe: RecipeCookbookViewProps) {
             )}
           </section>
 
-          {packagingRows.length > 0 && (
+          {recipe.recipeVersionId ? (
             <section className="space-y-6">
               <SectionHeader
                 eyebrow="Service"
                 title="Packaging & event build"
               />
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {packagingRows.map((r) => (
-                  <div
-                    className="rounded-card border border-hairline bg-canvas p-5"
-                    key={r.label}
-                  >
-                    <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.28em]">
-                      {r.label}
-                      <span className="ml-2 normal-case tracking-normal">
-                        · {r.note}
-                      </span>
-                    </p>
-                    <p className="mt-2 text-[15px] text-ink leading-relaxed">
-                      {r.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              {packagingRows.length > 0 ? (
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {packagingRows.map((r) => (
+                    <div
+                      className="rounded-card border border-hairline bg-canvas p-5"
+                      key={r.label}
+                    >
+                      <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.28em]">
+                        {r.label}
+                        <span className="ml-2 normal-case tracking-normal">
+                          · {r.note}
+                        </span>
+                      </p>
+                      <p className="mt-2 text-[15px] text-ink leading-relaxed">
+                        {r.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+              <RecipePackagingEditor
+                key={`${recipe.recipeVersionId}:${recipe.packaging.dropOff}:${recipe.packaging.bringHot}:${recipe.packaging.cookOnSite}`}
+                packaging={recipe.packaging}
+                recipeVersionId={recipe.recipeVersionId}
+              />
             </section>
-          )}
+          ) : null}
         </OperationalColumn>
       </PageBody>
     </>

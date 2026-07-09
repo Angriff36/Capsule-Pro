@@ -10,8 +10,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
-import { requireCurrentUser } from "../../../../lib/tenant";
 
 export interface IngredientActionResult {
   error?: string;
@@ -51,7 +51,7 @@ export const createIngredient = async (
   const shelfLifeDays = parseNumber(formData.get("shelfLifeDays")) ?? 0;
   const storageInstructions =
     String(formData.get("storageInstructions") || "").trim() || "";
-  const allergens = parseList(formData.get("allergens")).join(",");
+  const allergens = parseList(formData.get("allergens"));
 
   const result = await runManifestCommand({
     entity: "Ingredient",

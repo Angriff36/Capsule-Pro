@@ -1241,6 +1241,11 @@
   },
   {
     "entity": "Dish",
+    "command": "softDelete",
+    "commandId": "Dish.softDelete"
+  },
+  {
+    "entity": "Dish",
     "command": "unmarkSeasonal",
     "commandId": "Dish.unmarkSeasonal"
   },
@@ -3993,6 +3998,11 @@
     "entity": "Recipe",
     "command": "setSubrecipe",
     "commandId": "Recipe.setSubrecipe"
+  },
+  {
+    "entity": "Recipe",
+    "command": "softDelete",
+    "commandId": "Recipe.softDelete"
   },
   {
     "entity": "Recipe",

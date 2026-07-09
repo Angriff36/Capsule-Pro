@@ -100,6 +100,11 @@ export async function POST(
           difficultyLevel: sourceVersion.difficultyLevel || 1,
           instructions: sourceVersion.instructions || "",
           notes: sourceVersion.notes || "",
+          // Carry packaging notes from the restored source so cookbook
+          // "Packaging & event build" survives restore → new latest version.
+          dropOffNotes: sourceVersion.dropOffNotes || "",
+          bringHotNotes: sourceVersion.bringHotNotes || "",
+          cookOnSiteNotes: sourceVersion.cookOnSiteNotes || "",
           // RecipeVersion.create command params (see
           // manifest/source/kitchen/recipe-rules.manifest) — guards and
           // mutates read THESE names, not the column names above.

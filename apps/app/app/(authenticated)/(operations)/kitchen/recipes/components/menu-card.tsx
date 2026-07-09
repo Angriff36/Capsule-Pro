@@ -9,6 +9,7 @@ import {
 } from "@repo/design-system/components/ui/card";
 import { CheckCircleIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
+import { menuStatusLabel, normalizeMenuStatus } from "../menus/menu-lifecycle";
 
 export interface MenuCardProps {
   allergens?: string[] | null;
@@ -18,11 +19,13 @@ export interface MenuCardProps {
   dietaryTags?: string[] | null;
   dishCount: number;
   id: string;
-  isActive: boolean;
+  /** @deprecated Prefer status — isActive is a Manifest side effect */
+  isActive?: boolean;
   maxGuests: number | null;
   minGuests: number | null;
   name: string;
   pricePerPerson: number | null;
+  status?: string;
 }
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -69,6 +72,7 @@ export const MenuCard = ({
   description,
   category,
   isActive,
+  status,
   basePrice,
   pricePerPerson,
   minGuests,
@@ -77,6 +81,16 @@ export const MenuCard = ({
   dietaryTags,
   allergens,
 }: MenuCardProps) => {
+  const lifecycle = normalizeMenuStatus(status);
+  let statusText = "Paused";
+  let statusLive = false;
+  if (status != null) {
+    statusText = menuStatusLabel(lifecycle);
+    statusLive = lifecycle === "published";
+  } else if (isActive) {
+    statusText = "Live";
+    statusLive = true;
+  }
   // Aggregate dietary and allergen information
   const allDietaryTags = Array.from(
     new Set(
@@ -108,11 +122,11 @@ export const MenuCard = ({
               {name}
             </CardTitle>
             <div
-              className={`flex shrink-0 items-center gap-1 ${isActive ? "text-deep-green" : "text-muted-foreground"}`}
+              className={`flex shrink-0 items-center gap-1 ${statusLive ? "text-deep-green" : "text-muted-foreground"}`}
             >
               <CheckCircleIcon className="size-4" />
               <span className="font-mono text-[11px] uppercase tracking-[0.2em]">
-                {isActive ? "Live" : "Paused"}
+                {statusText}
               </span>
             </div>
           </div>

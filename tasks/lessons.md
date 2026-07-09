@@ -218,3 +218,48 @@ there 3 tabs when each tab fits into my desktop screen".
 DisplayHeading + pills + compact hairline metric strip). CommandBand = module
 dashboards/landings only. Never hide panels behind tabs when they fit on screen —
 lay them out in a grid. Both encoded in DESIGN.md (§2 rule 11, §4 detail pages).
+
+## Lesson 16: Gitignored-but-tracked ≠ junk
+
+**Date:** 2026-07-09
+**What happened:** Repo cleanup audit labeled `.claude/`, `.hermes/`, `.husky/`,
+`.vscode/`, and `tasks/` as "clear junk" because they were both tracked and
+gitignored. User correctly rejected that — those can hold shared hooks, agent
+skills, and process docs. Being dual-state is suspicious, not proof of deletion.
+**Rule:** Tip cleanup may only untrack *proven generated/output* (probe dirs,
+analysis dumps, accidental `dist/`, tool audit JSON, orphan scratch extracts).
+Classify agent/tooling dirs, husky, IR, graphify, and process docs one-by-one
+before touching. History rewrite stays a separate, explicit operation.
+
+## Lesson 17: Proven latency ≠ proven Turbopack cause
+
+**Date:** 2026-07-09
+**What happened:** Manifest cold-path proof was real (`await ensureManifestSchema`
+~2.7s Neon DDL). The fix also briefly added API `instrumentation` →
+`@repo/manifest-runtime/pg-pool` and changed a shared package boundary. Later
+logs showed 40–85s **Next.js compile** times and "Finished writing to filesystem
+cache". The agent claimed the schema fix "pulled the Manifest graph into every
+page" / permanently poisoned Turbopack. That causal claim was **not traced** —
+API instrumentation cannot explain frontend-app compiles without a proven shared
+import path. Second requests often went normal, which fits cold-cache rebuild
+(+ possible concurrent audit agent disk/CPU contention), not a permanent
+import-graph regression.
+**A/B (2026-07-09, cleared `.next-dev`, route that was reported slow):**
+`a4fac84b6` (`await ensureManifestSchema`) vs `92a8c7892` (`kickoffManifestSchema`).
+`/inventory/items` 1st: 7.1s (next.js 3.2s) vs 6.1s (next.js 3.3s); 2nd: ~1.2–1.3s
+both. **No 40–85s regression from the schema-bootstrap change.** Do not use
+`/kitchen` as a substitute for a reported-slow route. Shipped in-factory
+`kickoffManifestSchema()` only (no instrumentation / no package export).
+setPackaging cold ~1.4s / warm ~0.6s with DDL off the await path.
+**Rule:**
+1. Keep proven findings narrow: command-path DDL cost ≠ frontend compile cost.
+2. Never present "likely" Turbopack import-graph poison as fact without an A/B
+   under identical conditions (cleared `.next-dev`, no other heavy agents,
+   same routes, record `next.js:` vs `application-code:`).
+3. `instrumentation.register()` is a valid Next startup hook; bad static imports
+   there are a boundary smell (eager `pg`), not automatic proof of app-wide
+   compile explosion.
+4. Do not "declare victory" after a harness benchmark alone — smoke the real
+   `next dev` app before claiming the fix is done.
+5. Prefer in-factory `kickoffManifestSchema()` over shared-export / instrumentation
+   bootstrap unless an A/B proves the boundary is required.

@@ -8,7 +8,7 @@
     "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
-    "@angriff36/manifest": "3.3.1",
+    "@angriff36/manifest": "3.4.6",
     "@auto-it/first-time-contributor": "^11.3.6",
     "@babel/parser": "^7.29.7",
     "@biomejs/biome": "2.5.2",
@@ -75,6 +75,9 @@
     "manifest:ownership:check": "node manifest/scripts/emit-feature-ownership.mjs --check",
     "manifest:ir:embed:check:self-test": "node manifest/scripts/check-ir-embed-drift.mjs --self-test",
     "manifest:generate": "node manifest/scripts/generate.mjs",
+    "manifest:wiring": "node manifest/scripts/generate-wiring.mjs",
+    "manifest:wiring:inspect": "node manifest/scripts/wiring-inspect.mjs",
+    "manifest:wiring:remediate": "node manifest/scripts/wiring-remediate.mjs",
     "manifest:client": "node manifest/scripts/generate-capsule-client.mjs",
     "manifest:try-prisma": "node manifest/scripts/try-prisma.mjs",
     "manifest:generate-metadata": "node manifest/scripts/generate-prisma-model-metadata.mjs && node manifest/scripts/generate-entity-accessor.mjs && node manifest/scripts/build-prisma-store-options.mjs && node manifest/scripts/generate-prisma-store-projection.mjs && node manifest/scripts/generate-guard-messages.mjs",

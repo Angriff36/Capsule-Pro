@@ -5,9 +5,11 @@ import { database, Prisma } from "@repo/database";
 import { put } from "@repo/storage";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { runManifestBatch } from "@/lib/manifest-batch";
 import { runManifestCommand } from "@/lib/manifest-command";
 import { invariant } from "../../../../lib/invariant";
 import { requireCurrentUser, requireTenantId } from "../../../../lib/tenant";
+import { dishUpdateBody, loadDishUpdateFields } from "./dish-update-fields";
 
 const parseList = (value: FormDataEntryValue | null) =>
   typeof value === "string"
@@ -654,105 +656,353 @@ export const getRecipeForEdit = async (
   };
 };
 
-export const deleteRecipe = async (recipeId: string) => {
+// Governed soft-delete (Design B): "Delete" sets deletedAt via the Manifest
+// runtime — guards/policy/audit run. It does NOT auto-remove committed
+// downstream work (EventDish / PrepListItem / PrepTask): a catalog record and a
+// confirmed event commitment are different business facts. Any removal of
+// committed work is explicit and user-chosen (see the dish-deletion impact flow
+// below). NOT a raw UPDATE, NOT deactivate (separate isActive axis).
+const DELETE_REASON = "Deleted from recipe catalog";
+
+/**
+ * Impact of deleting a catalog dish: how much CONFIRMED vs DRAFT commitment and
+ * active production work still references it. Reads only (bypass the runtime).
+ * "Upcoming" = event_date >= today. EventDish/PrepListItem have no status of
+ * their own — confirmation is read through the parent Event.status. Active prep
+ * tasks are those not already done/canceled.
+ */
+export interface DishDeletionImpact {
+  activePrepListItems: number;
+  activePrepTasks: number;
+  confirmedUpcomingEvents: number;
+  draftUpcomingEvents: number;
+  hasDependencies: boolean;
+}
+
+export const getDishDeletionImpact = async (
+  dishId: string
+): Promise<DishDeletionImpact> => {
   const tenantId = await requireTenantId();
-  await database.$executeRaw`
-    UPDATE tenant_kitchen.recipes
-    SET deleted_at = NOW()
-    WHERE tenant_id = ${tenantId} AND id = ${recipeId}::uuid
+  const [row] = await database.$queryRaw<
+    {
+      confirmed: bigint;
+      draft: bigint;
+      prep_items: bigint;
+      prep_tasks: bigint;
+    }[]
+  >`
+    SELECT
+      (SELECT COUNT(*) FROM tenant_events.event_dishes ed
+         JOIN tenant_events.events e
+           ON e.tenant_id = ed.tenant_id AND e.id = ed.event_id
+        WHERE ed.tenant_id = ${tenantId} AND ed.dish_id = ${dishId}::uuid
+          AND ed.deleted_at IS NULL AND e.deleted_at IS NULL
+          AND e.status = 'confirmed' AND e.event_date >= CURRENT_DATE) AS confirmed,
+      (SELECT COUNT(*) FROM tenant_events.event_dishes ed
+         JOIN tenant_events.events e
+           ON e.tenant_id = ed.tenant_id AND e.id = ed.event_id
+        WHERE ed.tenant_id = ${tenantId} AND ed.dish_id = ${dishId}::uuid
+          AND ed.deleted_at IS NULL AND e.deleted_at IS NULL
+          AND e.status = 'draft' AND e.event_date >= CURRENT_DATE) AS draft,
+      (SELECT COUNT(*) FROM tenant_kitchen.prep_list_items
+        WHERE tenant_id = ${tenantId} AND dish_id = ${dishId}::uuid
+          AND deleted_at IS NULL) AS prep_items,
+      (SELECT COUNT(*) FROM tenant_kitchen.prep_tasks
+        WHERE tenant_id = ${tenantId} AND dish_id = ${dishId}::uuid
+          AND deleted_at IS NULL AND status::text NOT IN ('done', 'canceled')) AS prep_tasks
   `;
+  const confirmedUpcomingEvents = Number(row?.confirmed ?? 0);
+  const draftUpcomingEvents = Number(row?.draft ?? 0);
+  const activePrepListItems = Number(row?.prep_items ?? 0);
+  const activePrepTasks = Number(row?.prep_tasks ?? 0);
+  return {
+    confirmedUpcomingEvents,
+    draftUpcomingEvents,
+    activePrepListItems,
+    activePrepTasks,
+    hasDependencies:
+      confirmedUpcomingEvents +
+        draftUpcomingEvents +
+        activePrepListItems +
+        activePrepTasks >
+      0,
+  };
+};
+
+/** EventDish rows for this dish on UPCOMING DRAFT events (the only ones the V1
+ * "remove from draft events only" option retires). Reads only. */
+const loadUpcomingDraftEventDishIds = async (
+  tenantId: string,
+  dishId: string
+): Promise<string[]> => {
+  const rows = await database.$queryRaw<{ id: string }[]>`
+    SELECT ed.id::text AS id
+    FROM tenant_events.event_dishes ed
+    JOIN tenant_events.events e
+      ON e.tenant_id = ed.tenant_id AND e.id = ed.event_id
+    WHERE ed.tenant_id = ${tenantId} AND ed.dish_id = ${dishId}::uuid
+      AND ed.deleted_at IS NULL AND e.deleted_at IS NULL
+      AND e.status = 'draft' AND e.event_date >= CURRENT_DATE
+  `;
+  return rows.map((r) => r.id);
+};
+
+/** Delete mode chosen by the user when dependencies exist. */
+export type DishDeleteMode = "preserve" | "removeDrafts";
+
+/**
+ * Soft-delete a dish, honoring the chosen mode when commitments exist:
+ * - "preserve" (default): hide the catalog dish; leave ALL downstream work.
+ * - "removeDrafts": explicitly remove the dish from UPCOMING DRAFT event menus
+ *   (governed EventDish.remove), preserving confirmed events, then soft-delete.
+ * Never removes confirmed commitments or prep work in V1.
+ */
+const governedDeleteDish = async (dishId: string, mode: DishDeleteMode) => {
+  const user = await requireCurrentUser();
+  if (mode === "removeDrafts") {
+    const tenantId = await requireTenantId();
+    const draftEventDishIds = await loadUpcomingDraftEventDishIds(
+      tenantId,
+      dishId
+    );
+    const batchResult = await runManifestBatch({
+      operations: [
+        ...draftEventDishIds.map((eventDishId) => ({
+          entity: "EventDish",
+          command: "remove",
+          params: {
+            id: eventDishId,
+            reason: "Dish removed from catalog (draft events only)",
+            userId: user.id,
+          },
+        })),
+        {
+          entity: "Dish",
+          command: "softDelete",
+          params: {
+            id: dishId,
+            reason: DELETE_REASON,
+            userId: user.id,
+          },
+        },
+      ],
+    });
+    if (!batchResult.ok) {
+      throw new Error(batchResult.message || "Failed to delete dish");
+    }
+    return;
+  }
+  const actor = { id: user.id, tenantId: user.tenantId, role: user.role };
+  const result = await runManifestCommand({
+    entity: "Dish",
+    command: "softDelete",
+    instanceId: dishId,
+    body: { reason: DELETE_REASON, userId: user.id },
+    user: actor,
+  });
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete dish");
+  }
+};
+
+export const deleteRecipe = async (recipeId: string) => {
+  const user = await requireCurrentUser();
+  const result = await runManifestCommand({
+    entity: "Recipe",
+    command: "softDelete",
+    instanceId: recipeId,
+    body: { reason: DELETE_REASON, userId: user.id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete recipe");
+  }
   revalidatePath("/kitchen/recipes");
 };
 
-export const deleteDish = async (dishId: string) => {
-  const tenantId = await requireTenantId();
-  await database.$executeRaw`
-    UPDATE tenant_kitchen.dishes
-    SET deleted_at = NOW()
-    WHERE tenant_id = ${tenantId} AND id = ${dishId}::uuid
-  `;
+export const deleteDish = async (
+  dishId: string,
+  mode: DishDeleteMode = "preserve"
+) => {
+  await governedDeleteDish(dishId, mode);
   revalidatePath("/kitchen/recipes");
 };
 
 export const bulkDeleteRecipes = async (recipeIds: string[]) => {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
   for (const id of recipeIds) {
-    await database.$executeRaw`
-      UPDATE tenant_kitchen.recipes
-      SET deleted_at = NOW()
-      WHERE tenant_id = ${tenantId} AND id = ${id}::uuid
-    `;
+    const result = await runManifestCommand({
+      entity: "Recipe",
+      command: "softDelete",
+      instanceId: id,
+      body: { reason: DELETE_REASON, userId: user.id },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+    if (!result.ok) {
+      throw new Error(result.message || `Failed to delete recipe ${id}`);
+    }
   }
   revalidatePath("/kitchen/recipes");
 };
 
-export const bulkDeleteDishes = async (dishIds: string[]) => {
-  const tenantId = await requireTenantId();
+export const bulkDeleteDishes = async (
+  dishIds: string[],
+  mode: DishDeleteMode = "preserve"
+) => {
   for (const id of dishIds) {
-    await database.$executeRaw`
-      UPDATE tenant_kitchen.dishes
-      SET deleted_at = NOW()
-      WHERE tenant_id = ${tenantId} AND id = ${id}::uuid
-    `;
+    await governedDeleteDish(id, mode);
   }
   revalidatePath("/kitchen/recipes");
 };
 
-export const renameRecipe = async (recipeId: string, newName: string) => {
-  const tenantId = await requireTenantId();
+// --- Governed field-update helpers (Design B cleanup) -----------------------
+// The Manifest update commands reject partial payloads (every field param is
+// required) and their nullable FK params must be passed explicitly. So a
+// single-field edit loads the CURRENT row (a read — allowed to bypass the
+// runtime) and sends a full governed payload with only the target field changed.
+
+interface RecipeUpdateFields {
+  category: string | null;
+  cuisine_type: string | null;
+  description: string | null;
+  tags: string[] | null;
+}
+
+const loadRecipeUpdateFields = async (tenantId: string, recipeId: string) => {
+  const [row] = await database.$queryRaw<RecipeUpdateFields[]>`
+    SELECT category, cuisine_type, description, tags
+    FROM tenant_kitchen.recipes
+    WHERE tenant_id = ${tenantId} AND id = ${recipeId}::uuid AND deleted_at IS NULL
+    LIMIT 1
+  `;
+  return row;
+};
+
+/** Rename a recipe through the governed Recipe.update command (name only). */
+const governedRenameRecipe = async (recipeId: string, newName: string) => {
   const trimmedName = newName.trim();
   if (!trimmedName) {
     throw new Error("Recipe name cannot be empty.");
   }
-  await database.$executeRaw`
-    UPDATE tenant_kitchen.recipes
-    SET name = ${trimmedName}, updated_at = NOW()
-    WHERE tenant_id = ${tenantId} AND id = ${recipeId}::uuid AND deleted_at IS NULL
-  `;
+  const tenantId = await requireTenantId();
+  const current = await loadRecipeUpdateFields(tenantId, recipeId);
+  if (!current) {
+    throw new Error("Recipe not found.");
+  }
+  const user = await requireCurrentUser();
+  const result = await runManifestCommand({
+    entity: "Recipe",
+    command: "update",
+    instanceId: recipeId,
+    body: {
+      newName: trimmedName,
+      newCategory: current.category ?? "",
+      newCuisineType: current.cuisine_type ?? "",
+      newDescription: current.description ?? "",
+      newTags: current.tags ?? [],
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to rename recipe");
+  }
   revalidatePath("/kitchen/recipes");
   revalidatePath(`/kitchen/recipes/${recipeId}`);
 };
 
-export const updateDish = async (dishId: string, formData: FormData) => {
-  const tenantId = await requireTenantId();
+export const renameRecipe = async (recipeId: string, newName: string) => {
+  await governedRenameRecipe(recipeId, newName);
+};
 
+/**
+ * Edit a dish through the governed Manifest commands (Design B). The raw path
+ * set every axis in one UPDATE; governance splits them into distinct commands,
+ * each guarded on `self.isActive`. So the ordering matters: if the edit
+ * reactivates the dish, activate FIRST (the field writes require an active
+ * dish); if it deactivates, do the field writes while still active, then
+ * deactivate LAST. Editing a dish that stays inactive is blocked by the
+ * commands' own guard (intended enforcement).
+ *
+ * Not wrapped in a single DB transaction — the commands run sequentially — so
+ * inputs are validated up front (name, non-negative price/cost) to keep the
+ * happy path all-or-nothing in practice.
+ */
+export const updateDish = async (dishId: string, formData: FormData) => {
   const name = String(formData.get("name") || "").trim();
   if (!name) {
     throw new Error("Dish name is required.");
   }
+  const pricePerPerson = parseNumber(formData.get("pricePerPerson")) ?? 0;
+  const costPerPerson = parseNumber(formData.get("costPerPerson")) ?? 0;
+  const minLead = parseNumber(formData.get("minPrepLeadDays")) ?? 0;
+  const maxLead = parseNumber(formData.get("maxPrepLeadDays")) ?? 0;
+  invariant(pricePerPerson >= 0, "Price per person cannot be negative");
+  invariant(costPerPerson >= 0, "Cost per person cannot be negative");
 
-  const category = String(formData.get("category") || "").trim() || null;
-  const description = String(formData.get("description") || "").trim() || null;
-  const dietaryTags = parseList(formData.get("dietaryTags"));
-  const allergens = parseList(formData.get("allergens"));
-  const pricePerPerson = parseNumber(formData.get("pricePerPerson"));
-  const costPerPerson = parseNumber(formData.get("costPerPerson"));
-  const minLead = parseNumber(formData.get("minPrepLeadDays"));
-  const maxLead = parseNumber(formData.get("maxPrepLeadDays"));
-  const portionSize =
-    String(formData.get("portionSizeDescription") || "").trim() || null;
-  const serviceStyle =
-    String(formData.get("serviceStyle") || "").trim() || null;
-  const isActive = formData.get("isActive") === "true";
+  const tenantId = await requireTenantId();
+  const current = await loadDishUpdateFields(tenantId, dishId);
+  if (!current) {
+    throw new Error("Dish not found.");
+  }
+  const user = await requireCurrentUser();
+  const actor = { id: user.id, tenantId: user.tenantId, role: user.role };
+  const targetActive = formData.get("isActive") === "true";
 
-  await database.$executeRaw`
-    UPDATE tenant_kitchen.dishes
-    SET
-      name = ${name},
-      description = ${description},
-      category = ${category},
-      service_style = ${serviceStyle},
-      dietary_tags = ${dietaryTags.length > 0 ? dietaryTags : null},
-      allergens = ${allergens.length > 0 ? allergens : null},
-      price_per_person = ${pricePerPerson},
-      cost_per_person = ${costPerPerson},
-      min_prep_lead_days = ${minLead ?? 0},
-      max_prep_lead_days = ${maxLead},
-      portion_size_description = ${portionSize},
-      is_active = ${isActive},
-      updated_at = NOW()
-    WHERE tenant_id = ${tenantId} AND id = ${dishId}::uuid AND deleted_at IS NULL
-  `;
+  const run = async (
+    command: string,
+    body: Record<string, unknown>,
+    failMsg: string
+  ) => {
+    const result = await runManifestCommand({
+      entity: "Dish",
+      command,
+      instanceId: dishId,
+      body,
+      user: actor,
+    });
+    if (!result.ok) {
+      throw new Error(result.message || failMsg);
+    }
+  };
+
+  // Reactivate first so the guarded field writes can run.
+  if (targetActive && !current.is_active) {
+    await run("activate", {}, "Failed to reactivate dish");
+  }
+
+  await run(
+    "update",
+    dishUpdateBody(current, {
+      name,
+      description: String(formData.get("description") || "").trim() || null,
+      category: String(formData.get("category") || "").trim() || null,
+      serviceStyle: String(formData.get("serviceStyle") || "").trim() || null,
+      portionSizeDescription:
+        String(formData.get("portionSizeDescription") || "").trim() || null,
+      dietaryTags: parseList(formData.get("dietaryTags")),
+      allergens: parseList(formData.get("allergens")),
+    }),
+    "Failed to update dish"
+  );
+  await run(
+    "updatePricing",
+    { pricePerPerson, costPerPerson, userId: user.id },
+    "Failed to update dish pricing"
+  );
+  await run(
+    "updateLeadTime",
+    { minPrepLeadDays: minLead, maxPrepLeadDays: maxLead, userId: user.id },
+    "Failed to update dish lead time"
+  );
+
+  // Deactivate last so the field writes above still saw an active dish.
+  if (!targetActive && current.is_active) {
+    await run(
+      "deactivate",
+      { reason: "Deactivated via dish edit", userId: user.id },
+      "Failed to deactivate dish"
+    );
+  }
 
   revalidatePath("/kitchen/recipes");
   revalidatePath(`/kitchen/recipes/dishes/${dishId}`);
@@ -806,48 +1056,78 @@ export const listRecipeOptions = async () => {
 };
 
 export const updateRecipeName = async (recipeId: string, name: string) => {
-  const tenantId = await requireTenantId();
-  invariant(name.trim().length > 0, "Name cannot be empty");
-  await database.$executeRaw`
-    UPDATE tenant_kitchen.recipes
-    SET name = ${name.trim()}, updated_at = NOW()
-    WHERE tenant_id = ${tenantId} AND id = ${recipeId}::uuid
-  `;
-  revalidatePath("/kitchen/recipes");
+  await governedRenameRecipe(recipeId, name);
 };
 
 export const updateDishName = async (dishId: string, name: string) => {
-  const tenantId = await requireTenantId();
   invariant(name.trim().length > 0, "Name cannot be empty");
-  await database.$executeRaw`
-    UPDATE tenant_kitchen.dishes
-    SET name = ${name.trim()}, updated_at = NOW()
-    WHERE tenant_id = ${tenantId} AND id = ${dishId}::uuid
-  `;
+  const tenantId = await requireTenantId();
+  const current = await loadDishUpdateFields(tenantId, dishId);
+  if (!current) {
+    throw new Error("Dish not found.");
+  }
+  const user = await requireCurrentUser();
+  const result = await runManifestCommand({
+    entity: "Dish",
+    command: "update",
+    instanceId: dishId,
+    body: dishUpdateBody(current, { name: name.trim() }),
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to rename dish");
+  }
   revalidatePath("/kitchen/recipes");
 };
 
+const governedUpdateDishPrice = async (
+  tenantId: string,
+  dishId: string,
+  num: number,
+  actor: { id: string; tenantId: string; role: string }
+) => {
+  const current = await loadDishUpdateFields(tenantId, dishId);
+  if (!current) {
+    throw new Error("Dish not found.");
+  }
+  const result = await runManifestCommand({
+    entity: "Dish",
+    command: "updatePricing",
+    instanceId: dishId,
+    body: {
+      pricePerPerson: num,
+      costPerPerson: current.cost_per_person ?? 0,
+      userId: actor.id,
+    },
+    user: actor,
+  });
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to update dish price");
+  }
+};
+
 export const updateDishPrice = async (dishId: string, price: string) => {
-  const tenantId = await requireTenantId();
   const num = Number.parseFloat(price);
   invariant(!Number.isNaN(num) && num >= 0, "Invalid price");
-  await database.$executeRaw`
-    UPDATE tenant_kitchen.dishes
-    SET price_per_person = ${num}::decimal, updated_at = NOW()
-    WHERE tenant_id = ${tenantId} AND id = ${dishId}::uuid
-  `;
+  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
+  await governedUpdateDishPrice(tenantId, dishId, num, {
+    id: user.id,
+    tenantId: user.tenantId,
+    role: user.role,
+  });
   revalidatePath("/kitchen/recipes");
 };
 
 export const bulkUpdateDishPrice = async (dishIds: string[], price: string) => {
-  const tenantId = await requireTenantId();
   const num = Number.parseFloat(price);
   invariant(!Number.isNaN(num) && num >= 0, "Invalid price");
-  await database.$executeRaw`
-    UPDATE tenant_kitchen.dishes
-    SET price_per_person = ${num}::decimal, updated_at = NOW()
-    WHERE tenant_id = ${tenantId} AND id = ANY(${dishIds}::uuid[])
-  `;
+  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
+  const actor = { id: user.id, tenantId: user.tenantId, role: user.role };
+  for (const id of dishIds) {
+    await governedUpdateDishPrice(tenantId, id, num, actor);
+  }
   revalidatePath("/kitchen/recipes");
 };
 
@@ -856,14 +1136,13 @@ export const bulkUpdateNames = async (
   type: "recipes" | "dishes",
   name: string
 ) => {
-  const tenantId = await requireTenantId();
   invariant(name.trim().length > 0, "Name cannot be empty");
-  const table =
-    type === "recipes" ? "tenant_kitchen.recipes" : "tenant_kitchen.dishes";
-  await database.$executeRaw`
-    UPDATE ${Prisma.raw(table)}
-    SET name = ${name.trim()}, updated_at = NOW()
-    WHERE tenant_id = ${tenantId} AND id = ANY(${ids}::uuid[])
-  `;
+  for (const id of ids) {
+    if (type === "recipes") {
+      await governedRenameRecipe(id, name);
+    } else {
+      await updateDishName(id, name);
+    }
+  }
   revalidatePath("/kitchen/recipes");
 };

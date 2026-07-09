@@ -7,7 +7,7 @@
 // canonical command dispatcher (run-manifest-command-core) as a pre-flight gate
 // that rejects malformed requests with a 400 before the runtime is created.
 //
-// Commands: 1066
+// Commands: 1068
 
 import { z } from "zod";
 
@@ -1142,17 +1142,21 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "Dish.reinstate": z.object({
   userId: z.string(),
 }),
+  "Dish.softDelete": z.object({
+  reason: z.string(),
+  userId: z.string(),
+}),
   "Dish.unmarkSeasonal": z.object({}),
   "Dish.update": z.object({
   name: z.string(),
-  description: z.string(),
-  category: z.string(),
-  serviceStyle: z.string(),
-  defaultContainerId: z.string(),
-  presentationImageUrl: z.string(),
-  portionSizeDescription: z.string(),
-  dietaryTags: z.array(z.string()),
-  allergens: z.array(z.string()),
+  description: z.string().nullable(),
+  category: z.string().nullable(),
+  serviceStyle: z.string().nullable(),
+  defaultContainerId: z.string().nullable(),
+  presentationImageUrl: z.string().nullable(),
+  portionSizeDescription: z.string().nullable(),
+  dietaryTags: z.array(z.string()).nullable(),
+  allergens: z.array(z.string()).nullable(),
 }),
   "Dish.updateLeadTime": z.object({
   minPrepLeadDays: z.number(),
@@ -3649,6 +3653,10 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "Recipe.setSubrecipe": z.object({
   isSubrecipe: z.boolean(),
+}),
+  "Recipe.softDelete": z.object({
+  reason: z.string(),
+  userId: z.string(),
 }),
   "Recipe.update": z.object({
   newName: z.string(),

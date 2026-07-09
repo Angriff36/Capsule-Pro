@@ -63,7 +63,6 @@ import {
   createContainerDeactivatedDishClearMiddleware,
   createContractSignedEventConfirmMiddleware,
   createDealLifecyclePropagationMiddleware,
-  createDishDeactivatedPruneMiddleware,
   createEmailTemplateDeletedDeactivateSmsRulesMiddleware,
   createEmailTemplateDeletedDeactivateWorkflowsMiddleware,
   createEmployeeCertificationLapsedNotifyMiddleware,
@@ -130,7 +129,7 @@ import {
   getAsyncRegistryEntries,
 } from "./middleware/middleware-registry";
 import { loadRolePolicies } from "./permission-guard";
-import { ensureManifestSchema, getPool } from "./pg-pool";
+import { getPool, kickoffManifestSchema } from "./pg-pool";
 import { PrismaIdempotencyStore } from "./prisma-idempotency-store";
 import { PrismaJsonStore } from "./prisma-json-store";
 import type { EntityInstance, PrismaStoreConfig } from "./prisma-store";
@@ -791,10 +790,14 @@ export async function createManifestRuntime(
   //     manifest_outbox_entries table had no drain — events piled up
   //     undelivered). The audit sink shares the singleton pg.Pool from
   //     pg-pool.ts.
-  //     Schema bootstrap (CREATE TABLE IF NOT EXISTS) is idempotent.
-  //     GRACEFUL: adapters are skipped when DATABASE_URL is absent (test envs,
-  //     CI without DB). The engine still works — just without persistent audit
-  //     or outbox delivery.
+  //
+  //     Schema bootstrap: do NOT await ensureManifestSchema here — that paid
+  //     ~2.7s Neon DDL RTT on the first user command. Core tables are owned by
+  //     Prisma migrations; kickoffManifestSchema() fills gaps (async_reaction_*)
+  //     in the background without blocking. Do not reintroduce awaited DDL on
+  //     the request path, and do not static-import pg-pool from Next
+  //     instrumentation solely for startup DDL (unproven compile-regression
+  //     risk; keep bootstrap in-factory via kickoff).
   //
   //     Async reaction queue — Capsule-owned durable queue for slow cross-
   //     entity reactions (battle board sync, inventory restock, …) deferred
@@ -811,7 +814,7 @@ export async function createManifestRuntime(
   let asyncReactionStore: PostgresAsyncReactionStore | undefined;
   let asyncDispatch: AsyncDispatch | undefined;
   if (dbUrl) {
-    await ensureManifestSchema();
+    kickoffManifestSchema();
     const pool = getPool();
     auditSink = new PostgresAuditSink({ pool });
     outboxStore = createOutboxAdapter({
@@ -868,7 +871,6 @@ export async function createManifestRuntime(
     "prep-task-station-count",
     "event-guest-count-prep-rescale",
     "event-dish-prep-sync",
-    "dish-deactivated-prune",
     "chart-of-account-deactivated-deactivate-children",
     "container-deactivated-dish-clear",
     "ingredient-recalled-quarantine-inventory",
@@ -1054,19 +1056,12 @@ export async function createManifestRuntime(
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
     }),
-    // Kitchen→Kitchen/Menu: DishDeactivated -> retire the discontinued dish from
-    // open PrepTasks (cancel), draft PrepListItems (remove), and event menus
-    // (EventDish.remove). Middleware (not a reaction) because it is a 1:N fan-out
-    // across three entities keyed by the dish's OWN id (_subject.id) — a reaction
-    // resolves exactly one target. Scoped to deactivate (permanent discontinue),
-    // NOT the transient/reversible eightySix: an 86 has Dish.reinstate and no
-    // restore-on-reinstate provenance, so blanket irreversible pruning would strip
-    // the dish from future events for a same-day stockout (deferred — see plan).
-    createDishDeactivatedPruneMiddleware({
-      storeProvider,
-      dispatchCommand: (commandName, input, options) =>
-        engine.runCommand(commandName, input, options),
-    }),
+    // NOTE: the DishDeactivated -> prune middleware was REMOVED. Deactivating (or
+    // deleting) a catalog dish must NOT silently revoke committed downstream work
+    // (EventDish / PrepListItem / PrepTask) — a catalog record and a confirmed
+    // event commitment are different business facts. Any removal of committed work
+    // must be explicit and user-chosen (see the dish-deletion impact/choice flow),
+    // never a hidden cascade.
     // Accounting: ChartOfAccountDeactivated -> deactivate the account's child
     // accounts. Deactivating a parent GL account left every sub-account pointing
     // at it (parentId) ACTIVE, so retired sub-accounts stayed postable under a

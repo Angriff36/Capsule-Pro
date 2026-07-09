@@ -6,7 +6,9 @@
  * across all Manifest adapter instances.
  *
  * Schema bootstrap: ensureManifestSchema() runs CREATE TABLE IF NOT EXISTS for
- * the audit and outbox tables on first call. Safe for concurrent execution.
+ * the audit/outbox/approval/async-reaction tables. Core tables are owned by
+ * Prisma migrations; this fills gaps (e.g. async_reaction_*). Never await it
+ * on the command request path — measured Neon DDL RTT was ~2.7s.
  *
  * @packageDocumentation
  */
@@ -46,6 +48,8 @@ export function getPool(): Pool {
  * @angriff36/manifest/src/manifest/approval/stores/postgres.sql.
  *
  * Called once per process lifetime (subsequent calls are no-ops).
+ * Prefer {@link kickoffManifestSchema} from the factory — never await this
+ * on the command request critical path (measured Neon DDL RTT ~2.7s).
  */
 export async function ensureManifestSchema(): Promise<void> {
   if (_schemaEnsured) {
@@ -259,4 +263,37 @@ export async function ensureManifestSchema(): Promise<void> {
   `);
 
   _schemaEnsured = true;
+}
+
+let _schemaKickoff: Promise<void> | undefined;
+
+/**
+ * Fire-and-forget schema bootstrap for the request path.
+ *
+ * Starts `ensureManifestSchema` once per process without blocking the caller.
+ * Core audit/outbox/approval tables are owned by Prisma migrations; this still
+ * creates gap tables (async_reaction_*) without paying ~2.7s on the first
+ * command. Safe to call on every `createManifestRuntime`.
+ *
+ * Do not static-import this module from Next `instrumentation` solely to run
+ * DDL at register() — that eagerly loads `pg` and changes a shared package
+ * boundary. A/B under cleared Turbopack caches did not prove that boundary
+ * caused 40–85s frontend compiles; keep bootstrap in-factory via this helper.
+ */
+export function kickoffManifestSchema(): void {
+  if (_schemaEnsured || _schemaKickoff) {
+    return;
+  }
+  const dbUrl = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
+  if (!dbUrl) {
+    return;
+  }
+  _schemaKickoff = ensureManifestSchema().catch((error: unknown) => {
+    // Allow a later request to retry if the first attempt failed.
+    _schemaKickoff = undefined;
+    console.error(
+      "[manifest-schema] background ensureManifestSchema failed:",
+      error instanceof Error ? error.message : error
+    );
+  });
 }

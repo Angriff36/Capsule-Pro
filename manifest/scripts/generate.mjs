@@ -17,6 +17,7 @@
  * Config: manifest.config.yaml → projections.nextjs.options.
  */
 
+import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { NextJsProjection } from "@angriff36/manifest/projections/nextjs";
@@ -275,4 +276,23 @@ if (emptySurfaces.length > 0) {
   console.log(
     `[manifest/generate] ${emptySurfaces.length} surface(s) produced no artifact: ${emptySurfaces.join(", ")}`
   );
+}
+
+// Product wiring contract + bindings (inspect/remediate inputs). Config-driven
+// via projections.wiring — same IR as routes, no separate manual generate step.
+{
+  const bin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+  const wiringResult = spawnSync(
+    bin,
+    ["exec", "node", "manifest/scripts/generate-wiring.mjs"],
+    {
+      stdio: "inherit",
+      shell: process.platform === "win32",
+      cwd: repoRoot,
+    }
+  );
+  if (wiringResult.status !== 0) {
+    console.error("[manifest/generate] Wiring projection failed.");
+    process.exit(1);
+  }
 }

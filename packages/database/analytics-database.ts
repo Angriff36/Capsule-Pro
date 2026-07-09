@@ -4,25 +4,26 @@
  * When `ANALYTICS_DATABASE_URL` is set (Neon read replica), heavy OLAP-style
  * reads route here. Otherwise callers transparently fall back to the primary
  * `database` client — no feature flag required at call sites.
+ *
+ * Uses the same TCP/`pg` adapter as the primary client (Neon choose-connection:
+ * long-lived Node → pg, not the serverless HTTP driver).
  */
 
-import { neonConfig } from "@neondatabase/serverless";
-import { PrismaNeon } from "@prisma/adapter-neon";
-import ws from "ws";
 import type { PrismaClient } from "./generated/client";
 import { PrismaClient as PrismaClientCtor } from "./generated/client";
+import { createPrismaPgAdapter } from "./create-pg-adapter";
 import { keys } from "./keys";
 
-neonConfig.webSocketConstructor = ws;
-neonConfig.poolQueryViaFetch = true;
-(neonConfig as unknown as Record<string, unknown>).parseInputDatesAsUTC = true;
+type GlobalAnalytics = {
+  analyticsPrisma?: PrismaClient;
+};
 
-let analyticsClient: PrismaClient | undefined;
+const globalForAnalytics = globalThis as unknown as GlobalAnalytics;
 
 /** Lazily create (or reuse) the analytics read client. */
 export function createAnalyticsDatabase(primary: PrismaClient): PrismaClient {
-  if (analyticsClient) {
-    return analyticsClient;
+  if (globalForAnalytics.analyticsPrisma) {
+    return globalForAnalytics.analyticsPrisma;
   }
 
   const replicaUrl = process.env.SKIP_ENV_VALIDATION
@@ -30,12 +31,13 @@ export function createAnalyticsDatabase(primary: PrismaClient): PrismaClient {
     : keys().ANALYTICS_DATABASE_URL;
 
   if (!replicaUrl) {
-    analyticsClient = primary;
-    return analyticsClient;
+    globalForAnalytics.analyticsPrisma = primary;
+    return primary;
   }
 
-  const adapter = new PrismaNeon({ connectionString: replicaUrl });
-  analyticsClient = new PrismaClientCtor({ adapter });
+  const adapter = createPrismaPgAdapter(replicaUrl);
+  const client = new PrismaClientCtor({ adapter });
+  globalForAnalytics.analyticsPrisma = client;
 
   if (process.env.NODE_ENV !== "production" && typeof process !== "undefined") {
     try {
@@ -44,12 +46,13 @@ export function createAnalyticsDatabase(primary: PrismaClient): PrismaClient {
         "[db] Using analytics read-replica host:",
         u.hostname,
         "(pooler:",
-        `${u.hostname.includes("-pooler")})`
+        `${u.hostname.includes("-pooler")})`,
+        "driver: pg/tcp"
       );
     } catch {
       // ignore
     }
   }
 
-  return analyticsClient;
+  return client;
 }

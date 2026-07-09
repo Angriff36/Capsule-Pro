@@ -1,45 +1,39 @@
-import { PrismaNeon } from "@prisma/adapter-neon";
+/**
+ * Manual smoke: TCP PrismaPg + account.findFirst.
+ * Usage: DATABASE_URL=... pnpm exec tsx test-query.ts
+ */
 import { PrismaClient } from "./generated/client";
-
-const DATABASE_URL: string = process.env.DATABASE_URL ?? "";
-if (!DATABASE_URL) {
-  throw new Error("DATABASE_URL env var is required");
-}
-
-function createDatabaseScope(connectionString: string) {
-  const adapter = new PrismaNeon({ connectionString });
-  const database = new PrismaClient({ adapter });
-
-  return {
-    client: database,
-    async [Symbol.asyncDispose]() {
-      await database.$disconnect();
-    },
-  };
-}
+import { createPrismaPgAdapter } from "./create-pg-adapter";
+import { keys } from "./keys";
 
 async function test() {
-  await using databaseScope = createDatabaseScope(DATABASE_URL);
-  const database = databaseScope.client;
+  const connectionString = keys().DATABASE_URL;
+  const adapter = createPrismaPgAdapter(connectionString);
+  const database = new PrismaClient({ adapter });
 
-  console.log("Testing...");
+  console.log("Testing warm query...");
   try {
-    const accounts = await database.account.findMany({ take: 1 });
-    console.log("Accounts count:", accounts.length);
+    const account = await database.account.findFirst({
+      where: { deletedAt: null },
+      select: { id: true, slug: true },
+    });
+    console.log("OK first:", account?.slug ?? "(none)");
 
-    if (accounts.length > 0) {
-      const tenantId = accounts[0]!.id;
-      console.log("Testing inventory for tenant:", tenantId);
+    // Prove idle reaping is not 10s: wait 15s then query again.
+    console.log("Waiting 15s (v7 default idle was 10s)...");
+    await new Promise((r) => setTimeout(r, 15_000));
 
-      const items = await database.inventoryItem.findMany({
-        where: { tenantId, deletedAt: null },
-        take: 5,
-      });
-      console.log("Items count:", items.length);
-    }
+    const again = await database.account.findFirst({
+      where: { deletedAt: null },
+      select: { id: true, slug: true },
+    });
+    console.log("OK after idle:", again?.slug ?? "(none)");
   } catch (error) {
     console.error("Error:", error);
+    process.exitCode = 1;
+  } finally {
+    await database.$disconnect();
   }
 }
 
-test();
+void test();
