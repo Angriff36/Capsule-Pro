@@ -236,9 +236,13 @@ export const updateDishPresentationImage = async (
       imageFile
     );
 
+    const current = await loadDishUpdateFields(tenantId, dishId);
+    if (!current) {
+      return { success: false, error: "Dish not found." };
+    }
     const response = await apiPostJsonServer(
       "/api/manifest/Dish/commands/update",
-      { id: dishId, presentationImageUrl: imageUrl }
+      { id: dishId, ...dishUpdateBody(current), presentationImageUrl: imageUrl }
     );
     const result = (await response.json().catch(() => null)) as {
       error?: string;
@@ -272,7 +276,7 @@ export const updateDishPresentationImage = async (
 
 import {
   getRecipeForEdit as _getRecipeForEdit,
-  updateRecipeImage as _updateRecipeImage,
+  updateRecipeImage as _updateRecipeImage, dishUpdateBody, loadDishUpdateFields,
 } from "./actions";
 
 export const getRecipeForEdit = _getRecipeForEdit;

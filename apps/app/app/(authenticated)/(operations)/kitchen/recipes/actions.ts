@@ -927,7 +927,7 @@ interface DishUpdateFields {
   service_style: string | null;
 }
 
-const loadDishUpdateFields = async (tenantId: string, dishId: string) => {
+export const loadDishUpdateFields = async (tenantId: string, dishId: string) => {
   const [row] = await database.$queryRaw<DishUpdateFields[]>`
     SELECT name, description, category, service_style, default_container_id,
            presentation_image_url, portion_size_description, dietary_tags,
@@ -940,7 +940,7 @@ const loadDishUpdateFields = async (tenantId: string, dishId: string) => {
 };
 
 /** Full Dish.update payload from a current row, overlaying any changed fields. */
-const dishUpdateBody = (
+export const dishUpdateBody = (
   current: DishUpdateFields,
   overrides: Partial<{
     name: string;
