@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
         ef.assigned_to,
         ef.completed_at,
         ef.created_at,
-        e.event_name,
+        e.title AS event_name,
         e.event_date
       FROM tenant_events.event_followups ef
       LEFT JOIN tenant_events.events e ON e.tenant_id = ef.tenant_id AND e.id = ef.event_id
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       LIMIT ${limit} OFFSET ${offset}
     `;
 
-    return NextResponse.json({ followups });
+    return NextResponse.json({ data: followups });
   } catch (error) {
     captureException(error);
     log.error("Error listing automated followups:", error);
