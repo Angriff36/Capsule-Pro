@@ -263,11 +263,11 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 91% context — saved before compacting]
+[proactive bridge @ 101% context — saved before compacting]
 Files (3):
-  C:/Users/Ryan/AppData/Local/Temp/claude/C--projects-capsule-pro/76f60e99-536f-4e25-b51c-b18d0cac6e85/scratchpad/extract-workqueue.mjs (create)
-  C:/Users/Ryan/AppData/Local/Temp/claude/C--projects-capsule-pro/76f60e99-536f-4e25-b51c-b18d0cac6e85/scratchpad/dump.mjs (create)
-  C:/Users/Ryan/.claude/projects/C--projects-capsule-pro/memory/manifest-bypass-audit-verdicts-2026-07-07.md (create)
+  C:/Users/Ryan/AppData/Local/Temp/claude/C--projects-capsule-pro/5c0cd7ef-d4c5-4037-8cf0-56b9d7187562/scratchpad/preflight-training.mjs (create)
+  packages/database/.env.local (create)
+  C:/Users/Ryan/AppData/Local/Temp/claude/C--projects-capsule-pro/5c0cd7ef-d4c5-4037-8cf0-56b9d7187562/scratchpad/check-row.mjs (create)
 
 # === END COGNILAYER ===
 
