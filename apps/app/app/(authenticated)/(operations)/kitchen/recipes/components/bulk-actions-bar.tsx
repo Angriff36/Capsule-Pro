@@ -205,7 +205,14 @@ export function SingleDeleteButton({
         <Button
           className="h-7 w-7 text-muted-foreground hover:text-destructive"
           disabled={isPending}
-          onClick={(e) => e.preventDefault()}
+          onClick={(e) => {
+            // The row is a link; preventDefault stops navigation. Radix skips
+            // its own open handler when defaultPrevented, so drive the
+            // controlled dialog open explicitly (also kicks off the impact fetch).
+            e.preventDefault();
+            e.stopPropagation();
+            handleOpenChange(true);
+          }}
           size="icon"
           variant="ghost"
         >
