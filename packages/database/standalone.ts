@@ -5,27 +5,21 @@
  * Use this entry point for CLI tools, scripts, and non-Next.js runtimes like MCP server.
  *
  * Usage: import { database, Prisma } from "@repo/database/standalone";
+ *
+ * Same TCP/`pg` connection path as index.ts — see Neon choose-connection docs.
  */
 
-import { neonConfig } from "@neondatabase/serverless";
-import { PrismaNeon } from "@prisma/adapter-neon";
-import ws from "ws";
 import { PrismaClient } from "./generated/client";
+import { createPrismaPgAdapter } from "./create-pg-adapter";
 import { keys } from "./keys";
 import { createAnalyticsDatabase } from "./analytics-database";
 import { createTenantClient } from "./tenant";
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+type GlobalPrisma = {
+  prisma?: PrismaClient;
+};
 
-neonConfig.webSocketConstructor = ws;
-// Use HTTP fetch for queries when possible; avoids WebSocket "Connection terminated unexpectedly" (neondatabase/serverless#168)
-neonConfig.poolQueryViaFetch = true;
-// R5: Serialize Date objects as UTC when writing to `timestamp without time zone` columns.
-// Without this the Neon driver uses the Node.js process local timezone, producing
-// timestamps that are off by the server's UTC offset (e.g. +7h on US Pacific).
-// Cast required: neonConfig TypeScript types omit this property even though the
-// runtime honours it (see @neondatabase/serverless prepareValue in index.js).
-(neonConfig as unknown as Record<string, unknown>).parseInputDatesAsUTC = true;
+const globalForPrisma = globalThis as unknown as GlobalPrisma;
 
 // Guard: skip real DB initialization when DATABASE_URL is absent (test/mock environments).
 // The vitest mock for @repo/database intercepts most imports, but transitive imports
@@ -35,53 +29,57 @@ const connectionString = process.env.DATABASE_URL
   ? keys().DATABASE_URL
   : undefined;
 
-// Dev-only: confirm which host we're using (no credentials)
-// Use console.error to avoid polluting stdout (MCP stdio transport requires JSON-only stdout)
-if (
-  connectionString &&
-  process.env.NODE_ENV !== "production" &&
-  typeof process !== "undefined"
-) {
+function logNeonHost(url: string): void {
+  if (process.env.NODE_ENV === "production" || typeof process === "undefined") {
+    return;
+  }
   try {
-    const u = new URL(connectionString);
+    const u = new URL(url);
     console.error(
       "[db] Using Neon host:",
       u.hostname,
       "(pooler:",
-      `${u.hostname.includes("-pooler")})`
+      `${u.hostname.includes("-pooler")})`,
+      "driver: pg/tcp"
     );
   } catch {
     // ignore
   }
 }
 
+function createDatabaseClient(url: string): PrismaClient {
+  logNeonHost(url);
+  const adapter = createPrismaPgAdapter(url);
+  // Same transaction budget as index.ts — remote Neon latency makes the
+  // 5s default expire mid-write in multi-command transactions.
+  return new PrismaClient({
+    adapter,
+    transactionOptions: { maxWait: 10_000, timeout: 30_000 },
+  });
+}
+
 // When DATABASE_URL is absent (test environments), the real client is never used
 // — the vitest mock for @repo/database intercepts all direct usage. This branch
 // only fires when standalone.ts is loaded transitively (e.g. via shared.ts) for
 // the Prisma namespace re-export.
-const adapter = connectionString
-  ? new PrismaNeon({ connectionString })
-  : undefined;
-
+//
+// Do not construct PrismaPg when globalThis.prisma already exists — orphan
+// pools are a real hazard under Turbopack re-eval / parallel SSR.
 export const database =
-  globalForPrisma.prisma ||
-  (adapter
-    ? // Same transaction budget as index.ts — remote Neon latency makes the
-      // 5s default expire mid-write in multi-command transactions.
-      new PrismaClient({
-        adapter,
-        transactionOptions: { maxWait: 10_000, timeout: 30_000 },
-      })
+  globalForPrisma.prisma ??
+  (connectionString
+    ? createDatabaseClient(connectionString)
     : (undefined as unknown as PrismaClient));
+
+if (database) {
+  globalForPrisma.prisma = database;
+}
+
 /** Read-replica client for analytics/reporting; falls back to `database` when unset. */
 export const analyticsDatabase = database
   ? createAnalyticsDatabase(database)
   : database;
 export const db = database;
-
-if (process.env.NODE_ENV !== "production" && adapter) {
-  globalForPrisma.prisma = database;
-}
 
 export const tenantDatabase = (tenantId: string) =>
   createTenantClient(tenantId, database);

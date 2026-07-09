@@ -3,66 +3,75 @@
  *
  * Includes server-only guard to prevent accidental client-side usage.
  * For CLI tools and non-Next.js runtimes, use "@repo/database/standalone" instead.
+ *
+ * Connection method (official Neon guidance):
+ * https://neon.com/docs/connect/choose-connection
+ * Long-lived Node (`next dev`, Vercel Fluid, Docker) → TCP via `pg` +
+ * `@prisma/adapter-pg` on the Neon *pooled* URL. The Neon serverless/HTTP
+ * driver (`@prisma/adapter-neon` + fetch) is for Workers/edge — using it from
+ * a persistent Node process caused ConnectTimeoutError on :443 and multi-second
+ * "fetch failed" stalls.
  */
 
 import "server-only";
 
-import { neonConfig } from "@neondatabase/serverless";
-import { PrismaNeon } from "@prisma/adapter-neon";
-import ws from "ws";
 import { PrismaClient } from "./generated/client";
+import { createPrismaPgAdapter } from "./create-pg-adapter";
 import { keys } from "./keys";
 import { withManifestIssueLog } from "./manifest-issue-log";
 import { createAnalyticsDatabase } from "./analytics-database";
 import { createTenantClient } from "./tenant";
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+type GlobalPrisma = {
+  prisma?: PrismaClient;
+};
 
-neonConfig.webSocketConstructor = ws;
-// Use HTTP fetch for queries when possible; avoids WebSocket "Connection terminated unexpectedly" (neondatabase/serverless#168)
-neonConfig.poolQueryViaFetch = true;
-// R5: Serialize Date objects as UTC when writing to `timestamp without time zone` columns.
-// Without this the Neon driver uses the Node.js process local timezone, producing
-// timestamps that are off by the server's UTC offset (e.g. +7h on US Pacific).
-// Cast required: neonConfig TypeScript types omit this property even though the
-// runtime honours it (see @neondatabase/serverless prepareValue in index.js).
-(neonConfig as unknown as Record<string, unknown>).parseInputDatesAsUTC = true;
+const globalForPrisma = globalThis as unknown as GlobalPrisma;
 
-const connectionString = keys().DATABASE_URL;
-// Dev-only: confirm which host we're using (no credentials)
-// Use console.error to avoid polluting stdout (MCP stdio transport requires JSON-only stdout)
-if (process.env.NODE_ENV !== "production" && typeof process !== "undefined") {
+function logNeonHost(connectionString: string): void {
+  if (process.env.NODE_ENV === "production" || typeof process === "undefined") {
+    return;
+  }
   try {
     const u = new URL(connectionString);
     console.error(
       "[db] Using Neon host:",
       u.hostname,
       "(pooler:",
-      `${u.hostname.includes("-pooler")})`
+      `${u.hostname.includes("-pooler")})`,
+      "driver: pg/tcp"
     );
   } catch {
     // ignore
   }
 }
-const adapter = new PrismaNeon({ connectionString });
 
-// Composite routes (recipe update-with-version, prep-list save, simulations…)
-// run multiple Manifest commands inside one interactive transaction over a
-// remote Neon connection; Prisma's 5s default expires mid-write and poisons
-// the transaction ("A query cannot be executed on an expired transaction").
-const baseClient = new PrismaClient({
-  adapter,
-  transactionOptions: { maxWait: 10_000, timeout: 30_000 },
-});
-export const database =
-  globalForPrisma.prisma || withManifestIssueLog(baseClient);
+function createDatabaseClient(): PrismaClient {
+  const connectionString = keys().DATABASE_URL;
+  logNeonHost(connectionString);
+  // Prisma 7 + pg: shared pool timeouts (idle 300s) — v7's 10s default
+  // causes P1017 after Neon/PgBouncer closes idle TCP sockets.
+  const adapter = createPrismaPgAdapter(connectionString);
+  // Composite routes (recipe update-with-version, prep-list save, simulations…)
+  // run multiple Manifest commands inside one interactive transaction over a
+  // remote Neon connection; Prisma's 5s default expires mid-write and poisons
+  // the transaction ("A query cannot be executed on an expired transaction").
+  const baseClient = new PrismaClient({
+    adapter,
+    transactionOptions: { maxWait: 10_000, timeout: 30_000 },
+  });
+  return withManifestIssueLog(baseClient);
+}
+
+// Construct the adapter/client ONLY when globalThis has none.
+// Eager `new PrismaPg(...)` before the singleton check can orphan pools on
+// Turbopack re-eval — always gate construction.
+export const database = globalForPrisma.prisma ?? createDatabaseClient();
+globalForPrisma.prisma = database;
+
 /** Read-replica client for analytics/reporting; falls back to `database` when unset. */
 export const analyticsDatabase = createAnalyticsDatabase(database);
 export const db = database;
-
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = database;
-}
 
 export const tenantDatabase = (tenantId: string) =>
   createTenantClient(tenantId, database);
