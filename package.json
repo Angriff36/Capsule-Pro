@@ -8,7 +8,7 @@
     "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
-    "@angriff36/manifest": "3.4.4",
+    "@angriff36/manifest": "3.4.5",
     "@auto-it/first-time-contributor": "^11.3.6",
     "@babel/parser": "^7.29.7",
     "@biomejs/biome": "2.5.2",
