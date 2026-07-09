@@ -71,7 +71,6 @@ async function getEventDishes(
       LEFT JOIN tenant_kitchen.recipes r
         ON r.tenant_id = d.tenant_id
         AND r.id = d.recipe_id
-        AND r.deleted_at IS NULL
       LEFT JOIN LATERAL (
         SELECT inner_rv.*
         FROM tenant_kitchen.recipe_versions inner_rv

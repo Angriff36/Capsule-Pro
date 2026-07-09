@@ -1,5 +1,5 @@
 {
-  "irHash": "e26a8d500529456c9f16c4f84c5ff5251d0b446b1e1bedc5bc4aa131efdcdd57",
+  "irHash": "1d0ea9c4a459a7bc886314929c44cce54ab5a353d610f16b18dfdbc1fb2951fb",
   "compilerVersion": "3.3.1",
   "commands": [
     {
@@ -3932,6 +3932,22 @@
       "guardCount": 1,
       "emits": [
         "DishReinstated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Dish",
+      "command": "softDelete",
+      "commandId": "Dish.softDelete",
+      "policies": [
+        "DishDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "DishDeleted"
       ],
       "effects": [
         "compute",
@@ -12661,6 +12677,22 @@
         "RecipeSubrecipeSet"
       ],
       "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Recipe",
+      "command": "softDelete",
+      "commandId": "Recipe.softDelete",
+      "policies": [
+        "RecipeDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "RecipeDeleted"
+      ],
+      "effects": [
+        "compute",
         "mutate"
       ]
     },

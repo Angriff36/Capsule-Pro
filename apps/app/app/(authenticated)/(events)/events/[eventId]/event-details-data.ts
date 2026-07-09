@@ -153,7 +153,6 @@ export const getEventDishes = cache(
         LEFT JOIN tenant_kitchen.recipes r
           ON r.tenant_id = d.tenant_id
           AND r.id = d.recipe_id
-          AND r.deleted_at IS NULL
         WHERE ed.tenant_id = ${tenantId}
           AND ed.event_id = ${eventId}
           AND ed.deleted_at IS NULL
@@ -348,7 +347,6 @@ export const getRecipeVersions = cache(
         JOIN tenant_kitchen.recipes r
           ON r.tenant_id = rv.tenant_id
           AND r.id = rv.recipe_id
-          AND r.deleted_at IS NULL
         LEFT JOIN core.units u ON u.id = rv.yield_unit_id
         WHERE rv.tenant_id = ${tenantId}
           AND rv.recipe_id IN (${Prisma.join(recipeIds)})

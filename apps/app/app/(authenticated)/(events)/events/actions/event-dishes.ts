@@ -209,7 +209,6 @@ export async function getEventDishes(eventId: string) {
       LEFT JOIN tenant_kitchen.recipes r
         ON r.tenant_id = d.tenant_id
         AND r.id = d.recipe_id
-        AND r.deleted_at IS NULL
       WHERE ed.tenant_id = ${tenantId}
         AND ed.event_id = ${eventId}
         AND ed.deleted_at IS NULL
@@ -420,29 +419,49 @@ export async function createDishVariantForEvent(
     return { success: false, error: "Dish link not found." };
   }
 
-  const sourceDish = await database.dish.findFirst({
-    where: {
-      tenantId,
-      id: link.dish_id,
-      deletedAt: null,
-    },
-    select: {
-      recipeId: true,
-      description: true,
-      category: true,
-      serviceStyle: true,
-      defaultContainerId: true,
-      presentationImageUrl: true,
-      minPrepLeadDays: true,
-      maxPrepLeadDays: true,
-      portionSizeDescription: true,
-      dietaryTags: true,
-      allergens: true,
-      pricePerPerson: true,
-      costPerPerson: true,
-      isActive: true,
-    },
-  });
+  const [sourceDish] = await database.$queryRaw<
+    Array<{
+      recipeId: string | null;
+      description: string | null;
+      category: string | null;
+      serviceStyle: string | null;
+      defaultContainerId: string | null;
+      presentationImageUrl: string | null;
+      minPrepLeadDays: number | null;
+      maxPrepLeadDays: number | null;
+      portionSizeDescription: string | null;
+      dietaryTags: string[] | null;
+      allergens: string[] | null;
+      pricePerPerson: Prisma.Decimal | number | null;
+      costPerPerson: Prisma.Decimal | number | null;
+    }>
+  >(
+    Prisma.sql`
+      SELECT
+        d.recipe_id AS "recipeId",
+        d.description,
+        d.category,
+        d.service_style AS "serviceStyle",
+        d.default_container_id AS "defaultContainerId",
+        d.presentation_image_url AS "presentationImageUrl",
+        d.min_prep_lead_days AS "minPrepLeadDays",
+        d.max_prep_lead_days AS "maxPrepLeadDays",
+        d.portion_size_description AS "portionSizeDescription",
+        d.dietary_tags AS "dietaryTags",
+        d.allergens,
+        d.price_per_person AS "pricePerPerson",
+        d.cost_per_person AS "costPerPerson"
+      FROM tenant_events.event_dishes ed
+      JOIN tenant_kitchen.dishes d
+        ON d.tenant_id = ed.tenant_id
+        AND d.id = ed.dish_id
+      WHERE ed.tenant_id = ${tenantId}
+        AND ed.id = ${linkId}
+        AND ed.event_id = ${eventId}
+        AND ed.deleted_at IS NULL
+      LIMIT 1
+    `
+  );
 
   if (!sourceDish) {
     return { success: false, error: "Source dish not found." };

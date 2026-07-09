@@ -616,6 +616,7 @@
         "eightySix",
         "markSeasonal",
         "reinstate",
+        "softDelete",
         "unmarkSeasonal",
         "update",
         "updateLeadTime",
@@ -1860,6 +1861,7 @@
         "create",
         "deactivate",
         "setSubrecipe",
+        "softDelete",
         "update"
       ]
     },

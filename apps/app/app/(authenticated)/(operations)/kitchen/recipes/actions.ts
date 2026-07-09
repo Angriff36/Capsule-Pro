@@ -5,6 +5,7 @@ import { database, Prisma } from "@repo/database";
 import { put } from "@repo/storage";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { runManifestBatch } from "@/lib/manifest-batch";
 import { runManifestCommand } from "@/lib/manifest-command";
 import { invariant } from "../../../../lib/invariant";
 import { requireCurrentUser, requireTenantId } from "../../../../lib/tenant";
@@ -757,32 +758,40 @@ export type DishDeleteMode = "preserve" | "removeDrafts";
  */
 const governedDeleteDish = async (dishId: string, mode: DishDeleteMode) => {
   const user = await requireCurrentUser();
-  const actor = { id: user.id, tenantId: user.tenantId, role: user.role };
   if (mode === "removeDrafts") {
     const tenantId = await requireTenantId();
     const draftEventDishIds = await loadUpcomingDraftEventDishIds(
       tenantId,
       dishId
     );
-    for (const eventDishId of draftEventDishIds) {
-      const removed = await runManifestCommand({
-        entity: "EventDish",
-        command: "remove",
-        instanceId: eventDishId,
-        body: {
-          reason: "Dish removed from catalog (draft events only)",
-          userId: user.id,
+    const batchResult = await runManifestBatch({
+      operations: [
+        ...draftEventDishIds.map((eventDishId) => ({
+          entity: "EventDish",
+          command: "remove",
+          params: {
+            id: eventDishId,
+            reason: "Dish removed from catalog (draft events only)",
+            userId: user.id,
+          },
+        })),
+        {
+          entity: "Dish",
+          command: "softDelete",
+          params: {
+            id: dishId,
+            reason: DELETE_REASON,
+            userId: user.id,
+          },
         },
-        user: actor,
-      });
-      if (!removed.ok) {
-        throw new Error(
-          removed.message ||
-            `Failed to remove dish from draft event menu ${eventDishId}`
-        );
-      }
+      ],
+    });
+    if (!batchResult.ok) {
+      throw new Error(batchResult.message || "Failed to delete dish");
     }
+    return;
   }
+  const actor = { id: user.id, tenantId: user.tenantId, role: user.role };
   const result = await runManifestCommand({
     entity: "Dish",
     command: "softDelete",
