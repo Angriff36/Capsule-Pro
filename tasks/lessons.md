@@ -263,3 +263,13 @@ setPackaging cold ~1.4s / warm ~0.6s with DDL off the await path.
    `next dev` app before claiming the fix is done.
 5. Prefer in-factory `kickoffManifestSchema()` over shared-export / instrumentation
    bootstrap unless an A/B proves the boundary is required.
+
+## Lesson 18: Dev DB success ≠ prod migration safety
+
+**Date:** 2026-07-09
+**What happened:** `20260705063000_enum_column_alignment` applied fine on the working/dev Neon DB, then failed on production Deploy with `22P02 invalid input value for enum KitchenTaskStatus: "in-progress"`. Agent/user instinct: "doesn't prod just copy the working DB?"
+**Root cause:** Dev and prod are **separate Neon databases**. Deploy runs `prisma migrate deploy` against `PRODUCTION_DATABASE_URL`; the Neon snapshot step copies **prod → restore branch**, never **dev → prod**. Dev had already hand-normalized hyphenated `kitchen_tasks.status` rows (todo.md); the migration SQL only repaired `prep_tasks`, so prod still had `in-progress` TEXT when ALTER TYPE ran.
+**Rule:**
+1. Never assume prod schema/data matches a working local/dev DB.
+2. Data repairs in migrations must cover **every** column about to cast to that enum — not just the one table you saw fail once.
+3. After a failed prod migrate, use Deploy `resolve_migration=<name>` (rolled-back) then re-deploy the fixed SQL; do not invent a "copy from dev" path.

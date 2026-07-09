@@ -4,11 +4,17 @@
 -- Prisma filter on them failed with "operator does not exist: text = <Enum>"
 -- (verified live 2026-07-04: prepList.count status eq AND notIn both failed;
 -- /api/kitchen/events/today 500'd on it). All target enum types/members and
--- current defaults were introspected from the live DB before authoring; the
--- single invalid value ('in-progress' in prep_tasks) is repaired first.
+-- current defaults were introspected from the live DB before authoring.
+--
+-- Hyphenated legacy TEXT values ('in-progress') must be normalized before
+-- ALTER ... TYPE <Enum>. Prod deploy 2026-07-09 failed with 22P02 on
+-- kitchen_tasks because only prep_tasks was repaired (P3018).
 
--- 0. Data repair: one non-member value (PrepTaskStatus has in_progress, not in-progress)
+-- 0. Data repair: hyphenated legacy statuses → underscore enum members
+UPDATE "tenant_admin"."admin_tasks" SET "status" = 'in_progress' WHERE "status" = 'in-progress';
+UPDATE "tenant_kitchen"."kitchen_tasks" SET "status" = 'in_progress' WHERE "status" = 'in-progress';
 UPDATE "tenant_kitchen"."prep_tasks" SET "status" = 'in_progress' WHERE "status" = 'in-progress';
+UPDATE "tenant_kitchen"."work_orders" SET "status" = 'in_progress' WHERE "status" = 'in-progress';
 
 -- 1. Enum types the schema expects that don't exist yet
 CREATE TYPE "public"."AdminTaskStatus" AS ENUM ('backlog', 'in_progress', 'review', 'done', 'cancelled');
