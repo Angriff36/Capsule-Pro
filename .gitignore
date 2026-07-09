@@ -12,6 +12,10 @@
 # Local staging area for files being reviewed for removal (not for production)
 /junk/
 
+# Probe / scratch working tree (never commit)
+.tmp/
+.tmp-*/
+
 # Local-only files excluded from production GitHub release (kept on disk for dev/CLI use)
 /.husky/
 /e2e/
@@ -614,6 +618,18 @@ playwright-verify-suggestions.spec.ts
 .claude/.guardrail/
 
 .fallow/
+# Fallow analysis dump (regenerate locally; keep .fallowrc.json tracked)
+/fallow.json
+
+# One-shot audit script dumps at repo root (regenerate via check:manifest:*)
+/manifest-domain-drift-audit.json
+/manifest-structure-audit.json
+/manifest-domain-drift-audit.txt
+/manifest-structure-audit.txt
+
+# Scratch Prisma model extracts (live models live in prisma/schema/)
+/packages/database/prisma/*_model.txt
+
 # IR projection artifacts (local regen). Runtime Prisma metadata is tracked.
 manifest/generated/*
 !manifest/generated/runtime/
