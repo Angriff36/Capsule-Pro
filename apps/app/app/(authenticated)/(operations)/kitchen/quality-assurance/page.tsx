@@ -9,8 +9,8 @@ import {
 import { AlertTriangle, ClipboardCheck, Thermometer } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
+import { ChecksTabContent } from "./checks-tab";
 import {
-  ChecksTabContent,
   CorrectiveActionsTabContent,
   TemperatureTabContent,
 } from "./qa-actions-client";
@@ -24,11 +24,12 @@ const QualityAssurancePage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const qualityChecksRaw = await database.qualityCheck.findMany({
+  // Checks tab is Manifest-first: list the same QACheck rows that New Check creates.
+  // Temperature / Corrective tabs still read legacy tables until those tabs are migrated.
+  const qaChecksRaw = await database.qACheck.findMany({
     where: { tenantId, deletedAt: null },
     orderBy: { createdAt: "desc" },
     take: 20,
-    include: { items: true },
   });
 
   const temperatureLogsRaw = await database.temperatureLog.findMany({
@@ -43,18 +44,15 @@ const QualityAssurancePage = async () => {
     take: 10,
   });
 
-  const qualityChecks = qualityChecksRaw.map((qc) => ({
+  const qualityChecks = qaChecksRaw.map((qc) => ({
     id: qc.id,
     checkType: qc.checkType,
-    title: qc.title,
+    location: qc.location,
+    inspector: qc.inspector,
+    result: qc.result,
     status: qc.status,
+    notes: qc.notes ?? "",
     completedAt: qc.completedAt?.toISOString() ?? null,
-    scheduledAt: qc.scheduledAt?.toISOString() ?? null,
-    items: qc.items.map((item) => ({
-      id: item.id,
-      itemName: item.itemName,
-      criterion: item.criterion,
-    })),
   }));
 
   const temperatureLogs = temperatureLogsRaw.map((log) => ({

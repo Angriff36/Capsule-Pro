@@ -9,7 +9,6 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { DatePicker } from "@repo/design-system/components/ui/date-picker";
-import { DateTimePicker } from "@repo/design-system/components/ui/date-time-picker";
 import {
   Dialog,
   DialogContent,
@@ -32,11 +31,9 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   AlertTriangle,
   CheckCircle2,
-  ClipboardCheck,
   Clock,
   Plus,
   Thermometer,
-  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -44,8 +41,6 @@ import type { FormEvent } from "react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import {
-  qACheckComplete,
-  qACheckCreate,
   qACorrectiveActionCreate,
   qACorrectiveActionMarkResolved,
   qATemperatureLogLog,
@@ -54,22 +49,6 @@ import {
 // ---------------------------------------------------------------------------
 // Shared types
 // ---------------------------------------------------------------------------
-
-interface QualityCheckItem {
-  criterion: string;
-  id: string;
-  itemName: string;
-}
-
-interface QualityCheck {
-  checkType: string;
-  completedAt: string | null;
-  id: string;
-  items: QualityCheckItem[];
-  scheduledAt: string | null;
-  status: string;
-  title: string;
-}
 
 interface TemperatureLog {
   id: string;
@@ -89,29 +68,29 @@ interface CorrectiveAction {
   title: string;
 }
 
+function temperatureRangeClass(withinRange: boolean | null): string {
+  if (withinRange === false) {
+    return "text-red-500";
+  }
+  if (withinRange === true) {
+    return "text-green-500";
+  }
+  return "text-yellow-500";
+}
+
+function CorrectiveActionStatusIcon({ status }: { status: string }) {
+  if (status === "open") {
+    return <AlertTriangle className="h-4 w-4 text-red-500" />;
+  }
+  if (status === "in_progress") {
+    return <Clock className="h-4 w-4 text-blue-500" />;
+  }
+  return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+}
+
 // ---------------------------------------------------------------------------
 // Lookup maps
 // ---------------------------------------------------------------------------
-
-const checkTypeLabels: Record<string, string> = {
-  receiving: "Receiving",
-  storage: "Storage",
-  prep: "Prep",
-  cooking: "Cooking",
-  cooling: "Cooling",
-  holding: "Holding",
-  transport: "Transport",
-};
-
-const checkStatusBadge: Record<
-  string,
-  "destructive" | "default" | "secondary" | "outline"
-> = {
-  pending: "secondary",
-  passed: "default",
-  failed: "destructive",
-  needs_review: "outline",
-};
 
 const logTypeLabels: Record<string, string> = {
   cooler: "Cooler",
@@ -138,450 +117,6 @@ const actionStatusLabel: Record<string, string> = {
   resolved: "Resolved",
   verified: "Verified",
 };
-
-// ---------------------------------------------------------------------------
-// 1. Create Quality Check Dialog
-// ---------------------------------------------------------------------------
-
-const CHECK_TYPES = [
-  { value: "receiving", label: "Receiving" },
-  { value: "storage", label: "Storage" },
-  { value: "prep", label: "Prep" },
-  { value: "cooking", label: "Cooking" },
-  { value: "cooling", label: "Cooling" },
-  { value: "holding", label: "Holding" },
-  { value: "transport", label: "Transport" },
-] as const;
-
-export function CreateCheckDialog({ onSuccess }: { onSuccess: () => void }) {
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [checkType, setCheckType] = useState("");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [scheduledAt, setScheduledAt] = useState("");
-  const [assignedTo, setAssignedTo] = useState("");
-  const [checklistItems, setChecklistItems] = useState<
-    { name: string; criterion: string }[]
-  >([]);
-
-  const resetForm = useCallback(() => {
-    setCheckType("");
-    setTitle("");
-    setDescription("");
-    setScheduledAt("");
-    setAssignedTo("");
-    setChecklistItems([]);
-    setError(null);
-  }, []);
-
-  const handleSubmit = useCallback(
-    async (e: FormEvent) => {
-      e.preventDefault();
-      if (!(checkType && title.trim())) {
-        return;
-      }
-      setLoading(true);
-      setError(null);
-      try {
-        const body: Record<string, unknown> = {
-          checkType,
-          title: title.trim(),
-        };
-        if (description.trim()) {
-          body.description = description.trim();
-        }
-        if (scheduledAt) {
-          body.scheduledAt = scheduledAt;
-        }
-        if (assignedTo.trim()) {
-          body.assignedTo = assignedTo.trim();
-        }
-        const filtered = checklistItems.filter(
-          (item) => item.name.trim() || item.criterion.trim()
-        );
-        if (filtered.length > 0) {
-          body.checklistItems = filtered;
-        }
-        await qACheckCreate(body);
-        toast.success("Quality check created");
-        setOpen(false);
-        resetForm();
-        onSuccess();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to create check");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [
-      checkType,
-      title,
-      description,
-      scheduledAt,
-      assignedTo,
-      checklistItems,
-      onSuccess,
-      resetForm,
-    ]
-  );
-
-  return (
-    <Dialog
-      onOpenChange={(v) => {
-        setOpen(v);
-        if (!v) {
-          resetForm();
-        }
-      }}
-      open={open}
-    >
-      <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="mr-1 h-4 w-4" />
-          New Check
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Create Quality Check</DialogTitle>
-          <DialogDescription>
-            Schedule a new quality check for HACCP compliance.
-          </DialogDescription>
-        </DialogHeader>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <Label htmlFor="qc-checkType">Check Type *</Label>
-            <Select onValueChange={setCheckType} value={checkType}>
-              <SelectTrigger id="qc-checkType">
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                {CHECK_TYPES.map((ct) => (
-                  <SelectItem key={ct.value} value={ct.value}>
-                    {ct.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="qc-title">Title *</Label>
-            <Input
-              id="qc-title"
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Morning receiving inspection"
-              required
-              value={title}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="qc-desc">Description</Label>
-            <Textarea
-              id="qc-desc"
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional description"
-              rows={2}
-              value={description}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="qc-scheduled">Scheduled At</Label>
-            <DateTimePicker
-              id="qc-scheduled"
-              onChange={(e) => setScheduledAt(e.target.value)}
-              value={scheduledAt}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="qc-assigned">Assigned To</Label>
-            <Input
-              id="qc-assigned"
-              onChange={(e) => setAssignedTo(e.target.value)}
-              placeholder="Employee name or ID"
-              value={assignedTo}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Checklist Items</Label>
-              <Button
-                onClick={() =>
-                  setChecklistItems((prev) => [
-                    ...prev,
-                    { name: "", criterion: "" },
-                  ])
-                }
-                size="sm"
-                type="button"
-                variant="outline"
-              >
-                <Plus className="mr-1 h-3 w-3" />
-                Add Item
-              </Button>
-            </div>
-            {checklistItems.length > 0 && (
-              <div className="space-y-2">
-                {checklistItems.map((item, i) => (
-                  <div
-                    className="flex items-start gap-2"
-                    key={`cl-${String(i)}`}
-                  >
-                    <Input
-                      className="flex-1"
-                      onChange={(e) =>
-                        setChecklistItems((prev) =>
-                          prev.map((ci, idx) =>
-                            idx === i ? { ...ci, name: e.target.value } : ci
-                          )
-                        )
-                      }
-                      placeholder="Item name"
-                      value={item.name}
-                    />
-                    <Input
-                      className="flex-1"
-                      onChange={(e) =>
-                        setChecklistItems((prev) =>
-                          prev.map((ci, idx) =>
-                            idx === i
-                              ? { ...ci, criterion: e.target.value }
-                              : ci
-                          )
-                        )
-                      }
-                      placeholder="Criterion"
-                      value={item.criterion}
-                    />
-                    <Button
-                      onClick={() =>
-                        setChecklistItems((prev) =>
-                          prev.filter((_, idx) => idx !== i)
-                        )
-                      }
-                      size="sm"
-                      type="button"
-                      variant="ghost"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {error && <p className="text-destructive text-sm">{error}</p>}
-
-          <DialogFooter>
-            <Button
-              disabled={loading || !checkType || !title.trim()}
-              type="submit"
-            >
-              {loading ? "Creating..." : "Create Check"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// 2. Complete Quality Check Dialog
-// ---------------------------------------------------------------------------
-
-const CHECK_STATUSES = [
-  { value: "passed", label: "Passed" },
-  { value: "failed", label: "Failed" },
-  { value: "skipped", label: "Skipped" },
-] as const;
-
-export function CompleteCheckDialog({
-  checkId,
-  checklistItems,
-  onSuccess,
-}: {
-  checkId: string;
-  checklistItems: QualityCheckItem[];
-  onSuccess: () => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState("");
-  const [notes, setNotes] = useState("");
-  const [itemResults, setItemResults] = useState<
-    Record<string, { passed: boolean; value: string; notes: string }>
-  >({});
-
-  const handleSubmit = useCallback(
-    async (e: FormEvent) => {
-      e.preventDefault();
-      if (!status) {
-        return;
-      }
-      setLoading(true);
-      setError(null);
-      try {
-        const body: Record<string, unknown> = { checkId, status };
-        if (notes.trim()) {
-          body.notes = notes.trim();
-        }
-        const results = Object.entries(itemResults)
-          .filter(([, r]) => r.passed || r.value || r.notes)
-          .map(([itemId, r]) => ({
-            itemId,
-            passed: r.passed,
-            ...(r.value ? { value: r.value } : {}),
-            ...(r.notes ? { notes: r.notes } : {}),
-          }));
-        if (results.length > 0) {
-          body.itemResults = results;
-        }
-        await qACheckComplete(body);
-        toast.success("Check completed");
-        setOpen(false);
-        onSuccess();
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to complete check"
-        );
-      } finally {
-        setLoading(false);
-      }
-    },
-    [checkId, status, notes, itemResults, onSuccess]
-  );
-
-  return (
-    <Dialog onOpenChange={setOpen} open={open}>
-      <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
-          Complete
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Complete Quality Check</DialogTitle>
-          <DialogDescription>
-            Record results for this quality check.
-          </DialogDescription>
-        </DialogHeader>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <Label>Status *</Label>
-            <Select onValueChange={setStatus} value={status}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                {CHECK_STATUSES.map((s) => (
-                  <SelectItem key={s.value} value={s.value}>
-                    {s.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="cc-notes">Notes</Label>
-            <Textarea
-              id="cc-notes"
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Additional notes"
-              rows={2}
-              value={notes}
-            />
-          </div>
-
-          {checklistItems.length > 0 && (
-            <div className="space-y-2">
-              <Label>Checklist Results</Label>
-              {checklistItems.map((item) => (
-                <div className="space-y-2 rounded-md border p-3" key={item.id}>
-                  <div className="font-medium text-sm">{item.itemName}</div>
-                  {item.criterion && (
-                    <div className="text-muted-foreground text-xs">
-                      Criterion: {item.criterion}
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <label className="flex items-center gap-1 text-sm">
-                      <input
-                        checked={itemResults[item.id]?.passed ?? false}
-                        onChange={(e) =>
-                          setItemResults((prev) => ({
-                            ...prev,
-                            [item.id]: {
-                              value: "",
-                              notes: "",
-                              ...prev[item.id],
-                              passed: e.target.checked,
-                            },
-                          }))
-                        }
-                        type="checkbox"
-                      />
-                      Passed
-                    </label>
-                    <Input
-                      className="h-8 flex-1 text-sm"
-                      onChange={(e) =>
-                        setItemResults((prev) => ({
-                          ...prev,
-                          [item.id]: {
-                            passed: false,
-                            notes: "",
-                            ...prev[item.id],
-                            value: e.target.value,
-                          },
-                        }))
-                      }
-                      placeholder="Value"
-                      value={itemResults[item.id]?.value ?? ""}
-                    />
-                    <Input
-                      className="h-8 flex-1 text-sm"
-                      onChange={(e) =>
-                        setItemResults((prev) => ({
-                          ...prev,
-                          [item.id]: {
-                            passed: false,
-                            value: "",
-                            ...prev[item.id],
-                            notes: e.target.value,
-                          },
-                        }))
-                      }
-                      placeholder="Notes"
-                      value={itemResults[item.id]?.notes ?? ""}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {error && <p className="text-destructive text-sm">{error}</p>}
-
-          <DialogFooter>
-            <Button disabled={loading || !status} type="submit">
-              {loading ? "Submitting..." : "Complete Check"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // 3. Log Temperature Dialog
@@ -1166,140 +701,6 @@ function useRefresh() {
   return useCallback(() => router.refresh(), [router]);
 }
 
-/** Checks tab content with "New Check" button and per-check "Complete" buttons. */
-export function ChecksTabContent({
-  qualityChecks,
-}: {
-  qualityChecks: QualityCheck[];
-}) {
-  const refresh = useRefresh();
-
-  const checkTypeCounts = new Map<string, { total: number; pending: number }>();
-  for (const ct of Object.keys(checkTypeLabels)) {
-    checkTypeCounts.set(ct, { total: 0, pending: 0 });
-  }
-  for (const qc of qualityChecks) {
-    const entry = checkTypeCounts.get(qc.checkType) ?? { total: 0, pending: 0 };
-    entry.total++;
-    if (qc.status === "pending") {
-      entry.pending++;
-    }
-    checkTypeCounts.set(qc.checkType, entry);
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <CreateCheckDialog onSuccess={refresh} />
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {Object.entries(checkTypeLabels).map(([type, label]) => {
-          const counts = checkTypeCounts.get(type) ?? {
-            total: 0,
-            pending: 0,
-          };
-          return (
-            <Card
-              className="transition-colors hover:border-primary/50"
-              key={type}
-              tone="soft-stone"
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <ClipboardCheck className="h-4 w-4" />
-                  {label}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm">
-                  {counts.total} total checks
-                </p>
-                <div className="mt-3 flex gap-2">
-                  <Badge variant="outline">{counts.pending} pending</Badge>
-                  <Badge variant="secondary">{counts.total} total</Badge>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {qualityChecks.length > 0 ? (
-        <div className="space-y-3">
-          <h3 className="font-medium text-muted-foreground text-sm">
-            Recent Checks
-          </h3>
-          {qualityChecks.slice(0, 10).map((qc) => (
-            <Card key={qc.id} tone="canvas">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-sm">
-                    {qc.status === "passed" ? (
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    ) : qc.status === "failed" ? (
-                      <AlertTriangle className="h-4 w-4 text-red-500" />
-                    ) : (
-                      <Clock className="h-4 w-4 text-yellow-500" />
-                    )}
-                    {qc.title}
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={checkStatusBadge[qc.status] ?? "outline"}>
-                      {qc.status.replace("_", " ")}
-                    </Badge>
-                    {qc.status === "pending" && (
-                      <CompleteCheckDialog
-                        checkId={qc.id}
-                        checklistItems={qc.items}
-                        onSuccess={refresh}
-                      />
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4 text-muted-foreground text-xs">
-                  <span>
-                    Type: {checkTypeLabels[qc.checkType] ?? qc.checkType}
-                  </span>
-                  <span>Items: {qc.items.length}</span>
-                  {qc.completedAt && (
-                    <span>
-                      Completed:{" "}
-                      {new Date(qc.completedAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  )}
-                  {!qc.completedAt && qc.scheduledAt && (
-                    <span>
-                      Scheduled:{" "}
-                      {new Date(qc.scheduledAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <p className="py-4 text-muted-foreground text-sm">
-          No quality checks recorded yet.
-        </p>
-      )}
-    </div>
-  );
-}
-
 /** Temperature tab content with "Log Temperature" button. */
 export function TemperatureTabContent({
   temperatureLogs,
@@ -1346,13 +747,7 @@ export function TemperatureTabContent({
                 >
                   <div className="flex items-center gap-3">
                     <Thermometer
-                      className={`h-4 w-4 ${
-                        log.withinRange === false
-                          ? "text-red-500"
-                          : log.withinRange === true
-                            ? "text-green-500"
-                            : "text-yellow-500"
-                      }`}
+                      className={`h-4 w-4 ${temperatureRangeClass(log.withinRange)}`}
                     />
                     <span className="font-medium capitalize">
                       {logTypeLabels[log.logType] ??
@@ -1447,13 +842,7 @@ export function CorrectiveActionsTabContent({
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      {action.status === "open" ? (
-                        <AlertTriangle className="h-4 w-4 text-red-500" />
-                      ) : action.status === "in_progress" ? (
-                        <Clock className="h-4 w-4 text-blue-500" />
-                      ) : (
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      )}
+                      <CorrectiveActionStatusIcon status={action.status} />
                       <span className="font-medium">{action.title}</span>
                     </div>
                     <div className="flex items-center gap-3 text-muted-foreground text-sm">
