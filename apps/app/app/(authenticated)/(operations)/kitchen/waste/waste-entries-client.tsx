@@ -19,15 +19,12 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
-import * as Sentry from "@sentry/nextjs";
+import { captureException, logger } from "@sentry/nextjs";
 import { AlertCircle, DollarSign, Package, Search, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import { wasteEntryCreate } from "@/app/lib/manifest-client.generated";
-
-const { logger, captureException } = Sentry;
+import { logWasteEntryViaComposite } from "./log-waste-entry";
 
 interface InventoryItem {
   category?: string;
@@ -115,7 +112,7 @@ export function WasteEntriesClient() {
   }, []);
 
   // Debounced search for inventory items
-  const debouncedSearch = useCallback(async (query: string) => {
+  const debouncedSearch = useCallback((query: string) => {
     if (!query || query.length < 2) {
       setFilteredItems([]);
       setSelectedItem(null);
@@ -173,7 +170,7 @@ export function WasteEntriesClient() {
     setFilteredItems([]);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validate form
@@ -199,20 +196,29 @@ export function WasteEntriesClient() {
     setSubmitting(true);
 
     try {
-      const result = await wasteEntryCreate({
+      const quantity = Number.parseFloat(formData.quantity);
+      const reasonId = Number.parseInt(formData.reasonId, 10);
+      const unitId = formData.unitId
+        ? Number.parseInt(formData.unitId, 10)
+        : undefined;
+
+      const result = await logWasteEntryViaComposite({
         inventoryItemId: formData.inventoryItemId,
-        quantity: formData.quantity
-          ? Number.parseFloat(formData.quantity)
-          : undefined,
-        reasonId: formData.reasonId
-          ? Number.parseInt(formData.reasonId, 10)
-          : undefined,
-        unitId: formData.unitId ? Number.parseInt(formData.unitId, 10) : undefined,
-        notes: formData.notes || undefined,
+        quantity,
+        reasonId,
+        ...(unitId !== undefined && Number.isFinite(unitId) ? { unitId } : {}),
+        ...(formData.notes.trim().length > 0
+          ? { notes: formData.notes.trim() }
+          : {}),
       });
 
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+
       toast.success(
-        `Waste entry logged - Cost: $${result?.totalCost?.toFixed(2) || "0.00"}`
+        `Waste entry logged - Cost: $${result.entry.totalCost.toFixed(2)}`
       );
 
       // Reset form
