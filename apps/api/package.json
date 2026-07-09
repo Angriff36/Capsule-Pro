@@ -3,7 +3,7 @@
   "dependencies": {
     "@ai-sdk/google": "^3.0.30",
     "@ai-sdk/openai": "^3.0.71",
-    "@angriff36/manifest": "3.4.5",
+    "@angriff36/manifest": "3.4.6",
     "@capsule-pro/sales-reporting": "workspace:*",
     "@react-pdf/renderer": "^4.5.1",
     "@repo/analytics": "workspace:*",
