@@ -118,59 +118,6 @@ export const getUrgentTasks = async (): Promise<KitchenTask[]> => {
 // Create Operation (governed via Manifest runtime)
 // ============================================================================
 
-/**
- * Create a new kitchen task.
- *
- * Uses KitchenTask.create. Status defaults to "pending" via property default
- * — not set explicitly. Complexity defaults to 5 (medium).
- */
-export const createKitchenTask = async (
-  formData: FormData
-): Promise<KitchenTask> => {
-  const user = await requireCurrentUser();
-  const tenantId = user.tenantId;
-
-  const title = getString(formData, "title");
-  if (!title) {
-    throw new Error("Task title is required.");
-  }
-
-  const summary = getOptionalString(formData, "summary") || "";
-  const priorityStr = getString(formData, "priority");
-  const priority = priorityStr ? Number.parseInt(priorityStr, 10) : 5;
-  const dueDate = getDateTime(formData, "dueDate");
-
-  const result = await runManifestCommand({
-    entity: "KitchenTask",
-    command: "create",
-    body: {
-      title,
-      summary,
-      priority,
-      complexity: 5,
-      tags: "",
-      dueDate: dueDate ?? "",
-    },
-    user: { id: user.id, tenantId, role: user.role },
-  });
-
-  if (!result.ok) {
-    throw new Error(result.message || "Failed to create kitchen task");
-  }
-
-  const createdId = (result.result as { id?: string } | null)?.id;
-  invariant(createdId, "KitchenTask.create did not return an id");
-
-  const task = await database.kitchenTask.findFirst({
-    where: { tenantId, id: createdId },
-  });
-  invariant(task, "Created kitchen task could not be loaded");
-
-  revalidatePath("/kitchen/tasks");
-
-  return task;
-};
-
 // ============================================================================
 // Update Operations (governed via Manifest runtime)
 // ============================================================================

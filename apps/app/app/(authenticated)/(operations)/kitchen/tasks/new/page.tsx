@@ -22,14 +22,15 @@ import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { createKitchenTask } from "../actions";
+import { createKitchenTask } from "../create-kitchen-task";
 
+/** Manifest KitchenTask.create allows priority 1–5 only. */
 const PRIORITIES = [
   { value: "1", label: "Urgent", description: "Highest priority, do first" },
   { value: "2", label: "High", description: "Important, do soon" },
   { value: "3", label: "Medium", description: "Normal priority" },
+  { value: "4", label: "Below medium", description: "Lower urgency" },
   { value: "5", label: "Low", description: "Can wait" },
-  { value: "10", label: "Backlog", description: "When time permits" },
 ];
 
 export default function NewKitchenTaskPage() {
@@ -77,18 +78,19 @@ export default function NewKitchenTaskPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="summary">Summary / Notes</Label>
+              <Label htmlFor="summary">Summary *</Label>
               <Input
                 id="summary"
                 name="summary"
-                placeholder="Additional details about this task"
+                placeholder="What needs to be done"
+                required
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="priority">Priority</Label>
-                <Select defaultValue="5" name="priority">
+                <Label htmlFor="priority">Priority *</Label>
+                <Select defaultValue="5" name="priority" required>
                   <SelectTrigger>
                     <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
@@ -108,8 +110,8 @@ export default function NewKitchenTaskPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dueDate">Due Date / Time</Label>
-                <DateTimePicker id="dueDate" name="dueDate" />
+                <Label htmlFor="dueDate">Due Date / Time *</Label>
+                <DateTimePicker id="dueDate" name="dueDate" required />
               </div>
             </div>
 
