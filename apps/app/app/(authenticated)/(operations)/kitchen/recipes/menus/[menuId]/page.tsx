@@ -13,6 +13,7 @@ import { notFound } from "next/navigation";
 import { AllergenMatrix } from "@/components/allergen-matrix";
 import { Header } from "../../../../../components/header";
 import { getMenuById } from "../actions";
+import { MenuStatusBadge } from "../components/menu-lifecycle-controls";
 
 export default async function MenuDetailPage({
   params,
@@ -175,9 +176,7 @@ export default async function MenuDetailPage({
                 <CardTitle className="font-medium text-sm">Status</CardTitle>
               </CardHeader>
               <CardContent>
-                <Badge variant={menu.isActive ? "default" : "secondary"}>
-                  {menu.isActive ? "Active" : "Inactive"}
-                </Badge>
+                <MenuStatusBadge status={menu.status} />
               </CardContent>
             </Card>
           </div>

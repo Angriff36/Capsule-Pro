@@ -141,6 +141,8 @@ export interface MenuSummary {
   minGuests: number | null;
   name: string;
   pricePerPerson: number | null;
+  /** Manifest publication status: draft | published | archived */
+  status: string;
 }
 
 export const getMenus = async (): Promise<MenuSummary[]> => {
@@ -153,6 +155,7 @@ export const getMenus = async (): Promise<MenuSummary[]> => {
       description: string | null;
       category: string | null;
       is_active: boolean;
+      status: string | null;
       base_price: string | null;
       price_per_person: string | null;
       min_guests: number | null;
@@ -168,6 +171,7 @@ export const getMenus = async (): Promise<MenuSummary[]> => {
         m.description,
         m.category,
         m.is_active,
+        m.status::text AS status,
         m.base_price,
         m.price_per_person,
         m.min_guests,
@@ -187,6 +191,7 @@ export const getMenus = async (): Promise<MenuSummary[]> => {
         m.description,
         m.category,
         m.is_active,
+        m.status,
         m.base_price,
         m.price_per_person,
         m.min_guests,
@@ -202,6 +207,7 @@ export const getMenus = async (): Promise<MenuSummary[]> => {
     description: menu.description,
     category: menu.category,
     isActive: menu.is_active,
+    status: menu.status ?? "draft",
     basePrice: menu.base_price ? Number.parseFloat(menu.base_price) : null,
     pricePerPerson: menu.price_per_person
       ? Number.parseFloat(menu.price_per_person)
@@ -237,6 +243,8 @@ export interface MenuDetail {
   minGuests: number | null;
   name: string;
   pricePerPerson: number | null;
+  /** Manifest publication status: draft | published | archived */
+  status: string;
   updatedAt: Date;
 }
 
@@ -259,6 +267,7 @@ export const getMenuById = async (
         category: string | null;
         is_active: boolean;
         is_template: boolean;
+        status: string | null;
         base_price: string | null;
         price_per_person: string | null;
         min_guests: number | null;
@@ -275,6 +284,7 @@ export const getMenuById = async (
           category,
           is_active,
           is_template,
+          status::text AS status,
           base_price,
           price_per_person,
           min_guests,
@@ -338,6 +348,7 @@ export const getMenuById = async (
     category: menu.category,
     isActive: menu.is_active,
     isTemplate: menu.is_template,
+    status: menu.status ?? "draft",
     basePrice: menu.base_price ? Number.parseFloat(menu.base_price) : null,
     pricePerPerson: menu.price_per_person
       ? Number.parseFloat(menu.price_per_person)

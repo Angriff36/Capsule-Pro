@@ -2,6 +2,7 @@ import { auth } from "@repo/auth/server";
 import { Header } from "../../../../../../components/header";
 import { getMenuById } from "../../actions";
 import { MenuFormWithConstraints } from "../../components/menu-form-with-constraints";
+import { MenuLifecycleControls } from "../../components/menu-lifecycle-controls";
 
 export default async function EditMenuPage({
   params,
@@ -96,20 +97,14 @@ export default async function EditMenuPage({
                       />
                     </div>
 
-                    <div className="grid gap-2">
-                      <label className="font-medium text-sm" htmlFor="isActive">
-                        Status
-                      </label>
-                      <select
-                        className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
-                        defaultValue={menu.isActive ? "true" : "false"}
-                        id="isActive"
-                        name="isActive"
-                      >
-                        <option value="true">Active</option>
-                        <option value="false">Inactive</option>
-                      </select>
-                    </div>
+                    <MenuLifecycleControls
+                      hasPricing={
+                        (menu.basePrice ?? 0) > 0 ||
+                        (menu.pricePerPerson ?? 0) > 0
+                      }
+                      menuId={menuId}
+                      status={menu.status}
+                    />
                   </div>
 
                   {/* Pricing Section */}
