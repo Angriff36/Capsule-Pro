@@ -69,7 +69,9 @@ const CommandBoardPage = async () => {
       tags: true,
       createdAt: true,
       updatedAt: true,
-      _count: { select: { cards: true, connections: true } },
+      _count: {
+        select: { commandBoardCards: true, commandBoardConnections: true },
+      },
     },
     orderBy: { updatedAt: "desc" },
   });
@@ -178,11 +180,13 @@ const CommandBoardPage = async () => {
                     <dl className="mt-4 flex items-center gap-4 text-muted-foreground text-xs">
                       <div>
                         <dt className="sr-only">Cards</dt>
-                        <dd>{board._count.cards} cards</dd>
+                        <dd>{board._count.commandBoardCards} cards</dd>
                       </div>
                       <div>
                         <dt className="sr-only">Connections</dt>
-                        <dd>{board._count.connections} connections</dd>
+                        <dd>
+                          {board._count.commandBoardConnections} connections
+                        </dd>
                       </div>
                       <div className="ml-auto">
                         <dt className="sr-only">Updated</dt>
