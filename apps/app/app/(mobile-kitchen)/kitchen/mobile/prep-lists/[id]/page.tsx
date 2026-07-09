@@ -1,35 +1,26 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@repo/design-system/components/ui/sheet";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { captureException } from "@sentry/nextjs";
 import {
   ArrowLeft,
   CheckCircle2,
-  Flag,
-  MessageSquare,
   RefreshCw,
   Wifi,
   WifiOff,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   getPrepList,
-  prepListItemMarkCompleted,
-  prepListItemMarkUncompleted,
   prepListItemUpdatePrepNotes,
 } from "@/app/lib/manifest-client.generated";
 import type { PrepList, PrepListItem } from "../../types";
+import { PrepItemCard } from "../prep-item-card";
+import { PrepItemNoteSheet } from "../prep-item-note-sheet";
+import { setPrepListItemCompletionViaComposite } from "../set-prep-list-item-completion";
+import { togglePrepListItemCompletion } from "../toggle-prep-list-item-completion";
+import { usePrepItemSwipe } from "../use-prep-item-swipe";
 
 interface CompletionQueueItem {
   completed: boolean;
@@ -41,118 +32,6 @@ interface NoteQueueItem {
   itemId: string;
   notes: string;
   timestamp: string;
-}
-
-interface SwipeState {
-  isSwiping: boolean;
-  itemId: string;
-  translateX: number;
-}
-
-// Extracted item renderer to reduce complexity
-interface PrepItemCardProps {
-  item: PrepListItem;
-  onToggleComplete: (item: PrepListItem) => void;
-  onTouchEnd: (item: PrepListItem) => void;
-  onTouchMove: (e: React.TouchEvent, itemId: string) => void;
-  onTouchStart: (e: React.TouchEvent, itemId: string) => void;
-  swipeState: SwipeState | null;
-}
-
-function PrepItemCard({
-  item,
-  swipeState,
-  onToggleComplete,
-  onTouchStart,
-  onTouchMove,
-  onTouchEnd,
-}: PrepItemCardProps) {
-  const isThisSwiping = swipeState?.itemId === item.id && swipeState.isSwiping;
-  const translateX = swipeState?.itemId === item.id ? swipeState.translateX : 0;
-
-  return (
-    <div
-      className="relative"
-      style={{ touchAction: isThisSwiping ? "pan-y" : "auto" }}
-    >
-      {/* Swipe reveal background - note icon */}
-      <div
-        className="absolute inset-y-0 right-0 flex items-center justify-center rounded-xl bg-amber-500 px-6"
-        style={{ opacity: Math.min(1, Math.abs(translateX) / 80) }}
-      >
-        <MessageSquare className="h-6 w-6 text-white" />
-      </div>
-
-      {/* Main item card */}
-      <button
-        className={`flex w-full items-center gap-3 rounded-xl border-2 p-4 text-left transition-transform ${
-          item.completed
-            ? "border-emerald-300 bg-emerald-50"
-            : "border-slate-200 bg-white"
-        }`}
-        onClick={() => {
-          if (!swipeState?.isSwiping) {
-            onToggleComplete(item);
-          }
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onToggleComplete(item);
-          }
-        }}
-        onTouchEnd={() => onTouchEnd(item)}
-        onTouchMove={(e) => onTouchMove(e, item.id)}
-        onTouchStart={(e) => onTouchStart(e, item.id)}
-        style={{
-          transform: `translateX(${translateX}px)`,
-        }}
-        type="button"
-      >
-        {/* Checkbox */}
-        <div
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border-2 ${
-            item.completed
-              ? "border-emerald-500 bg-emerald-500"
-              : "border-slate-300"
-          }`}
-        >
-          {item.completed && <CheckCircle2 className="h-5 w-5 text-white" />}
-        </div>
-
-        {/* Item details */}
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <h3
-              className={`truncate font-medium text-lg ${
-                item.completed
-                  ? "text-slate-400 line-through"
-                  : "text-slate-900"
-              }`}
-            >
-              {item.name}
-            </h3>
-            {item.notes && <Flag className="h-4 w-4 shrink-0 text-amber-500" />}
-          </div>
-          <div className="mt-1 flex items-center gap-2">
-            <span className="text-slate-500 text-sm">
-              {item.quantity} {item.unit || "pcs"}
-            </span>
-            {item.station && (
-              <Badge className="text-xs" variant="outline">
-                {item.station.name}
-              </Badge>
-            )}
-          </div>
-          {item.notes && (
-            <p className="mt-1 line-clamp-2 text-amber-600 text-sm">
-              📝 {item.notes}
-            </p>
-          )}
-        </div>
-      </button>
-    </div>
-  );
 }
 
 export default function MobilePrepListDetailPage() {
@@ -171,20 +50,21 @@ export default function MobilePrepListDetailPage() {
     "incomplete"
   );
 
-  // Note sheet state
   const [noteSheetOpen, setNoteSheetOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<PrepListItem | null>(null);
   const [noteText, setNoteText] = useState("");
   const [isSavingNote, setIsSavingNote] = useState(false);
   const [noteQueue, setNoteQueue] = useState<NoteQueueItem[]>([]);
 
-  // Swipe state
-  const [swipeState, setSwipeState] = useState<SwipeState | null>(null);
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-  const SWIPE_THRESHOLD = 80; // Minimum distance to trigger action
+  const openNoteSheet = useCallback((item: PrepListItem) => {
+    setSelectedItem(item);
+    setNoteText(item.notes || "");
+    setNoteSheetOpen(true);
+  }, []);
 
-  // Monitor online/offline status
+  const { swipeState, handleTouchStart, handleTouchMove, handleTouchEnd } =
+    usePrepItemSwipe(openNoteSheet);
+
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -224,9 +104,9 @@ export default function MobilePrepListDetailPage() {
     fetchPrepList();
   }, [fetchPrepList]);
 
-  // Sync offline completions when coming back online
+  // Sync offline completions when coming back online via composite route
   useEffect(() => {
-    if (!isOnline || completionQueue.length === 0) {
+    if (!isOnline || completionQueue.length === 0 || !prepListId) {
       return;
     }
 
@@ -234,13 +114,12 @@ export default function MobilePrepListDetailPage() {
       const failedItems: CompletionQueueItem[] = [];
 
       for (const item of completionQueue) {
-        try {
-          if (item.completed) {
-            await prepListItemMarkCompleted({ id: item.itemId });
-          } else {
-            await prepListItemMarkUncompleted({ id: item.itemId });
-          }
-        } catch {
+        const result = await setPrepListItemCompletionViaComposite({
+          prepListId,
+          itemId: item.itemId,
+          completed: item.completed,
+        });
+        if (!result.ok) {
           failedItems.push(item);
         }
       }
@@ -258,49 +137,55 @@ export default function MobilePrepListDetailPage() {
 
   const handleToggleComplete = useCallback(
     async (item: PrepListItem) => {
-      const newCompleted = !item.completed;
-
-      // Optimistic update
-      if (prepList) {
-        setPrepList({
-          ...prepList,
-          items: prepList.items?.map((i) =>
-            i.id === item.id ? { ...i, completed: newCompleted } : i
-          ),
-          completedCount: prepList.completedCount + (newCompleted ? 1 : -1),
-        });
-      }
-
-      // If offline, queue the action
-      if (!isOnline) {
-        setCompletionQueue((prev) => [
-          ...prev,
-          {
-            itemId: item.id,
-            completed: newCompleted,
-            timestamp: new Date().toISOString(),
-          },
-        ]);
+      if (!prepListId) {
         return;
       }
 
-      try {
-        if (newCompleted) {
-          await prepListItemMarkCompleted({ id: item.id });
-        } else {
-          await prepListItemMarkUncompleted({ id: item.id });
-        }
-      } catch (err) {
-        captureException(err);
-        // Revert on error
-        await fetchPrepList();
+      const result = await togglePrepListItemCompletion({
+        prepListId,
+        itemId: item.id,
+        currentlyCompleted: item.completed,
+        isOnline,
+        applyOptimistic: (completed) => {
+          setPrepList((current) => {
+            if (!current) {
+              return current;
+            }
+            let delta = 0;
+            if (completed !== item.completed) {
+              delta = completed ? 1 : -1;
+            }
+            return {
+              ...current,
+              items: current.items?.map((row) =>
+                row.id === item.id ? { ...row, completed } : row
+              ),
+              completedCount: current.completedCount + delta,
+            };
+          });
+        },
+        queueOffline: ({ itemId, completed }) => {
+          setCompletionQueue((prev) => [
+            ...prev,
+            {
+              itemId,
+              completed,
+              timestamp: new Date().toISOString(),
+            },
+          ]);
+        },
+        revert: async () => {
+          await fetchPrepList();
+        },
+      });
+
+      if (!result.ok) {
         setError("Failed to update item. Please try again.");
       }
     },
-    [isOnline, prepList, prepListId, fetchPrepList]
+    [isOnline, prepListId, fetchPrepList]
   );
 
-  // Sync offline notes when coming back online
   useEffect(() => {
     if (!isOnline || noteQueue.length === 0) {
       return;
@@ -332,7 +217,6 @@ export default function MobilePrepListDetailPage() {
     syncOfflineNotes();
   }, [isOnline, noteQueue, fetchPrepList]);
 
-  // Handle saving notes
   const handleSaveNote = useCallback(async () => {
     if (!(selectedItem && noteText.trim())) {
       setNoteSheetOpen(false);
@@ -341,7 +225,6 @@ export default function MobilePrepListDetailPage() {
 
     setIsSavingNote(true);
 
-    // Optimistic update
     if (prepList) {
       setPrepList({
         ...prepList,
@@ -351,7 +234,6 @@ export default function MobilePrepListDetailPage() {
       });
     }
 
-    // If offline, queue the action
     if (!isOnline) {
       setNoteQueue((prev) => [
         ...prev,
@@ -386,62 +268,6 @@ export default function MobilePrepListDetailPage() {
     }
   }, [selectedItem, noteText, prepList, isOnline, fetchPrepList]);
 
-  // Touch handlers for swipe gesture
-  const handleTouchStart = useCallback(
-    (e: React.TouchEvent, itemId: string) => {
-      touchStartX.current = e.touches[0]?.clientX ?? 0;
-      touchStartY.current = e.touches[0]?.clientY ?? 0;
-      setSwipeState({ itemId, translateX: 0, isSwiping: false });
-    },
-    []
-  );
-
-  const handleTouchMove = useCallback(
-    (e: React.TouchEvent, itemId: string) => {
-      if (!swipeState || swipeState.itemId !== itemId) {
-        return;
-      }
-
-      const currentX = e.touches[0]?.clientX ?? 0;
-      const currentY = e.touches[0]?.clientY ?? 0;
-      const deltaX = currentX - touchStartX.current;
-      const deltaY = currentY - touchStartY.current;
-
-      // If vertical scroll is dominant, don't swipe
-      if (Math.abs(deltaY) > Math.abs(deltaX)) {
-        return;
-      }
-
-      // Only allow swipe left (negative deltaX)
-      const translateX = Math.min(0, deltaX);
-
-      setSwipeState({
-        itemId,
-        translateX,
-        isSwiping: Math.abs(deltaX) > 10,
-      });
-    },
-    [swipeState]
-  );
-
-  const handleTouchEnd = useCallback(
-    (item: PrepListItem) => {
-      if (!swipeState || swipeState.itemId !== item.id) {
-        return;
-      }
-
-      // If swiped left beyond threshold, open note sheet
-      if (swipeState.translateX < -SWIPE_THRESHOLD) {
-        setSelectedItem(item);
-        setNoteText(item.notes || "");
-        setNoteSheetOpen(true);
-      }
-
-      setSwipeState(null);
-    },
-    [swipeState]
-  );
-
   const filteredItems = prepList?.items?.filter((item) => {
     if (filter === "incomplete") {
       return !item.completed;
@@ -454,7 +280,6 @@ export default function MobilePrepListDetailPage() {
 
   return (
     <div className="flex flex-1 flex-col p-4">
-      {/* Header with back button */}
       <div className="mb-4 flex items-center gap-3">
         <Button
           className="shrink-0"
@@ -482,7 +307,6 @@ export default function MobilePrepListDetailPage() {
         </Button>
       </div>
 
-      {/* Status bar */}
       <div className="mb-4 flex items-center justify-between text-sm">
         <div className="flex items-center gap-2">
           {isOnline ? (
@@ -504,7 +328,6 @@ export default function MobilePrepListDetailPage() {
         )}
       </div>
 
-      {/* Error banner */}
       {error && (
         <div className="mb-4 flex items-center justify-between gap-2 rounded-lg bg-rose-100 p-3">
           <span className="text-rose-700 text-sm">{error}</span>
@@ -519,7 +342,6 @@ export default function MobilePrepListDetailPage() {
         </div>
       )}
 
-      {/* Offline queue indicator */}
       {(completionQueue.length > 0 || noteQueue.length > 0) && (
         <div className="mb-4 rounded-lg bg-blue-100 p-3 text-center text-blue-700 text-sm">
           {completionQueue.length + noteQueue.length} change
@@ -528,12 +350,10 @@ export default function MobilePrepListDetailPage() {
         </div>
       )}
 
-      {/* Swipe hint */}
       <div className="mb-2 text-center text-slate-400 text-xs">
         ← Swipe left on an item to add notes
       </div>
 
-      {/* Filter tabs */}
       <div className="mb-4 flex gap-2">
         <Button
           className="flex-1"
@@ -561,7 +381,6 @@ export default function MobilePrepListDetailPage() {
         </Button>
       </div>
 
-      {/* Items list */}
       <div className="flex-1 space-y-2 overflow-auto pb-4">
         {filteredItems && filteredItems.length > 0 ? (
           filteredItems.map((item) => (
@@ -587,45 +406,20 @@ export default function MobilePrepListDetailPage() {
         )}
       </div>
 
-      {/* Note sheet */}
-      <Sheet onOpenChange={setNoteSheetOpen} open={noteSheetOpen}>
-        <SheetContent className="flex flex-col" side="bottom">
-          <SheetHeader>
-            <SheetTitle>Add Note</SheetTitle>
-            <SheetDescription>
-              {selectedItem?.name} - Add prep notes or flag issues
-            </SheetDescription>
-          </SheetHeader>
-          <div className="flex-1 py-4">
-            <Textarea
-              className="min-h-[120px] text-lg"
-              onChange={(e) => setNoteText(e.target.value)}
-              placeholder="Enter prep notes or flag an issue..."
-              value={noteText}
-            />
-          </div>
-          <SheetFooter className="flex-row gap-2">
-            <Button
-              className="flex-1"
-              onClick={() => {
-                setNoteSheetOpen(false);
-                setSelectedItem(null);
-                setNoteText("");
-              }}
-              variant="outline"
-            >
-              Cancel
-            </Button>
-            <Button
-              className="flex-1"
-              disabled={isSavingNote}
-              onClick={handleSaveNote}
-            >
-              {isSavingNote ? "Saving..." : "Save Note"}
-            </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+      <PrepItemNoteSheet
+        isSaving={isSavingNote}
+        itemName={selectedItem?.name}
+        noteText={noteText}
+        onCancel={() => {
+          setNoteSheetOpen(false);
+          setSelectedItem(null);
+          setNoteText("");
+        }}
+        onNoteTextChange={setNoteText}
+        onOpenChange={setNoteSheetOpen}
+        onSave={handleSaveNote}
+        open={noteSheetOpen}
+      />
     </div>
   );
 }
