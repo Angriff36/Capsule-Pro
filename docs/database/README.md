@@ -343,8 +343,8 @@ Schema placement rules for NEW entities: `docs/database/SCHEMA_PLACEMENT_POLICY.
 ## Additional Resources
 
 - **Schema**: `packages/database/prisma/schema/` (multi-file: `manifest.prisma` is
-  projection-generated — never hand-edit; `infra.prisma` is hand-owned)
-- **Migrations**: `packages/database/prisma/migrations/`
+  projection-generated — never hand-edit; `infra.prisma` is hand-owned). The schema files ARE
+  the table/column/enum reference — there are no per-table docs to keep in sync.
+- **Migrations**: `packages/database/prisma/migrations/` (the SQL is the record; no per-migration docs)
 - **Active issues**: [`KNOWN_ISSUES.md`](./KNOWN_ISSUES.md)
-- **Per-schema docs**: [`SCHEMAS.md`](./SCHEMAS.md)
-- **Historical migration docs**: `docs/database/migrations/`
+- **New-entity schema placement**: [`SCHEMA_PLACEMENT_POLICY.md`](./SCHEMA_PLACEMENT_POLICY.md)

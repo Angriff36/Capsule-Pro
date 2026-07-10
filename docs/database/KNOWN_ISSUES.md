@@ -277,31 +277,7 @@ tenantId  String   @map("tenant_id") @db.Uuid
 
 ## Future Improvements
 
-### 8. Automated Schema Documentation Generation
-
-**Status**: 📋 Planned
-
-**Goal**: Auto-generate table documentation from Prisma schema.
-
-**Approach**:
-- Parse Prisma schema file
-- Extract models, fields, relations, indexes
-- Generate markdown docs in `docs/database/tables/`
-- Include FK constraints, indexes, comments
-
-**Implementation**:
-- Script to run after migrations: `pnpm docs:generate-db`
-- Include in pre-commit hook for schema changes
-- Auto-update SCHEMAS.md with new models
-
-**TODO**:
-- [ ] Create schema parser script
-- [ ] Generate per-table markdown files
-- [ ] Add to CI/CD pipeline
-
----
-
-### 9. Schema Visualization
+### 8. Schema Visualization
 
 **Status**: 📋 Planned
 
@@ -476,10 +452,8 @@ defaults to model name verbatim).
 
 ## Related Documentation
 
-- **Schema Overview**: `docs/database/SCHEMAS.md`
-- **Migration History**: `docs/database/migrations/`
-- **Prisma Schema**: `packages/database/prisma/schema.prisma`
-- **Schema Contract**: `docs/legacy-contracts/schema-contract-v2.txt`
+- **Canonical DB operations + architecture**: [`README.md`](./README.md)
+- **Prisma Schema**: `packages/database/prisma/schema/` (multi-file directory)
 
 ---
 
@@ -501,7 +475,6 @@ defaults to model name verbatim).
 - Converted all fields to camelCase with proper `@map` annotations
 - Added missing `updatedAt`, `deletedAt`, `roleId` fields
 - Fixed relation references to use Prisma field names
-- See `docs/database/SCHEMA_FIXES.md` for details
 
 **Lessons Learned**:
 - ALL models must use camelCase field names
@@ -524,7 +497,6 @@ defaults to model name verbatim).
 - Removed computed DEFAULT expression
 - Field is now nullable without default
 - Application must compute total_cost on write
-- See `docs/database/SCHEMA_FIXES.md` for details
 
 **Lessons Learned**:
 - PostgreSQL does not support computed DEFAULT columns
@@ -548,7 +520,6 @@ defaults to model name verbatim).
 - Replaced all `uuid_generate_v4()` with `gen_random_uuid()`
 - `gen_random_uuid()` is native to PostgreSQL 13+
 - Works reliably on Neon and other managed platforms
-- See `docs/database/SCHEMA_FIXES.md` for details
 
 **Lessons Learned**:
 - Always use `gen_random_uuid()` for new code

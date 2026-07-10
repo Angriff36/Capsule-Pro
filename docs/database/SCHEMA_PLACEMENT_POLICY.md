@@ -7,11 +7,11 @@ script; the live `@@schema` placement is the hand-maintained `multiSchema.entity
 
 ## Why this exists
 
-Capsule-Pro's database is **multi-schema** (12 PostgreSQL schemas grouped by domain). Every generated Prisma model **must** declare a `@@schema(...)`. The goal of this policy is that **an agent (or the generator) can decide which schema a new Manifest entity belongs to without asking a human every time** — and when it genuinely can't, it **fails loudly with a useful error instead of silently dumping the table in `public`.**
+Capsule-Pro's database is **multi-schema** (12 domain schemas plus `public`, which holds only Manifest-runtime infra tables). Every generated Prisma model **must** declare a `@@schema(...)`. The goal of this policy is that **an agent (or the generator) can decide which schema a new Manifest entity belongs to without asking a human every time** — and when it genuinely can't, it **fails loudly with a useful error instead of silently dumping the table in `public`.**
 
 `public` is **not** the architecture. A tenant entity must never land in `public`.
 
-Sources this policy is built from: `docs/database/SCHEMAS.md`, `docs/database/README.md`, the `manifest/source/*.manifest` filenames, and the known-good multi-schema `schema.prisma` (commit `923baaa8`).
+Sources this policy is built from: `docs/database/README.md`, the `manifest/source/*.manifest` filenames, and the known-good multi-schema `schema.prisma` (commit `923baaa8`).
 
 ## The schemas and what each owns
 

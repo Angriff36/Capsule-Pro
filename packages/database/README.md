@@ -77,9 +77,9 @@ runs with `relationMode = "prisma"`.
 - ⚠️ `relationMode = "prisma"` means Prisma does NOT auto-generate FK constraints
   in new migrations; relations are emulated client-side
 - ❌ Switching to `relationMode = "foreignKeys"` is currently blocked: known
-  orphaned-row scenarios (see `docs/database/KNOWN_ISSUES.md` and the per-schema
-  docs under `docs/database/schemas/`) would fail the `ALTER TABLE ... ADD
-  CONSTRAINT FOREIGN KEY` Prisma would emit for the ~99 missing constraints
+  orphaned-row scenarios (see `docs/database/KNOWN_ISSUES.md`) would fail the
+  `ALTER TABLE ... ADD CONSTRAINT FOREIGN KEY` Prisma would emit for the ~99
+  missing constraints
 
 **Example of an existing FK**:
 
@@ -449,7 +449,6 @@ model ExampleTable {
 - **Migrations**: `packages/database/prisma/migrations/`
 - **Workflow (canonical)**: [`docs/database/README.md`](../../docs/database/README.md)
 - **Known Issues**: `docs/database/KNOWN_ISSUES.md`
-- **Historical migration docs**: `docs/database/migrations/`
 
 ---
 

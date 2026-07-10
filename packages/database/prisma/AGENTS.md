@@ -8,6 +8,10 @@ note: >-
 
 # Manifest reference for `packages/database/prisma`
 
+> ⚠️ **Database OPERATIONS (workflow, migrations, drift, recovery) have exactly ONE canonical
+> doc: [`docs/database/README.md`](../../../docs/database/README.md).** This file is only the
+> embedded Manifest Prisma-projection reference (how IR becomes schema).
+
 **Why this file:** schema.prisma should become a GENERATED OUTPUT of the Prisma projection (IR + frozen options), not a hand-authored build input. Referential actions (U2) and back-relations (U11) must live in the IR so the projection can own the relational graph.
 
 **Relevant divergences:** D16, U2, U11 — see `manifest/MANIFEST-DIVERGENCES.md` for the full remediation detail.
