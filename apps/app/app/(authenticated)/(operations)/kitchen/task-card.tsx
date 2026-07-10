@@ -291,10 +291,16 @@ export function TaskCard({
   };
 
   const handleStatusChange = async (newStatus: string) => {
+    if (!currentUserId) {
+      return;
+    }
     setIsLoading(true);
     try {
       if (newStatus === "done" || newStatus === "completed") {
-        await kitchenTaskComplete({ id: task.id });
+        await kitchenTaskComplete({
+          id: task.id,
+          userId: currentUserId,
+        });
       } else if (newStatus === "cancelled") {
         await kitchenTaskCancel({ id: task.id });
       } else if (newStatus === "open") {
