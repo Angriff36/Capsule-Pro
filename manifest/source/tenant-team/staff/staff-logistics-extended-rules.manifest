@@ -791,6 +791,9 @@ entity PaymentRefundAttempt mixin TenantScoped {
   property effectiveAmount: money = 0
   property refundReason: string? = ""
   property success: boolean = false
+  property originalGatewayTransactionId: string?
+  property refundTransactionId: string?
+  property failureReason: string?
   property createdAt: datetime = now()
 
   computed isSucceeded: boolean = self.success == true

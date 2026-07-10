@@ -30,6 +30,9 @@ entity PrepTask mixin TenantScoped, SoftDeletable {
   property dueByDate: datetime
   property priority: int = 5
   property dishId: uuid? = ""
+  property recipeVersionId: uuid?
+  property methodId: uuid?
+  property containerId: uuid?
   property locationId: uuid = ""
   property estimatedMinutes: int? = 0
   property dueByTime: datetime?

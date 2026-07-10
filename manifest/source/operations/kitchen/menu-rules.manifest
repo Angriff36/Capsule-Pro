@@ -18,6 +18,7 @@ entity Menu mixin TenantScoped, SoftDeletable {
   searchable property description: string? = ""
   property category: string? = ""
   property isActive: boolean = true
+  property isTemplate: boolean = false
   property basePrice: money? = 0
   property pricePerPerson: money? = 0
   property minGuests: int? = 0

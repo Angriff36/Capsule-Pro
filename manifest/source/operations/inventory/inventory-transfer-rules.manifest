@@ -5,6 +5,7 @@ use "../../_base.manifest"
 entity InventoryTransfer mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property requestedAt: datetime = now()
+  property transferNumber: string = ""
   property fromLocationId: uuid = ""
   property toLocationId: uuid = ""
   indexed property status: string = "draft"

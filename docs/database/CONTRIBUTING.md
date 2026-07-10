@@ -45,9 +45,8 @@ Notes:
    partially applied. On the disposable dev DB the clean recovery is
    `pnpm --filter @repo/database exec prisma migrate reset --force` (destroys data — needs
    explicit user confirmation), which replays the full history from empty.
-5. Known interim drift: until the `@angriff36/manifest` Prisma-projection fix
-   (suppress `@default("")` on uuid columns) is released and pinned, `db:check` reports
-   exactly 187 `SET DEFAULT ''` clauses. See `KNOWN_ISSUES.md` § "uuid empty-string defaults".
+5. `@angriff36/manifest` ≥ 3.4.22 is required: earlier projections emitted `@default("")`
+   on uuid sentinel columns — undeployable DDL that caused the pre-2026-07-10 permanent drift.
 
 ## Schema Naming Conventions
 

@@ -1277,6 +1277,7 @@ export interface EventImport {
   detectedFormat?: string | null;
   confidence?: number | null;
   extractedData?: unknown | null;
+  content?: bytes | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1775,6 +1776,7 @@ export interface InventoryTransfer {
   tenantId: string;
   deletedAt?: string | null;
   requestedAt: string;
+  transferNumber?: string;
   fromLocationId?: string;
   toLocationId?: string;
   status?: string;
@@ -1800,6 +1802,7 @@ export interface InventoryTransferItem {
   itemId: string;
   quantity?: number;
   unitId?: string | null;
+  receivedQuantity?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1935,6 +1938,7 @@ export interface KnowledgeBaseEntry {
   tenantId: string;
   deletedAt?: string | null;
   title: string;
+  slug?: string;
   category?: string | null;
   content?: string | null;
   tags?: string[] | null;
@@ -2071,6 +2075,7 @@ export interface Menu {
   description?: string | null;
   category?: string | null;
   isActive?: boolean;
+  isTemplate?: boolean;
   basePrice?: number | null;
   pricePerPerson?: number | null;
   minGuests?: number | null;
@@ -2256,6 +2261,9 @@ export interface PaymentRefundAttempt {
   effectiveAmount?: number;
   refundReason?: string | null;
   success?: boolean;
+  originalGatewayTransactionId?: string | null;
+  refundTransactionId?: string | null;
+  failureReason?: string | null;
   createdAt: string;
 }
 
@@ -2460,6 +2468,9 @@ export interface PrepTask {
   dueByDate: string;
   priority?: number;
   dishId?: string | null;
+  recipeVersionId?: string | null;
+  methodId?: string | null;
+  containerId?: string | null;
   locationId?: string;
   estimatedMinutes?: number | null;
   dueByTime?: string | null;

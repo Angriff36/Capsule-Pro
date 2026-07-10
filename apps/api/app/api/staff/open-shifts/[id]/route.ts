@@ -29,7 +29,8 @@ export async function GET(
     const openShift = await database.openShift.findFirst({
       where: {
         id,
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     });
 

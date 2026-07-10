@@ -19,6 +19,7 @@ entity Lead mixin TenantScoped, SoftDeletable {
   searchable property notes: string? = ""
   property convertedToClientId: uuid? = ""
   property convertedAt: datetime?
+  property scoreBreakdown: json = {}
   timestamps
 
   computed isConverted: boolean = self.convertedToClientId != "" and self.convertedAt != null

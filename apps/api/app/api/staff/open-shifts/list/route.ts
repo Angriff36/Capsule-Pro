@@ -22,7 +22,8 @@ export async function GET(_request: NextRequest) {
 
 const openShifts = await database.openShift.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

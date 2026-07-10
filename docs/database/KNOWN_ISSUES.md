@@ -8,25 +8,6 @@ Last updated: 2026-07-10
 workflow were **removed 2026-07-10** — `pnpm db:check` is strict and any diff is a failure to fix
 via a proper migration (see `CONTRIBUTING.md`).
 
-## Active
-
-### 0. uuid empty-string defaults — pending `@angriff36/manifest` projection release
-
-**Status**: ⏳ Fix implemented upstream (local commit `2c7f2d0` in `C:\projects\Manifest`), awaiting release + pin bump
-
-**Issue**: the Manifest Prisma projection emits `@default("")` for every `uuid? = ""` DSL
-sentinel. `''` is not a valid uuid literal, so the resulting `SET DEFAULT ''` DDL can never be
-applied to Postgres (`22P02`) — this was the root cause of the old permanently-"accepted" drift.
-Until the projection fix ships, `pnpm db:check` reports exactly **187** `SET DEFAULT ''` clauses
-(schema-side phantom; the live DB is correct), and a freshly generated migration would include
-them and fail to deploy — strip them if you must migrate before the release lands.
-
-**Fix path** (one sitting):
-1. In `C:\projects\Manifest`: push the fix commit, run `node scripts/release.mjs` (cut-release workflow → npm).
-2. In capsule-pro: bump the `@angriff36/manifest` pin, `pnpm install`,
-   regenerate (`manifest generate -p prisma …`), commit the regenerated `manifest.prisma`.
-3. `pnpm db:check` → zero drift. No database change is needed.
-
 ## Critical Issues
 
 ### 1. Composite Foreign Key Constraints Missing in Prisma Schema

@@ -214,7 +214,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -225,7 +225,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -326,7 +326,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -337,7 +337,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -471,7 +471,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -649,7 +649,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -671,7 +671,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -693,7 +693,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -772,7 +772,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -827,7 +827,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -906,7 +906,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -917,7 +917,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -1018,7 +1018,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -1152,7 +1152,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -1174,7 +1174,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -1196,7 +1196,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -1598,7 +1598,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -1609,7 +1609,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -1675,7 +1675,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -1908,7 +1908,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -2499,7 +2499,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -2943,7 +2943,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -3044,7 +3044,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -3356,7 +3356,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -3411,7 +3411,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -4147,7 +4147,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -4158,7 +4158,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -4556,7 +4556,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -4866,7 +4866,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -5123,7 +5123,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -5134,7 +5134,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -5145,7 +5145,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -5457,7 +5457,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -5646,7 +5646,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -5668,7 +5668,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -5679,7 +5679,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -5789,7 +5789,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -5822,7 +5822,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -6022,7 +6022,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -6200,7 +6200,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -6488,7 +6488,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -6499,7 +6499,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -7090,7 +7090,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -7578,7 +7578,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -7945,7 +7945,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -7989,7 +7989,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -8255,7 +8255,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -8266,7 +8266,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -8589,7 +8589,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -8767,7 +8767,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -8778,7 +8778,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -8945,7 +8945,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -9400,7 +9400,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -9444,7 +9444,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -9611,7 +9611,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -9890,7 +9890,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -9901,7 +9901,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -10013,7 +10013,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -10202,7 +10202,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -10347,7 +10347,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -10980,7 +10980,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -11123,7 +11123,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -11134,7 +11134,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -11145,7 +11145,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -11156,7 +11156,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -11589,7 +11589,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -11857,7 +11857,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -11958,7 +11958,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -12361,6 +12361,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "content",
+        "irName": "content",
+        "type": "Bytes",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt",
         "type": "DateTime",
@@ -12424,7 +12435,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -12679,7 +12690,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -12767,7 +12778,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -12921,7 +12932,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -12932,7 +12943,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -13431,7 +13442,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -13475,7 +13486,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -14611,7 +14622,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -14767,7 +14778,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -14778,7 +14789,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -15633,7 +15644,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -15778,7 +15789,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -16378,7 +16389,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -17066,7 +17077,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -17099,7 +17110,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -17110,7 +17121,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -17154,7 +17165,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -17238,13 +17249,24 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "transferNumber",
+        "irName": "transferNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "fromLocationId",
         "irName": "fromLocationId",
         "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -17255,7 +17277,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -17277,7 +17299,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -17288,7 +17310,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -17299,7 +17321,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -17310,7 +17332,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -17493,6 +17515,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "receivedQuantity",
+        "irName": "receivedQuantity",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt",
         "type": "DateTime",
@@ -17600,7 +17633,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -17611,7 +17644,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -17987,7 +18020,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -18097,7 +18130,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -18108,7 +18141,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -18838,6 +18871,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "slug",
+        "irName": "slug",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "category",
         "irName": "category",
         "type": "String",
@@ -18888,7 +18932,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -19011,7 +19055,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -19099,7 +19143,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -19365,7 +19409,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -19387,7 +19431,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -19666,7 +19710,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -19677,7 +19721,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -19877,7 +19921,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -19888,7 +19932,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -19954,7 +19998,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -19965,7 +20009,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -20205,6 +20249,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "isActive",
         "irName": "isActive",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "isTemplate",
+        "irName": "isTemplate",
         "type": "Boolean",
         "isEnum": false,
         "isList": false,
@@ -20688,7 +20743,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -21191,7 +21246,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -21292,7 +21347,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -21325,7 +21380,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -21347,7 +21402,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -21470,7 +21525,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -21481,7 +21536,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -21492,7 +21547,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -21703,7 +21758,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -22029,6 +22084,39 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "originalGatewayTransactionId",
+        "irName": "originalGatewayTransactionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "refundTransactionId",
+        "irName": "refundTransactionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "failureReason",
+        "irName": "failureReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt",
         "type": "DateTime",
@@ -22092,7 +22180,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -22136,7 +22224,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -22516,7 +22604,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -22582,7 +22670,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -22604,7 +22692,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -23050,7 +23138,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -23584,7 +23672,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -23606,7 +23694,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -23650,7 +23738,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -23874,7 +23962,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -24028,7 +24116,40 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "recipeVersionId",
+        "irName": "recipeVersionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "methodId",
+        "irName": "methodId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "containerId",
+        "irName": "containerId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -24039,7 +24160,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -24184,7 +24305,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -24527,7 +24648,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -24538,7 +24659,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -24615,7 +24736,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -25204,7 +25325,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -25316,7 +25437,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -25327,7 +25448,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -25338,7 +25459,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -25569,7 +25690,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -25648,7 +25769,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -25835,7 +25956,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -26556,7 +26677,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -26578,7 +26699,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -26879,7 +27000,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -26912,7 +27033,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -27000,7 +27121,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -27022,7 +27143,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -27044,7 +27165,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -27066,7 +27187,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -27321,7 +27442,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -27589,7 +27710,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -27611,7 +27732,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -27655,7 +27776,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -27800,7 +27921,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -27811,7 +27932,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -29413,7 +29534,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -29569,7 +29690,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -30404,7 +30525,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -30448,7 +30569,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -30459,7 +30580,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -30648,7 +30769,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -32982,7 +33103,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -32993,7 +33114,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -33004,7 +33125,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -33125,7 +33246,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -33514,7 +33635,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -34450,7 +34571,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -34852,7 +34973,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -35142,7 +35263,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -35399,7 +35520,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -35410,7 +35531,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -35465,7 +35586,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -35632,7 +35753,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -35810,7 +35931,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -35876,7 +35997,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -35999,7 +36120,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -36076,7 +36197,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -36975,7 +37096,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -37408,7 +37529,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -37718,7 +37839,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -38927,7 +39048,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -38949,7 +39070,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -39182,7 +39303,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -39740,7 +39861,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -39784,7 +39905,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -39795,7 +39916,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -39806,7 +39927,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -39828,7 +39949,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -40274,7 +40395,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },

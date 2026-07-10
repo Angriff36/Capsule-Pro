@@ -4836,6 +4836,10 @@
         "irName": "extractedData"
       },
       {
+        "name": "content",
+        "irName": "content"
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt"
       },
@@ -6736,6 +6740,10 @@
         "irName": "requestedAt"
       },
       {
+        "name": "transferNumber",
+        "irName": "transferNumber"
+      },
+      {
         "name": "fromLocationId",
         "irName": "fromLocationId"
       },
@@ -6832,6 +6840,10 @@
       {
         "name": "unitId",
         "irName": "unitId"
+      },
+      {
+        "name": "receivedQuantity",
+        "irName": "receivedQuantity"
       },
       {
         "name": "createdAt",
@@ -7358,6 +7370,10 @@
       {
         "name": "title",
         "irName": "title"
+      },
+      {
+        "name": "slug",
+        "irName": "slug"
       },
       {
         "name": "category",
@@ -7890,6 +7906,10 @@
       {
         "name": "isActive",
         "irName": "isActive"
+      },
+      {
+        "name": "isTemplate",
+        "irName": "isTemplate"
       },
       {
         "name": "basePrice",
@@ -8608,6 +8628,18 @@
       {
         "name": "success",
         "irName": "success"
+      },
+      {
+        "name": "originalGatewayTransactionId",
+        "irName": "originalGatewayTransactionId"
+      },
+      {
+        "name": "refundTransactionId",
+        "irName": "refundTransactionId"
+      },
+      {
+        "name": "failureReason",
+        "irName": "failureReason"
       },
       {
         "name": "createdAt",
@@ -9400,6 +9432,18 @@
       {
         "name": "dishId",
         "irName": "dishId"
+      },
+      {
+        "name": "recipeVersionId",
+        "irName": "recipeVersionId"
+      },
+      {
+        "name": "methodId",
+        "irName": "methodId"
+      },
+      {
+        "name": "containerId",
+        "irName": "containerId"
       },
       {
         "name": "locationId",

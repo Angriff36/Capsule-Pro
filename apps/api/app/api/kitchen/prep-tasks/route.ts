@@ -216,7 +216,7 @@ export async function GET(request: Request) {
         notes: true,
         createdAt: true,
         updatedAt: true,
-        do_not_complete_until: true,
+        doNotCompleteUntil: true,
       },
       orderBy: [
         { priority: "desc" },

@@ -5,6 +5,7 @@ use "../_base.manifest"
 entity KnowledgeBaseEntry mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property required title: string
+  property slug: string = ""
   property category: string? = "general"
   property content: string? = ""
   property tags: array<string>? = []

@@ -415,6 +415,7 @@ entity EventImport mixin TenantScoped, SoftDeletable {
   property detectedFormat: string?
   property confidence: int? = 0
   property extractedData: json?
+  property content: bytes?
 
   computed isPending: boolean = self.parseStatus == "pending"
   computed isProcessing: boolean = self.parseStatus == "parsing"

@@ -576,6 +576,7 @@ entity InventoryTransferItem mixin TenantScoped {
   property required itemId: uuid
   property required quantity: decimal = 0
   property required unitId: string?
+  property receivedQuantity: decimal(12,3)?
   timestamps
 
   computed isZeroQuantity: boolean = self.quantity <= 0

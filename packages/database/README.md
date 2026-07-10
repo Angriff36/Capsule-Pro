@@ -497,9 +497,6 @@ pnpm db:check
 - `pnpm db:check` fails on ANY live-DB↔schema difference, in both directions
 - Do not run `prisma format` on the schema folder — it re-indents the generated
   `manifest.prisma` and breaks `manifest:schema:check`
-- Known interim drift (187 uuid `SET DEFAULT ''` clauses) is documented in
-  `docs/database/KNOWN_ISSUES.md` § 0 — pending `@angriff36/manifest` release
-
 ---
 
 ## Schema Structure
