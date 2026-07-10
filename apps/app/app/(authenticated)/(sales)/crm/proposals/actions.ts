@@ -558,7 +558,9 @@ export async function deleteProposal(id: string) {
   const result = await runManifestCommand({
     entity: "Proposal",
     command: "remove",
-    body: { id },
+    body: { id,
+  userId: user.id
+},
     user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 
