@@ -1587,7 +1587,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "EventGuest.rsvpConfirm": z.object({}),
   "EventGuest.rsvpDecline": z.object({
-  reason: z.string(),
+  reason: z.string().optional(),
 }),
   "EventGuest.softDelete": z.object({
   reason: z.string().optional(),

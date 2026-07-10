@@ -94,6 +94,9 @@ export async function POST(request: NextRequest) {
       triggerType: rawBody.triggerType || "custom",
       triggerConfig: JSON.stringify(rawBody.triggerConfig || {}),
       emailTemplateId: rawBody.emailTemplateId || "",
+      // Tenant half of the composite emailTemplate key — only when a template
+      // is actually linked (the store coerces "" → null on the nullable column).
+      emailTemplateTenantId: rawBody.emailTemplateId ? user.tenantId : "",
       recipientConfig: JSON.stringify(rawBody.recipientConfig || {}),
       isActive: rawBody.isActive ?? true,
     },

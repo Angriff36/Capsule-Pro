@@ -31,6 +31,8 @@ import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
+  eventGuestRsvpConfirm,
+  eventGuestRsvpDecline,
   eventGuestSoftDelete,
   eventGuestUpdate,
 } from "@/app/lib/manifest-client.generated";
@@ -239,12 +241,11 @@ function GuestRow({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem disabled value="pending">
+              Pending
+            </SelectItem>
             <SelectItem value="confirmed">Confirmed</SelectItem>
-            <SelectItem value="attending">Attending</SelectItem>
             <SelectItem value="declined">Declined</SelectItem>
-            <SelectItem value="not_attending">Not Attending</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
           </SelectContent>
         </Select>
       </TableCell>
@@ -381,10 +382,17 @@ export function EventGuestsClient({
     });
   };
 
-  const handleUpdateRSVP = (guestId: string, _status: string) => {
+  const handleUpdateRSVP = (guestId: string, status: string) => {
     startTransition(async () => {
       try {
-        await eventGuestUpdate({ id: guestId });
+        // rsvpStatus is command-governed: pending -> confirmed | declined.
+        if (status === "confirmed") {
+          await eventGuestRsvpConfirm({ id: guestId });
+        } else if (status === "declined") {
+          await eventGuestRsvpDecline({ id: guestId });
+        } else {
+          return;
+        }
         toast.success("RSVP updated");
         refreshGuests();
       } catch (err) {

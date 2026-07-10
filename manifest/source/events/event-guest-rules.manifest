@@ -93,13 +93,13 @@ entity EventGuest mixin TenantScoped, SoftDeletable {
     emit EventGuestRsvpConfirmed
   }
 
-  command rsvpDecline(reason: string) {
+  command rsvpDecline(optional reason: string) {
     guard self.deletedAt == null "Cannot RSVP for a deleted guest"
     guard self.checkedInAt == null "Cannot decline after the guest has checked in"
 
     mutate rsvpStatus = "declined"
     mutate rsvpRespondedAt = now()
-    mutate declineReason = reason
+    mutate declineReason = reason != null ? reason : self.declineReason
 
     emit EventGuestRsvpDeclined
   }
