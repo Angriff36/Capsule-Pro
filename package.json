@@ -97,7 +97,7 @@
     "manifest:verify-invariants": "node manifest/scripts/verify-invariants.mjs",
     "manifest:command-schemas": "node manifest/scripts/generate-command-param-schemas.mjs",
     "manifest:sync-artifacts": "pnpm manifest:build && pnpm manifest:client && pnpm manifest:generate-metadata && pnpm manifest:command-schemas && pnpm manifest:field-hints && pnpm manifest:registries && pnpm manifest:ownership && pnpm manifest:openapi && pnpm manifest:ir:embed",
-    "manifest:ci": "pnpm manifest:verify-invariants && pnpm manifest:validate && pnpm manifest:doctor && pnpm manifest:contract:check && pnpm manifest:audit-governance:direct-writes && pnpm manifest:audit:strict && pnpm manifest:coverage:ci",
+    "manifest:ci": "pnpm manifest:verify-invariants && pnpm manifest:validate && pnpm manifest:ir:embed:check && pnpm manifest:doctor && pnpm manifest:contract:check && pnpm manifest:audit-governance:direct-writes && pnpm manifest:audit:strict && pnpm manifest:coverage:ci",
     "manifest:registries": "node manifest/scripts/emit-registries.mjs",
     "manifest:contract:check": "node manifest/scripts/audit-contract-imports.mjs",
     "manifest:audit-governance:direct-writes": "pnpm exec manifest audit-governance -r apps/api --only direct-writes --commands-registry ../../manifest/governance/commands.json --bypass-registry ../../manifest/governance/bypasses.json --strict && pnpm exec manifest audit-governance -r apps/app --only direct-writes --commands-registry ../../manifest/governance/commands.json --bypass-registry ../../manifest/governance/bypasses.json --strict",
