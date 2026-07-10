@@ -1,6 +1,6 @@
 {
   "strategy": "native-compileProjectToIR",
-  "compilerVersion": "3.3.1",
+  "compilerVersion": "3.4.9",
   "sources": [
     "_base.manifest",
     "accounting/bank-account-rules.manifest",
