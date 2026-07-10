@@ -1,7 +1,7 @@
 // Test the PDF extraction directly
 
 import { readFileSync } from "node:fs";
-import { extractPdfText } from "@repo/event-parser/dist/parsers/pdf-extractor.js";
+import { extractPdfText } from "@repo/event-parser/parsers";
 
 const pdfBuffer = readFileSync(
   "C:/projects/capsule-pro/e2e/Pre-Event-Review.pdf"

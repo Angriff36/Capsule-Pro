@@ -1,0 +1,3 @@
+seedKey,tenantId,deletedAt,title,summary,status,priority,complexity,tags,assignedTo,dueDate,completedAt,createdAt,updatedAt
+kitchen-task-1,tenantId-1,deletedAt-1,KitchenTask 1,summary-1,active,priority-1,complexity-1,tags-1,assignedTo-1,dueDate-1,completedAt-1,createdAt-1,updatedAt-1
+kitchen-task-2,tenantId-2,deletedAt-2,KitchenTask 2,summary-2,active,priority-2,complexity-2,tags-2,assignedTo-2,dueDate-2,completedAt-2,createdAt-2,updatedAt-2

@@ -1,0 +1,3 @@
+seedKey,tenantId,deletedAt,scheduleId,employeeId,locationId,shiftStart,shiftEnd,roleDuringShift,notes,swapOfferedTo,swapStatus,swapOfferedAt,swapAcceptedAt,inheritedContext,createdAt,updatedAt,schedule,employee,location
+schedule-shift-1,tenantId-1,deletedAt-1,scheduleId-1,employeeId-1,locationId-1,shiftStart-1,shiftEnd-1,roleDuringShift-1,notes-1,swapOfferedTo-1,active,swapOfferedAt-1,swapAcceptedAt-1,inheritedContext-1,createdAt-1,updatedAt-1,schedule-2,user-2,facility-1
+schedule-shift-2,tenantId-2,deletedAt-2,scheduleId-2,employeeId-2,locationId-2,shiftStart-2,shiftEnd-2,roleDuringShift-2,notes-2,swapOfferedTo-2,active,swapOfferedAt-2,swapAcceptedAt-2,inheritedContext-2,createdAt-2,updatedAt-2,schedule-2,user-1,facility-1

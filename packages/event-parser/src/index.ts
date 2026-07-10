@@ -1,9 +1,9 @@
 // Main event-parser package entry point
 
 // Adapters
-export * from "./adapters/index.js";
+export * from "./adapters/index";
 
 // Parsers
-export * from "./parsers/index.js";
+export * from "./parsers/index";
 // Types
-export * from "./types/index.js";
+export * from "./types/index";

@@ -1,0 +1,27 @@
+{
+  "packId": "capsule-demo",
+  "version": "1.0.0",
+  "profile": "demo",
+  "entities": [
+    "Client",
+    "Dish",
+    "Event",
+    "Facility",
+    "Ingredient",
+    "InventoryItem",
+    "InventorySupplier",
+    "KitchenTask",
+    "PrepList",
+    "PrepTask",
+    "ProcurementBudget",
+    "Proposal",
+    "PurchaseOrder",
+    "PurchaseRequisition",
+    "Recipe",
+    "Schedule",
+    "ScheduleShift",
+    "User",
+    "Vehicle",
+    "Vendor"
+  ]
+}

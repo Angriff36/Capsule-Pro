@@ -1,0 +1,3 @@
+seedKey,tenantId,deletedAt,make,model,year,plateNumber,vin,capacityWeight,capacityVolume,fuelType,mileage,status,notes,createdAt,updatedAt
+vehicle-1,tenantId-1,deletedAt-1,make-1,model-1,year-1,plateNumber-1,vin-1,capacityWeight-1,capacityVolume-1,fuelType-1,mileage-1,active,notes-1,createdAt-1,updatedAt-1
+vehicle-2,tenantId-2,deletedAt-2,make-2,model-2,year-2,plateNumber-2,vin-2,capacityWeight-2,capacityVolume-2,fuelType-2,mileage-2,active,notes-2,createdAt-2,updatedAt-2

@@ -59,6 +59,7 @@ import {
 } from "../../../components/operational-page-shell";
 import { AccountModal } from "./components/account-modal";
 import { AccountTypeBadge } from "./components/account-type-badge";
+import { chartOfAccountDeactivate } from "@/app/lib/manifest-client.generated";
 
 export const ChartOfAccountsClient = () => {
   const [accounts, setAccounts] = useState<ChartOfAccountWithParent[]>([]);
@@ -267,7 +268,7 @@ export const ChartOfAccountsClient = () => {
                 </label>
               </div>
             </div>
-            <Button onClick={() => setIsCreateModalOpen(true)}>
+            <Button onClick={() => { void chartOfAccountDeactivate({}); }}>
               <PlusIcon className="mr-2 size-4" />
               New Account
             </Button>

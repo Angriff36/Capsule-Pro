@@ -1,0 +1,3 @@
+seedKey,tenantId,deletedAt,name,code,facilityType,addressLine1,addressLine2,city,state,postalCode,country,phone,status,notes,createdAt,updatedAt
+facility-1,tenantId-1,deletedAt-1,Facility 1,code-1,facilityType-1,addressLine1-1,addressLine2-1,city-1,state-1,postalCode-1,country-1,+1-555-0100,active,notes-1,createdAt-1,updatedAt-1
+facility-2,tenantId-2,deletedAt-2,Facility 2,code-2,facilityType-2,addressLine1-2,addressLine2-2,city-2,state-2,postalCode-2,country-2,+1-555-0101,active,notes-2,createdAt-2,updatedAt-2

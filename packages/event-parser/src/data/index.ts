@@ -3,10 +3,10 @@
  * Contains checklist templates and reference data
  */
 
-import type { ChecklistSectionState } from "../types/checklist.js";
+import type { ChecklistSectionState } from "../types/checklist";
 
 // Re-export task library from types
-export { DEFAULT_TASK_LIBRARY } from "../types/battleBoard.js";
+export { DEFAULT_TASK_LIBRARY } from "../types/battleBoard";
 
 /**
  * Pre-Event Review Checklist Template

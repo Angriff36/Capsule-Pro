@@ -267,7 +267,7 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
   {
     name: "sample-data-seed",
     description:
-      "SampleData.seed/reseed/clear → populate/remove demo rows via direct Prisma writes",
+      "SampleData.seed/reseed/clear → seedSampleData/clearSampleData (@repo/database/sample-data)",
     category: "onboarding",
     triggeringEvents: [
       "SampleDataSeeded",
@@ -276,8 +276,8 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
     ],
     triggeringEntity: "SampleData",
     hook: "after-emit",
-    targetEntity: "(demo data)",
-    targetCommand: "(bulk seed/clear — §9-permissible direct writes)",
+    targetEntity: "(demo data via prisma seed helper)",
+    targetCommand: "(bulk seed/clear — direct Prisma)",
     inputMapping: "computed",
     idempotencyKey: { none: true },
     executionMode: "sync",

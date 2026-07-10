@@ -1,0 +1,3 @@
+seedKey,tenantId,deletedAt,locationId,scheduleDate,status,publishedAt,publishedBy,approvedBy,approvedAt,notes,shiftCount,createdAt,updatedAt,location
+schedule-1,tenantId-1,deletedAt-1,locationId-1,scheduleDate-1,active,publishedAt-1,publishedBy-1,approvedBy-1,approvedAt-1,notes-1,shiftCount-1,createdAt-1,updatedAt-1,facility-1
+schedule-2,tenantId-2,deletedAt-2,locationId-2,scheduleDate-2,active,publishedAt-2,publishedBy-2,approvedBy-2,approvedAt-2,notes-2,shiftCount-2,createdAt-2,updatedAt-2,facility-1

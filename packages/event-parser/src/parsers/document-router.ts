@@ -7,10 +7,10 @@ import type {
   ParsedEvent,
   ParsedEventResult,
   StaffShift,
-} from "../types/index.js";
-import { detectPdfFormat, extractPdfText } from "./pdf-extractor.js";
-import { getEventNamesFromShifts, parseStaffCsv } from "./staff-csv-parser.js";
-import { parseTppEvent } from "./tpp-event-parser.js";
+} from "../types/index";
+import { detectPdfFormat, extractPdfText } from "./pdf-extractor";
+import { getEventNamesFromShifts, parseStaffCsv } from "./staff-csv-parser";
+import { parseTppEvent } from "./tpp-event-parser";
 
 export interface ProcessedDocument {
   availableEventNames?: string[];

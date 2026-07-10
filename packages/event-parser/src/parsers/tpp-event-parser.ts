@@ -14,7 +14,7 @@ import type {
   ReviewQueueItem,
   ServiceLocation,
   TimelinePhase,
-} from "../types/index.js";
+} from "../types/index";
 
 export interface ParseOptions {
   sourceName: string;

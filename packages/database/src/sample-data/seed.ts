@@ -69,7 +69,7 @@ export const seedSampleData = async (
     data: {
       tenantId,
       clientType: "company",
-      company_name: "Apex Events Inc.",
+      companyName: "Apex Events Inc.",
       email: "events@apex-demo.local",
       phone: "415-555-0123",
       tags: ["sample"],
@@ -431,6 +431,52 @@ export const seedSampleData = async (
     },
   });
 
+  // Surfaces that had empty-state CTAs but no seed rows before:
+  await prisma.lead.create({
+    data: {
+      tenantId,
+      contactName: "Morgan Lee",
+      companyName: "Harborview Weddings",
+      contactEmail: "morgan@harborview-demo.local",
+      contactPhone: "415-555-0199",
+      eventType: "wedding",
+      estimatedGuests: 120,
+      estimatedValue: decimal(18_000),
+      status: "new",
+      source: "sample",
+      notes: "Sample lead for demo",
+    },
+  });
+
+  await prisma.vendor.create({
+    data: {
+      id: crypto.randomUUID(),
+      tenantId,
+      name: "Bay Area Produce Co.",
+      type: "supplier",
+      status: "active",
+      email: "orders@bayproduce-demo.local",
+      phone: "415-555-0144",
+      city: "Oakland",
+      state: "CA",
+      paymentTerms: "net30",
+      notes: "Sample vendor",
+    },
+  });
+
+  await prisma.vehicle.create({
+    data: {
+      tenantId,
+      make: "Ford",
+      model: "Transit",
+      year: 2022,
+      plateNumber: "SMPL-001",
+      status: "available",
+      fuelType: "gas",
+      notes: "Sample vehicle",
+    },
+  });
+
   console.log(`Sample data seeding complete for tenant ${tenantId}`);
 };
 
@@ -653,6 +699,29 @@ export const clearSampleData = async (
     where: {
       tenantId,
       scheduleDate: { gte: today, lt: tomorrow },
+      deletedAt: null,
+    },
+  });
+
+  await prisma.lead.deleteMany({
+    where: {
+      tenantId,
+      source: "sample",
+      deletedAt: null,
+    },
+  });
+
+  await prisma.vendor.deleteMany({
+    where: {
+      tenantId,
+      notes: "Sample vendor",
+    },
+  });
+
+  await prisma.vehicle.deleteMany({
+    where: {
+      tenantId,
+      notes: "Sample vehicle",
       deletedAt: null,
     },
   });

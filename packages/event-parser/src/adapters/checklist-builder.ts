@@ -9,14 +9,14 @@ import type {
   ChecklistQuestionState,
   ChecklistSectionState,
   EventChecklist,
-} from "../types/checklist.js";
-import { EVENT_TYPE_OPTIONS } from "../types/checklist.js";
+} from "../types/checklist";
+import { EVENT_TYPE_OPTIONS } from "../types/checklist";
 import type {
   Flag,
   MenuItem,
   ParsedEvent,
   StaffShift,
-} from "../types/event.js";
+} from "../types/event";
 
 const CHECKLIST_VERSION = "2025-01-27";
 

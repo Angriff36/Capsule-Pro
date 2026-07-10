@@ -1,0 +1,3 @@
+seedKey,tenantId,deletedAt,eventId,name,batchMultiplier,dietaryRestrictions,status,totalItems,totalEstimatedTime,notes,generatedAt,finalizedAt,isActive,createdAt,updatedAt,event
+prep-list-1,tenantId-1,deletedAt-1,eventId-1,PrepList 1,batchMultiplier-1,dietaryRestrictions-1,active,totalItems-1,totalEstimatedTime-1,notes-1,generatedAt-1,finalizedAt-1,isActive-1,createdAt-1,updatedAt-1,event-2
+prep-list-2,tenantId-2,deletedAt-2,eventId-2,PrepList 2,batchMultiplier-2,dietaryRestrictions-2,active,totalItems-2,totalEstimatedTime-2,notes-2,generatedAt-2,finalizedAt-2,isActive-2,createdAt-2,updatedAt-2,event-1

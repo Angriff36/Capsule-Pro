@@ -1,0 +1,3 @@
+seedKey,tenantId,deletedAt,category,committedAmount,description,notes,periodType,thresholdCriticalPct,thresholdWarningPct,name,fiscalYear,periodStart,periodEnd,budgetAmount,spentAmount,status,createdAt,updatedAt
+procurement-budget-1,tenantId-1,deletedAt-1,category-1,committedAmount-1,description-1,notes-1,periodType-1,thresholdCriticalPct-1,thresholdWarningPct-1,ProcurementBudget 1,fiscalYear-1,periodStart-1,periodEnd-1,budgetAmount-1,spentAmount-1,active,createdAt-1,updatedAt-1
+procurement-budget-2,tenantId-2,deletedAt-2,category-2,committedAmount-2,description-2,notes-2,periodType-2,thresholdCriticalPct-2,thresholdWarningPct-2,ProcurementBudget 2,fiscalYear-2,periodStart-2,periodEnd-2,budgetAmount-2,spentAmount-2,active,createdAt-2,updatedAt-2

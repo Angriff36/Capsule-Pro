@@ -10,13 +10,13 @@ import type {
   BattleBoardStaff,
   BattleBoardTimeline,
   TimelineStyle,
-} from "../types/battleBoard.js";
+} from "../types/battleBoard";
 import type {
   EventTimelineEntry,
   ParsedEvent,
   StaffShift,
   TimelinePhase,
-} from "../types/event.js";
+} from "../types/event";
 
 export interface BattleBoardAdapterOptions {
   defaultLayouts?: BattleBoardLayout[];

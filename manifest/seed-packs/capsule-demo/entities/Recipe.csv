@@ -1,0 +1,3 @@
+seedKey,tenantId,deletedAt,name,category,cuisineType,description,tags,isActive,isSubrecipe,createdAt,updatedAt
+recipe-1,tenantId-1,deletedAt-1,Recipe 1,category-1,cuisineType-1,description-1,tags-1,isActive-1,isSubrecipe-1,createdAt-1,updatedAt-1
+recipe-2,tenantId-2,deletedAt-2,Recipe 2,category-2,cuisineType-2,description-2,tags-2,isActive-2,isSubrecipe-2,createdAt-2,updatedAt-2

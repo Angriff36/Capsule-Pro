@@ -3,7 +3,7 @@
  * Parses Time & Attendance CSV exports to extract staff shift data
  */
 
-import type { StaffShift } from "../types/index.js";
+import type { StaffShift } from "../types/index";
 
 export interface StaffCsvParseResult {
   errors: string[];

@@ -2,12 +2,26 @@
  * SampleData seed/clear effect middleware (onboarding, governed sample data).
  *
  * Completes the `SampleData` command flow that the DSL declared but never wired.
- * `SampleData.seed` / `reseed` / `clear` only mutate the SampleData tracking row
- * and emit events — this middleware is the effect that actually creates/clears
- * demo rows via `@repo/database/sample-data`.
+ * `SampleData.seed` / `reseed` / `clear` (manifest/source/platform/sample-data-rules.manifest)
+ * only mutate the SampleData tracking row (`isSeeded`, counters) and emit a
+ * `SampleDataSeeded` / `SampleDataReseeded` / `SampleDataCleared` event ΓÇö the source
+ * comments say "the actual seeding is performed by the store's effect handler", but
+ * NO such effect existed. So dispatching `SampleData.seed` flipped `isSeeded = true`
+ * without ever creating the demo Event/Client/Recipe/PrepTask/Inventory rows the
+ * onboarding empty-state CTA promises. This middleware IS that effect handler.
  *
- * Acceptance: UI "Load sample data" → real Event/Client/Recipe/… rows in the DB.
- * IR seed-pack apply is a follow-up; do not block the button on pack authoring.
+ * WHY middleware (not a reaction): the work is bulk row creation across ~20 tables
+ * performed by the existing `seedSampleData` / `clearSampleData` helpers
+ * (@repo/database/sample-data) ΓÇö a cross-table fan-out that the declarative DSL
+ * cannot express and that a reaction (single-target) cannot perform. Direct Prisma
+ * writes are constitution ┬º9-permissible here because they execute INSIDE the
+ * Manifest runtime lifecycle (an approved adapter/effect boundary), driven by the
+ * governed command's emitted semantic event.
+ *
+ * Guard-safe + non-fatal: a seeding failure is logged via `onDiagnostic`, never
+ * thrown ΓÇö the SampleData command itself already succeeded and emitted its event, so
+ * surfacing partial-seed errors to the caller would be misleading. Sample/demo data
+ * is expendable; a partial seed is acceptable and re-runnable via `reseed`.
  */
 
 import type {
@@ -95,7 +109,7 @@ export function createSampleDataSeedMiddleware(
     if (!tenantId) {
       onDiagnostic({
         stage: "tenant",
-        reason: "could not resolve tenantId — sample data not seeded",
+        reason: "could not resolve tenantId ΓÇö sample data not seeded",
         event: event.name,
       });
       return;
@@ -134,7 +148,7 @@ export function createSampleDataSeedMiddleware(
     if (!tenantId) {
       onDiagnostic({
         stage: "tenant",
-        reason: "could not resolve tenantId — sample data not cleared",
+        reason: "could not resolve tenantId ΓÇö sample data not cleared",
         event: event.name,
       });
       return;

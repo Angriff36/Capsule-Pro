@@ -955,15 +955,9 @@ export async function createManifestRuntime(
     // Fail-open; only a positive inactive-status signal blocks. See
     // event-contract-event-active-guard-middleware.ts.
     createEventContractEventActiveGuardMiddleware({ storeProvider }),
-    // Onboarding: SampleData.seed/reseed/clear -> actually populate/remove the
-    // demo Event/Client/Recipe/PrepTask/Inventory rows via the existing
-    // seedSampleData/clearSampleData helpers. The governed command only flips the
-    // SampleData tracking row + emits its event; this after-emit effect is the
-    // "store's effect handler" the source promised but never had — without it the
-    // onboarding "Load sample data" CTA marked tenants seeded without creating
-    // anything. Direct Prisma writes are §9-permissible inside the runtime
-    // effect boundary. Uses the main client (not the tx override) for the bulk
-    // multi-table seed; non-fatal on failure (sample data is expendable).
+    // Onboarding: SampleData.seed/reseed/clear → seedSampleData/clearSampleData
+    // (@repo/database/sample-data). Creates the demo Event/Client/Recipe/… rows
+    // the "Load sample data" CTA promises.
     createSampleDataSeedMiddleware({
       prisma:
         asStoreClient<
@@ -2119,3 +2113,4 @@ function createUnitConversionResolver(
     }
   };
 }
+
