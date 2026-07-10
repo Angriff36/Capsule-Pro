@@ -157,7 +157,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   destination: z.string(),
 }),
   "AllergenWarning.acknowledge": z.object({
-  acknowledgedBy: z.string(),
+  acknowledgedBy: z.string().optional(),
   notes: z.string().optional(),
 }),
   "AllergenWarning.applyOverride": z.object({
@@ -178,7 +178,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   reason: z.string(),
 }),
   "AllergenWarning.markResolved": z.object({
-  resolvedBy: z.string(),
+  resolvedBy: z.string().optional(),
   notes: z.string().optional(),
 }),
   "AllergenWarning.softDelete": z.object({
@@ -196,7 +196,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "ApiKey.recordUsage": z.object({}),
   "ApiKey.revoke": z.object({
   reason: z.string().optional(),
-  revokedBy: z.string(),
+  revokedBy: z.string().optional(),
 }),
   "ApiKey.rotate": z.object({
   keyPrefix: z.string(),
@@ -905,7 +905,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "Container.deactivate": z.object({
   reason: z.string().optional(),
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "Container.reactivate": z.object({
   userId: z.string(),
@@ -938,7 +938,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "ContractSignature.softDelete": z.object({
   reason: z.string().optional(),
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "ContractSignature.verify": z.object({
   verifiedBy: z.string(),
@@ -1000,17 +1000,17 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "CycleCountRecord.update": z.object({
   countedQuantity: z.number(),
   notes: z.string(),
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "CycleCountRecord.verify": z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "CycleCountSession.cancel": z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
   reason: z.string().optional(),
 }),
   "CycleCountSession.complete": z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "CycleCountSession.create": z.object({
   locationId: z.string(),
@@ -1021,7 +1021,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   notes: z.string(),
 }),
   "CycleCountSession.finalize": z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
   notes: z.string().optional(),
   totalVariance: z.number().optional(),
   variancePercentage: z.number().optional(),
@@ -1033,7 +1033,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   userId: z.string(),
 }),
   "CycleCountSession.start": z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "CycleCountSession.update": z.object({
   sessionName: z.string(),
@@ -1108,7 +1108,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   recipeId: z.string(),
 }),
   "Dish.clearDefaultContainer": z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "Dish.create": z.object({
   recipeId: z.string(),
@@ -1400,7 +1400,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   scheduledDate: z.coerce.date(),
   maintenanceType: z.string(),
   notes: z.string().optional(),
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "Equipment.updateCondition": z.object({
   newCondition: z.string(),
@@ -1519,7 +1519,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "EventContract.sign": z.object({}),
   "EventContract.softDelete": z.object({
   reason: z.string().optional(),
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "EventContract.update": z.object({
   title: z.string(),
@@ -1591,7 +1591,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "EventGuest.softDelete": z.object({
   reason: z.string().optional(),
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "EventGuest.update": z.object({
   guestName: z.string().optional(),
@@ -2015,13 +2015,13 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   description: z.string(),
   priority: z.string(),
   category: z.string().default("repair"),
-  requestedBy: z.string(),
+  requestedBy: z.string().optional(),
   estimatedCost: z.number().default(0),
   scheduledDate: z.coerce.date(),
   notes: z.string().default(""),
 }),
   "FacilityWorkOrder.start": z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "FeatureFlag.create": z.object({
   flagKey: z.string(),
@@ -2418,13 +2418,13 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "KitchenTask.cancel": z.object({
   reason: z.string().optional(),
-  canceledBy: z.string(),
+  canceledBy: z.string().optional(),
 }),
   "KitchenTask.claim": z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "KitchenTask.complete": z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "KitchenTask.create": z.object({
   title: z.string(),
@@ -2439,14 +2439,14 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   requestedBy: z.string(),
 }),
   "KitchenTask.release": z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
   reason: z.string().optional(),
 }),
   "KitchenTask.removeTag": z.object({
   tag: z.string(),
 }),
   "KitchenTask.start": z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "KitchenTask.updateComplexity": z.object({
   complexity: z.number(),
@@ -2489,7 +2489,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   category: z.string(),
   content: z.string(),
   tags: z.array(z.string()),
-  authorId: z.string(),
+  authorId: z.string().optional(),
 }),
   "KnowledgeBaseEntry.publishEntry": z.object({}),
   "KnowledgeBaseEntry.recordView": z.object({}),
@@ -2751,13 +2751,13 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   actionUrl: z.string(),
 }),
   "Notification.markDismissed": z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "Notification.markRead": z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "Notification.remove": z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "OnboardingCompletion.complete": z.object({}),
   "OnboardingCompletion.create": z.object({
@@ -3463,7 +3463,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   userId: z.string(),
 }),
   "PurchaseOrder.markReceived": z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "PurchaseOrder.reject": z.object({
   userId: z.string(),
@@ -4023,7 +4023,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   expirationDate: z.coerce.date().optional(),
 }),
   "ShipmentItem.softDelete": z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
 }),
   "ShipmentItem.update": z.object({
   quantityShipped: z.number(),
@@ -4472,7 +4472,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   passThresholdPercent: z.number().default(80),
   maxAttempts: z.number().default(3),
   requiredRole: z.string().default("staff"),
-  createdBy: z.string(),
+  createdBy: z.string().optional(),
   publishImmediately: z.boolean().default(false),
 }),
   "TrainingModule.createVersion": z.object({
@@ -4551,7 +4551,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   userId: z.string(),
 }),
   "VarianceReport.approve": z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
   adjustmentType: z.string(),
   adjustmentAmount: z.number(),
 }),
@@ -4573,7 +4573,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   reason: z.string(),
 }),
   "VarianceReport.review": z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
   notes: z.string(),
 }),
   "VarianceReport.updateDiscrepancy": z.object({
@@ -4697,7 +4697,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   inventoryItemId: z.string(),
 }),
   "VendorCatalog.reactivate": z.object({
-  reactivatedBy: z.string(),
+  reactivatedBy: z.string().optional(),
 }),
   "VendorCatalog.softDelete": z.object({
   reason: z.string().optional(),
