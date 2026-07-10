@@ -488,7 +488,7 @@ export async function saveTaskBreakdown(
           dishId: "",
           locationId,
           estimatedMinutes: task.durationMinutes,
-          dueByTime: "",
+          dueByTime: dueByDate.toISOString(),
         },
         user: { id: user.id, tenantId: user.tenantId, role: user.role },
       });
