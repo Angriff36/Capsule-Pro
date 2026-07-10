@@ -228,7 +228,7 @@ model Example {
 ## Database Workflow
 
 > ⚠️ Workflow instructions live in **ONE** place:
-> [`docs/database/CONTRIBUTING.md`](../../docs/database/CONTRIBUTING.md). Do not follow workflow
+> [`docs/database/README.md`](../../docs/database/README.md). Do not follow workflow
 > steps from any other file (including older revisions of this README — the schema-registry and
 > pre-migration-checklist steps are retired, and the schema is now the multi-file directory
 > `prisma/schema/`, not `schema.prisma`).
@@ -392,7 +392,7 @@ Prisma schema relation issues surface as validation errors such as `P1012` (for 
 ## Commands Reference
 
 > ⚠️ Migration commands and drift resolution are documented in **ONE** place:
-> [`docs/database/CONTRIBUTING.md`](../../docs/database/CONTRIBUTING.md).
+> [`docs/database/README.md`](../../docs/database/README.md).
 
 ---
 
@@ -447,7 +447,7 @@ model ExampleTable {
 - **Schema**: `packages/database/prisma/schema/` (multi-file: `manifest.prisma` is
   projection-generated — never hand-edit; `infra.prisma` is hand-owned)
 - **Migrations**: `packages/database/prisma/migrations/`
-- **Workflow (canonical)**: [`docs/database/CONTRIBUTING.md`](../../docs/database/CONTRIBUTING.md)
+- **Workflow (canonical)**: [`docs/database/README.md`](../../docs/database/README.md)
 - **Known Issues**: `docs/database/KNOWN_ISSUES.md`
 - **Historical migration docs**: `docs/database/migrations/`
 
@@ -466,7 +466,7 @@ model ExampleTable {
 6. ✅ Prisma Migrate for all schema changes (NOT `db push`)
 
 **Before making schema changes**: read
-[`docs/database/CONTRIBUTING.md`](../../docs/database/CONTRIBUTING.md) — the only authoritative
+[`docs/database/README.md`](../../docs/database/README.md) — the only authoritative
 workflow doc — and nothing else.
 
 ---

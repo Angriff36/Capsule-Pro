@@ -271,16 +271,9 @@ When adding a new enum:
    }
    ```
 
-2. **Create migration**:
-   ```bash
-   pnpm db:check
-   pnpm migrate
-   ```
-   If `db:check` fails, run:
-   ```bash
-   pnpm db:repair
-   pnpm db:deploy
-   ```
+2. **Create migration**: follow the canonical workflow in
+   [`docs/database/README.md`](../README.md) (`pnpm db:dev --create-only --name <intent>` →
+   review → `pnpm db:deploy` → `pnpm db:check`).
 
 3. **Update documentation**:
    - Add entry to this README

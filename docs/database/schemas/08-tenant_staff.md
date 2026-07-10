@@ -1106,7 +1106,6 @@ LaborBudget ── (N) BudgetAlert
 ## Related Documentation
 
 - [Schema Contract v2](../../legacy-contracts/schema-contract-v2.txt) - Core patterns and conventions
-- [Schema Registry v2](../../legacy-contracts/schema-registry-v2.txt) - Table registry
 - [Platform Schema](./00-platform.md) - Account and platform tables
 - [Core Schema](./01-core.md) - Shared enums and types
 - [Tenant Schema](./02-tenant.md) - Shared tenant entities

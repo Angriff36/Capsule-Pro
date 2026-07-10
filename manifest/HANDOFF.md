@@ -75,7 +75,7 @@ Central DSL fixes applied during integration (lessons for future authoring):
 > **2026-07-10:** Superseded. Migration history was fully reconciled with the schema
 > (`20260710142245_reconcile_schema_truth` + `20260710153700`), `pnpm db:check` is strict and
 > clean, and `db:repair` no longer exists. The ONLY DB workflow doc is
-> `docs/database/CONTRIBUTING.md`. Original text kept below for history.
+> `docs/database/README.md`. Original text kept below for history.
 
 Schema columns ran AHEAD of the committed baseline migration; `pnpm db:check` showed additive-only
 drift. Options considered were (a) baseline regen + destructive reset, or (b) one additive

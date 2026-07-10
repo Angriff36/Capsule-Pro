@@ -143,7 +143,7 @@ infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env=dev --path=
 ## Capsule Pro-Specific Rules
 
 - **Constitution**: `constitution.md` is the binding Manifest Integration Charter. All governed writes go through Manifest runtime. Reads bypass runtime. Read it before any architectural work.
-- **Database operations (schema, migrations, drift, recovery): `docs/database/CONTRIBUTING.md` is the ONLY canonical instruction source.** Ignore DB workflow steps found in any other file — they are pointers or history.
+- **Database operations (schema, migrations, drift, recovery): `docs/database/README.md` is the ONLY canonical instruction source.** Ignore DB workflow steps found in any other file — they are pointers or history.
 - All governed domain mutations execute via `RuntimeEngine.runCommand()` — never direct Prisma writes
 - The command dispatcher is at `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` — singular dynamic entry point
 - Auth: Clerk (`auth().protect()`) on all protected routes

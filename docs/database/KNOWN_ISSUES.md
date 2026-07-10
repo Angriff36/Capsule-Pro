@@ -6,7 +6,7 @@ Last updated: 2026-07-10
 
 **Note**: `prisma db push` is disabled in this repo. `pnpm db:repair` and the "accepted drift"
 workflow were **removed 2026-07-10** — `pnpm db:check` is strict and any diff is a failure to fix
-via a proper migration (see `CONTRIBUTING.md`).
+via a proper migration (see `README.md`).
 
 ## Critical Issues
 
@@ -401,7 +401,7 @@ defaults to model name verbatim).
   in the schema before grepping for the table) and pre-empts the same
   inconsistency from spreading.
 - `CLAUDE.md` now has a "Database & Migrations" section pointing at
-  `docs/database/CONTRIBUTING.md` with hard rules: never hand-author
+  `docs/database/README.md` with hard rules: never hand-author
   migration folders, always check `@@map` before writing raw SQL, never
   edit applied migrations, restoration before deletion when
   `_prisma_migrations` is corrupt.
@@ -518,7 +518,7 @@ defaults to model name verbatim).
 
 **Problem**:
 - PostgreSQL does not allow column references in DEFAULT expressions
-- Caused schema application failures (db push is disabled; use `pnpm db:check` + `pnpm db:repair`)
+- Caused schema application failures (db push is disabled)
 
 **Resolution**:
 - Removed computed DEFAULT expression

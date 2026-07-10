@@ -362,7 +362,7 @@ Account (1) ──< (N) Report
 ### Naming Conventions
 
 > **Canonical style guide + machine-enforced rules:** see
-> [`CONTRIBUTING.md` → Schema Naming Conventions](./CONTRIBUTING.md#schema-naming-conventions).
+> [`README.md` → Schema Naming Conventions](./README.md#schema-naming-conventions).
 > `pnpm manifest:lint-schema:strict` is the CI gate.
 
 - **Prisma model name**: `PascalCase` (e.g., `KitchenTask`, `EventImport`).
@@ -412,5 +412,5 @@ Key migrations:
 - **Enum Documentation**: `docs/database/enums/`
 - **Migration Documentation**: `docs/database/migrations/`
 - **Prisma Schema**: `packages/database/prisma/schema/` (multi-file; `manifest.prisma` generated, `infra.prisma` hand-owned)
-- **Workflow (canonical)**: `docs/database/CONTRIBUTING.md`
+- **Workflow (canonical)**: `docs/database/README.md`
 - **Schema Contract**: `docs/legacy-contracts/schema-contract-v2.txt`

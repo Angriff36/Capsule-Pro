@@ -73,7 +73,7 @@ The IR is the single semantic source of truth. Prisma models, API routes, runtim
 ### Schema & DB workflow (when vision requires persisted entities)
 
 > ⚠️ The DB workflow is documented in **ONE** canonical place:
-> [`docs/database/CONTRIBUTING.md`](../../docs/database/CONTRIBUTING.md). Follow it, not any
+> [`docs/database/README.md`](../../docs/database/README.md). Follow it, not any
 > step list embedded here or elsewhere. Any `db:check` failure is a defect to fix — there is no
 > "normal drift."
 
@@ -121,7 +121,7 @@ Run in order when changing domain semantics. Detailed implementation: Part 2.
 | `db:push`                            | disabled                               | Use `migrate` / `migrate:deploy` only                                                                      |
 
 (`db:repair` and the `db:neon-*` entries were removed 2026-07-10 along with the accepted-drift
-workflow — see `docs/database/CONTRIBUTING.md`.)
+workflow — see `docs/database/README.md`.)
 
 ### Tier 3 — Code generation
 

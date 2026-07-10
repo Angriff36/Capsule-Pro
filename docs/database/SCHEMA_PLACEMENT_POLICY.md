@@ -1,7 +1,9 @@
 # Schema Placement Policy (Capsule-Pro)
 
-**Status:** Binding for all schema generation. **Machine-readable companion:** `manifest/schema-placement.rules.json`.
-**Consumed by:** the Manifest Prisma projection pipeline (`manifest/scripts/build-live-schema.mjs` / `generate-prisma-schema.mjs`) and wired in `manifest.config.yaml` (`projections.prisma.options.placementPolicy`).
+**Status:** Binding POLICY for schema placement decisions (documentation — not consumed by any
+script; the live `@@schema` placement is the hand-maintained `multiSchema.entitySchema` map in
+`manifest/prisma-options.config.json` / `manifest.config.yaml`, which must follow these rules).
+**Machine-readable companion:** `manifest/schema-placement.rules.json`.
 
 ## Why this exists
 
@@ -9,7 +11,7 @@ Capsule-Pro's database is **multi-schema** (12 PostgreSQL schemas grouped by dom
 
 `public` is **not** the architecture. A tenant entity must never land in `public`.
 
-Sources this policy is built from: `docs/database/SCHEMAS.md`, `packages/database/schema-registry-v2.txt`, `docs/database/README.md`, the `manifest/source/*.manifest` filenames, and the known-good multi-schema `schema.prisma` (commit `923baaa8`).
+Sources this policy is built from: `docs/database/SCHEMAS.md`, `docs/database/README.md`, the `manifest/source/*.manifest` filenames, and the known-good multi-schema `schema.prisma` (commit `923baaa8`).
 
 ## The schemas and what each owns
 

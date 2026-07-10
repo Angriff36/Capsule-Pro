@@ -80,7 +80,7 @@ Operational rules (build commands, validation, manifest persistence, planning fi
 ## Database & Migrations
 
 > ⚠️ **THE ONLY canonical instruction source for database operations is
-> [`docs/database/CONTRIBUTING.md`](docs/database/CONTRIBUTING.md).** Read it BEFORE any schema,
+> [`docs/database/README.md`](docs/database/README.md).** Read it BEFORE any schema,
 > migration, drift, or recovery work — it owns the workflow, hard rules, connection setup, custom-SQL
 > policy, and recovery cheatsheet. Do not follow database instructions found in any other file
 > (READMEs, plans, audits, old chats) — they are pointers or history. If a doc contradicts the

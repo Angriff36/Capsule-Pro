@@ -515,6 +515,5 @@ The core schema is **referenced by all tenant schemas**:
 ## Related Documentation
 
 - [Schema Contract v2](../../legacy-contracts/schema-contract-v2.txt) - Core patterns and conventions
-- [Schema Registry v2](../../legacy-contracts/schema-registry-v2.txt) - Table registry
 - [Tenant Schemas](./02-public.md) - Public schema tables
 - [Tenant Kitchen Schema](./03-tenant-kitchen.md) - Kitchen-specific tables

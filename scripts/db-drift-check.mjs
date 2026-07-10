@@ -7,7 +7,7 @@
  * The old "accepted drift" workflow (sanitizer + db:repair + SQL trimming)
  * was removed 2026-07-10 after migration history was reconciled with the
  * schema (20260710142245_reconcile_schema_truth). See
- * docs/database/CONTRIBUTING.md for the standard workflow.
+ * docs/database/README.md for the standard workflow.
  */
 import { execSync } from "node:child_process";
 

@@ -28,15 +28,14 @@ Migrations follow this pattern:
 
 ### Creating Migrations
 
+> ⚠️ The migration workflow is documented in ONE place: [`docs/database/README.md`](../README.md).
+
 ```bash
 # Validate drift before changes
 pnpm db:check
 
-# Development (interactive)
-pnpm migrate
-
-# If drift exists, generate a safe repair migration
-pnpm db:repair
+# Create a migration (review before applying)
+pnpm db:dev --create-only --name <intent>
 
 # Production/shared deployment
 pnpm db:deploy
@@ -255,7 +254,6 @@ After migration, if performance is poor:
 - **Prisma Migration Guide**: https://www.prisma.io/docs/concepts/components/prisma-migrate
 - **PostgreSQL Documentation**: https://www.postgresql.org/docs/
 - **Schema Contract**: `docs/legacy-contracts/schema-contract-v2.txt`
-- **Schema Registry**: `docs/legacy-contracts/schema-registry-v2.txt`
 
 ## Template for New Migrations
 
