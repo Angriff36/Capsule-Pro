@@ -60,12 +60,28 @@ entity Payment mixin TenantScoped, SoftDeletable {
 
   // Commands
   default policy PaymentDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Payment processing"
-  command process(gatewayTransactionId: string) {
+  // Governed create — invoked by POST /api/accounting/payments (the route resolves
+  // the invoice/event and generates the payment reference; this command owns
+  // validation + the write + the event).
+  command create(invoiceId: string, amount: money, methodType: string, currency: string = "USD", optional gatewayPaymentMethodId: string, optional gatewayTransactionId: string, optional processor: string, optional processedAt: datetime) {
+    guard invoiceId != null and invoiceId != "" "Invoice ID is required"
+    // clientId/eventId are parent-owned context (Invoice.clientId/.eventId) —
+    // inherited via parent-context propagation or the seed body, never params.
+    guard amount > 0 "Payment amount must be positive"
+
+    emit PaymentCreated {
+      paymentId: self.id
+      invoiceId: invoiceId
+      amount: amount
+    }
+  }
+
+  command process(optional gatewayTransactionId: string) {
     guard self.status == "PENDING" or self.status == "PROCESSING" "Can only process pending or processing payments"
     mutate status = "COMPLETED"
     mutate processedAt = now()
     mutate completedAt = now()
-    mutate gatewayTransactionId = gatewayTransactionId
+    mutate gatewayTransactionId = gatewayTransactionId != null ? gatewayTransactionId : self.gatewayTransactionId
     emit PaymentProcessed
   }
 
@@ -155,6 +171,12 @@ entity Payment mixin TenantScoped, SoftDeletable {
 store Payment in durable
 
 // Events
+event PaymentCreated: "payment.created" {
+  paymentId: string
+  invoiceId: string
+  amount: money
+}
+
 event PaymentProcessed: "payment.processed" {
   paymentId: string
   invoiceId: string

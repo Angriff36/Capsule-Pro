@@ -107,7 +107,7 @@ entity Container mixin TenantScoped, SoftDeletable {
     emit ContainerUpdated
   }
 
-  command deactivate(reason: string, userId: string) {
+  command deactivate(optional reason: string, userId: string from context.user.id) {
     guard self.isActive "Container is already deactivated"
 
     mutate isActive = false

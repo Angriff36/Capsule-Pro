@@ -7,7 +7,7 @@
 // canonical command dispatcher (run-manifest-command-core) as a pre-flight gate
 // that rejects malformed requests with a 400 before the runtime is created.
 //
-// Commands: 1068
+// Commands: 1070
 
 import { z } from "zod";
 
@@ -179,7 +179,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "AllergenWarning.markResolved": z.object({
   resolvedBy: z.string(),
-  notes: z.string(),
+  notes: z.string().optional(),
 }),
   "AllergenWarning.softDelete": z.object({
   reason: z.string(),
@@ -195,7 +195,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "ApiKey.recordUsage": z.object({}),
   "ApiKey.revoke": z.object({
-  reason: z.string(),
+  reason: z.string().optional(),
   revokedBy: z.string(),
 }),
   "ApiKey.rotate": z.object({
@@ -231,7 +231,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   nextRunAt: z.number(),
 }),
   "AutomatedFollowup.complete": z.object({
-  sentDate: z.coerce.date(),
+  sentDate: z.coerce.date().optional(),
 }),
   "AutomatedFollowup.create": z.object({
   eventId: z.string(),
@@ -505,7 +505,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "CateringOrder.create": z.object({
   orderNumber: z.string(),
   customerId: z.string(),
-  eventId: z.string(),
+  eventId: z.string().optional(),
   deliveryDate: z.coerce.date(),
   deliveryTime: z.string(),
   guestCount: z.number().int(),
@@ -515,8 +515,8 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   venueContactName: z.string(),
   venueContactPhone: z.string(),
   specialInstructions: z.string(),
-  dietaryRestrictions: z.string(),
-  staffRequired: z.number().int(),
+  dietaryRestrictions: z.string().optional(),
+  staffRequired: z.number().int().default(0),
 }),
   "CateringOrder.deliver": z.object({
   userId: z.string(),
@@ -736,8 +736,8 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "CollectionCase.markResolved": z.object({}),
   "CollectionCase.recordPayment": z.object({
   amount: z.number(),
-  paymentId: z.string(),
-  paymentDate: z.coerce.date(),
+  paymentId: z.string().optional(),
+  paymentDate: z.coerce.date().optional(),
 }),
   "CollectionCase.resetDunning": z.object({
   stage: z.string(),
@@ -904,7 +904,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   isReusable: z.boolean(),
 }),
   "Container.deactivate": z.object({
-  reason: z.string(),
+  reason: z.string().optional(),
   userId: z.string(),
 }),
   "Container.reactivate": z.object({
@@ -929,15 +929,15 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   signatureData: z.string(),
   signerName: z.string(),
   signerEmail: z.string(),
-  signerRole: z.string(),
-  ipAddress: z.string(),
+  signerRole: z.string().optional(),
+  ipAddress: z.string().optional(),
 }),
   "ContractSignature.invalidate": z.object({
   reason: z.string(),
   userId: z.string(),
 }),
   "ContractSignature.softDelete": z.object({
-  reason: z.string(),
+  reason: z.string().optional(),
   userId: z.string(),
 }),
   "ContractSignature.verify": z.object({
@@ -991,7 +991,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   storageLocationId: z.string(),
   expectedQuantity: z.number(),
   countedQuantity: z.number(),
-  barcode: z.string(),
+  barcode: z.string().optional(),
   notes: z.string(),
 }),
   "CycleCountRecord.remove": z.object({
@@ -1007,26 +1007,26 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "CycleCountSession.cancel": z.object({
   userId: z.string(),
-  reason: z.string(),
+  reason: z.string().optional(),
 }),
   "CycleCountSession.complete": z.object({
   userId: z.string(),
 }),
   "CycleCountSession.create": z.object({
   locationId: z.string(),
-  sessionId: z.string(),
+  sessionId: z.string().default(""),
   sessionName: z.string(),
   countType: z.string(),
-  scheduledDate: z.coerce.date(),
+  scheduledDate: z.coerce.date().optional(),
   notes: z.string(),
 }),
   "CycleCountSession.finalize": z.object({
   userId: z.string(),
-  notes: z.string(),
-  totalVariance: z.number(),
-  variancePercentage: z.number(),
-  countedItems: z.number().int(),
-  totalItems: z.number().int(),
+  notes: z.string().optional(),
+  totalVariance: z.number().optional(),
+  variancePercentage: z.number().optional(),
+  countedItems: z.number().int().optional(),
+  totalItems: z.number().int().optional(),
 }),
   "CycleCountSession.reopen": z.object({}),
   "CycleCountSession.softDelete": z.object({
@@ -1069,7 +1069,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "Deal.updateStage": z.object({
   stage: z.string(),
-  notes: z.string(),
+  notes: z.string().optional(),
 }),
   "Deal.updateValue": z.object({
   value: z.number(),
@@ -1148,15 +1148,15 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "Dish.unmarkSeasonal": z.object({}),
   "Dish.update": z.object({
-  name: z.string(),
-  description: z.string().nullable(),
-  category: z.string().nullable(),
-  serviceStyle: z.string().nullable(),
-  defaultContainerId: z.string().nullable(),
-  presentationImageUrl: z.string().nullable(),
-  portionSizeDescription: z.string().nullable(),
-  dietaryTags: z.array(z.string()).nullable(),
-  allergens: z.array(z.string()).nullable(),
+  name: z.string().optional(),
+  description: z.string().nullable().optional(),
+  category: z.string().nullable().optional(),
+  serviceStyle: z.string().nullable().optional(),
+  defaultContainerId: z.string().nullable().optional(),
+  presentationImageUrl: z.string().nullable().optional(),
+  portionSizeDescription: z.string().nullable().optional(),
+  dietaryTags: z.array(z.string()).nullable().optional(),
+  allergens: z.array(z.string()).nullable().optional(),
 }),
   "Dish.updateLeadTime": z.object({
   minPrepLeadDays: z.number(),
@@ -1261,7 +1261,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   triggerType: z.string(),
   triggerConfig: z.unknown(),
   emailTemplateId: z.string(),
-  emailTemplateTenantId: z.string(),
+  emailTemplateTenantId: z.string().optional(),
   recipientConfig: z.unknown(),
   isActive: z.boolean(),
 }),
@@ -1399,7 +1399,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "Equipment.scheduleMaintenance": z.object({
   scheduledDate: z.coerce.date(),
   maintenanceType: z.string(),
-  notes: z.string(),
+  notes: z.string().optional(),
   userId: z.string(),
 }),
   "Equipment.updateCondition": z.object({
@@ -1518,7 +1518,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "EventContract.sign": z.object({}),
   "EventContract.softDelete": z.object({
-  reason: z.string(),
+  reason: z.string().optional(),
   userId: z.string(),
 }),
   "EventContract.update": z.object({
@@ -1531,9 +1531,9 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "EventDish.create": z.object({
   eventId: z.string(),
   dishId: z.string(),
-  quantityServings: z.number().int(),
-  specialInstructions: z.string(),
-  course: z.string(),
+  quantityServings: z.number().int().default(1),
+  specialInstructions: z.string().optional(),
+  course: z.string().optional(),
 }),
   "EventDish.remove": z.object({
   reason: z.string(),
@@ -1590,21 +1590,21 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   reason: z.string(),
 }),
   "EventGuest.softDelete": z.object({
-  reason: z.string(),
+  reason: z.string().optional(),
   userId: z.string(),
 }),
   "EventGuest.update": z.object({
-  guestName: z.string(),
-  guestEmail: z.string(),
-  guestPhone: z.string(),
-  isPrimaryContact: z.boolean(),
-  dietaryRestrictions: z.array(z.string()),
-  allergenRestrictions: z.array(z.string()),
-  notes: z.string(),
-  specialMealRequired: z.boolean(),
-  specialMealNotes: z.string(),
-  tableAssignment: z.string(),
-  mealPreference: z.string(),
+  guestName: z.string().optional(),
+  guestEmail: z.string().optional(),
+  guestPhone: z.string().optional(),
+  isPrimaryContact: z.boolean().optional(),
+  dietaryRestrictions: z.array(z.string()).optional(),
+  allergenRestrictions: z.array(z.string()).optional(),
+  notes: z.string().optional(),
+  specialMealRequired: z.boolean().optional(),
+  specialMealNotes: z.string().optional(),
+  tableAssignment: z.string().optional(),
+  mealPreference: z.string().optional(),
 }),
   "EventImport.complete": z.object({
   importedRows: z.number().int(),
@@ -1740,10 +1740,10 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "EventReport.create": z.object({
   eventId: z.string(),
   name: z.string(),
-  version: z.string(),
-  checklistData: z.unknown(),
-  reportConfig: z.unknown(),
-  notes: z.string(),
+  version: z.string().optional(),
+  checklistData: z.unknown().optional(),
+  reportConfig: z.unknown().optional(),
+  notes: z.string().optional(),
 }),
   "EventReport.reject": z.object({
   userId: z.string(),
@@ -1761,8 +1761,8 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   staffMemberId: z.string(),
   role: z.string(),
   notes: z.string(),
-  shiftStart: z.coerce.date(),
-  shiftEnd: z.coerce.date(),
+  shiftStart: z.coerce.date().optional(),
+  shiftEnd: z.coerce.date().optional(),
 }),
   "EventStaff.checkIn": z.object({}),
   "EventStaff.checkOut": z.object({}),
@@ -1779,7 +1779,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   reason: z.string(),
 }),
   "EventStaff.unassign": z.object({
-  reason: z.string(),
+  reason: z.string().optional(),
 }),
   "EventStaff.updateRole": z.object({
   role: z.string(),
@@ -1864,10 +1864,10 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "EventWaitlistEntry.addGuest": z.object({
   eventId: z.string(),
   guestName: z.string(),
-  email: z.string(),
-  phone: z.string(),
-  partySize: z.number(),
-  notes: z.string(),
+  email: z.string().optional(),
+  phone: z.string().optional(),
+  partySize: z.number().default(1),
+  notes: z.string().optional(),
 }),
   "EventWaitlistEntry.cancel": z.object({
   reason: z.string(),
@@ -1900,11 +1900,11 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   code: z.string(),
   facilityType: z.string(),
   addressLine1: z.string(),
-  addressLine2: z.string(),
+  addressLine2: z.string().optional(),
   city: z.string(),
   state: z.string(),
   postalCode: z.string(),
-  country: z.string(),
+  country: z.string().optional(),
   phone: z.string(),
   notes: z.string(),
 }),
@@ -1963,9 +1963,9 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "FacilityAsset.update": z.object({
   name: z.string(),
   assetType: z.string(),
-  currentValue: z.number(),
+  currentValue: z.number().optional(),
   serialNumber: z.string(),
-  notes: z.string(),
+  notes: z.string().optional(),
 }),
   "FacilitySchedule.cancel": z.object({
   reason: z.string(),
@@ -1987,11 +1987,11 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "FacilitySchedule.edit": z.object({
   title: z.string(),
   description: z.string(),
-  scheduleType: z.string(),
-  startDate: z.coerce.date(),
-  endDate: z.coerce.date(),
-  assignedTo: z.string(),
-  notes: z.string(),
+  scheduleType: z.string().optional(),
+  startDate: z.coerce.date().optional(),
+  endDate: z.coerce.date().optional(),
+  assignedTo: z.string().optional(),
+  notes: z.string().optional(),
 }),
   "FacilitySchedule.remove": z.object({}),
   "FacilitySchedule.start": z.object({
@@ -2006,19 +2006,19 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   reason: z.string(),
 }),
   "FacilityWorkOrder.complete": z.object({
-  actualCost: z.number(),
-  completionNotes: z.string(),
+  actualCost: z.number().optional(),
+  completionNotes: z.string().optional(),
 }),
   "FacilityWorkOrder.create": z.object({
-  assetId: z.string(),
+  assetId: z.string().optional(),
   title: z.string(),
   description: z.string(),
   priority: z.string(),
-  category: z.string(),
+  category: z.string().default("repair"),
   requestedBy: z.string(),
-  estimatedCost: z.number(),
+  estimatedCost: z.number().default(0),
   scheduledDate: z.coerce.date(),
-  notes: z.string(),
+  notes: z.string().default(""),
 }),
   "FacilityWorkOrder.start": z.object({
   userId: z.string(),
@@ -2151,13 +2151,13 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   item_number: z.string(),
   name: z.string(),
   category: z.string(),
-  description: z.string(),
-  unitOfMeasure: z.string(),
+  description: z.string().optional(),
+  unitOfMeasure: z.string().optional(),
   unitCost: z.number(),
   quantityOnHand: z.number(),
-  parLevel: z.number(),
+  parLevel: z.number().optional(),
   reorder_level: z.number(),
-  supplierId: z.string(),
+  supplierId: z.string().optional(),
   tags: z.array(z.string()),
   fsa_status: z.string(),
   fsa_temp_logged: z.boolean(),
@@ -2318,7 +2318,26 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "Invoice.applyPayment": z.object({
   paymentAmount: z.number(),
-  paymentId: z.string(),
+  paymentId: z.string().optional(),
+}),
+  "Invoice.create": z.object({
+  invoiceNumber: z.string(),
+  eventId: z.string(),
+  subtotal: z.number(),
+  taxAmount: z.number(),
+  total: z.number(),
+  amountDue: z.number(),
+  paymentTerms: z.number().int(),
+  dueDate: z.coerce.date(),
+  invoiceType: z.string().optional(),
+  discountAmount: z.number().optional(),
+  depositPercentage: z.number().optional(),
+  depositRequired: z.number().optional(),
+  issuedAt: z.coerce.date().optional(),
+  notes: z.string().optional(),
+  internalNotes: z.string().optional(),
+  lineItems: z.unknown().optional(),
+  metadata: z.unknown().optional(),
 }),
   "Invoice.markAsPaid": z.object({}),
   "Invoice.markOverdue": z.object({}),
@@ -2328,7 +2347,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   paymentId: z.string(),
 }),
   "Invoice.send": z.object({
-  clientContactId: z.string(),
+  clientContactId: z.string().optional(),
 }),
   "Invoice.sendReminder": z.object({}),
   "Invoice.update": z.object({
@@ -2346,7 +2365,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   lineItems: z.unknown(),
 }),
   "Invoice.voidInvoice": z.object({
-  reason: z.string(),
+  reason: z.string().optional(),
 }),
   "Invoice.writeOff": z.object({
   reason: z.string(),
@@ -2398,7 +2417,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   tag: z.string(),
 }),
   "KitchenTask.cancel": z.object({
-  reason: z.string(),
+  reason: z.string().optional(),
   canceledBy: z.string(),
 }),
   "KitchenTask.claim": z.object({
@@ -2421,7 +2440,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "KitchenTask.release": z.object({
   userId: z.string(),
-  reason: z.string(),
+  reason: z.string().optional(),
 }),
   "KitchenTask.removeTag": z.object({
   tag: z.string(),
@@ -2534,25 +2553,25 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   userId: z.string(),
 }),
   "Lead.update": z.object({
-  companyName: z.string(),
-  contactName: z.string(),
-  contactEmail: z.string(),
-  contactPhone: z.string(),
-  eventType: z.string(),
-  eventDate: z.coerce.date(),
-  estimatedGuests: z.number(),
-  estimatedValue: z.number(),
-  status: z.string(),
-  assignedTo: z.string(),
-  notes: z.string(),
+  companyName: z.string().optional(),
+  contactName: z.string().optional(),
+  contactEmail: z.string().optional(),
+  contactPhone: z.string().optional(),
+  eventType: z.string().optional(),
+  eventDate: z.coerce.date().optional(),
+  estimatedGuests: z.number().optional(),
+  estimatedValue: z.number().optional(),
+  status: z.string().optional(),
+  assignedTo: z.string().optional(),
+  notes: z.string().optional(),
 }),
   "LogisticsDispatch.assign": z.object({
   routeId: z.string(),
   driverId: z.string(),
   vehicleId: z.string(),
-  priority: z.string(),
-  estimatedDeliveryTime: z.coerce.date(),
-  notes: z.string(),
+  priority: z.string().optional(),
+  estimatedDeliveryTime: z.coerce.date().optional(),
+  notes: z.string().optional(),
 }),
   "LogisticsDispatch.deliver": z.object({
   notes: z.string(),
@@ -2573,7 +2592,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   reason: z.string(),
 }),
   "LogisticsRoute.complete": z.object({
-  notes: z.string(),
+  notes: z.string().optional(),
 }),
   "LogisticsRoute.completeStop": z.object({
   notes: z.string(),
@@ -2597,13 +2616,13 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "LogisticsRoute.start": z.object({}),
   "LogisticsRoute.update": z.object({
   name: z.string(),
-  vehicleId: z.string(),
-  driverId: z.string(),
+  vehicleId: z.string().optional(),
+  driverId: z.string().optional(),
   scheduledDate: z.coerce.date(),
-  endTime: z.coerce.date(),
-  totalDistance: z.number(),
-  totalDuration: z.number(),
-  description: z.string(),
+  endTime: z.coerce.date().optional(),
+  totalDistance: z.number().optional(),
+  totalDuration: z.number().optional(),
+  description: z.string().optional(),
 }),
   "MaintenanceWorkOrder.assign": z.object({
   assignedTo: z.string(),
@@ -2779,6 +2798,16 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   overriddenBy: z.string(),
   overrideReason: z.string(),
 }),
+  "Payment.create": z.object({
+  invoiceId: z.string(),
+  amount: z.number(),
+  methodType: z.string(),
+  currency: z.string().default("USD"),
+  gatewayPaymentMethodId: z.string().optional(),
+  gatewayTransactionId: z.string().optional(),
+  processor: z.string().optional(),
+  processedAt: z.coerce.date().optional(),
+}),
   "Payment.markAcceptedNotApplied": z.object({}),
   "Payment.markChargeback": z.object({
   reason: z.string(),
@@ -2798,7 +2827,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   reason: z.string(),
 }),
   "Payment.process": z.object({
-  gatewayTransactionId: z.string(),
+  gatewayTransactionId: z.string().optional(),
 }),
   "Payment.processFailed": z.object({}),
   "Payment.refund": z.object({
@@ -3212,7 +3241,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   reason: z.string(),
 }),
   "PricingTier.softDelete": z.object({
-  reason: z.string(),
+  reason: z.string().optional(),
 }),
   "PricingTier.update": z.object({
   catalogEntryId: z.string(),
@@ -3918,7 +3947,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   shiftStart: z.coerce.date(),
   shiftEnd: z.coerce.date(),
   roleDuringShift: z.string(),
-  notes: z.string(),
+  notes: z.string().optional(),
 }),
   "ScheduleShift.declineSwap": z.object({}),
   "ScheduleShift.offerSwap": z.object({
@@ -3988,10 +4017,10 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   shipmentId: z.string(),
   itemId: z.string(),
   quantityShipped: z.number(),
-  unitId: z.number(),
+  unitId: z.number().optional(),
   unitCost: z.number(),
   lotNumber: z.string(),
-  expirationDate: z.coerce.date(),
+  expirationDate: z.coerce.date().optional(),
 }),
   "ShipmentItem.softDelete": z.object({
   userId: z.string(),
@@ -4431,8 +4460,8 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   reason: z.string(),
 }),
   "TrainingModule.create": z.object({
-  id: z.string(),
-  code: z.string(),
+  id: z.string().optional(),
+  code: z.string().default(""),
   title: z.string(),
   description: z.string(),
   contentUrl: z.string(),
@@ -4440,11 +4469,11 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   durationMinutes: z.number(),
   category: z.string(),
   isRequired: z.boolean(),
-  passThresholdPercent: z.number(),
-  maxAttempts: z.number(),
-  requiredRole: z.string(),
+  passThresholdPercent: z.number().default(80),
+  maxAttempts: z.number().default(3),
+  requiredRole: z.string().default("staff"),
   createdBy: z.string(),
-  publishImmediately: z.boolean(),
+  publishImmediately: z.boolean().default(false),
 }),
   "TrainingModule.createVersion": z.object({
   changeNotes: z.string(),
@@ -4460,9 +4489,9 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   durationMinutes: z.number(),
   category: z.string(),
   isRequired: z.boolean(),
-  passThresholdPercent: z.number(),
-  maxAttempts: z.number(),
-  requiredRole: z.string(),
+  passThresholdPercent: z.number().optional(),
+  maxAttempts: z.number().optional(),
+  requiredRole: z.string().optional(),
 }),
   "TrainingQuestion.create": z.object({
   id: z.string(),
@@ -4662,7 +4691,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   tags: z.string(),
 }),
   "VendorCatalog.deactivate": z.object({
-  reason: z.string(),
+  reason: z.string().optional(),
 }),
   "VendorCatalog.linkInventoryItem": z.object({
   inventoryItemId: z.string(),
@@ -4671,7 +4700,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   reactivatedBy: z.string(),
 }),
   "VendorCatalog.softDelete": z.object({
-  reason: z.string(),
+  reason: z.string().optional(),
 }),
   "VendorCatalog.update": z.object({
   supplierId: z.string(),
@@ -4697,7 +4726,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
 }),
   "VendorCatalog.updatePrice": z.object({
   newBaseUnitCost: z.number(),
-  effectiveFrom: z.coerce.date(),
+  effectiveFrom: z.coerce.date().optional(),
   reason: z.string(),
 }),
   "VendorContact.create": z.object({
@@ -4727,17 +4756,17 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "VendorContract.create": z.object({
   contractNumber: z.string(),
   vendorId: z.string(),
-  vendorName: z.string(),
+  vendorName: z.string().optional(),
   contractType: z.string(),
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
-  autoRenew: z.boolean(),
+  autoRenew: z.boolean().default(false),
   paymentTerms: z.string(),
-  deliveryTerms: z.string(),
-  minimumOrderQuantity: z.number(),
-  annualSpendCommitment: z.number(),
-  currencyCode: z.string(),
-  contractUrl: z.string(),
+  deliveryTerms: z.string().optional(),
+  minimumOrderQuantity: z.number().default(0),
+  annualSpendCommitment: z.number().default(0),
+  currencyCode: z.string().default("USD"),
+  contractUrl: z.string().optional(),
   notes: z.string(),
 }),
   "VendorContract.recordSlaBreach": z.object({

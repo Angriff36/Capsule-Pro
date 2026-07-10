@@ -77,18 +77,18 @@ entity Facility mixin TenantScoped, SoftDeletable {
     emit FacilityDeleted
   }
 
-  command edit(name: string, code: string, facilityType: string, addressLine1: string, addressLine2: string, city: string, state: string, postalCode: string, country: string, phone: string, notes: string) {
+  command edit(name: string, code: string, facilityType: string, addressLine1: string, optional addressLine2: string, city: string, state: string, postalCode: string, optional country: string, phone: string, notes: string) {
     guard name != null and name != "" "Facility name is required"
 
     mutate name = name
     mutate code = code
     mutate facilityType = facilityType
     mutate addressLine1 = addressLine1
-    mutate addressLine2 = addressLine2
+    mutate addressLine2 = addressLine2 != null ? addressLine2 : self.addressLine2
     mutate city = city
     mutate state = state
     mutate postalCode = postalCode
-    mutate country = country
+    mutate country = country != null ? country : self.country
     mutate phone = phone
     mutate notes = notes
 
@@ -261,12 +261,12 @@ entity FacilityAsset mixin TenantScoped, SoftDeletable {
     emit FacilityAssetDeleted
   }
 
-  command update(name: string, assetType: string, currentValue: money, serialNumber: string, notes: string) {
+  command update(name: string, assetType: string, optional currentValue: money, serialNumber: string, optional notes: string) {
     mutate name = name
     mutate assetType = assetType
-    mutate currentValue = currentValue
+    mutate currentValue = currentValue != null ? currentValue : self.currentValue
     mutate serialNumber = serialNumber
-    mutate notes = notes
+    mutate notes = notes != null ? notes : self.notes
 
     emit FacilityAssetUpdated
   }
@@ -368,17 +368,17 @@ entity FacilitySchedule mixin TenantScoped {
     emit FacilityScheduleDeleted
   }
 
-  command edit(title: string, description: string, scheduleType: string, startDate: datetime, endDate: datetime, assignedTo: string, notes: string) {
+  command edit(title: string, description: string, optional scheduleType: string, optional startDate: datetime, optional endDate: datetime, optional assignedTo: string, optional notes: string) {
     guard title != null and title != "" "Schedule title is required"
     guard self.status == "scheduled" "Can only edit a scheduled (not yet started) schedule"
 
     mutate title = title
     mutate description = description
-    mutate scheduleType = scheduleType
-    mutate startDate = startDate
-    mutate endDate = endDate
-    mutate assignedTo = assignedTo
-    mutate notes = notes
+    mutate scheduleType = scheduleType != null ? scheduleType : self.scheduleType
+    mutate startDate = startDate != null ? startDate : self.startDate
+    mutate endDate = endDate != null ? endDate : self.endDate
+    mutate assignedTo = assignedTo != null ? assignedTo : self.assignedTo
+    mutate notes = notes != null ? notes : self.notes
 
     emit FacilityScheduleUpdated
   }
@@ -470,10 +470,10 @@ entity FacilityWorkOrder mixin TenantScoped {
   // (specs/parent-context-propagation.md, Task 8.10). The caller supplies only the
   // assetId link; the resolver loads the asset and copies its facilityId/areaId onto
   // the work order, so the form never re-enters facility/area the asset already owns.
-  command create(assetId: string, title: string, description: string, priority: string, category: string, requestedBy: string, estimatedCost: money, scheduledDate: datetime, notes: string) {
+  command create(optional assetId: string, title: string, description: string, priority: string, category: string = "repair", requestedBy: string from context.user.id, estimatedCost: money = 0, scheduledDate: datetime, notes: string = "") {
     guard title != null and title != "" "Work order title is required"
 
-    mutate assetId = assetId
+    mutate assetId = assetId != null ? assetId : self.assetId
     mutate title = title
     mutate description = description
     mutate priority = priority
@@ -501,7 +501,7 @@ entity FacilityWorkOrder mixin TenantScoped {
   }
 
   // Technician begins physical work on site
-  command start(userId: string) {
+  command start(userId: string from context.user.id) {
     guard self.status in ["open", "assigned"] "Work order must be open or assigned to start"
     guard userId != null and userId != "" "User ID is required"
 
@@ -512,14 +512,14 @@ entity FacilityWorkOrder mixin TenantScoped {
   }
 
   // Work is done; record actual cost and close the order
-  command complete(actualCost: money, completionNotes: string) {
+  command complete(optional actualCost: money, optional completionNotes: string) {
     guard self.status == "in_progress" "Work order must be in progress to complete"
-    guard actualCost >= 0 "Actual cost cannot be negative"
+    guard actualCost == null or actualCost >= 0 "Actual cost cannot be negative"
 
     mutate status = "completed"
-    mutate actualCost = actualCost
+    mutate actualCost = actualCost != null ? actualCost : self.actualCost
     mutate completedDate = now()
-    mutate notes = completionNotes
+    mutate notes = completionNotes != null ? completionNotes : self.notes
 
     emit FacilityWorkOrderCompleted
   }

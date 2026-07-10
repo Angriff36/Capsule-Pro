@@ -109,8 +109,8 @@
   ],
   "counts": {
     "entities": 213,
-    "commands": 1068,
-    "events": 1043,
+    "commands": 1070,
+    "events": 1045,
     "sagas": 2,
     "reactions": 10
   },
@@ -119,6 +119,7 @@
     "[manifest/source/_base.manifest] Entity 'SoftDeletable' is declared but unused: no store, no entity-scoped commands, and not referenced by any relationship. Remove it or wire it into the domain.",
     "[manifest/source/accounting/collections-rules.manifest] Entity 'CollectionAction' belongsTo 'CollectionCase' but 'CollectionCase' has no hasMany/hasOne back to 'CollectionAction'. Add 'hasMany collectionActions: CollectionAction' on the parent, or a nested create command on the parent so the child FK is implicit.",
     "[manifest/source/accounting/collections-rules.manifest] Entity 'CollectionPaymentPlan' belongsTo 'CollectionCase' but 'CollectionCase' has no hasMany/hasOne back to 'CollectionPaymentPlan'. Add 'hasMany collectionPaymentPlans: CollectionPaymentPlan' on the parent, or a nested create command on the parent so the child FK is implicit.",
+    "[manifest/source/accounting/invoice-rules.manifest] Command 'Invoice.create' creates 'Invoice' but never sets non-null field 'dueDate' (type 'datetime', no default). If no caller supplies it, persisting writes null and a non-null store column rejects it. Add 'mutate dueDate = ...', give 'dueDate' a default (e.g. '= now()'), or make it optional ('dueDate: datetime?').",
     "[manifest/source/accounting/payroll-rules.manifest] Entity 'PayrollApprovalHistory' belongsTo 'PayrollRun' but 'PayrollRun' has no hasMany/hasOne back to 'PayrollApprovalHistory'. Add 'hasMany payrollApprovalHistorys: PayrollApprovalHistory' on the parent, or a nested create command on the parent so the child FK is implicit.",
     "[manifest/source/accounting/payroll-rules.manifest] Command 'PayrollApprovalHistory.create' takes a manual 'payrollRunId' with no nested create on 'PayrollRun' (e.g. addMilestone) and no event reaction that supplies it. Consider a parent command that sets the FK from self.id, or an on Event reaction with params { payrollRunId: ... }.",
     "[manifest/source/accounting/payroll-rules.manifest] Entity 'PayrollRun' belongsTo 'PayrollPeriod' but 'PayrollPeriod' has no hasMany/hasOne back to 'PayrollRun'. Add 'hasMany payrollRuns: PayrollRun' on the parent, or a nested create command on the parent so the child FK is implicit.",

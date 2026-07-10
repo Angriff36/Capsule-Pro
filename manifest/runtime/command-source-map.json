@@ -963,7 +963,7 @@
     },
     "command:Dish.activate": {
       "file": "operations/kitchen/dish-rules.manifest",
-      "line": 152
+      "line": 154
     },
     "command:Dish.changeRecipe": {
       "file": "operations/kitchen/dish-rules.manifest",
@@ -971,7 +971,7 @@
     },
     "command:Dish.clearDefaultContainer": {
       "file": "operations/kitchen/dish-rules.manifest",
-      "line": 297
+      "line": 299
     },
     "command:Dish.create": {
       "file": "operations/kitchen/dish-rules.manifest",
@@ -979,39 +979,39 @@
     },
     "command:Dish.deactivate": {
       "file": "operations/kitchen/dish-rules.manifest",
-      "line": 160
+      "line": 162
     },
     "command:Dish.eightySix": {
       "file": "operations/kitchen/dish-rules.manifest",
-      "line": 267
+      "line": 269
     },
     "command:Dish.markSeasonal": {
       "file": "operations/kitchen/dish-rules.manifest",
-      "line": 240
+      "line": 242
     },
     "command:Dish.reinstate": {
       "file": "operations/kitchen/dish-rules.manifest",
-      "line": 280
+      "line": 282
     },
     "command:Dish.softDelete": {
       "file": "operations/kitchen/dish-rules.manifest",
-      "line": 181
+      "line": 183
     },
     "command:Dish.unmarkSeasonal": {
       "file": "operations/kitchen/dish-rules.manifest",
-      "line": 255
+      "line": 257
     },
     "command:Dish.update": {
       "file": "operations/kitchen/dish-rules.manifest",
-      "line": 135
+      "line": 137
     },
     "command:Dish.updateLeadTime": {
       "file": "operations/kitchen/dish-rules.manifest",
-      "line": 227
+      "line": 229
     },
     "command:Dish.updatePricing": {
       "file": "operations/kitchen/dish-rules.manifest",
-      "line": 189
+      "line": 191
     },
     "command:Document.create": {
       "file": "sales/crm-admin-extended-rules.manifest",
@@ -2019,47 +2019,51 @@
     },
     "command:Invoice.applyPayment": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 114
+      "line": 131
+    },
+    "command:Invoice.create": {
+      "file": "accounting/invoice-rules.manifest",
+      "line": 88
     },
     "command:Invoice.markAsPaid": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 124
+      "line": 141
     },
     "command:Invoice.markOverdue": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 140
+      "line": 157
     },
     "command:Invoice.markViewed": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 107
+      "line": 124
     },
     "command:Invoice.recordRefund": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 131
+      "line": 148
     },
     "command:Invoice.send": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 99
+      "line": 116
     },
     "command:Invoice.sendReminder": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 149
+      "line": 166
     },
     "command:Invoice.update": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 86
+      "line": 103
     },
     "command:Invoice.updateLineItems": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 172
+      "line": 189
     },
     "command:Invoice.voidInvoice": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 157
+      "line": 174
     },
     "command:Invoice.writeOff": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 164
+      "line": 181
     },
     "command:IoTAlert.acknowledge": {
       "file": "operations/kitchen/kitchen-extended-rules.manifest",
@@ -2429,45 +2433,49 @@
       "file": "platform/override-audit-rules.manifest",
       "line": 32
     },
+    "command:Payment.create": {
+      "file": "accounting/payment-rules.manifest",
+      "line": 66
+    },
     "command:Payment.markAcceptedNotApplied": {
       "file": "accounting/payment-rules.manifest",
-      "line": 147
+      "line": 163
     },
     "command:Payment.markChargeback": {
       "file": "accounting/payment-rules.manifest",
-      "line": 106
+      "line": 122
     },
     "command:Payment.markFraudFailed": {
       "file": "accounting/payment-rules.manifest",
-      "line": 136
+      "line": 152
     },
     "command:Payment.markFraudPassed": {
       "file": "accounting/payment-rules.manifest",
-      "line": 128
+      "line": 144
     },
     "command:Payment.markFraudReviewed": {
       "file": "accounting/payment-rules.manifest",
-      "line": 121
+      "line": 137
     },
     "command:Payment.partialRefund": {
       "file": "accounting/payment-rules.manifest",
-      "line": 93
+      "line": 109
     },
     "command:Payment.process": {
       "file": "accounting/payment-rules.manifest",
-      "line": 63
+      "line": 79
     },
     "command:Payment.processFailed": {
       "file": "accounting/payment-rules.manifest",
-      "line": 72
+      "line": 88
     },
     "command:Payment.refund": {
       "file": "accounting/payment-rules.manifest",
-      "line": 79
+      "line": 95
     },
     "command:Payment.updateFraudStatus": {
       "file": "accounting/payment-rules.manifest",
-      "line": 114
+      "line": 130
     },
     "command:PaymentMethod.create": {
       "file": "accounting/payment-method-rules.manifest",
@@ -4959,7 +4967,7 @@
     },
     "constraint:Dish.warnActiveMenu": {
       "file": "operations/kitchen/dish-rules.manifest",
-      "line": 163
+      "line": 165
     },
     "constraint:Dish.warnCostExceedsPrice": {
       "file": "operations/kitchen/dish-rules.manifest",
@@ -4975,7 +4983,7 @@
     },
     "constraint:Dish.warnMarginBelowThreshold": {
       "file": "operations/kitchen/dish-rules.manifest",
-      "line": 202
+      "line": 204
     },
     "constraint:Dish.warnNoPrice": {
       "file": "operations/kitchen/dish-rules.manifest",
@@ -4983,7 +4991,7 @@
     },
     "constraint:Dish.warnPriceDecrease": {
       "file": "operations/kitchen/dish-rules.manifest",
-      "line": 194
+      "line": 196
     },
     "constraint:Document.positiveFileSize": {
       "file": "sales/crm-admin-extended-rules.manifest",
@@ -8223,7 +8231,7 @@
     },
     "transition:Invoice.status": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 185
+      "line": 202
     },
     "transition:IoTAlert.status": {
       "file": "operations/kitchen/kitchen-extended-rules.manifest",

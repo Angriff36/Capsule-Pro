@@ -7600,7 +7600,7 @@
           "name": "notes",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -7713,7 +7713,7 @@
           "name": "reason",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "revokedBy",
@@ -7961,7 +7961,7 @@
           "name": "sentDate",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -9865,7 +9865,7 @@
           "name": "eventId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "deliveryDate",
@@ -9925,7 +9925,7 @@
           "name": "dietaryRestrictions",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "staffRequired",
@@ -11407,13 +11407,13 @@
           "name": "paymentId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "paymentDate",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -12529,7 +12529,7 @@
           "name": "reason",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "userId",
@@ -12691,13 +12691,13 @@
           "name": "signerRole",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "ipAddress",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -12745,7 +12745,7 @@
           "name": "reason",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "userId",
@@ -13117,7 +13117,7 @@
           "name": "barcode",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "notes",
@@ -13225,7 +13225,7 @@
           "name": "reason",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -13291,7 +13291,7 @@
           "name": "scheduledDate",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "notes",
@@ -13324,31 +13324,31 @@
           "name": "notes",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "totalVariance",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "variancePercentage",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "countedItems",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "totalItems",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -13644,7 +13644,7 @@
           "name": "notes",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -14198,55 +14198,55 @@
           "name": "name",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "description",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "category",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "serviceStyle",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "defaultContainerId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "presentationImageUrl",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "portionSizeDescription",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "dietaryTags",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "allergens",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -14973,7 +14973,7 @@
           "name": "emailTemplateTenantId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "recipientConfig",
@@ -15912,7 +15912,7 @@
           "name": "notes",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "userId",
@@ -16726,7 +16726,7 @@
           "name": "reason",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "userId",
@@ -16816,13 +16816,13 @@
           "name": "specialInstructions",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "course",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -17216,7 +17216,7 @@
           "name": "reason",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "userId",
@@ -17243,67 +17243,67 @@
           "name": "guestName",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "guestEmail",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "guestPhone",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "isPrimaryContact",
           "type": "boolean",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "dietaryRestrictions",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "allergenRestrictions",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "notes",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "specialMealRequired",
           "type": "boolean",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "specialMealNotes",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "tableAssignment",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "mealPreference",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -18286,25 +18286,25 @@
           "name": "version",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "checklistData",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "reportConfig",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "notes",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -18424,13 +18424,13 @@
           "name": "shiftStart",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "shiftEnd",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -18565,7 +18565,7 @@
           "name": "reason",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -19147,13 +19147,13 @@
           "name": "email",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "phone",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "partySize",
@@ -19165,7 +19165,7 @@
           "name": "notes",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -19389,7 +19389,7 @@
           "name": "addressLine2",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "city",
@@ -19413,7 +19413,7 @@
           "name": "country",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "phone",
@@ -19834,7 +19834,7 @@
           "name": "currentValue",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "serialNumber",
@@ -19846,7 +19846,7 @@
           "name": "notes",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -19990,31 +19990,31 @@
           "name": "scheduleType",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "startDate",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "endDate",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "assignedTo",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "notes",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -20124,13 +20124,13 @@
           "name": "actualCost",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "completionNotes",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -20151,7 +20151,7 @@
           "name": "assetId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "title",
@@ -21105,13 +21105,13 @@
           "name": "description",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "unitOfMeasure",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "unitCost",
@@ -21129,7 +21129,7 @@
           "name": "parLevel",
           "type": "number",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "reorder_level",
@@ -21141,7 +21141,7 @@
           "name": "supplierId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "tags",
@@ -22205,13 +22205,130 @@
           "name": "paymentId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
         "kind": "command",
         "entity": "Invoice",
         "command": "applyPayment",
+        "variant": "dispatcher"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Invoice.create",
+      "path": "/api/manifest/Invoice/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "invoiceNumber",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "eventId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "subtotal",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "taxAmount",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "total",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "amountDue",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "paymentTerms",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "dueDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "invoiceType",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "discountAmount",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "depositPercentage",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "depositRequired",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "issuedAt",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "internalNotes",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "lineItems",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "metadata",
+          "type": "string",
+          "location": "body",
+          "required": false
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Invoice",
+        "command": "create",
         "variant": "dispatcher"
       },
       "auth": true,
@@ -22295,7 +22412,7 @@
           "name": "clientContactId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -22420,7 +22537,7 @@
           "name": "reason",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -22759,7 +22876,7 @@
           "name": "reason",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "canceledBy",
@@ -22912,7 +23029,7 @@
           "name": "reason",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -23699,67 +23816,67 @@
           "name": "companyName",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "contactName",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "contactEmail",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "contactPhone",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "eventType",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "eventDate",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "estimatedGuests",
           "type": "number",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "estimatedValue",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "status",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "assignedTo",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "notes",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -23798,19 +23915,19 @@
           "name": "priority",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "estimatedDeliveryTime",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "notes",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -23954,7 +24071,7 @@
           "name": "notes",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -24134,13 +24251,13 @@
           "name": "vehicleId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "driverId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "scheduledDate",
@@ -24152,25 +24269,25 @@
           "name": "endTime",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "totalDistance",
           "type": "number",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "totalDuration",
           "type": "number",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "description",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -25353,6 +25470,69 @@
       "tenant": true
     },
     {
+      "id": "Payment.create",
+      "path": "/api/manifest/Payment/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "invoiceId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "amount",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "methodType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "gatewayPaymentMethodId",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "gatewayTransactionId",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "processor",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "processedAt",
+          "type": "string",
+          "location": "body",
+          "required": false
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Payment",
+        "command": "create",
+        "variant": "dispatcher"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "Payment.markAcceptedNotApplied",
       "path": "/api/manifest/Payment/commands/mark-accepted-not-applied",
       "method": "POST",
@@ -25492,7 +25672,7 @@
           "name": "gatewayTransactionId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -28399,7 +28579,7 @@
           "name": "reason",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -33197,7 +33377,7 @@
           "name": "notes",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -33746,7 +33926,7 @@
           "name": "unitId",
           "type": "number",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "unitCost",
@@ -33764,7 +33944,7 @@
           "name": "expirationDate",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -36719,7 +36899,7 @@
           "name": "id",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "code",
@@ -36923,19 +37103,19 @@
           "name": "passThresholdPercent",
           "type": "number",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "maxAttempts",
           "type": "number",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "requiredRole",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -38251,7 +38431,7 @@
           "name": "reason",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -38314,7 +38494,7 @@
           "name": "reason",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -38476,7 +38656,7 @@
           "name": "effectiveFrom",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "reason",
@@ -38674,7 +38854,7 @@
           "name": "vendorName",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "contractType",
@@ -38710,7 +38890,7 @@
           "name": "deliveryTerms",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "minimumOrderQuantity",
@@ -38734,7 +38914,7 @@
           "name": "contractUrl",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "notes",

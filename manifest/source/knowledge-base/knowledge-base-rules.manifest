@@ -28,7 +28,7 @@ entity KnowledgeBaseEntry mixin TenantScoped, SoftDeletable {
   relationship belongsTo author: User with authorId
 
   default policy KnowledgeBaseEntryDefaultAccess execute: user.role in ["staff", "editor", "manager", "admin"] "Knowledge base"
-  command create(title: string, category: string, content: string, tags: array<string>, authorId: string) {
+  command create(title: string, category: string, content: string, tags: array<string>, authorId: string from context.user.id) {
     guard title != null and title != "" "Title is required"
     guard authorId != null and authorId != "" "Author ID is required"
 

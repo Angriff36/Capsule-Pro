@@ -29,7 +29,7 @@ entity EventDish mixin TenantScoped, SoftDeletable {
   relationship belongsTo dish: Dish fields [tenantId, dishId] references [tenantId, id]
 
   default policy EventDishDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(eventId: string, dishId: string, quantityServings: int, specialInstructions: string, course: string) {
+  command create(eventId: string, dishId: string, quantityServings: int = 1, optional specialInstructions: string, optional course: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard dishId != null and dishId != "" "Dish ID is required"
     guard quantityServings > 0 "Quantity must be positive"
@@ -37,8 +37,8 @@ entity EventDish mixin TenantScoped, SoftDeletable {
     mutate eventId = eventId
     mutate dishId = dishId
     mutate quantityServings = quantityServings
-    mutate specialInstructions = specialInstructions
-    mutate course = course
+    mutate specialInstructions = specialInstructions != null ? specialInstructions : self.specialInstructions
+    mutate course = course != null ? course : self.course
 
     emit EventDishCreated
   }

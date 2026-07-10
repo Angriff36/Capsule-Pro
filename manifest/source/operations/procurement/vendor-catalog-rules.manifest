@@ -98,7 +98,7 @@ entity VendorCatalog mixin TenantScoped, SoftDeletable {
 
   // Update price with an automatic warn when the change exceeds 10% — surfaces
   // unexpected cost spikes before they flow into event budgets.
-  command updatePrice(newBaseUnitCost: money, effectiveFrom: datetime, reason: string) {
+  command updatePrice(newBaseUnitCost: money, optional effectiveFrom: datetime, reason: string) {
     guard self.deletedAt == null "Cannot update price on a deleted catalog entry"
     guard self.isActive "Cannot update price on an inactive catalog entry"
     guard newBaseUnitCost >= 0 "Unit cost must be non-negative"
@@ -126,13 +126,13 @@ entity VendorCatalog mixin TenantScoped, SoftDeletable {
     }
 
     mutate baseUnitCost = newBaseUnitCost
-    mutate effectiveFrom = effectiveFrom
+    mutate effectiveFrom = effectiveFrom != null ? effectiveFrom : now()
     mutate lastCostUpdate = now()
 
     emit VendorCatalogPriceUpdated
   }
 
-  command deactivate(reason: string) {
+  command deactivate(optional reason: string) {
     guard self.isActive "Catalog entry is already inactive"
     guard self.deletedAt == null "Catalog entry is deleted"
 
@@ -141,7 +141,7 @@ entity VendorCatalog mixin TenantScoped, SoftDeletable {
     emit VendorCatalogItemDeactivated
   }
 
-  command reactivate(reactivatedBy: string) {
+  command reactivate(reactivatedBy: string from context.user.id) {
     guard self.isActive == false "Catalog entry is already active"
     guard self.deletedAt == null "Cannot reactivate a deleted catalog entry"
     guard reactivatedBy != null and reactivatedBy != "" "Reactivating user is required"
@@ -151,7 +151,7 @@ entity VendorCatalog mixin TenantScoped, SoftDeletable {
     emit VendorCatalogItemReactivated
   }
 
-  command softDelete(reason: string) {
+  command softDelete(optional reason: string) {
     guard self.deletedAt == null "Catalog entry is already deleted"
 
     constraint warnActiveEntry:warn self.isActive {

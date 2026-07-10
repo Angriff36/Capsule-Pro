@@ -83,6 +83,23 @@ entity Invoice mixin TenantScoped, SoftDeletable {
 
   // Commands
   default policy InvoiceDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Invoice management"
+  // Governed create — invoked by POST /api/accounting/invoices (the route computes
+  // totals/number/dates, this command owns validation + the write + the event).
+  command create(invoiceNumber: string, eventId: string, subtotal: money, taxAmount: money, total: money, amountDue: money, paymentTerms: int, dueDate: datetime, optional invoiceType: string, optional discountAmount: money, optional depositPercentage: decimal, optional depositRequired: decimal, optional issuedAt: datetime, optional notes: string, optional internalNotes: string, optional lineItems: json, optional metadata: json) {
+    guard invoiceNumber != null and invoiceNumber != "" "Invoice number is required"
+    guard eventId != null and eventId != "" "Event ID is required"
+    // clientId is parent-owned context (Event.clientId) — inherited via
+    // parent-context propagation or supplied in the seed body, never a param.
+    guard self.clientId != null and self.clientId != "" "Client ID is required"
+
+    emit InvoiceCreated {
+      invoiceId: self.id
+      eventId: eventId
+      clientId: self.clientId
+      total: total
+    }
+  }
+
   command update(subtotal: money, taxAmount: money, total: money, amountDue: money, notes: string, internalNotes: string, dueDate: datetime, paymentTerms: int, lineItems: json) {
     guard self.status == "DRAFT" "Can only update draft invoices"
     mutate subtotal = subtotal
@@ -96,7 +113,7 @@ entity Invoice mixin TenantScoped, SoftDeletable {
     mutate lineItems = lineItems
   }
 
-  command send(clientContactId: string) {
+  command send(optional clientContactId: string) {
     guard self.status == "DRAFT" "Can only send draft invoices"
     guard self.amountDue > 0 "Cannot send invoices with zero balance"
     mutate status = "SENT"
@@ -111,7 +128,7 @@ entity Invoice mixin TenantScoped, SoftDeletable {
     emit InvoiceViewed
   }
 
-  command applyPayment(paymentAmount: money, paymentId: string) {
+  command applyPayment(paymentAmount: money, optional paymentId: string) {
     guard self.status in ["SENT", "VIEWED", "OVERDUE", "PARTIALLY_PAID"] "Cannot apply payment to invoice in current status"
     guard paymentAmount > 0 "Payment amount must be positive"
     guard paymentAmount <= self.amountDue "Payment amount cannot exceed amount due"
@@ -154,7 +171,7 @@ entity Invoice mixin TenantScoped, SoftDeletable {
     emit InvoiceReminderSent
   }
 
-  command voidInvoice(reason: string) {
+  command voidInvoice(optional reason: string) {
     guard self.status in ["DRAFT", "SENT", "VIEWED", "OVERDUE"] "Cannot void invoices that are paid or partially paid"
     guard self.amountPaid == 0 "Cannot void invoices with payments"
     mutate status = "VOID"
@@ -200,6 +217,13 @@ entity Invoice mixin TenantScoped, SoftDeletable {
 store Invoice in durable
 
 // Events
+event InvoiceCreated: "invoice.created" {
+  invoiceId: string
+  eventId: string
+  clientId: string
+  total: money
+}
+
 event InvoiceSent: "invoice.sent" {
   invoiceId: string
   invoiceNumber: string

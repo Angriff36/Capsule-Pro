@@ -64,26 +64,26 @@ entity AllergenWarning mixin TenantScoped, SoftDeletable {
   }
 
   // notes optional: the acknowledge button has no notes input
-  command acknowledge(acknowledgedBy: string, optional notes: string) {
+  command acknowledge(acknowledgedBy: string from context.user.id, optional notes: string) {
     guard self.isAcknowledged == false "Warning is already acknowledged"
     guard acknowledgedBy != null and acknowledgedBy != "" "Acknowledged by user is required"
 
     mutate isAcknowledged = true
     mutate acknowledgedBy = acknowledgedBy
     mutate acknowledgedAt = now()
-    mutate notes = notes
+    mutate notes = notes != null ? notes : self.notes
 
     emit AllergenWarningAcknowledged
   }
 
-  command markResolved(resolvedBy: string, notes: string) {
+  command markResolved(resolvedBy: string from context.user.id, optional notes: string) {
     guard self.resolved == false "Warning is already resolved"
     guard resolvedBy != null and resolvedBy != "" "Resolver ID is required"
     guard self.isAcknowledged "Warning must be acknowledged before resolving"
 
     mutate resolved = true
     mutate resolvedAt = now()
-    mutate notes = notes
+    mutate notes = notes != null ? notes : self.notes
 
     emit AllergenWarningResolved
   }

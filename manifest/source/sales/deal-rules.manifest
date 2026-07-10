@@ -64,12 +64,12 @@ entity Deal mixin TenantScoped {
     emit DealCreated
   }
 
-  command updateStage(stage: string, notes: string) {
+  command updateStage(stage: string, optional notes: string) {
     guard stage in ["new", "contacted", "qualified", "proposal", "negotiation", "closed"] "Invalid deal stage"
     guard self.status == "open" "Cannot update stage of a closed deal"
 
     mutate stage = stage
-    mutate notes = notes
+    mutate notes = notes != null ? notes : self.notes
 
     emit DealStageUpdated
   }

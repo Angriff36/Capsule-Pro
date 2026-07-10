@@ -99,13 +99,13 @@ entity CateringOrder mixin TenantScoped, SoftDeletable {
   // no protection is lost. See apps/api/__tests__/events/catering-order-lifecycle.test.ts.
 
   default policy CateringOrderDefaultAccess execute: user.role in ["event_coordinator", "catering_manager", "manager", "admin"] "Catering order management"
-  command create(orderNumber: string, customerId: string, eventId: string, deliveryDate: datetime, deliveryTime: string, guestCount: int, venueCity: string, venueState: string, venueZip: string, venueContactName: string, venueContactPhone: string, specialInstructions: string, dietaryRestrictions: string, staffRequired: int) {
+  command create(orderNumber: string, customerId: string, optional eventId: string, deliveryDate: datetime, deliveryTime: string, guestCount: int, venueCity: string, venueState: string, venueZip: string, venueContactName: string, venueContactPhone: string, specialInstructions: string, optional dietaryRestrictions: string, staffRequired: int = 0) {
     guard orderNumber != null and orderNumber != "" "Order number is required"
     guard customerId != null and customerId != "" "Customer ID is required"
 
     mutate orderNumber = orderNumber
     mutate customerId = customerId
-    mutate eventId = eventId
+    mutate eventId = eventId != null ? eventId : self.eventId
     mutate deliveryDate = deliveryDate
     mutate deliveryTime = deliveryTime
     mutate guestCount = guestCount
@@ -115,7 +115,7 @@ entity CateringOrder mixin TenantScoped, SoftDeletable {
     mutate venueContactName = venueContactName
     mutate venueContactPhone = venueContactPhone
     mutate specialInstructions = specialInstructions
-    mutate dietaryRestrictions = dietaryRestrictions
+    mutate dietaryRestrictions = dietaryRestrictions != null ? dietaryRestrictions : self.dietaryRestrictions
     mutate staffRequired = staffRequired
     mutate orderDate = now()
 

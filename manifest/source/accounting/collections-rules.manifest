@@ -116,7 +116,7 @@ entity CollectionCase mixin TenantScoped, SoftDeletable {
     emit CollectionStatusChanged
   }
 
-  command recordPayment(amount: money, paymentId: string, paymentDate: datetime) {
+  command recordPayment(amount: money, optional paymentId: string, optional paymentDate: datetime) {
     guard amount > 0 "Payment amount must be positive"
     guard amount <= self.outstandingAmount "Payment cannot exceed outstanding amount"
     mutate collectedAmount = self.collectedAmount + amount

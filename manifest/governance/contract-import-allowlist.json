@@ -9,15 +9,15 @@
   },
   {
     "path": "apps/api/lib/manifest/frozen-ir.ts",
-    "reason": "Frozen-IR build-time embed; the .generated.json is drift-gated by manifest:ir:embed:check. Documented perf optimization (constitution §4a API transport glue)."
+    "reason": "Frozen-IR build-time embed; the .generated.json is drift-gated by manifest:ir:embed:check. Documented perf optimization (constitution \u00a74a API transport glue)."
   },
   {
     "path": "apps/api/app/api-docs/openapi.json/route.ts",
-    "reason": "Streams the committed OpenAPI spec at /api-docs; the spec's canonical home is manifest/api-docs/ (constitution §4a)."
+    "reason": "Streams the committed OpenAPI spec at /api-docs; the spec's canonical home is manifest/api-docs/ (constitution \u00a74a)."
   },
   {
     "pathPrefix": "packages/mcp-server/",
-    "reason": "Manifest MCP server: tenant/admin introspection of IR, OpenAPI, and the routes manifest is its defined purpose (constitution §4a/§10 derived surface), so it reads those raw artifacts directly."
+    "reason": "Manifest MCP server: tenant/admin introspection of IR, OpenAPI, and the routes manifest is its defined purpose (constitution \u00a74a/\u00a710 derived surface), so it reads those raw artifacts directly."
   },
   {
     "path": "apps/api/__tests__/procurement/vendor-contract-lifecycle.test.ts",
@@ -54,5 +54,9 @@
   {
     "path": "apps/api/__tests__/staff/employee-availability-lifecycle.test.ts",
     "reason": "Test fixture loads merged IR as input data because the single-source test compiler cannot resolve shared _base.manifest mixins."
+  },
+  {
+    "path": "apps/app/__tests__/kitchen/build-container-create-payload.test.ts",
+    "reason": "Test fixture imports the generated command-param schemas to pin the Container.create UI payload to the Zod contract."
   }
 ]

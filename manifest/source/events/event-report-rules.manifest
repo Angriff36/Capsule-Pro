@@ -54,16 +54,16 @@ entity EventReport mixin TenantScoped, SoftDeletable {
   }
 
   default policy EventReportDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(eventId: string, name: string, version: string, checklistData: json, reportConfig: json, notes: string) {
+  command create(eventId: string, name: string, optional version: string, optional checklistData: json, optional reportConfig: json, optional notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard name != null and name != "" "Report name is required"
 
     mutate eventId = eventId
     mutate name = name
-    mutate version = version
-    mutate checklistData = checklistData
-    mutate reportConfig = reportConfig
-    mutate reviewNotes = notes
+    mutate version = version != null ? version : self.version
+    mutate checklistData = checklistData != null ? checklistData : self.checklistData
+    mutate reportConfig = reportConfig != null ? reportConfig : self.reportConfig
+    mutate reviewNotes = notes != null ? notes : self.reviewNotes
     mutate completion = 0
 
     emit EventReportCreated

@@ -253,6 +253,25 @@ export interface InvoiceApplyPaymentInput {
   paymentAmount?: number;
   paymentId?: string;
 }
+export interface InvoiceCreateInput {
+  invoiceNumber?: string;
+  eventId?: string;
+  subtotal?: number;
+  taxAmount?: number;
+  total?: number;
+  amountDue?: number;
+  paymentTerms?: number;
+  dueDate?: string;
+  invoiceType?: string;
+  discountAmount?: number;
+  depositPercentage?: number;
+  depositRequired?: number;
+  issuedAt?: string;
+  notes?: string;
+  internalNotes?: string;
+  lineItems?: unknown;
+  metadata?: unknown;
+}
 export interface InvoiceMarkAsPaidInput {
   id?: string;
 }
@@ -329,6 +348,16 @@ export interface LaborBudgetUpdateInput {
   budgetTarget?: number;
   budgetType?: string;
   description?: string;
+}
+export interface PaymentCreateInput {
+  invoiceId?: string;
+  amount?: number;
+  methodType?: string;
+  currency?: string;
+  gatewayPaymentMethodId?: string;
+  gatewayTransactionId?: string;
+  processor?: string;
+  processedAt?: string;
 }
 export interface PaymentMarkAcceptedNotAppliedInput {
   id?: string;
@@ -1023,6 +1052,10 @@ export async function invoiceApplyPayment(input: InvoiceApplyPaymentInput = {}):
   const r = await executeCommand<Invoice>("Invoice", "applyPayment", input as Record<string, unknown>);
   return r.result;
 }
+export async function invoiceCreate(input: InvoiceCreateInput = {}): Promise<Invoice | undefined> {
+  const r = await executeCommand<Invoice>("Invoice", "create", input as Record<string, unknown>);
+  return r.result;
+}
 export async function invoiceMarkAsPaid(input: InvoiceMarkAsPaidInput = {}): Promise<Invoice | undefined> {
   const r = await executeCommand<Invoice>("Invoice", "markAsPaid", input as Record<string, unknown>);
   return r.result;
@@ -1085,6 +1118,10 @@ export async function laborBudgetSoftDelete(input: LaborBudgetSoftDeleteInput = 
 }
 export async function laborBudgetUpdate(input: LaborBudgetUpdateInput = {}): Promise<LaborBudget | undefined> {
   const r = await executeCommand<LaborBudget>("LaborBudget", "update", input as Record<string, unknown>);
+  return r.result;
+}
+export async function paymentCreate(input: PaymentCreateInput = {}): Promise<Payment | undefined> {
+  const r = await executeCommand<Payment>("Payment", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function paymentMarkAcceptedNotApplied(input: PaymentMarkAcceptedNotAppliedInput = {}): Promise<Payment | undefined> {

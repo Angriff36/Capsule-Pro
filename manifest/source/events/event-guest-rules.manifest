@@ -64,21 +64,21 @@ entity EventGuest mixin TenantScoped, SoftDeletable {
     emit EventGuestCreated
   }
 
-  command update(guestName: string, guestEmail: string, guestPhone: string, isPrimaryContact: boolean, dietaryRestrictions: array<string>, allergenRestrictions: array<string>, notes: string, specialMealRequired: boolean, specialMealNotes: string, tableAssignment: string, mealPreference: string) {
-    guard guestName != null and guestName != "" "Guest name is required"
+  command update(optional guestName: string, optional guestEmail: string, optional guestPhone: string, optional isPrimaryContact: boolean, optional dietaryRestrictions: array<string>, optional allergenRestrictions: array<string>, optional notes: string, optional specialMealRequired: boolean, optional specialMealNotes: string, optional tableAssignment: string, optional mealPreference: string) {
+    guard guestName == null or guestName != "" "Guest name cannot be empty"
     guard self.deletedAt == null "Cannot update a deleted guest"
 
-    mutate guestName = guestName
-    mutate guestEmail = guestEmail
-    mutate guestPhone = guestPhone
-    mutate isPrimaryContact = isPrimaryContact
-    mutate dietaryRestrictions = dietaryRestrictions
-    mutate allergenRestrictions = allergenRestrictions
-    mutate notes = notes
-    mutate specialMealRequired = specialMealRequired
-    mutate specialMealNotes = specialMealNotes
-    mutate tableAssignment = tableAssignment
-    mutate mealPreference = mealPreference
+    mutate guestName = guestName != null ? guestName : self.guestName
+    mutate guestEmail = guestEmail != null ? guestEmail : self.guestEmail
+    mutate guestPhone = guestPhone != null ? guestPhone : self.guestPhone
+    mutate isPrimaryContact = isPrimaryContact != null ? isPrimaryContact : self.isPrimaryContact
+    mutate dietaryRestrictions = dietaryRestrictions != null ? dietaryRestrictions : self.dietaryRestrictions
+    mutate allergenRestrictions = allergenRestrictions != null ? allergenRestrictions : self.allergenRestrictions
+    mutate notes = notes != null ? notes : self.notes
+    mutate specialMealRequired = specialMealRequired != null ? specialMealRequired : self.specialMealRequired
+    mutate specialMealNotes = specialMealNotes != null ? specialMealNotes : self.specialMealNotes
+    mutate tableAssignment = tableAssignment != null ? tableAssignment : self.tableAssignment
+    mutate mealPreference = mealPreference != null ? mealPreference : self.mealPreference
 
     emit EventGuestUpdated
   }
@@ -123,7 +123,7 @@ entity EventGuest mixin TenantScoped, SoftDeletable {
     emit EventGuestTableAssigned
   }
 
-  command softDelete(reason: string, userId: string) {
+  command softDelete(optional reason: string, userId: string from context.user.id) {
     guard self.deletedAt == null "Guest is already deleted"
 
     mutate deletedAt = now()

@@ -81,7 +81,7 @@ entity ApiKey mixin TenantScoped, SoftDeletable {
     emit ApiKeyRotated
   }
 
-  command revoke(reason: string, revokedBy: string) {
+  command revoke(optional reason: string, revokedBy: string from context.user.id) {
     guard self.revokedAt == null "API key is already revoked"
     guard self.deletedAt == null "Cannot revoke a deleted API key"
 

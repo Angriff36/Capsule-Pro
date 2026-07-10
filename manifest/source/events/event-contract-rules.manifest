@@ -118,7 +118,7 @@ entity EventContract mixin TenantScoped, SoftDeletable {
     emit ContractCancelled
   }
 
-  command softDelete(reason: string, userId: string) {
+  command softDelete(optional reason: string, userId: string from context.user.id) {
     mutate deletedAt = now()
 
     emit ContractDeleted
@@ -155,7 +155,7 @@ entity ContractSignature mixin TenantScoped, SoftDeletable {
   relationship belongsTo contract: EventContract fields [tenantId, contractId] references [tenantId, id]
 
   default policy ContractSignatureDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(contractId: string, signatureData: string, signerName: string, signerEmail: string, signerRole: string, ipAddress: string) {
+  command create(contractId: string, signatureData: string, signerName: string, signerEmail: string, optional signerRole: string, optional ipAddress: string) {
     guard contractId != null and contractId != "" "Contract ID is required"
     guard signatureData != null and signatureData != "" "Signature data is required"
     guard signerName != null and signerName != "" "Signer name is required"
@@ -164,8 +164,8 @@ entity ContractSignature mixin TenantScoped, SoftDeletable {
     mutate signatureData = signatureData
     mutate signerName = signerName
     mutate signerEmail = signerEmail
-    mutate signerRole = signerRole
-    mutate ipAddress = ipAddress
+    mutate signerRole = signerRole != null ? signerRole : self.signerRole
+    mutate ipAddress = ipAddress != null ? ipAddress : self.ipAddress
     mutate isValid = true
     mutate signedAt = now()
 
@@ -192,7 +192,7 @@ entity ContractSignature mixin TenantScoped, SoftDeletable {
     emit SignatureInvalidated
   }
 
-  command softDelete(reason: string, userId: string) {
+  command softDelete(optional reason: string, userId: string from context.user.id) {
     mutate deletedAt = now()
 
     emit SignatureDeleted

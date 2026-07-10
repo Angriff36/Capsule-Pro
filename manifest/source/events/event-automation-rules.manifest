@@ -45,11 +45,11 @@ entity AutomatedFollowup mixin TenantScoped {
     emit FollowupCreated
   }
 
-  command complete(sentDate: datetime) {
+  command complete(optional sentDate: datetime) {
     guard self.status == "pending" "Only pending followups can be completed"
 
     mutate status = "sent"
-    mutate sentDate = sentDate
+    mutate sentDate = sentDate != null ? sentDate : now()
 
     emit FollowupSent
   }
@@ -238,17 +238,17 @@ entity EventWaitlistEntry mixin TenantScoped {
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
   default policy EventWaitlistEntryDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command addGuest(eventId: string, guestName: string, email: string, phone: string, partySize: number, notes: string) {
+  command addGuest(eventId: string, guestName: string, optional email: string, optional phone: string, partySize: number = 1, optional notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard guestName != null and guestName != "" "Guest name is required"
     guard partySize >= 1 "Party size must be at least 1"
 
     mutate eventId = eventId
     mutate guestName = guestName
-    mutate email = email
-    mutate phone = phone
+    mutate email = email != null ? email : self.email
+    mutate phone = phone != null ? phone : self.phone
     mutate partySize = partySize
-    mutate notes = notes
+    mutate notes = notes != null ? notes : self.notes
     mutate status = "waiting"
     mutate joinedAt = now()
 

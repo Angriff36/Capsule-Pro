@@ -4666,6 +4666,11 @@ export function invoiceApplyPaymentPath(): string {
   return "/api/manifest/Invoice/commands/applyPayment";
 }
 
+/** POST /api/manifest/Invoice/commands/create */
+export function invoiceCreatePath(): string {
+  return "/api/manifest/Invoice/commands/create";
+}
+
 /** POST /api/manifest/Invoice/commands/markAsPaid */
 export function invoiceMarkAsPaidPath(): string {
   return "/api/manifest/Invoice/commands/markAsPaid";
@@ -5174,6 +5179,11 @@ export function overrideAuditAuthorizePath(): string {
 /** POST /api/manifest/OverrideAudit/commands/create */
 export function overrideAuditCreatePath(): string {
   return "/api/manifest/OverrideAudit/commands/create";
+}
+
+/** POST /api/manifest/Payment/commands/create */
+export function paymentCreatePath(): string {
+  return "/api/manifest/Payment/commands/create";
 }
 
 /** POST /api/manifest/Payment/commands/markAcceptedNotApplied */
@@ -8426,6 +8436,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "InventoryTransferItem.removeItem", path: "/api/manifest/InventoryTransferItem/commands/removeItem", method: "POST", source: "command", auth: true, tenant: true },
   { id: "InventoryTransferItem.updateQuantity", path: "/api/manifest/InventoryTransferItem/commands/updateQuantity", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Invoice.applyPayment", path: "/api/manifest/Invoice/commands/applyPayment", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.create", path: "/api/manifest/Invoice/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Invoice.markAsPaid", path: "/api/manifest/Invoice/commands/markAsPaid", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Invoice.markOverdue", path: "/api/manifest/Invoice/commands/markOverdue", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Invoice.markViewed", path: "/api/manifest/Invoice/commands/markViewed", method: "POST", source: "command", auth: true, tenant: true },
@@ -8528,6 +8539,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "OpenShift.create", path: "/api/manifest/OpenShift/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "OverrideAudit.authorize", path: "/api/manifest/OverrideAudit/commands/authorize", method: "POST", source: "command", auth: true, tenant: true },
   { id: "OverrideAudit.create", path: "/api/manifest/OverrideAudit/commands/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Payment.create", path: "/api/manifest/Payment/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Payment.markAcceptedNotApplied", path: "/api/manifest/Payment/commands/markAcceptedNotApplied", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Payment.markChargeback", path: "/api/manifest/Payment/commands/markChargeback", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Payment.markFraudFailed", path: "/api/manifest/Payment/commands/markFraudFailed", method: "POST", source: "command", auth: true, tenant: true },

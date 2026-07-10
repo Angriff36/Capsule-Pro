@@ -132,19 +132,21 @@ entity Dish mixin TenantScoped, SoftDeletable {
     emit DishRecipeChanged
   }
 
-  command update(name: string, description: string?, category: string?, serviceStyle: string?, defaultContainerId: string?, presentationImageUrl: string?, portionSizeDescription: string?, dietaryTags: array<string>?, allergens: array<string>?) {
-    guard name != null and name != "" "Dish name is required"
+  // Partial update: omitted (or null) params keep the stored value. Clearing
+  // defaultContainerId goes through clearDefaultContainer, not update.
+  command update(optional name: string, optional description: string?, optional category: string?, optional serviceStyle: string?, optional defaultContainerId: string?, optional presentationImageUrl: string?, optional portionSizeDescription: string?, optional dietaryTags: array<string>?, optional allergens: array<string>?) {
+    guard name == null or name != "" "Dish name cannot be empty"
     guard self.isActive "Cannot update a deactivated dish"
 
-    mutate name = name
-    mutate description = description
-    mutate category = category
-    mutate serviceStyle = serviceStyle
-    mutate defaultContainerId = defaultContainerId
-    mutate presentationImageUrl = presentationImageUrl
-    mutate portionSizeDescription = portionSizeDescription
-    mutate dietaryTags = dietaryTags
-    mutate allergens = allergens
+    mutate name = name != null ? name : self.name
+    mutate description = description != null ? description : self.description
+    mutate category = category != null ? category : self.category
+    mutate serviceStyle = serviceStyle != null ? serviceStyle : self.serviceStyle
+    mutate defaultContainerId = defaultContainerId != null ? defaultContainerId : self.defaultContainerId
+    mutate presentationImageUrl = presentationImageUrl != null ? presentationImageUrl : self.presentationImageUrl
+    mutate portionSizeDescription = portionSizeDescription != null ? portionSizeDescription : self.portionSizeDescription
+    mutate dietaryTags = dietaryTags != null ? dietaryTags : self.dietaryTags
+    mutate allergens = allergens != null ? allergens : self.allergens
 
     emit DishUpdated
   }
@@ -294,7 +296,7 @@ entity Dish mixin TenantScoped, SoftDeletable {
   // defaultContainerId field — NO migration. Cleared regardless of dish state
   // (an inactive/86'd dish can still hold a dangling container reference); the
   // idempotency guard skips dishes that already have no default container.
-  command clearDefaultContainer(userId: string) {
+  command clearDefaultContainer(userId: string from context.user.id) {
     guard self.defaultContainerId != "" "Dish has no default container to clear"
 
     mutate defaultContainerId = ""

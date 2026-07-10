@@ -174,7 +174,7 @@ entity ScheduleShift mixin TenantScoped, SoftDeletable {
   }
 
   default policy ScheduleShiftDefaultAccess execute: user.role in ["manager", "admin"] "Schedule management"
-  command create(scheduleId: string, employeeId: string, shiftStart: datetime, shiftEnd: datetime, roleDuringShift: string, notes: string) {
+  command create(scheduleId: string, employeeId: string, shiftStart: datetime, shiftEnd: datetime, roleDuringShift: string, optional notes: string) {
     guard scheduleId != null and scheduleId != "" "Schedule ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard shiftStart != null "Shift start time is required"
@@ -185,7 +185,7 @@ entity ScheduleShift mixin TenantScoped, SoftDeletable {
     mutate shiftStart = shiftStart
     mutate shiftEnd = shiftEnd
     mutate roleDuringShift = roleDuringShift
-    mutate notes = notes
+    mutate notes = notes != null ? notes : self.notes
     mutate swapStatus = "none"
 
     emit ScheduleShiftCreated

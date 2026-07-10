@@ -360,18 +360,18 @@ entity LogisticsRoute mixin TenantScoped {
     emit LogisticsRouteDeleted
   }
 
-  command update(name: string, vehicleId: string, driverId: string, scheduledDate: datetime, endTime: datetime, totalDistance: number, totalDuration: number, description: string) {
+  command update(name: string, optional vehicleId: string, optional driverId: string, scheduledDate: datetime, optional endTime: datetime, optional totalDistance: number, optional totalDuration: number, optional description: string) {
     guard name != null and name != "" "Route name is required"
     guard self.status == "planned" "Can only update a planned route"
 
     mutate name = name
-    mutate vehicleId = vehicleId
-    mutate driverId = driverId
+    mutate vehicleId = vehicleId != null ? vehicleId : self.vehicleId
+    mutate driverId = driverId != null ? driverId : self.driverId
     mutate scheduledDate = scheduledDate
-    mutate endTime = endTime
-    mutate totalDistance = totalDistance
-    mutate totalDuration = totalDuration
-    mutate description = description
+    mutate endTime = endTime != null ? endTime : self.endTime
+    mutate totalDistance = totalDistance != null ? totalDistance : self.totalDistance
+    mutate totalDuration = totalDuration != null ? totalDuration : self.totalDuration
+    mutate description = description != null ? description : self.description
 
     emit LogisticsRouteUpdated
   }
@@ -406,7 +406,7 @@ entity LogisticsRoute mixin TenantScoped {
   }
 
   // Route fully completed — all deliveries done
-  command complete(notes: string) {
+  command complete(optional notes: string) {
     guard self.status == "in_progress" "Only an in-progress route can be completed"
 
     mutate status = "completed"
@@ -477,7 +477,7 @@ entity LogisticsDispatch mixin TenantScoped {
   transition status from "failed" to ["assigned"]
 
   default policy LogisticsDispatchDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
-  command assign(routeId: string, driverId: string, vehicleId: string, priority: string, estimatedDeliveryTime: datetime, notes: string) {
+  command assign(routeId: string, driverId: string, vehicleId: string, optional priority: string, optional estimatedDeliveryTime: datetime, optional notes: string) {
     guard routeId != null and routeId != "" "Route ID is required"
     guard driverId != null and driverId != "" "Driver ID is required"
     guard vehicleId != null and vehicleId != "" "Vehicle ID is required"
@@ -485,9 +485,9 @@ entity LogisticsDispatch mixin TenantScoped {
     mutate routeId = routeId
     mutate driverId = driverId
     mutate vehicleId = vehicleId
-    mutate priority = priority
-    mutate estimatedDeliveryTime = estimatedDeliveryTime
-    mutate notes = notes
+    mutate priority = priority != null ? priority : self.priority
+    mutate estimatedDeliveryTime = estimatedDeliveryTime != null ? estimatedDeliveryTime : self.estimatedDeliveryTime
+    mutate notes = notes != null ? notes : self.notes
     mutate status = "assigned"
 
     emit LogisticsDispatchAssigned

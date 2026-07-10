@@ -241,7 +241,7 @@ entity InventoryItem mixin TenantScoped, SoftDeletable {
     emit InventoryReservationReleased
   }
 
-  command create(item_number: string, name: string, category: string, description: string, unitOfMeasure: string, unitCost: money, quantityOnHand: number, parLevel: number, reorder_level: number, supplierId: string, tags: array<string>, fsa_status: string, fsa_temp_logged: boolean, fsa_allergen_info: boolean, fsa_traceable: boolean) {
+  command create(item_number: string, name: string, category: string, optional description: string, optional unitOfMeasure: string, unitCost: money, quantityOnHand: number, optional parLevel: number, reorder_level: number, optional supplierId: string, tags: array<string>, fsa_status: string, fsa_temp_logged: boolean, fsa_allergen_info: boolean, fsa_traceable: boolean) {
     guard item_number != null and item_number != "" "Item number/SKU is required"
     guard name != null and name != "" "Item name is required"
     guard category != null and category != "" "Category is required"
@@ -252,14 +252,14 @@ entity InventoryItem mixin TenantScoped, SoftDeletable {
 
     mutate item_number = item_number
     mutate name = name
-    mutate description = description
+    mutate description = description != null ? description : self.description
     mutate category = category
-    mutate unitOfMeasure = unitOfMeasure
+    mutate unitOfMeasure = unitOfMeasure != null ? unitOfMeasure : self.unitOfMeasure
     mutate unitCost = unitCost
     mutate quantityOnHand = quantityOnHand
-    mutate parLevel = parLevel
+    mutate parLevel = parLevel != null ? parLevel : self.parLevel
     mutate reorder_level = reorder_level
-    mutate supplierId = supplierId
+    mutate supplierId = supplierId != null ? supplierId : self.supplierId
     mutate tags = tags
     mutate fsa_status = fsa_status
     mutate fsa_temp_logged = fsa_temp_logged

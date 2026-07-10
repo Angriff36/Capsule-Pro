@@ -19,14 +19,14 @@ entity EmailWorkflow mixin TenantScoped, SoftDeletable {
   constraint requireName: self.name != "" "Workflow name is required"
 
   default policy EmailWorkflowDefaultAccess execute: user.role in ["manager", "admin", "system"] "Email workflow management"
-  command create(name: string, triggerType: string, triggerConfig: json, emailTemplateId: string, emailTemplateTenantId: string, recipientConfig: json, isActive: boolean) {
+  command create(name: string, triggerType: string, triggerConfig: json, emailTemplateId: string, optional emailTemplateTenantId: string, recipientConfig: json, isActive: boolean) {
     guard name != null and name != "" "Workflow name is required"
 
     mutate name = name
     mutate triggerType = triggerType
     mutate triggerConfig = triggerConfig
     mutate emailTemplateId = emailTemplateId
-    mutate emailTemplateTenantId = emailTemplateTenantId
+    mutate emailTemplateTenantId = emailTemplateTenantId != null ? emailTemplateTenantId : self.emailTemplateTenantId
     mutate recipientConfig = recipientConfig
     mutate isActive = isActive
 

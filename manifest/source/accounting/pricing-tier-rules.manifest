@@ -109,7 +109,7 @@ entity PricingTier mixin TenantScoped, SoftDeletable {
     emit PricingTierDeactivated
   }
 
-  command softDelete(reason: string) {
+  command softDelete(optional reason: string) {
     guard self.deletedAt == null "Pricing tier is already deleted"
 
     constraint warnActiveTier:warn self.isActive {

@@ -89,7 +89,7 @@ entity Lead mixin TenantScoped, SoftDeletable {
     emit LeadCreated
   }
 
-  command update(companyName: string, contactName: string, contactEmail: string, contactPhone: string, eventType: string, eventDate: datetime, estimatedGuests: number, estimatedValue: money, status: string, assignedTo: string, notes: string) {
+  command update(optional companyName: string, optional contactName: string, optional contactEmail: string, optional contactPhone: string, optional eventType: string, optional eventDate: datetime, optional estimatedGuests: number, optional estimatedValue: money, optional status: string, optional assignedTo: string, optional notes: string) {
     guard self.deletedAt == null "Cannot update an archived lead"
     // Stored-prop form of `!self.isConverted` (isConverted = convertedToClientId != ""
     // and convertedAt != null). Computeds do NOT resolve inside guards in this runtime
@@ -97,7 +97,7 @@ entity Lead mixin TenantScoped, SoftDeletable {
     // EVERY update, making Lead.update dead for all callers). Inlining the stored props
     // revives it. Same fix pattern as Proposal.send's isDraft inline.
     guard self.convertedToClientId == "" or self.convertedAt == null "Cannot update a converted lead"
-    guard contactName != null and contactName != "" "Contact name is required"
+    guard contactName == null or contactName != "" "Contact name cannot be empty"
 
     constraint warnStatusRegression:warn status == "new" and self.status != "new" {
       messageTemplate: "Reverting lead '{contactName}' status from '{oldStatus}' back to 'new'"
@@ -107,17 +107,17 @@ entity Lead mixin TenantScoped, SoftDeletable {
       }
     }
 
-    mutate companyName = companyName
-    mutate contactName = contactName
-    mutate contactEmail = contactEmail
-    mutate contactPhone = contactPhone
-    mutate eventType = eventType
-    mutate eventDate = eventDate
-    mutate estimatedGuests = estimatedGuests
-    mutate estimatedValue = estimatedValue
-    mutate status = status
-    mutate assignedTo = assignedTo
-    mutate notes = notes
+    mutate companyName = companyName != null ? companyName : self.companyName
+    mutate contactName = contactName != null ? contactName : self.contactName
+    mutate contactEmail = contactEmail != null ? contactEmail : self.contactEmail
+    mutate contactPhone = contactPhone != null ? contactPhone : self.contactPhone
+    mutate eventType = eventType != null ? eventType : self.eventType
+    mutate eventDate = eventDate != null ? eventDate : self.eventDate
+    mutate estimatedGuests = estimatedGuests != null ? estimatedGuests : self.estimatedGuests
+    mutate estimatedValue = estimatedValue != null ? estimatedValue : self.estimatedValue
+    mutate status = status != null ? status : self.status
+    mutate assignedTo = assignedTo != null ? assignedTo : self.assignedTo
+    mutate notes = notes != null ? notes : self.notes
 
     emit LeadUpdated
   }

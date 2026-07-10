@@ -96,7 +96,7 @@ entity Equipment mixin TenantScoped, SoftDeletable {
   }
 
   default policy EquipmentDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Equipment management"
-  command scheduleMaintenance(scheduledDate: datetime, maintenanceType: string, notes: string, userId: string) {
+  command scheduleMaintenance(scheduledDate: datetime, maintenanceType: string, optional notes: string, userId: string from context.user.id) {
     guard self.status != "retired" "Cannot schedule maintenance for retired equipment"
     guard scheduledDate != null "Scheduled date is required"
     guard maintenanceType in ["preventive", "corrective", "emergency"] "Invalid maintenance type"

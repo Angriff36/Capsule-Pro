@@ -2526,6 +2526,11 @@
   },
   {
     "entity": "Invoice",
+    "command": "create",
+    "commandId": "Invoice.create"
+  },
+  {
+    "entity": "Invoice",
     "command": "markAsPaid",
     "commandId": "Invoice.markAsPaid"
   },
@@ -3033,6 +3038,11 @@
     "entity": "OverrideAudit",
     "command": "create",
     "commandId": "OverrideAudit.create"
+  },
+  {
+    "entity": "Payment",
+    "command": "create",
+    "commandId": "Payment.create"
   },
   {
     "entity": "Payment",

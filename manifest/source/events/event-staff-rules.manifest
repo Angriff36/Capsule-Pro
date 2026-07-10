@@ -55,7 +55,7 @@ entity EventStaff mixin TenantScoped, SoftDeletable {
     emit EventStaffAssigned
   }
 
-  command assign(eventId: string, staffMemberId: string, role: string, notes: string, shiftStart: datetime, shiftEnd: datetime) {
+  command assign(eventId: string, staffMemberId: string, role: string, notes: string, optional shiftStart: datetime, optional shiftEnd: datetime) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard staffMemberId != null and staffMemberId != "" "Staff member ID is required"
 
@@ -63,8 +63,8 @@ entity EventStaff mixin TenantScoped, SoftDeletable {
     mutate staffMemberId = staffMemberId
     mutate role = role
     mutate notes = notes
-    mutate shiftStart = shiftStart
-    mutate shiftEnd = shiftEnd
+    mutate shiftStart = shiftStart != null ? shiftStart : self.shiftStart
+    mutate shiftEnd = shiftEnd != null ? shiftEnd : self.shiftEnd
     mutate status = "assigned"
 
     emit EventStaffAssigned
@@ -125,11 +125,11 @@ entity EventStaff mixin TenantScoped, SoftDeletable {
     emit EventStaffNoShow
   }
 
-  command unassign(reason: string) {
+  command unassign(optional reason: string) {
     guard self.status in ["assigned", "confirmed"] "Cannot unassign a staff member who has already checked in"
 
     mutate status = "unassigned"
-    mutate notes = reason
+    mutate notes = reason != null ? reason : self.notes
 
     emit EventStaffUnassigned
   }

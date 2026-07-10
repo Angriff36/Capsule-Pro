@@ -58,7 +58,7 @@ entity KitchenTask mixin TenantScoped, SoftDeletable {
   }
 
   default policy KitchenTaskDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen task management"
-  command claim(userId: string) {
+  command claim(userId: string from context.user.id) {
     guard userId != null and userId != ""
     guard self.status == "pending" or self.status == "in_progress"
 
@@ -68,7 +68,7 @@ entity KitchenTask mixin TenantScoped, SoftDeletable {
     emit KitchenTaskClaimed
   }
 
-  command start(userId: string) {
+  command start(userId: string from context.user.id) {
     guard userId != null and userId != ""
     guard self.status == "pending"
 
@@ -78,7 +78,7 @@ entity KitchenTask mixin TenantScoped, SoftDeletable {
     emit KitchenTaskStarted
   }
 
-  command complete(userId: string) {
+  command complete(userId: string from context.user.id) {
     guard userId != null and userId != ""
     guard self.status == "in_progress"
 
@@ -88,7 +88,7 @@ entity KitchenTask mixin TenantScoped, SoftDeletable {
     emit KitchenTaskCompleted
   }
 
-  command release(userId: string, reason: string) {
+  command release(userId: string from context.user.id, optional reason: string) {
     guard userId != null and userId != ""
     guard self.status == "in_progress"
 
@@ -170,7 +170,7 @@ entity KitchenTask mixin TenantScoped, SoftDeletable {
     emit KitchenTaskTagRemoved
   }
 
-  command cancel(reason: string, canceledBy: string) {
+  command cancel(optional reason: string, canceledBy: string from context.user.id) {
     guard self.status != "done" and self.status != "cancelled"
 
     mutate status = "cancelled"

@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "compiledAt": "2026-07-10T15:21:32.636Z",
-  "contentHash": "fa56c68bf94a29ebedb22aeb735bdc0d90ed7dd64f757cdae1b19606d7d9bca4",
+  "compiledAt": "2026-07-10T21:00:21.797Z",
+  "contentHash": "824ee1e62e97eedb30a3555f75081476c2c7666c68718eff48c8e575ab92db04",
   "sources": [
     {
       "path": "_base.manifest",
@@ -735,7 +735,7 @@
   "merged": {
     "path": "kitchen.ir.json",
     "entities": 213,
-    "commands": 1068,
-    "events": 1043
+    "commands": 1070,
+    "events": 1045
   }
 }

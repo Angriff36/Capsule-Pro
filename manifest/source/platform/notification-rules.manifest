@@ -42,7 +42,7 @@ entity Notification mixin TenantScoped, SoftDeletable {
     emit NotificationCreated
   }
 
-  command markRead(userId: string) {
+  command markRead(userId: string from context.user.id) {
     guard self.isRead == false "Notification is already read"
 
     constraint warnAlreadyRead:warn self.isRead == true {
@@ -59,7 +59,7 @@ entity Notification mixin TenantScoped, SoftDeletable {
     emit NotificationMarkedRead
   }
 
-  command markDismissed(userId: string) {
+  command markDismissed(userId: string from context.user.id) {
     guard userId != null and userId != "" "User ID is required"
 
     mutate isRead = true
@@ -68,7 +68,7 @@ entity Notification mixin TenantScoped, SoftDeletable {
     emit NotificationDismissed
   }
 
-  command remove(userId: string) {
+  command remove(userId: string from context.user.id) {
     guard userId != null and userId != "" "User ID is required"
     guard self.deletedAt == null "Notification is already removed"
 

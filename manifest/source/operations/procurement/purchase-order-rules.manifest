@@ -155,7 +155,7 @@ entity PurchaseOrder mixin TenantScoped, SoftDeletable {
     emit PurchaseOrderOrdered
   }
 
-  command markReceived(userId: string) {
+  command markReceived(userId: string from context.user.id) {
     guard self.status == "ordered" or self.status == "partially_received" "Can only receive ordered or partially received orders"
 
     mutate status = "received"
