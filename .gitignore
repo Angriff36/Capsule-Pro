@@ -293,6 +293,8 @@ docs/
 ### Turbo ###
 !/docs/
 /docs/*
+# docs/database holds the CANONICAL database-operations doc (CONTRIBUTING.md) — must be versioned
+!/docs/database/
 !/docs/implementation-history/
 !/docs/audits/
 # Manifest constitution + governance are normative repo charter — tracked.
