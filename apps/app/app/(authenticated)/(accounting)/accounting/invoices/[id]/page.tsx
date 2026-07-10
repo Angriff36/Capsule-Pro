@@ -171,14 +171,17 @@ export default function InvoiceDetailPage() {
 
   const handleAction = async (
     action: string,
-    _body?: Record<string, unknown>
+    body?: Record<string, unknown>
   ) => {
     setActionLoading(true);
     try {
       let result: unknown;
       switch (action) {
         case "apply-payment":
-          result = await invoiceApplyPayment({ id });
+          result = await invoiceApplyPayment({
+            id,
+            paymentAmount: Number(body?.amount),
+          });
           break;
         case "mark-as-paid":
           result = await invoiceMarkAsPaid({ id });

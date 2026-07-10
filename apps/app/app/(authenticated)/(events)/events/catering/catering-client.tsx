@@ -246,6 +246,9 @@ export function CateringClient() {
   const handleCreate = async () => {
     try {
       await cateringOrderCreate({
+        // ponytail: client-side reference number; move to a server generator if
+        // collision-proof numbering ever matters.
+        orderNumber: `CAT-${Date.now()}`,
         customerId: form.customerId,
         deliveryDate: form.deliveryDate,
         deliveryTime: form.deliveryTime,
@@ -256,6 +259,9 @@ export function CateringClient() {
         venueContactPhone: form.venueContactPhone,
         guestCount: Number(form.guestCount),
         specialInstructions: form.specialInstructions,
+        ...(form.dietaryRestrictions
+          ? { dietaryRestrictions: form.dietaryRestrictions }
+          : {}),
       });
       toast.success("Catering order created");
       setCreateOpen(false);

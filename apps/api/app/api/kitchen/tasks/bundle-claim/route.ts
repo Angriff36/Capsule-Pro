@@ -124,7 +124,6 @@ export async function POST(request: Request) {
       command: "claim",
       body: {
         id: taskId,
-        userId: user.id,
       },
       user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });

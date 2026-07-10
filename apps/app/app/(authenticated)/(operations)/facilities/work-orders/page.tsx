@@ -211,8 +211,14 @@ export default function FacilitiesWorkOrdersPage() {
     }
     setUpdatingStatus(completingWorkOrder.id);
     try {
+      const partsCost = Number.parseFloat(completeForm.partsCost) || 0;
+      const laborCost = Number.parseFloat(completeForm.laborCost) || 0;
       await facilityWorkOrderComplete({
+        actualCost: partsCost + laborCost,
         id: completingWorkOrder.id,
+        ...(completeForm.notes.trim()
+          ? { completionNotes: completeForm.notes }
+          : {}),
       });
       await loadWorkOrders();
       setShowCompleteDialog(false);

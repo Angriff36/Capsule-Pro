@@ -67,7 +67,7 @@ async function processClaimAction(
   try {
     const result = await runtime.runCommand(
       "claim",
-      { userId },
+      {},
       { entityName: "KitchenTask", instanceId: taskId }
     );
 
@@ -113,7 +113,7 @@ async function processReleaseAction(
   try {
     const result = await runtime.runCommand(
       "release",
-      { userId },
+      {},
       { entityName: "KitchenTask", instanceId: taskId }
     );
 

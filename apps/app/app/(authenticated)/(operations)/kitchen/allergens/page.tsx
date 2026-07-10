@@ -38,7 +38,6 @@ import * as Sentry from "@sentry/nextjs";
 import { AlertTriangle, CheckCircle2, Loader2, SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiUrl } from "@/app/lib/api";
 import {
   allergenWarningAcknowledge,
   allergenWarningMarkResolved,
@@ -227,13 +226,7 @@ export default function AllergenManagementPage() {
   const handleAcknowledgeWarning = async (warningId: string) => {
     setActionLoading(true);
     try {
-      const meRes = await fetch(apiUrl("/api/me"), { credentials: "include" });
-      const me = await meRes.json().catch(() => ({}));
-      await allergenWarningAcknowledge({
-        id: warningId,
-        acknowledgedBy: me.id,
-        notes: "",
-      });
+      await allergenWarningAcknowledge({ id: warningId });
 
       toast.success("Warning acknowledged");
 

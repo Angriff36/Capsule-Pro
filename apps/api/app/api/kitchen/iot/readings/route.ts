@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     const employeeId = (await requireCurrentUser()).id;
 
     const body = await request.json();
-    const { probeId, temperature, batteryLevel } = body;
+    const { probeId, temperature } = body;
 
     if (!probeId || temperature === undefined) {
       return NextResponse.json(
@@ -84,6 +84,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // withinRange is derived from the probe's thresholds, not client-supplied.
+    const probeForRange = await database.temperatureProbe.findUnique({
+      where: { tenantId_id: { tenantId, id: probeId } },
+    });
+    const withinRange = probeForRange
+      ? temperature >= Number(probeForRange.minTemp) &&
+        temperature <= Number(probeForRange.maxTemp)
+      : true;
+
     // Delegate reading creation to Manifest runtime
     const result = await runManifestCommand({
       entity: "TemperatureReading",
@@ -91,28 +100,10 @@ export async function POST(request: NextRequest) {
       body: {
         probeId,
         temperature,
+        withinRange,
       },
       user: { id: employeeId, tenantId, role: "" },
     });
-
-    // Side-effect: update probe status via Manifest
-    try {
-      await runManifestCommand({
-        entity: "TemperatureProbe",
-        command: "updateThresholds",
-        body: {
-          // Re-use minTemp/maxTemp from current probe — this is a status-update
-          // side-effect, not a threshold change. The command updates lastReading.
-          lastReading: temperature,
-          batteryLevel: batteryLevel === undefined ? undefined : batteryLevel,
-        },
-        user: { id: employeeId, tenantId, role: "" },
-        instanceId: probeId,
-      });
-    } catch (probeError) {
-      // Probe status update is non-fatal — the reading was already recorded
-      log.error("[IoTReadings/POST] Probe status update failed:", probeError);
-    }
 
     // Side-effect: check for alerts via configurable alert rules, then probe thresholds
     // Alert reads are §10-compliant; alert creation delegates to Manifest

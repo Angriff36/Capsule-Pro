@@ -276,7 +276,7 @@ export default function DirectDepositPage() {
   async function handleSetDefault(accountId: string) {
     setActionLoading(accountId);
     try {
-      await executeCommand("BankAccount", "setDefault", { id: accountId });
+      await executeCommand("BankAccount", "markDefault", { id: accountId });
       toast.success("Default account updated");
       fetchData();
     } catch {

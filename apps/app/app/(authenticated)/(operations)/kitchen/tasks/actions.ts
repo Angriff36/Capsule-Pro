@@ -241,7 +241,7 @@ export const updateKitchenTaskStatus = async (
       const r = await runManifestCommand({
         entity: "KitchenTask",
         command: "start",
-        body: { id: taskId, userId: user.id },
+        body: { id: taskId },
         user: userCtx,
       });
       if (!r.ok) {
@@ -253,7 +253,7 @@ export const updateKitchenTaskStatus = async (
       const r = await runManifestCommand({
         entity: "KitchenTask",
         command: "complete",
-        body: { id: taskId, userId: user.id },
+        body: { id: taskId },
         user: userCtx,
       });
       if (!r.ok) {
@@ -268,7 +268,6 @@ export const updateKitchenTaskStatus = async (
         body: {
           id: taskId,
           reason: "Status changed to cancelled",
-          canceledBy: user.id,
         },
         user: userCtx,
       });
@@ -283,7 +282,6 @@ export const updateKitchenTaskStatus = async (
         command: "release",
         body: {
           id: taskId,
-          userId: user.id,
           reason: "Status changed back to open",
         },
         user: userCtx,
@@ -331,7 +329,6 @@ export const deleteKitchenTask = async (taskId: string): Promise<void> => {
     body: {
       id: taskId,
       reason: "Deleted by user",
-      canceledBy: user.id,
     },
     user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
@@ -370,7 +367,9 @@ export const claimTask = async (
   const claimResult = await runManifestCommand({
     entity: "KitchenTask",
     command: "claim",
-    body: { id: taskId, userId: employeeId },
+    // KitchenTask.claim assigns to the CALLER (userId is trusted-injected from
+    // context.user.id); an employeeId differing from the caller cannot be honored.
+    body: { id: taskId },
     user: userCtx,
   });
   if (!claimResult.ok) {
@@ -460,7 +459,6 @@ export const releaseTask = async (
     command: "release",
     body: {
       id: taskId,
-      userId: user.id,
       reason: reason ?? "",
     },
     user: userCtx,

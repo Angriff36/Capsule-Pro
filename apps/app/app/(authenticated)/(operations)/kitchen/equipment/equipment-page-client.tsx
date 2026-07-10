@@ -157,6 +157,7 @@ export function EquipmentPageClient() {
   const [maintenanceForm, setMaintenanceForm] = useState({
     title: "",
     description: "",
+    maintenanceType: "preventive",
     priority: "medium",
     scheduledDate: "",
     estimatedCost: "",
@@ -275,14 +276,26 @@ export function EquipmentPageClient() {
       toast.error("Title is required");
       return;
     }
+    if (!maintenanceForm.scheduledDate) {
+      toast.error("Scheduled date is required");
+      return;
+    }
     setSubmitting(true);
     try {
-      await equipmentScheduleMaintenance({});
+      await equipmentScheduleMaintenance({
+        id: selectedEquipment.id,
+        maintenanceType: maintenanceForm.maintenanceType,
+        scheduledDate: maintenanceForm.scheduledDate,
+        ...(maintenanceForm.description.trim()
+          ? { notes: maintenanceForm.description }
+          : {}),
+      });
       toast.success("Maintenance scheduled successfully");
       setIsScheduleDialogOpen(false);
       setMaintenanceForm({
         title: "",
         description: "",
+        maintenanceType: "preventive",
         priority: "medium",
         scheduledDate: "",
         estimatedCost: "",
@@ -331,13 +344,30 @@ export function EquipmentPageClient() {
     if (!selectedWorkOrder) {
       return;
     }
+    // No generic updateStatus command exists — dispatch the FSM transition
+    // command matching the chosen status (start / complete / cancel).
+    if (statusForm.status === "cancelled" && !statusForm.notes.trim()) {
+      toast.error("A cancellation reason is required");
+      return;
+    }
     setSubmitting(true);
     try {
-      await executeCommand("FacilityWorkOrder", "updateStatus", {
-        workOrderId: selectedWorkOrder.id,
-        status: statusForm.status,
-        notes: statusForm.notes || undefined,
-      });
+      const id = selectedWorkOrder.id;
+      if (statusForm.status === "in_progress") {
+        await executeCommand("FacilityWorkOrder", "start", { id });
+      } else if (statusForm.status === "completed") {
+        await executeCommand("FacilityWorkOrder", "complete", {
+          id,
+          ...(statusForm.notes.trim()
+            ? { completionNotes: statusForm.notes }
+            : {}),
+        });
+      } else {
+        await executeCommand("FacilityWorkOrder", "cancel", {
+          id,
+          reason: statusForm.notes,
+        });
+      }
       toast.success("Status updated successfully");
       setIsUpdateStatusOpen(false);
       setStatusForm({ status: "in_progress", notes: "" });
@@ -892,11 +922,9 @@ export function EquipmentPageClient() {
                             setSelectedWorkOrder(order);
                             setStatusForm({
                               status:
-                                order.status === "open"
-                                  ? "in_progress"
-                                  : order.status === "in_progress"
-                                    ? "completed"
-                                    : order.status,
+                                order.status === "in_progress"
+                                  ? "completed"
+                                  : "in_progress",
                               notes: "",
                             });
                             setIsUpdateStatusOpen(true);
@@ -1049,6 +1077,23 @@ export function EquipmentPageClient() {
                 placeholder="Describe the maintenance task"
                 value={maintenanceForm.description}
               />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Type</Label>
+              <select
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                onChange={(e) =>
+                  setMaintenanceForm({
+                    ...maintenanceForm,
+                    maintenanceType: e.target.value,
+                  })
+                }
+                value={maintenanceForm.maintenanceType}
+              >
+                <option value="preventive">Preventive</option>
+                <option value="corrective">Corrective</option>
+                <option value="emergency">Emergency</option>
+              </select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Priority</Label>
@@ -1402,10 +1447,7 @@ export function EquipmentPageClient() {
                 }
                 value={statusForm.status}
               >
-                <option value="open">Open</option>
-                <option value="assigned">Assigned</option>
                 <option value="in_progress">In Progress</option>
-                <option value="parts_ordered">Parts Ordered</option>
                 <option value="completed">Completed</option>
                 <option value="cancelled">Cancelled</option>
               </select>

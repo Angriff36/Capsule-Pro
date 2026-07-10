@@ -252,7 +252,7 @@ export function TaskCard({
     }
     setIsLoading(true);
     try {
-      await kitchenTaskClaim({ id: task.id, userId: currentUserId });
+      await kitchenTaskClaim({ id: task.id });
       router.refresh();
     } catch (error) {
       captureException(error);
@@ -272,11 +272,7 @@ export function TaskCard({
     }
     setIsLoading(true);
     try {
-      await kitchenTaskRelease({
-        id: task.id,
-        userId: currentUserId,
-        reason: "",
-      });
+      await kitchenTaskRelease({ id: task.id });
       router.refresh();
     } catch (error) {
       captureException(error);
@@ -297,16 +293,11 @@ export function TaskCard({
     setIsLoading(true);
     try {
       if (newStatus === "done" || newStatus === "completed") {
-        await kitchenTaskComplete({
-          id: task.id,
-          userId: currentUserId,
-        });
+        await kitchenTaskComplete({ id: task.id });
       } else if (newStatus === "cancelled") {
         await kitchenTaskCancel({ id: task.id });
       } else if (newStatus === "open") {
-        await kitchenTaskStart({ id: task.id,
-  userId: currentUserId
-});
+        await kitchenTaskStart({ id: task.id });
       }
       router.refresh();
     } catch (error) {

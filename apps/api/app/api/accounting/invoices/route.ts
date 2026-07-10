@@ -275,8 +275,8 @@ export async function POST(request: NextRequest) {
         issuedAt,
         notes: body.notes ?? "",
         internalNotes: body.internalNotes ?? "",
-        lineItems: lineItems.length > 0 ? JSON.stringify(lineItems) : "[]",
-        metadata: body.metadata ? JSON.stringify(body.metadata) : "{}",
+        lineItems,
+        metadata: body.metadata ?? {},
       },
       user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
