@@ -1277,7 +1277,7 @@ export interface EventImport {
   detectedFormat?: string | null;
   confidence?: number | null;
   extractedData?: unknown | null;
-  content?: bytes | null;
+  content?: Uint8Array | null;
   createdAt: string;
   updatedAt: string;
 }

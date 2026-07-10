@@ -17195,7 +17195,7 @@
           "name": "reason",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
