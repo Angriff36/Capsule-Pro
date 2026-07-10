@@ -178,7 +178,9 @@ export default function PaymentDetailPage() {
 
     setActionLoading(true);
     try {
-      const result = await paymentRefund({ id, reason: refundReason.trim() });
+      const result = await paymentRefund({ id, reason: refundReason.trim(),
+  refundAmount: amount
+});
       setPayment(result as unknown as Payment);
       toast.success("Refund processed");
       setRefundDialogOpen(false);
