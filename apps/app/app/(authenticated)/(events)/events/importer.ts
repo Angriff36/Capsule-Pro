@@ -1441,7 +1441,8 @@ export const importEventFromPdf = async ({
       fileName,
       mimeType: "application/pdf",
       fileSize: content.byteLength,
-      content: new Uint8Array(content),
+      // Raw PDF bytes intentionally not persisted: EventImport has no `content`
+      // column (bytea is not expressible in Manifest DSL; schema-truth 2026-07-10).
       fileType: doc?.fileType ?? "pdf",
       detectedFormat: doc?.detectedFormat,
       parseStatus: doc?.errors?.length ? "failed" : "parsed",

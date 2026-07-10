@@ -165,7 +165,7 @@ export const getMarginMetrics = cache(
   async (tenantId: string, start: Date, end: Date): Promise<number> => {
     const rows = await timedQueryRaw<Array<{ avg_margin: string | null }>>(
       Prisma.sql`
-        SELECT COALESCE(AVG(actual_gross_margin_pct), 0)::numeric AS avg_margin
+        SELECT COALESCE(AVG(CASE WHEN actual_revenue <> 0 THEN actual_gross_margin / actual_revenue * 100 ELSE 0 END), 0)::numeric AS avg_margin
         FROM tenant_events.event_profitability
         WHERE tenant_id = ${tenantId}::uuid
           AND deleted_at IS NULL
@@ -298,7 +298,10 @@ export const getTopEvents = cache(
           e.title,
           e.status,
           COALESCE(ep.actual_revenue, e.budget, 0)::numeric AS revenue,
-          COALESCE(ep.actual_gross_margin_pct, ep.budgeted_gross_margin_pct)::numeric AS margin_pct
+          COALESCE(
+            CASE WHEN ep.actual_revenue <> 0 THEN ep.actual_gross_margin / ep.actual_revenue * 100 END,
+            CASE WHEN ep.budgeted_revenue <> 0 THEN ep.budgeted_gross_margin / ep.budgeted_revenue * 100 END
+          )::numeric AS margin_pct
         FROM tenant_events.events e
         LEFT JOIN tenant_events.event_profitability ep
           ON e.tenant_id = ep.tenant_id AND e.id = ep.event_id AND ep.deleted_at IS NULL

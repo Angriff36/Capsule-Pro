@@ -662,20 +662,25 @@ async function detectFinancialConflicts(
       e.id as event_id,
       e.title as event_title,
       COALESCE(ep.budgeted_total_cost, 0)::text as budgeted_total_cost,
-      COALESCE(ep.budgeted_gross_margin_pct, 0)::text as budgeted_gross_margin_pct,
-      COALESCE(ep.actual_gross_margin_pct, 0)::text as actual_gross_margin_pct,
+      COALESCE(pct.budgeted_gross_margin_pct, 0)::text as budgeted_gross_margin_pct,
+      COALESCE(pct.actual_gross_margin_pct, 0)::text as actual_gross_margin_pct,
       COALESCE(ep.total_cost_variance, 0)::text as cost_variance,
       COALESCE(ep.margin_variance_pct, 0)::text as margin_variance_pct
     FROM tenant_events.events e
     LEFT JOIN tenant_events.event_profitability ep ON ep.event_id = e.id AND ep.deleted_at IS NULL
+    LEFT JOIN LATERAL (
+      SELECT
+        CASE WHEN ep.budgeted_revenue <> 0 THEN ep.budgeted_gross_margin / ep.budgeted_revenue * 100 ELSE 0 END AS budgeted_gross_margin_pct,
+        CASE WHEN ep.actual_revenue <> 0 THEN ep.actual_gross_margin / ep.actual_revenue * 100 ELSE 0 END AS actual_gross_margin_pct
+    ) pct ON true
     WHERE e.tenant_id = ${tenantId}::uuid
       AND e.deleted_at IS NULL
       AND e.event_date BETWEEN ${startDate}::date AND ${endDate}::date
       AND e.status NOT IN (${Prisma.join(INACTIVE_EVENT_STATUSES)})
       AND (
         (ep.actual_total_cost > ep.budgeted_total_cost * 1.1)
-        OR (ep.budgeted_gross_margin_pct - ep.actual_gross_margin_pct) > 5
-        OR (ep.actual_gross_margin_pct < 0)
+        OR (pct.budgeted_gross_margin_pct - pct.actual_gross_margin_pct) > 5
+        OR (pct.actual_gross_margin_pct < 0)
       )
     ORDER BY ABS(ep.margin_variance_pct) DESC
     LIMIT 20

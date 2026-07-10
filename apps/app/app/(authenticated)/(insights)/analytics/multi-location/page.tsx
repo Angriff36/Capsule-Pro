@@ -217,7 +217,7 @@ const MultiLocationDashboardPage = async ({ searchParams }: PageProps) => {
         >(
           Prisma.sql`
           SELECT
-            COALESCE(AVG(ep.actual_gross_margin_pct), 0)::numeric AS avg_margin,
+            COALESCE(AVG(CASE WHEN ep.actual_revenue <> 0 THEN ep.actual_gross_margin / ep.actual_revenue * 100 ELSE 0 END), 0)::numeric AS avg_margin,
             COALESCE(SUM(ep.actual_revenue), 0)::numeric AS total_revenue
           FROM tenant_events.event_profitability ep
           INNER JOIN tenant_events.events ev

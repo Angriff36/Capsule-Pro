@@ -351,7 +351,7 @@ export async function GET(request: Request) {
           >(
             Prisma.sql`
             SELECT
-              COALESCE(AVG(actual_gross_margin_pct), 0)::numeric AS avg_margin,
+              COALESCE(AVG(CASE WHEN actual_revenue <> 0 THEN actual_gross_margin / actual_revenue * 100 ELSE 0 END), 0)::numeric AS avg_margin,
               COALESCE(SUM(actual_revenue), 0)::numeric AS total_revenue
             FROM tenant_events.event_profitability
             WHERE tenant_id = ${tenantId}::uuid
@@ -375,7 +375,7 @@ export async function GET(request: Request) {
             Array<{ avg_margin: string | null }>
           >(
             Prisma.sql`
-            SELECT COALESCE(AVG(actual_gross_margin_pct), 0)::numeric AS avg_margin
+            SELECT COALESCE(AVG(CASE WHEN actual_revenue <> 0 THEN actual_gross_margin / actual_revenue * 100 ELSE 0 END), 0)::numeric AS avg_margin
             FROM tenant_events.event_profitability
             WHERE tenant_id = ${tenantId}::uuid
               AND deleted_at IS NULL

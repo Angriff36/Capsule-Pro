@@ -177,12 +177,12 @@ const AdminDashboardPage = async ({
       Prisma.sql`
         SELECT
           id,
-          file_name,
-          file_type,
-          parse_status,
-          parse_error,
+          name AS file_name,
+          document_type AS file_type,
+          status AS parse_status,
+          NULL::text AS parse_error,
           created_at,
-          event_id
+          CASE WHEN entity_type = 'event' THEN entity_id END AS event_id
         FROM tenant.documents
         WHERE tenant_id = ${tenantId}::uuid
           AND deleted_at IS NULL
