@@ -304,7 +304,9 @@ export function TaskCard({
       } else if (newStatus === "cancelled") {
         await kitchenTaskCancel({ id: task.id });
       } else if (newStatus === "open") {
-        await kitchenTaskStart({ id: task.id });
+        await kitchenTaskStart({ id: task.id,
+  userId: currentUserId
+});
       }
       router.refresh();
     } catch (error) {
