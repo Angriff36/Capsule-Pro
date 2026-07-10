@@ -1117,6 +1117,7 @@ model CommandBoardCard {
   entityId String? @map("entity_id") @db.Uuid @default("")
   entityType String? @map("entity_type") @default("")
   version Int @default(0)
+  vectorClock Json? @map("vector_clock")
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -2053,6 +2054,7 @@ model EventDish {
   quantityServings Int @map("quantity_servings") @default(1)
   specialInstructions String? @map("special_instructions") @default("")
   course String? @default("")
+  serviceStyle String? @map("service_style")
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -2118,6 +2120,7 @@ model EventGuest {
   rsvpStatus String @map("rsvp_status") @default("pending")
   rsvpRespondedAt DateTime? @map("rsvp_responded_at") @db.Timestamptz(6)
   checkedInAt DateTime? @map("checked_in_at") @db.Timestamptz(6)
+  waitlistPosition Int? @map("waitlist_position")
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -2149,6 +2152,10 @@ model EventImport {
   skippedRows Int? @map("skipped_rows") @default(0)
   parseErrors String[] @map("parse_errors") @default([])
   parsedAt DateTime? @map("parsed_at") @db.Timestamptz(6)
+  fileSize Int @map("file_size") @default(0)
+  detectedFormat String? @map("detected_format")
+  confidence Int? @default(0)
+  extractedData Json? @map("extracted_data")
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -2390,6 +2397,8 @@ model EventTimeline {
   durationMinutes Int? @map("duration_minutes") @default(0)
   notes String? @default("")
   sortOrder Int @map("sort_order") @db.SmallInt @default(0)
+  isCompleted Boolean @map("is_completed") @default(false)
+  responsibleRole String? @map("responsible_role")
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -3062,6 +3071,7 @@ model Invoice {
   sentAt DateTime? @map("sent_at") @db.Timestamptz(6)
   viewedAt DateTime? @map("viewed_at") @db.Timestamptz(6)
   overdueSince DateTime? @map("overdue_since") @db.Timestamptz(6)
+  voidedAt DateTime? @map("voided_at")
   reminderCount Int? @map("reminder_count") @default(0)
   lastReminderAt DateTime? @map("last_reminder_at") @db.Timestamptz(6)
   notes String? @db.Text @default("")
@@ -3301,6 +3311,11 @@ model LaborBudget {
   description String? @default("")
   approvedBy String? @map("approved_by") @db.Uuid @default("")
   approvedAt DateTime? @map("approved_at") @db.Timestamptz(6)
+  budgetUnit String? @map("budget_unit")
+  overrideReason String? @map("override_reason")
+  threshold80Pct Boolean @map("threshold80_pct") @default(true)
+  threshold90Pct Boolean @map("threshold90_pct") @default(true)
+  threshold100Pct Boolean @map("threshold100_pct") @default(true)
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -3337,6 +3352,7 @@ model Lead {
   notes String? @default("")
   convertedToClientId String? @map("converted_to_client_id") @db.Uuid @default("")
   convertedAt DateTime? @map("converted_at") @db.Timestamptz(6)
+  scoreBreakdown Json @map("score_breakdown") @default("{}")
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -3443,6 +3459,12 @@ model MaintenanceWorkOrder {
   totalCost Decimal? @map("total_cost") @db.Decimal(10, 2) @default(0)
   partsUsed String? @map("parts_used") @default("")
   notes String? @db.Text @default("")
+  reportedAt DateTime? @map("reported_at")
+  assignedVendor String? @map("assigned_vendor")
+  completedBy String? @map("completed_by") @db.Uuid
+  laborHours Decimal? @map("labor_hours") @db.Decimal(5, 2)
+  partsCost Decimal? @map("parts_cost") @db.Decimal(10, 2)
+  laborCost Decimal? @map("labor_cost") @db.Decimal(10, 2)
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -3648,12 +3670,14 @@ model OnboardingTask {
 model OpenShift {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  deletedAt DateTime? @map("deleted_at")
   scheduleId String @map("schedule_id") @db.Uuid
   role String @default("")
   shiftStart DateTime @map("shift_start")
   shiftEnd DateTime @map("shift_end")
   status String @default("open")
   claimedBy String? @map("claimed_by") @db.Uuid @default("")
+  roleDuringShift String? @map("role_during_shift")
   createdAt DateTime @map("created_at") @default(now())
   updatedAt DateTime @map("updated_at") @updatedAt
 
@@ -4162,6 +4186,9 @@ model PrepTask {
   estimatedMinutes Int? @map("estimated_minutes") @default(0)
   dueByTime DateTime? @map("due_by_time") @db.Time(6)
   notes String? @default("")
+  isEventFinish Boolean @map("is_event_finish") @default(false)
+  doNotCompleteUntil DateTime? @map("do_not_complete_until")
+  actualMinutes Int? @map("actual_minutes")
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -4887,6 +4914,7 @@ model RecipeIngredient {
   preparationNotes String? @map("preparation_notes") @default("")
   isOptional Boolean @map("is_optional") @default(false)
   wasteFactor Decimal @map("waste_factor") @db.Decimal(5, 4) @default(1)
+  ingredientCost Decimal @map("ingredient_cost") @db.Decimal(12, 2) @default(0)
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -4967,6 +4995,7 @@ model RecipeVersion {
   dropOffNotes String? @map("drop_off_notes") @default("")
   bringHotNotes String? @map("bring_hot_notes") @default("")
   cookOnSiteNotes String? @map("cook_on_site_notes") @default("")
+  costCalculatedAt DateTime? @map("cost_calculated_at")
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -5825,6 +5854,9 @@ model StorageLocation {
   storageType String @map("storage_type")
   temperatureZone String @map("temperature_zone") @default("")
   isActive Boolean @map("is_active") @default(true)
+  temperatureMin Decimal? @map("temperature_min") @db.Decimal(5, 1)
+  temperatureMax Decimal? @map("temperature_max") @db.Decimal(5, 1)
+  temperatureUnit String? @map("temperature_unit") @default("F")
   createdAt DateTime @map("created_at") @default(now())
   updatedAt DateTime @map("updated_at") @updatedAt
 
@@ -6080,6 +6112,11 @@ model TimelineTask {
   notes String? @default("")
   sortOrder Int? @map("sort_order") @default(0)
   completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
+  progress Int @default(0)
+  dependencies String[]
+  isOnCriticalPath Boolean @map("is_on_critical_path") @default(false)
+  slackMinutes Int @map("slack_minutes") @default(0)
+  priority String @default("medium")
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -6356,6 +6393,7 @@ model User {
   isActive Boolean @map("is_active") @default(true)
   avatarUrl String? @map("avatar_url") @default("")
   roleId String? @map("role_id") @db.Uuid @default("")
+  payoutMethod String @map("payout_method") @default("check")
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 

@@ -15,6 +15,9 @@ entity StorageLocation mixin TenantScoped, SoftDeletable {
   property required storageType: string
   property temperatureZone: string = ""
   property isActive: boolean = true
+  property temperatureMin: decimal(5,1)?
+  property temperatureMax: decimal(5,1)?
+  property temperatureUnit: string? = "F"
   timestamps
 
   computed isDeactivated: boolean = self.isActive == false

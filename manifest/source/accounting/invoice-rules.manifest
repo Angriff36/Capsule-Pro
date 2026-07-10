@@ -35,6 +35,7 @@ entity Invoice mixin TenantScoped, SoftDeletable {
   property sentAt: datetime?
   property viewedAt: datetime?
   property overdueSince: datetime?
+  property voidedAt: datetime?
 
   // Reminders
   property reminderCount: int? = 0

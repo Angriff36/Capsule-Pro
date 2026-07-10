@@ -249,6 +249,12 @@ entity MaintenanceWorkOrder mixin TenantScoped, SoftDeletable {
   property totalCost: money? = 0
   property partsUsed: string? = ""
   searchable property notes: string? = ""
+  property reportedAt: datetime?
+  property assignedVendor: string?
+  property completedBy: uuid?
+  property laborHours: decimal(5,2)?
+  property partsCost: decimal(10,2)?
+  property laborCost: decimal(10,2)?
   timestamps
 
   computed isOverdue: boolean = self.scheduledDate != null and self.status in ["open", "in_progress"] and now() > self.scheduledDate cache request

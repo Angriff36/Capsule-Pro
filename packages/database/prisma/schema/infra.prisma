@@ -7,9 +7,6 @@
 // lifted verbatim from schema.prisma.bak (the handwritten reference), then
 // reconciled so the combined folder passes `prisma validate` under relationMode="prisma".
 
-
-
-
 // ===== ENUMS =====
 
 enum AccountType {
@@ -318,46 +315,44 @@ enum webhook_status {
   @@schema("tenant_admin")
 }
 
-
-
 // ===== MODELS =====
 
 model Account {
-  id                 String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                 String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name               String
-  slug               String                @unique
-  defaultTimezone    String                @default("UTC") @map("default_timezone")
-  weekStart          Int                   @default(1) @map("week_start") @db.SmallInt
-  subscriptionTier   String                @default("trial") @map("subscription_tier")
-  subscriptionStatus String                @default("active") @map("subscription_status")
-  maxLocations       Int                   @default(1) @map("max_locations") @db.SmallInt
-  maxEmployees       Int                   @default(10) @map("max_employees") @db.SmallInt
-  createdAt          DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt          DateTime              @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt          DateTime?             @map("deleted_at") @db.Timestamptz(6)
+  slug               String           @unique
+  defaultTimezone    String           @default("UTC") @map("default_timezone")
+  weekStart          Int              @default(1) @map("week_start") @db.SmallInt
+  subscriptionTier   String           @default("trial") @map("subscription_tier")
+  subscriptionStatus String           @default("active") @map("subscription_status")
+  maxLocations       Int              @default(1) @map("max_locations") @db.SmallInt
+  maxEmployees       Int              @default(10) @map("max_employees") @db.SmallInt
+  createdAt          DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt          DateTime?        @map("deleted_at") @db.Timestamptz(6)
   locations          Location[]
   userPreferences    UserPreference[]
 
-  cycleCountAuditLogs            CycleCountAuditLog[]
-  employeeLocations              EmployeeLocation[]
-  supplierSyncLogs               SupplierSyncLog[]
-  providerSyncs                  ProviderSync[]
-  manifestEntities               ManifestEntity[]
-  nowstaConfig                   NowstaConfig?
-  nowstaEmployeeMappings         NowstaEmployeeMapping[]
-  nowstaShiftSyncs               NowstaShiftSync[]
-  goodshuffleConfig              GoodshuffleConfig?
-  goodshuffleEventSyncs          GoodshuffleEventSync[]
-  goodshuffleInventorySyncs      GoodshuffleInventorySync[]
-  goodshuffleInvoiceSyncs        GoodshuffleInvoiceSync[]
-  emailLogs                      EmailLog[]
-  outboundWebhooks               OutboundWebhook[]
-  webhookDeliveryLogs            WebhookDeliveryLog[]
-  webhookDlqEntries              WebhookDeadLetterQueue[]
-  payrollAuditLogs               PayrollAuditLog[]
-  employeeTaxInfos               EmployeeTaxInfo[]
-  employeePayrollPrefs           EmployeePayrollPrefs[]
-  departments                    Department[]
+  cycleCountAuditLogs       CycleCountAuditLog[]
+  employeeLocations         EmployeeLocation[]
+  supplierSyncLogs          SupplierSyncLog[]
+  providerSyncs             ProviderSync[]
+  manifestEntities          ManifestEntity[]
+  nowstaConfig              NowstaConfig?
+  nowstaEmployeeMappings    NowstaEmployeeMapping[]
+  nowstaShiftSyncs          NowstaShiftSync[]
+  goodshuffleConfig         GoodshuffleConfig?
+  goodshuffleEventSyncs     GoodshuffleEventSync[]
+  goodshuffleInventorySyncs GoodshuffleInventorySync[]
+  goodshuffleInvoiceSyncs   GoodshuffleInvoiceSync[]
+  emailLogs                 EmailLog[]
+  outboundWebhooks          OutboundWebhook[]
+  webhookDeliveryLogs       WebhookDeliveryLog[]
+  webhookDlqEntries         WebhookDeadLetterQueue[]
+  payrollAuditLogs          PayrollAuditLog[]
+  employeeTaxInfos          EmployeeTaxInfo[]
+  employeePayrollPrefs      EmployeePayrollPrefs[]
+  departments               Department[]
 
   @@map("accounts")
   @@schema("platform")
@@ -773,21 +768,21 @@ model EmployeeTaxInfo {
 }
 
 model ExtractedDetail {
-  tenantId        String    @map("tenant_id") @db.Uuid
-  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  sessionId       String    @map("session_id") @db.Uuid
-  draftId         String    @map("draft_id") @db.Uuid
-  fieldName       String    @map("field_name")
-  rawValue        String?   @map("raw_value") @db.Text
-  normalizedValue String?   @map("normalized_value")
-  confidence      String    @default("medium")
-  sourceQuote     String?   @map("source_quote") @db.Text
-  sourceTimestamp Int?      @map("source_timestamp")
-  status          String    @default("pending")
-  catalogMatchType String?  @map("catalog_match_type")
-  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenantId         String    @map("tenant_id") @db.Uuid
+  id               String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId        String    @map("session_id") @db.Uuid
+  draftId          String    @map("draft_id") @db.Uuid
+  fieldName        String    @map("field_name")
+  rawValue         String?   @map("raw_value") @db.Text
+  normalizedValue  String?   @map("normalized_value")
+  confidence       String    @default("medium")
+  sourceQuote      String?   @map("source_quote") @db.Text
+  sourceTimestamp  Int?      @map("source_timestamp")
+  status           String    @default("pending")
+  catalogMatchType String?   @map("catalog_match_type")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt        DateTime? @map("deleted_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([tenantId, draftId], map: "extracted_details_draft_idx")
@@ -895,22 +890,22 @@ model GoodshuffleInvoiceSync {
 }
 
 model Location {
-  tenantId         String     @map("tenant_id") @db.Uuid
-  id               String     @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name             String
-  addressLine1     String?    @map("address_line1")
-  addressLine2     String?    @map("address_line2")
-  city             String?
-  stateProvince    String?    @map("state_province")
-  postalCode       String?    @map("postal_code")
-  countryCode      String?    @map("country_code") @db.Char(2)
-  timezone         String?
-  isPrimary        Boolean    @default(false) @map("is_primary")
-  isActive         Boolean    @default(true) @map("is_active")
-  createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt        DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt        DateTime?  @map("deleted_at") @db.Timestamptz(6)
-  tenant           Account    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  tenantId      String    @map("tenant_id") @db.Uuid
+  id            String    @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  addressLine1  String?   @map("address_line1")
+  addressLine2  String?   @map("address_line2")
+  city          String?
+  stateProvince String?   @map("state_province")
+  postalCode    String?   @map("postal_code")
+  countryCode   String?   @map("country_code") @db.Char(2)
+  timezone      String?
+  isPrimary     Boolean   @default(false) @map("is_primary")
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant        Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
   @@unique([tenantId, id])
@@ -936,6 +931,59 @@ model ManifestApprovalRequest {
   @@index([expiresAt], map: "idx_manifest_approval_expires")
   @@index([status], map: "idx_manifest_approval_status")
   @@map("manifest_approval_requests")
+  @@schema("public")
+}
+
+// Async-reaction queue tables. DDL source of truth for runtime bootstrap:
+// manifest/runtime/src/pg-pool.ts ensureManifestSchema(). Partial indexes
+// (idx_async_reaction_pending/_running_claimed/_idempotency) and the status
+// CHECK constraint are not expressible in Prisma — they live in migration SQL.
+model AsyncReactionJob {
+  id               String    @id
+  tenantId         String    @map("tenant_id")
+  actorId          String?   @map("actor_id")
+  reactionName     String    @map("reaction_name")
+  triggeringEvent  Json      @map("triggering_event")
+  status           String
+  attempts         Int       @default(0)
+  maxAttempts      Int       @default(5) @map("max_attempts")
+  initialBackoffMs BigInt    @default(1000) @map("initial_backoff_ms")
+  maxBackoffMs     BigInt    @default(60000) @map("max_backoff_ms")
+  nextAttemptAt    BigInt    @map("next_attempt_at")
+  lastError        String?   @map("last_error")
+  idempotencyKey   String?   @map("idempotency_key")
+  correlationId    String?   @map("correlation_id")
+  causationId      String?   @map("causation_id")
+  enqueuedAt       BigInt    @map("enqueued_at")
+  claimedAt        DateTime? @map("claimed_at") @db.Timestamptz
+  deliveredAt      DateTime? @map("delivered_at") @db.Timestamptz
+  deadLetteredAt   DateTime? @map("dead_lettered_at") @db.Timestamptz
+  insertedAt       DateTime  @default(now()) @map("inserted_at") @db.Timestamptz
+
+  @@index([tenantId, status], map: "idx_async_reaction_tenant_status")
+  @@map("async_reaction_jobs")
+  @@schema("public")
+}
+
+model AsyncReactionDlq {
+  id              String   @id
+  tenantId        String   @map("tenant_id")
+  actorId         String?  @map("actor_id")
+  reactionName    String   @map("reaction_name")
+  triggeringEvent Json     @map("triggering_event")
+  attempts        Int
+  maxAttempts     Int      @map("max_attempts")
+  lastError       String?  @map("last_error")
+  idempotencyKey  String?  @map("idempotency_key")
+  correlationId   String?  @map("correlation_id")
+  causationId     String?  @map("causation_id")
+  enqueuedAt      BigInt   @map("enqueued_at")
+  deadLetteredAt  BigInt   @map("dead_lettered_at")
+  insertedAt      DateTime @default(now()) @map("inserted_at") @db.Timestamptz
+
+  @@index([tenantId, deadLetteredAt(sort: Desc)], map: "idx_async_reaction_dlq_tenant")
+  @@index([reactionName, deadLetteredAt(sort: Desc)], map: "idx_async_reaction_dlq_reaction")
+  @@map("async_reaction_dlq")
   @@schema("public")
 }
 
@@ -1297,6 +1345,24 @@ model RateLimitUsage {
   @@schema("tenant_admin")
 }
 
+/// Tracking rows for IR sample seed packs (`@angriff36/manifest/seed-pack`).
+/// Sole clear authority — never use business tags/source as sample markers.
+model SampleDataRow {
+  id         String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId   String @map("tenant_id") @db.Uuid
+  packId     String @map("pack_id")
+  version    String
+  entity     String
+  seedKey    String @map("seed_key")
+  instanceId String @map("instance_id")
+
+  @@id([tenantId, id])
+  @@unique([tenantId, packId, version, entity, seedKey], map: "sample_data_row_pack_seed_uidx")
+  @@index([tenantId, packId, version], map: "sample_data_row_pack_idx")
+  @@map("sample_data_rows")
+  @@schema("public")
+}
+
 model ReactionLog {
   tenantId      String   @map("tenant_id") @db.Uuid
   id            String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -1533,7 +1599,7 @@ model SupplierSyncLog {
   updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  tenant   Account           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
   @@index([tenantId, supplierId], map: "supplier_sync_logs_tenant_supplier_idx")
@@ -1615,13 +1681,13 @@ model UserPreference {
 }
 
 model WasteReason {
-  id           Int          @id @default(autoincrement()) @db.SmallInt
-  code         String       @unique
-  name         String
-  description  String?
-  colorHex     String?      @map("color_hex") @db.Char(7)
-  isActive     Boolean      @default(true) @map("is_active")
-  sortOrder    Int          @default(0) @map("sort_order") @db.SmallInt
+  id          Int     @id @default(autoincrement()) @db.SmallInt
+  code        String  @unique
+  name        String
+  description String?
+  colorHex    String? @map("color_hex") @db.Char(7)
+  isActive    Boolean @default(true) @map("is_active")
+  sortOrder   Int     @default(0) @map("sort_order") @db.SmallInt
 
   @@map("waste_reasons")
   @@schema("core")

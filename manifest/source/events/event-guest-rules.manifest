@@ -21,6 +21,7 @@ entity EventGuest mixin TenantScoped, SoftDeletable {
   property rsvpStatus: string = "pending"
   property rsvpRespondedAt: datetime?
   property checkedInAt: datetime?
+  property waitlistPosition: int?
   versionProperty version: number
   versionAtProperty versionAt: number
   timestamps

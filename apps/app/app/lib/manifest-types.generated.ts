@@ -692,6 +692,7 @@ export interface CommandBoardCard {
   entityId?: string | null;
   entityType?: string | null;
   version?: number;
+  vectorClock?: unknown | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1212,6 +1213,7 @@ export interface EventDish {
   quantityServings?: number;
   specialInstructions?: string | null;
   course?: string | null;
+  serviceStyle?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1252,6 +1254,7 @@ export interface EventGuest {
   rsvpStatus?: string;
   rsvpRespondedAt?: string | null;
   checkedInAt?: string | null;
+  waitlistPosition?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1270,6 +1273,10 @@ export interface EventImport {
   skippedRows?: number | null;
   parseErrors?: string[] | null;
   parsedAt?: string | null;
+  fileSize?: number;
+  detectedFormat?: string | null;
+  confidence?: number | null;
+  extractedData?: unknown | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1431,6 +1438,8 @@ export interface EventTimeline {
   durationMinutes?: number | null;
   notes?: string | null;
   sortOrder?: number;
+  isCompleted?: boolean;
+  responsibleRole?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -1820,6 +1829,7 @@ export interface Invoice {
   sentAt?: string | null;
   viewedAt?: string | null;
   overdueSince?: string | null;
+  voidedAt?: string | null;
   reminderCount?: number | null;
   lastReminderAt?: string | null;
   notes?: string | null;
@@ -1952,6 +1962,11 @@ export interface LaborBudget {
   description?: string | null;
   approvedBy?: string | null;
   approvedAt?: string | null;
+  budgetUnit?: string | null;
+  overrideReason?: string | null;
+  threshold80Pct?: boolean;
+  threshold90Pct?: boolean;
+  threshold100Pct?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -1975,6 +1990,7 @@ export interface Lead {
   notes?: string | null;
   convertedToClientId?: string | null;
   convertedAt?: string | null;
+  scoreBreakdown?: unknown;
   createdAt: string;
   updatedAt: string;
 }
@@ -2037,6 +2053,12 @@ export interface MaintenanceWorkOrder {
   totalCost?: number | null;
   partsUsed?: string | null;
   notes?: string | null;
+  reportedAt?: string | null;
+  assignedVendor?: string | null;
+  completedBy?: string | null;
+  laborHours?: number | null;
+  partsCost?: number | null;
+  laborCost?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2144,12 +2166,14 @@ export interface OnboardingTask {
 export interface OpenShift {
   id: string;
   tenantId: string;
+  deletedAt?: string | null;
   scheduleId: string;
   role?: string;
   shiftStart: string;
   shiftEnd: string;
   status?: string;
   claimedBy?: string | null;
+  roleDuringShift?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2440,6 +2464,9 @@ export interface PrepTask {
   estimatedMinutes?: number | null;
   dueByTime?: string | null;
   notes?: string | null;
+  isEventFinish?: boolean;
+  doNotCompleteUntil?: string | null;
+  actualMinutes?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -2885,6 +2912,7 @@ export interface RecipeIngredient {
   preparationNotes?: string | null;
   isOptional?: boolean;
   wasteFactor?: number;
+  ingredientCost?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -2939,6 +2967,7 @@ export interface RecipeVersion {
   dropOffNotes?: string | null;
   bringHotNotes?: string | null;
   cookOnSiteNotes?: string | null;
+  costCalculatedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3465,6 +3494,9 @@ export interface StorageLocation {
   storageType: string;
   temperatureZone?: string;
   isActive?: boolean;
+  temperatureMin?: number | null;
+  temperatureMax?: number | null;
+  temperatureUnit?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3604,6 +3636,11 @@ export interface TimelineTask {
   notes?: string | null;
   sortOrder?: number | null;
   completedAt?: string | null;
+  progress?: number;
+  dependencies?: string[] | null;
+  isOnCriticalPath?: boolean;
+  slackMinutes?: number;
+  priority?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -3772,6 +3809,7 @@ export interface User {
   isActive?: boolean;
   avatarUrl?: string | null;
   roleId?: string | null;
+  payoutMethod?: string;
   createdAt: string;
   updatedAt: string;
 }

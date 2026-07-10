@@ -16,6 +16,7 @@ entity EventDish mixin TenantScoped, SoftDeletable {
   property quantityServings: int = 1
   searchable property specialInstructions: string? = ""
   property course: string? = ""
+  property serviceStyle: string?
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null

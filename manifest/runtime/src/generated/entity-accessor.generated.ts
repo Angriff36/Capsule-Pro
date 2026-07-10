@@ -1029,7 +1029,7 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenant_id",
     "createdAtField": "created_at",
-    "softDeleteField": null
+    "softDeleteField": "deletedAt"
   },
   "OverrideAudit": {
     "accessor": "overrideAudit",

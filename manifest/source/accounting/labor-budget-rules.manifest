@@ -16,6 +16,11 @@ entity LaborBudget mixin TenantScoped, SoftDeletable {
   searchable property description: string? = ""
   property approvedBy: uuid? = ""
   property approvedAt: datetime?
+  property budgetUnit: string?
+  property overrideReason: string?
+  property threshold80Pct: boolean = true
+  property threshold90Pct: boolean = true
+  property threshold100Pct: boolean = true
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null

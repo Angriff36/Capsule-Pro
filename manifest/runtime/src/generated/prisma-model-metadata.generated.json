@@ -2556,6 +2556,10 @@
         "irName": "version"
       },
       {
+        "name": "vectorClock",
+        "irName": "vectorClock"
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt"
       },
@@ -4582,6 +4586,10 @@
         "irName": "course"
       },
       {
+        "name": "serviceStyle",
+        "irName": "serviceStyle"
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt"
       },
@@ -4738,6 +4746,10 @@
         "irName": "checkedInAt"
       },
       {
+        "name": "waitlistPosition",
+        "irName": "waitlistPosition"
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt"
       },
@@ -4806,6 +4818,22 @@
       {
         "name": "parsedAt",
         "irName": "parsedAt"
+      },
+      {
+        "name": "fileSize",
+        "irName": "fileSize"
+      },
+      {
+        "name": "detectedFormat",
+        "irName": "detectedFormat"
+      },
+      {
+        "name": "confidence",
+        "irName": "confidence"
+      },
+      {
+        "name": "extractedData",
+        "irName": "extractedData"
       },
       {
         "name": "createdAt",
@@ -5436,6 +5464,14 @@
       {
         "name": "sortOrder",
         "irName": "sortOrder"
+      },
+      {
+        "name": "isCompleted",
+        "irName": "isCompleted"
+      },
+      {
+        "name": "responsibleRole",
+        "irName": "responsibleRole"
       },
       {
         "name": "createdAt",
@@ -6912,6 +6948,10 @@
         "irName": "overdueSince"
       },
       {
+        "name": "voidedAt",
+        "irName": "voidedAt"
+      },
+      {
         "name": "reminderCount",
         "irName": "reminderCount"
       },
@@ -7426,6 +7466,26 @@
         "irName": "approvedAt"
       },
       {
+        "name": "budgetUnit",
+        "irName": "budgetUnit"
+      },
+      {
+        "name": "overrideReason",
+        "irName": "overrideReason"
+      },
+      {
+        "name": "threshold80Pct",
+        "irName": "threshold80Pct"
+      },
+      {
+        "name": "threshold90Pct",
+        "irName": "threshold90Pct"
+      },
+      {
+        "name": "threshold100Pct",
+        "irName": "threshold100Pct"
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt"
       },
@@ -7514,6 +7574,10 @@
       {
         "name": "convertedAt",
         "irName": "convertedAt"
+      },
+      {
+        "name": "scoreBreakdown",
+        "irName": "scoreBreakdown"
       },
       {
         "name": "createdAt",
@@ -7756,6 +7820,30 @@
       {
         "name": "notes",
         "irName": "notes"
+      },
+      {
+        "name": "reportedAt",
+        "irName": "reportedAt"
+      },
+      {
+        "name": "assignedVendor",
+        "irName": "assignedVendor"
+      },
+      {
+        "name": "completedBy",
+        "irName": "completedBy"
+      },
+      {
+        "name": "laborHours",
+        "irName": "laborHours"
+      },
+      {
+        "name": "partsCost",
+        "irName": "partsCost"
+      },
+      {
+        "name": "laborCost",
+        "irName": "laborCost"
       },
       {
         "name": "createdAt",
@@ -8155,7 +8243,7 @@
   },
   "OpenShift": {
     "accessor": "openShift",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "pkFields": [
       "tenantId",
       "id"
@@ -8168,6 +8256,10 @@
       {
         "name": "tenantId",
         "irName": "tenantId"
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt"
       },
       {
         "name": "scheduleId",
@@ -8192,6 +8284,10 @@
       {
         "name": "claimedBy",
         "irName": "claimedBy"
+      },
+      {
+        "name": "roleDuringShift",
+        "irName": "roleDuringShift"
       },
       {
         "name": "createdAt",
@@ -9320,6 +9416,18 @@
       {
         "name": "notes",
         "irName": "notes"
+      },
+      {
+        "name": "isEventFinish",
+        "irName": "isEventFinish"
+      },
+      {
+        "name": "doNotCompleteUntil",
+        "irName": "doNotCompleteUntil"
+      },
+      {
+        "name": "actualMinutes",
+        "irName": "actualMinutes"
       },
       {
         "name": "createdAt",
@@ -11060,6 +11168,10 @@
         "irName": "wasteFactor"
       },
       {
+        "name": "ingredientCost",
+        "irName": "ingredientCost"
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt"
       },
@@ -11270,6 +11382,10 @@
       {
         "name": "cookOnSiteNotes",
         "irName": "cookOnSiteNotes"
+      },
+      {
+        "name": "costCalculatedAt",
+        "irName": "costCalculatedAt"
       },
       {
         "name": "createdAt",
@@ -13304,6 +13420,18 @@
         "irName": "isActive"
       },
       {
+        "name": "temperatureMin",
+        "irName": "temperatureMin"
+      },
+      {
+        "name": "temperatureMax",
+        "irName": "temperatureMax"
+      },
+      {
+        "name": "temperatureUnit",
+        "irName": "temperatureUnit"
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt"
       },
@@ -13820,6 +13948,26 @@
       {
         "name": "completedAt",
         "irName": "completedAt"
+      },
+      {
+        "name": "progress",
+        "irName": "progress"
+      },
+      {
+        "name": "dependencies",
+        "irName": "dependencies"
+      },
+      {
+        "name": "isOnCriticalPath",
+        "irName": "isOnCriticalPath"
+      },
+      {
+        "name": "slackMinutes",
+        "irName": "slackMinutes"
+      },
+      {
+        "name": "priority",
+        "irName": "priority"
       },
       {
         "name": "createdAt",
@@ -14476,6 +14624,10 @@
       {
         "name": "roleId",
         "irName": "roleId"
+      },
+      {
+        "name": "payoutMethod",
+        "irName": "payoutMethod"
       },
       {
         "name": "createdAt",

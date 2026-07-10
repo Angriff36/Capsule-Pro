@@ -34,6 +34,9 @@ entity PrepTask mixin TenantScoped, SoftDeletable {
   property estimatedMinutes: int? = 0
   property dueByTime: datetime?
   searchable property notes: string? = ""
+  property isEventFinish: boolean = false
+  property doNotCompleteUntil: datetime?
+  property actualMinutes: int?
   timestamps
 
   computed isClaimed: boolean = self.claimedBy != ""

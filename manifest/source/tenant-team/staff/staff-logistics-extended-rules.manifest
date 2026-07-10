@@ -576,7 +576,7 @@ entity OnboardingCompletion mixin TenantScoped {
   store OnboardingCompletion in durable
 }
 
-entity OpenShift mixin TenantScoped {
+entity OpenShift mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required scheduleId: uuid
   property role: string = ""
@@ -584,6 +584,7 @@ entity OpenShift mixin TenantScoped {
   property shiftEnd: datetime
   indexed property status: string = "open"
   property claimedBy: uuid? = ""
+  property roleDuringShift: string?
   timestamps
 
   computed isOpen: boolean = self.status == "open"

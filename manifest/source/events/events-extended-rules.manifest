@@ -165,6 +165,8 @@ entity EventTimeline mixin TenantScoped, SoftDeletable {
   property durationMinutes: int? = 0
   searchable property notes: string? = ""
   property sortOrder: int = 0
+  property isCompleted: boolean = false
+  property responsibleRole: string?
   timestamps
 
   computed isShortEntry: boolean = self.durationMinutes > 0 and self.durationMinutes < 15
@@ -255,6 +257,11 @@ entity TimelineTask mixin TenantScoped, SoftDeletable {
   searchable property notes: string? = ""
   property sortOrder: int? = 0
   property completedAt: datetime?
+  property progress: int = 0
+  property dependencies: array<string>?
+  property isOnCriticalPath: boolean = false
+  property slackMinutes: int = 0
+  property priority: string = "medium"
   timestamps
 
   computed isPending: boolean = self.status == "pending"
@@ -404,6 +411,10 @@ entity EventImport mixin TenantScoped, SoftDeletable {
   property parseErrors: array<string>? = []
   timestamps
   property parsedAt: datetime?
+  property fileSize: int = 0
+  property detectedFormat: string?
+  property confidence: int? = 0
+  property extractedData: json?
 
   computed isPending: boolean = self.parseStatus == "pending"
   computed isProcessing: boolean = self.parseStatus == "parsing"

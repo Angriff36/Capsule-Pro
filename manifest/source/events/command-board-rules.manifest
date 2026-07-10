@@ -104,6 +104,7 @@ entity CommandBoardCard mixin TenantScoped, SoftDeletable {
   property entityId: uuid? = ""
   property entityType: string? = ""
   property version: int = 0
+  property vectorClock: json?
   timestamps
 
   computed isPending: boolean = self.status == "pending"

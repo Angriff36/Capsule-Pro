@@ -142,6 +142,7 @@ entity RecipeVersion mixin TenantScoped, SoftDeletable {
   property dropOffNotes: string? = ""
   property bringHotNotes: string? = ""
   property cookOnSiteNotes: string? = ""
+  property costCalculatedAt: datetime?
   timestamps
 
   computed totalTimeMinutes: int = self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes
@@ -302,6 +303,7 @@ entity RecipeIngredient mixin TenantScoped, SoftDeletable {
   property preparationNotes: string? = ""
   property isOptional: boolean = false
   property wasteFactor: decimal = 1.0
+  property ingredientCost: decimal = 0
   timestamps
 
   relationship belongsTo recipeVersion: RecipeVersion fields [tenantId, recipeVersionId] references [tenantId, id]
