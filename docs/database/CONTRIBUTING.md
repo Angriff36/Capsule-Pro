@@ -4,29 +4,50 @@
 
 ## Quick Start
 
-1. **Schema changes?** Update Prisma schema first
-2. **Run migration**: `pnpm migrate`
-3. **Update docs**: Edit relevant files in `docs/database/`
-4. **Generate docs**: `pnpm docs:generate-db` (TODO: implement)
-5. **Commit all**: Include schema, migration, and docs
+1. **Schema changes?** Edit the SOURCE (Manifest `.manifest` or `infra.prisma`), never generated files
+2. **Create + apply migration**: `pnpm db:dev --create-only --name <intent>` → review → `pnpm db:deploy`
+3. **Regenerate the client**: `pnpm prisma:check`
+4. **Update docs**: Edit relevant files in `docs/database/`
+5. **Commit all**: Include source, schema, migration, and docs
 
 ## Schema Change Workflow (Enforced)
 
-1. Ensure `DATABASE_URL` points at the correct Neon branch for this work.
-2. Run `pnpm db:check` to detect drift before you touch migrations.
-3. Update `packages/database/prisma/schema.prisma`.
-4. Run `pnpm migrate` (now includes `db:check` and `prisma generate`).
-5. If `db:check` fails with drift, run `pnpm db:repair` to create a repair migration.
-6. Append an entry to `DATABASE_PRE_MIGRATION_CHECKLIST.md`.
-7. Apply migrations with `pnpm db:deploy`.
-8. Do not edit existing migrations. Always add a new migration directory.
+> **2026-07-10:** The "accepted drift" era is over. `20260710142245_reconcile_schema_truth`
+> reconciled migration history with the schema; `pnpm db:check` is now STRICT (full
+> `prisma migrate diff`, zero tolerance) and `db:repair` + diff-sanitizing were removed.
+> Development follows the official Prisma workflow:
+> [development-and-production](https://www.prisma.io/docs/orm/prisma-migrate/workflows/development-and-production).
+
+1. Ensure `packages/database/.env` `DATABASE_URL` points at the dev Neon **direct** endpoint
+   (no `-pooler` host — [Neon's Prisma migration guidance](https://neon.com/docs/guides/prisma-migrations)).
+   This file is loaded only by `prisma.config.ts` (CLI); runtime apps keep their pooled URL.
+2. Run `pnpm db:check` — it must be clean before you start.
+3. Edit the source of truth:
+   - **Manifest-owned model** → edit `manifest/source/**.manifest`, then regenerate
+     (`pnpm manifest:compile`, `pnpm exec manifest generate -p prisma --surface all -o packages/database/prisma manifest/ir/kitchen.ir.json`,
+     `pnpm manifest:generate-metadata`, `pnpm manifest:client`, `pnpm manifest:ir:embed`).
+   - **Hand-owned model** → edit `packages/database/prisma/schema/infra.prisma`.
+4. `pnpm db:dev --create-only --name <intent>` — Prisma generates and shadow-validates the SQL.
+5. Review the migration. Add any custom SQL Prisma cannot express (partial indexes,
+   CHECK constraints) to this migration **before** applying — the official
+   "customize before apply" flow. Prisma's differ ignores those objects, so they never
+   register as drift.
+6. `pnpm db:deploy`, then `pnpm db:check` (must be clean), then `pnpm prisma:check`
+   (regenerates the Prisma Client — part of the normal workflow, not an afterthought).
+7. Do not edit existing migrations. Always add a new migration directory.
 
 Notes:
-1. `pnpm db:check` blocks **additive drift** (missing columns/tables/indexes). It ignores drop-only differences like existing DB FKs because Prisma uses `relationMode = "prisma"`.
-2. `pnpm db:repair` generates a **safe, additive-only** migration, but it will **drop and recreate indexes** when needed to fix index drift (no data loss).
-3. Review the migration SQL before applying.
-4. Avoid `prisma db push` (disabled in this repo).
-5. If you intentionally want a destructive reset, use `pnpm --filter @repo/database exec prisma migrate reset --force`.
+1. `pnpm db:check` fails on **any** live-DB↔schema diff, in both directions. No sanitizing, no allowlist.
+2. Never run `prisma format` on the schema folder — it re-indents the generated
+   `manifest.prisma` and breaks `manifest:schema:check` (the projection emits its own formatting).
+3. Avoid `prisma db push` (disabled in this repo).
+4. Prisma applies migrations **without** a wrapping transaction: a failed migration can be
+   partially applied. On the disposable dev DB the clean recovery is
+   `pnpm --filter @repo/database exec prisma migrate reset --force` (destroys data — needs
+   explicit user confirmation), which replays the full history from empty.
+5. Known interim drift: until the `@angriff36/manifest` Prisma-projection fix
+   (suppress `@default("")` on uuid columns) is released and pinned, `db:check` reports
+   exactly 187 `SET DEFAULT ''` clauses. See `KNOWN_ISSUES.md` § "uuid empty-string defaults".
 
 ## Schema Naming Conventions
 
@@ -99,84 +120,24 @@ Report artifacts (gitignored): `manifest/reports/schema-naming/schema-naming.{js
 
 ### `SHADOW_DATABASE_URL` and migrate dev (scoping)
 
-- **Purpose:** Prisma Migrate uses a **shadow database** during `migrate dev`.
-  In this repo, `packages/database/prisma.config.ts` sets `shadowDatabaseUrl`
-  only when `SHADOW_DATABASE_URL` is present; otherwise that field is omitted.
-- **Where it is required:** **Optional in all paths.** Neon auto-creates and
-  deletes the shadow database for `prisma migrate dev`, so neither `pnpm db:dev`
-  nor `pnpm migrate` enforces a preflight check on `SHADOW_DATABASE_URL`. Provide
-  one explicitly only if you need a dedicated shadow DB/branch (e.g. an org
-  policy that disallows shadow auto-create) or if `prisma migrate dev` errors
-  with a shadow-DB create-permission failure — see `pnpm db:neon-shadow` below.
+- **Purpose:** Prisma Migrate uses a **shadow database** during `migrate dev`, and
+  `prisma migrate diff --from-migrations` requires one explicitly.
+  `packages/database/prisma.config.ts` sets `shadowDatabaseUrl` only when
+  `SHADOW_DATABASE_URL` is present; otherwise the field is omitted and Neon
+  auto-provisions a shadow DB for `migrate dev`.
+- **Local setup (already done on the primary dev machine):**
+  `packages/database/.env.local` (gitignored) holds `SHADOW_DATABASE_URL` pointing
+  at the `prisma_shadow` database on the same dev Neon instance, **direct** endpoint.
+  To recreate it: connect to the direct endpoint and run `CREATE DATABASE prisma_shadow;`
+  (the `neondb_owner` role has createdb), then set the URL with `/prisma_shadow` as the
+  database path.
 - **Where it is not required:** App and API **env validation** (`@repo/database/keys`)
   only includes **`DATABASE_URL`**. Vercel/Next **build**, **`prisma generate`**,
   **`pnpm db:deploy`** / **`migrate deploy`**, **`migrate:status`**, and **runtime
-  startup** do not use or validate `SHADOW_DATABASE_URL`.
-- **Unsupported workflow:** Running **`prisma migrate dev`** directly (for example
-  `pnpm --filter @repo/database exec prisma migrate dev …` or `npx prisma migrate dev`)
-  **without** going through **`pnpm db:dev`** is **unsupported** — it skips the
-  repo guard and may run migrate dev without the intended checks. Use
-  **`pnpm db:dev`** (pass flags directly WITHOUT a literal `--`, e.g.
-  `pnpm db:dev --create-only --name foo`) as the only migrate-dev entrypoint.
-  ⚠ Do NOT use `pnpm db:dev -- --create-only …`: with Prisma 7 / pnpm 10 the literal
-  `--` is forwarded to prisma, which ignores the flags and prompts interactively for a
-  migration name — in non-TTY contexts this leaves a zombie `migrate dev` that can apply
-  pending migrations unattended (observed 2026-06-11; see manifest/notes.md §29).
-
-### Neon: create `capsule_shadow` and write `SHADOW_DATABASE_URL` (local only)
-
-If you use **Neon**, provision an empty shadow database on your **dev** branch
-(same migration role as `DATABASE_URL`, e.g. `neondb_owner`), then store a **direct
-(non-pooled) Prisma** URL locally only — **never** in Vercel production env.
-
-1. Install the [Neon CLI](https://neon.tech/docs/reference/cli-install) and run
-   `neon auth`, or set a Neon API key for non-interactive use (see Neon docs:
-   global `--api-key` / `NEON_API_KEY`).
-2. From the repo root, with your Neon **project ID** and **branch** name (default
-   branch name in examples is `dev`; set `NEON_DEV_BRANCH` if yours differs):
-
-   ```bash
-   export NEON_PROJECT_ID="<neon-project-id>"
-   # Optional: same role as in DATABASE_URL (required if the branch has multiple roles)
-   export NEON_DATABASE_OWNER="neondb_owner"
-   # Optional: defaults to branch name "dev"
-   export NEON_DEV_BRANCH="dev"
-
-   pnpm db:neon-shadow -- --write
-   ```
-
-   This runs `neon databases create … --name capsule_shadow` (idempotent if the DB
-   already exists) and `neon connection-string <branch> --database-name capsule_shadow --prisma`
-   (non-pooled by default), then appends **`SHADOW_DATABASE_URL`** to
-   **`packages/database/.env.local`** (gitignored). Prisma loads that file via
-   `packages/database/prisma.config.ts`, so **`pnpm db:dev`** picks it up without
-   exporting it in your shell.
-
-3. **Do not** add `SHADOW_DATABASE_URL` to Vercel **Production** (or any runtime-only
-   env). Next build, **`prisma generate`**, **`pnpm db:deploy`**, **`migrate:status`**,
-   and app startup **do not** require it.
-
-### Neon: schema backup + read-only audit (safe)
-
-Before inspecting or changing Neon resources, take a **schema-only** SQL backup
-(no data) and run a **read-only** CLI audit (no deletes, resets, or
-`connection-string` dumps that expose passwords):
-
-```bash
-# 1) Requires pg_dump on PATH + DATABASE_URL (see packages/database/.env.local)
-pnpm db:neon-backup-schema
-
-# 2) Requires `neon auth` (or NEON_API_KEY). Optional: NEON_PROJECT_ID=...
-pnpm db:neon-audit
-
-# Or both in order:
-pnpm db:neon-backup-and-audit
-```
-
-Outputs: `backups/neon-schema/schema-only-<timestamp>.sql` (gitignored) and JSON
-snapshots on stdout from `neon-audit-readonly.mjs`. This repo’s app tenancy is
-**shared Postgres + `tenant_*` schemas**, not Neon “project-per-customer”; the
-audit only describes your Neon project (branches, databases, roles, operations).
+  startup** do not use or validate `SHADOW_DATABASE_URL`. Never add it to Vercel.
+- **Entrypoint:** use **`pnpm db:dev`** (flags directly, e.g.
+  `pnpm db:dev --create-only --name foo`) rather than raw `prisma migrate dev`,
+  so the workspace filter and `prisma.config.ts` env loading apply.
 
 ## Documentation Structure
 

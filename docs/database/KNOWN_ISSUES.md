@@ -2,18 +2,31 @@
 
 **Database schema problems, TODOs, and future improvements**
 
-Last updated: 2026-05-02
+Last updated: 2026-07-10
 
-## Summary
+**Note**: `prisma db push` is disabled in this repo. `pnpm db:repair` and the "accepted drift"
+workflow were **removed 2026-07-10** — `pnpm db:check` is strict and any diff is a failure to fix
+via a proper migration (see `CONTRIBUTING.md`).
 
-- **Total issues tracked**: 7 (4 critical, 3 minor, 3 future improvements)
-- **Total TODOs**: 23 actionable items
-- **Issues resolved**: 4 (Migration rollback, Role model, Computed DEFAULT, UUID function)
-- **Type fixes completed**: 1 (ProposalUpdateData type)
+## Active
 
-**Note**: `prisma db push` is disabled in this repo. Any references to db push failures below are historical; use `pnpm db:check` + `pnpm db:repair` instead.
+### 0. uuid empty-string defaults — pending `@angriff36/manifest` projection release
 
-## Critical Issues
+**Status**: ⏳ Fix implemented upstream (local commit `2c7f2d0` in `C:\projects\Manifest`), awaiting release + pin bump
+
+**Issue**: the Manifest Prisma projection emits `@default("")` for every `uuid? = ""` DSL
+sentinel. `''` is not a valid uuid literal, so the resulting `SET DEFAULT ''` DDL can never be
+applied to Postgres (`22P02`) — this was the root cause of the old permanently-"accepted" drift.
+Until the projection fix ships, `pnpm db:check` reports exactly **187** `SET DEFAULT ''` clauses
+(schema-side phantom; the live DB is correct), and a freshly generated migration would include
+them and fail to deploy — strip them if you must migrate before the release lands.
+
+**Fix path** (one sitting):
+1. In `C:\projects\Manifest`: push the fix commit, run `node scripts/release.mjs` (cut-release workflow → npm).
+2. In capsule-pro: bump the `@angriff36/manifest` pin, `pnpm install`,
+   regenerate (`manifest generate -p prisma …`), commit the regenerated `manifest.prisma`.
+3. `pnpm db:check` → zero drift. No database change is needed.
+
 ## Critical Issues
 
 ### 1. Composite Foreign Key Constraints Missing in Prisma Schema

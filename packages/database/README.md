@@ -290,7 +290,7 @@ model Example {
 - **ALWAYS** update `schema-registry-v2.txt` before generating migrations
 - **ALWAYS** add checklist entry before committing
 - **NEVER** edit existing migrations after deployment
-- If drift exists, run `pnpm db:repair` to generate a safe repair migration
+- If drift exists, create a proper migration (`pnpm db:dev --create-only`) or reset the disposable dev DB — see "Drift Resolution Workflow" below
 
 ---
 
@@ -453,20 +453,14 @@ Prisma schema relation issues surface as validation errors such as `P1012` (for 
 ### Migration Commands
 
 ```bash
-# Create new migration (db:check + format + prisma:check + db:dev — needs SHADOW_DATABASE_URL)
+# Create new migration (validate + db:check + prisma:check + db:dev)
 pnpm migrate
 
-# Migrate dev only (supported path; requires SHADOW_DATABASE_URL)
+# Migrate dev only (supported path)
 pnpm db:dev
 
-# Neon: create DB capsule_shadow + optional --write to packages/database/.env.local
-# pnpm db:neon-shadow -- --write
-
-# Check for drift (detects missing columns/tables/indexes)
+# Check for drift — STRICT full diff, any difference fails
 pnpm db:check
-
-# Generate safe repair migration for drift
-pnpm db:repair
 
 # Apply migrations to database
 pnpm db:deploy
@@ -476,36 +470,35 @@ pnpm migrate:status
 
 # Generate Prisma client and validate schema/client invariant
 pnpm prisma:check
-
-# Format Prisma schema
-pnpm --filter @repo/database exec prisma format
 ```
 
 ### Drift Resolution Workflow
+
+> `db:repair` and the sanitized "additive-only" drift model were removed 2026-07-10
+> (see `docs/database/CONTRIBUTING.md`). Drift means one of two things:
 
 ```bash
 # 1. Detect drift
 pnpm db:check
 
-# 2. Generate repair migration (safe, additive-only)
-pnpm db:repair
-
-# 3. Review generated SQL
-# Check packages/database/prisma/migrations/<timestamp>_repair_drift/migration.sql
-
-# 4. Apply repair migration
+# 2a. Schema is ahead of the DB (you changed source without migrating):
+pnpm db:dev --create-only --name <intent>   # review, then:
 pnpm db:deploy
 
-# 5. Re-check drift
+# 2b. Dev DB was mutated outside migrations (disposable data):
+pnpm --filter @repo/database exec prisma migrate reset --force   # replays history from empty
+
+# 3. Re-check
 pnpm db:check
 ```
 
 ### Important Notes
 
-- `pnpm db:check` blocks additive drift (missing columns/tables/indexes)
-- `pnpm db:check` ignores drop-only diffs (DB foreign keys are not Prisma-managed under `relationMode = "prisma"`)
-- `pnpm db:repair` generates safe, additive-only migrations
-- `pnpm db:repair` will drop/recreate indexes when fixing index drift (no data loss)
+- `pnpm db:check` fails on ANY live-DB↔schema difference, in both directions
+- Do not run `prisma format` on the schema folder — it re-indents the generated
+  `manifest.prisma` and breaks `manifest:schema:check`
+- Known interim drift (187 uuid `SET DEFAULT ''` clauses) is documented in
+  `docs/database/KNOWN_ISSUES.md` § 0 — pending `@angriff36/manifest` release
 
 ---
 
