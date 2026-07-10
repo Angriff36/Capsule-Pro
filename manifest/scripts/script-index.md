@@ -72,16 +72,10 @@ The IR is the single semantic source of truth. Prisma models, API routes, runtim
 
 ### Schema & DB workflow (when vision requires persisted entities)
 
-1. Edit `manifest/source/<domain>/*.manifest`
-2. `pnpm manifest:compile`
-3. `pnpm manifest:sync-artifacts`
-4. Promote IR model blocks into `packages/database/prisma/schema.prisma` (Phase 2b will automate; use `manifest/prisma-options.config.json` — never invent `@@map`)
-5. `pnpm prisma:check`
-6. `pnpm db:dev -- --create-only --name <name>` — review SQL
-7. `pnpm db:deploy`
-8. `pnpm db:check`
-
-If `db:check` fails after steps 1–8, the failure is procedural — not "normal drift."
+> ⚠️ The DB workflow is documented in **ONE** canonical place:
+> [`docs/database/CONTRIBUTING.md`](../../docs/database/CONTRIBUTING.md). Follow it, not any
+> step list embedded here or elsewhere. Any `db:check` failure is a defect to fix — there is no
+> "normal drift."
 
 ### What Capsule scripts do that the upstream CLI cannot
 
@@ -114,23 +108,20 @@ Run in order when changing domain semantics. Detailed implementation: Part 2.
 | ------------------------------------ | -------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | `manifest:audit-schema-drift`        | `audit-schema-drift.mjs`               | Manifest ↔ Prisma required-column cross-check                                                              |
 | `manifest:audit-schema-drift:strict` | `--strict`                             | Exit 1 on unallowlisted violations                                                                         |
-| `migrate`                            | chain                                  | `db:validate-migrations` → `db:check` → `prisma:format` → `prisma:check` → `db:dev`                        |
+| `migrate`                            | chain                                  | `db:validate-migrations` → `db:check` → `prisma:check` → `db:dev`                                          |
 | `migrate:deploy`                     | chain                                  | `db:validate-migrations` → `prisma:check` → `db:deploy`                                                    |
 | `migrate:status`                     | prisma                                 | Migration status                                                                                           |
 | `migrate:resolve`                    | prisma                                 | Resolve failed migration                                                                                   |
-| `migrate:baseline`                   | `migrate-baseline.mjs`                 | Baseline helper                                                                                            |
-| `db:check`                           | `scripts/db-drift-check.mjs`           | Live DB vs `schema.prisma` additive diff                                                                   |
+| `migrate:baseline`                   | `migrate-baseline.mjs`                 | Baseline an existing DB (`migrate resolve --applied`)                                                      |
+| `db:check`                           | `scripts/db-drift-check.mjs`           | Live DB vs `prisma/schema` STRICT full diff — any difference fails                                         |
 | `db:validate-migrations`             | `validate-migration-table-schemas.mjs` | Migration SQL `@@schema` correctness                                                                       |
 | `db:validate-generated-migration`    | `validate-generated-migration.mjs`     | Post-authoring gate on new migration folder                                                                |
 | `db:dev`                             | prisma migrate dev                     | Create/apply migrations                                                                                    |
 | `db:deploy`                          | prisma migrate deploy                  | CI/prod apply                                                                                              |
-| `db:repair`                          | `db-drift-repair.mjs`                  | Emergency repair migration (prefer Tier 2 workflow)                                                        |
 | `db:push`                            | disabled                               | Use `migrate` / `migrate:deploy` only                                                                      |
-| `db:neon-shadow`                     | `neon-shadow-database-setup.mjs`       | Shadow DB bootstrap fallback                                                                               |
-| `db:neon-backup-schema`              | `neon-schema-backup-pgdump.mjs`        | pg_dump backup                                                                                             |
-| `db:neon-audit`                      | `neon-audit-readonly.mjs`              | Readonly audit                                                                                             |
-| `db:neon-backup-and-audit`           | chain                                  | backup + audit                                                                                             |
-| `predev`                             | `db:check`                             | Surfaces missing migrations before dev                                                                     |
+
+(`db:repair` and the `db:neon-*` entries were removed 2026-07-10 along with the accepted-drift
+workflow — see `docs/database/CONTRIBUTING.md`.)
 
 ### Tier 3 — Code generation
 

@@ -1,11 +1,9 @@
-# Known Issues and TODOs
+# Known Issues and TODOs (HISTORICAL — 2025-02-07 snapshot)
 
-**Active database issues and actionable TODOs**
-
-Last updated: 2025-02-07
-
-> **Note**: For general database architecture questions, patterns, and decisions, see [README.md](./README.md).
-> This file tracks ONLY active issues and TODOs that need resolution.
+> ⚠️ **This file is a historical snapshot and is NOT maintained.** Active database issues are
+> tracked in [`docs/database/KNOWN_ISSUES.md`](../../docs/database/KNOWN_ISSUES.md); the database
+> workflow lives ONLY in [`docs/database/CONTRIBUTING.md`](../../docs/database/CONTRIBUTING.md).
+> Do not act on the content below without re-verifying against the current schema.
 
 ---
 

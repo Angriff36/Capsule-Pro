@@ -1,6 +1,10 @@
-# Contributing to Database Documentation
+# Database Operations — THE Canonical Doc
 
-**How to update and maintain database documentation**
+> ⚠️ **This file is the ONLY authoritative instruction source for database operations in
+> capsule-pro** — schema changes, migrations, drift, recovery, connections, and docs upkeep.
+> Every other file that mentions database workflow (`CLAUDE.md`, `packages/database/README.md`,
+> `docs/database/README.md`, skills, plans, audits) is a POINTER to this file or a historical
+> record. If another doc contradicts this one, this one wins — and fix the other doc.
 
 ## Quick Start
 
@@ -47,6 +51,46 @@ Notes:
    explicit user confirmation), which replays the full history from empty.
 5. `@angriff36/manifest` ≥ 3.4.22 is required: earlier projections emitted `@default("")`
    on uuid sentinel columns — undeployable DDL that caused the pre-2026-07-10 permanent drift.
+
+## Hard rules (non-negotiable)
+
+1. **Never hand-author a `migrations/<ts>_name/migration.sql` folder.** Use
+   `pnpm db:dev --create-only --name <name>` so the shadow DB validates every table reference
+   at authoring time. Custom SQL (partial indexes, CHECK constraints, backfills) is APPENDED to
+   a generated migration before applying — never a hand-made folder.
+2. **Verify table names against `packages/database/prisma/schema/*.prisma` before raw SQL.**
+   Naming is NOT uniformly snake_case (`model User` → `tenant_staff.employees`;
+   `model EmployeeDeduction` → `tenant_staff.EmployeeDeduction`). `rg -n "@@map|model <Name>"`.
+3. **Existing migrations are immutable** — add a new one. Only a failed-state migration on the
+   dev DB may be patched (mark rolled-back first).
+4. **Never `prisma db push`** (disabled). **Never `prisma migrate reset` without explicit user
+   confirmation** — it destroys all data.
+5. **No drift allowlists, no sanitized diffs, no trimmed generated SQL, no `db:repair`** —
+   that workaround era ended 2026-07-10. Any `db:check` diff is a defect to fix at the source.
+6. **Never edit `manifest.prisma` or any generated artifact** — edit the `.manifest` source
+   and regenerate.
+7. **A schema change is not done until a real Postgres write succeeds.** Typecheck/lint/unit
+   tests are NOT proof: Prisma 7 client input types don't flag excess properties, and in-memory
+   stores accept values Postgres rejects.
+
+## Recovery cheatsheet (when things are already broken)
+
+- **`P3009` "failed migrations in target database":** `pnpm migrate:resolve -- --rolled-back <name>`,
+  fix the SQL, redeploy. ⚠ Prisma applies migrations WITHOUT a wrapping transaction — a failed
+  migration may be **partially applied**; on the disposable dev DB the clean recovery after fixing
+  the SQL is `prisma migrate reset --force` (with user confirmation), replaying history from empty.
+- **`_prisma_migrations` row exists but folder is missing:** restore the folder first — check
+  `git stash list` (untracked trees live in `stash@{N}^3`; recover via
+  `git show 'stash@{N}^3:<path>' > <path>`), `git fsck --unreachable`, and other clones.
+  Prisma's guidance is to repair histories by restoring migration files, never by editing
+  `_prisma_migrations`. If the folder is truly unrecoverable, deleting the row is last-resort:
+  (1) verify the row has `rolled_back_at` set OR `applied_steps_count = 0` OR its effects are
+  provably baked into a later migration — capture the query output; (2) get explicit user
+  approval — never delete `_prisma_migrations` rows autonomously; (3) run the DELETE inside a
+  transaction.
+- **Baselining an existing database** (no `_prisma_migrations` yet): `pnpm migrate:baseline <name>`
+  wraps the official `migrate resolve --applied` flow.
+- **Table-name mismatch in raw migration SQL:** fix the SQL, mark rolled-back, redeploy.
 
 ## Schema Naming Conventions
 

@@ -227,70 +227,11 @@ model Example {
 
 ## Database Workflow
 
-**Complete workflow for schema changes** (authoritative source: `docs/workflows/database.md`)
-
-### Step-by-Step Process
-
-1. **Edit Prisma Schema**
-
-   ```bash
-   # Edit packages/database/prisma/schema.prisma
-   ```
-
-2. **Update Schema Registry**
-
-   ```bash
-   # Update packages/database/schema-registry-v2.txt BEFORE migration
-   ```
-
-3. **Generate Migration**
-
-   ```bash
-   pnpm migrate
-   # Runs: db:check + prisma format + prisma generate (root prisma:check) + pnpm db:dev
-   ```
-
-   **`SHADOW_DATABASE_URL`:** required only for the **`pnpm db:dev`** step (empty
-   shadow DB URL, e.g. Neon branch). Not used by app env validation (`keys` only
-   has `DATABASE_URL`), `prisma generate`, or `migrate deploy`. **Do not** run
-   `prisma migrate dev` directly — use **`pnpm db:dev`** (supported); see
-   `docs/database/CONTRIBUTING.md` § `SHADOW_DATABASE_URL` and migrate dev.
-
-4. **Edit Generated Migration**
-
-   ```bash
-   # Add required SQL to packages/database/prisma/migrations/<timestamp>_<name>/migration.sql
-   # Examples: triggers, partial indexes, custom functions, backfills
-   ```
-
-5. **Add Checklist Entry**
-
-   ```bash
-   # Append entry to packages/database/DATABASE_PRE_MIGRATION_CHECKLIST.md
-   ```
-
-6. **Deploy Migration**
-
-   ```bash
-   pnpm db:deploy
-   # Must happen BEFORE db:check/dev to avoid drift
-   ```
-
-7. **Verify Clean State** (Optional)
-   ```bash
-   pnpm db:check
-   # Confirms no drift after deployment
-   ```
-
-### Important Notes
-
-- **NEVER** use `prisma db push` (disabled in this repo)
-- **ALWAYS** use **`pnpm db:dev`** for `migrate dev` — direct `prisma migrate dev`
-  invocations are **unsupported** (see `docs/database/CONTRIBUTING.md`)
-- **ALWAYS** update `schema-registry-v2.txt` before generating migrations
-- **ALWAYS** add checklist entry before committing
-- **NEVER** edit existing migrations after deployment
-- If drift exists, create a proper migration (`pnpm db:dev --create-only`) or reset the disposable dev DB — see "Drift Resolution Workflow" below
+> ⚠️ Workflow instructions live in **ONE** place:
+> [`docs/database/CONTRIBUTING.md`](../../docs/database/CONTRIBUTING.md). Do not follow workflow
+> steps from any other file (including older revisions of this README — the schema-registry and
+> pre-migration-checklist steps are retired, and the schema is now the multi-file directory
+> `prisma/schema/`, not `schema.prisma`).
 
 ---
 
@@ -450,53 +391,9 @@ Prisma schema relation issues surface as validation errors such as `P1012` (for 
 
 ## Commands Reference
 
-### Migration Commands
+> ⚠️ Migration commands and drift resolution are documented in **ONE** place:
+> [`docs/database/CONTRIBUTING.md`](../../docs/database/CONTRIBUTING.md).
 
-```bash
-# Create new migration (validate + db:check + prisma:check + db:dev)
-pnpm migrate
-
-# Migrate dev only (supported path)
-pnpm db:dev
-
-# Check for drift — STRICT full diff, any difference fails
-pnpm db:check
-
-# Apply migrations to database
-pnpm db:deploy
-
-# Check migration status
-pnpm migrate:status
-
-# Generate Prisma client and validate schema/client invariant
-pnpm prisma:check
-```
-
-### Drift Resolution Workflow
-
-> `db:repair` and the sanitized "additive-only" drift model were removed 2026-07-10
-> (see `docs/database/CONTRIBUTING.md`). Drift means one of two things:
-
-```bash
-# 1. Detect drift
-pnpm db:check
-
-# 2a. Schema is ahead of the DB (you changed source without migrating):
-pnpm db:dev --create-only --name <intent>   # review, then:
-pnpm db:deploy
-
-# 2b. Dev DB was mutated outside migrations (disposable data):
-pnpm --filter @repo/database exec prisma migrate reset --force   # replays history from empty
-
-# 3. Re-check
-pnpm db:check
-```
-
-### Important Notes
-
-- `pnpm db:check` fails on ANY live-DB↔schema difference, in both directions
-- Do not run `prisma format` on the schema folder — it re-indents the generated
-  `manifest.prisma` and breaks `manifest:schema:check`
 ---
 
 ## Schema Structure
@@ -547,34 +444,12 @@ model ExampleTable {
 
 ### Key Files
 
-- **Schema**: `packages/database/prisma/schema.prisma`
+- **Schema**: `packages/database/prisma/schema/` (multi-file: `manifest.prisma` is
+  projection-generated — never hand-edit; `infra.prisma` is hand-owned)
 - **Migrations**: `packages/database/prisma/migrations/`
-- **Schema Registry**: `packages/database/schema-registry-v2.txt`
-- **Checklist**: `packages/database/DATABASE_PRE_MIGRATION_CHECKLIST.md`
-- **Known Issues**: `packages/database/KNOWN_ISSUES.md`
-
-### Documentation
-
-- **Workflow**: `docs/workflows/database.md`
-- **Migration Docs**: `docs/database/migrations/` (21 documented migrations)
-- **CLAUDE.md**: Critical Prisma schema rules (see "Database Changes" section)
-- **AGENTS.md**: Database workflow reference for AI agents
-
-### Migration Documentation
-
-All 21 migrations are documented in `docs/database/migrations/`:
-
-- `0000_init.md` - Schema initialization
-- `0001_enable_pgcrypto.md` - UUID generation
-- `0002_employee_seniority.md` - Employee ranks
-- ... (see `docs/database/migrations/README.md` for full list)
-
-### Getting Help
-
-- **Current Issues**: See `KNOWN_ISSUES.md` for active TODOs and critical issues
-- **Schema Questions**: Check `schema-registry-v2.txt` for table definitions
-- **Migration Questions**: See migration docs in `docs/database/migrations/`
-- **Workflow Questions**: See `docs/workflows/database.md`
+- **Workflow (canonical)**: [`docs/database/CONTRIBUTING.md`](../../docs/database/CONTRIBUTING.md)
+- **Known Issues**: `docs/database/KNOWN_ISSUES.md`
+- **Historical migration docs**: `docs/database/migrations/`
 
 ---
 
@@ -589,16 +464,11 @@ All 21 migrations are documented in `docs/database/migrations/`:
    (stub `auth.jwt()` + `neondb_owner` BYPASSRLS — see [Authentication & Authorization](#3-authentication--authorization))
 5. ✅ Ably handles realtime (via outbox pattern)
 6. ✅ Prisma Migrate for all schema changes (NOT `db push`)
-7. ✅ Always update `schema-registry-v2.txt` before migrations
-8. ✅ Always add checklist entry before committing
 
-**Before making schema changes**:
-
-1. Read `schema-registry-v2.txt`
-2. Read CLAUDE.md "Database Changes" section
-3. Follow the workflow above
-4. Check `KNOWN_ISSUES.md` for current problems
+**Before making schema changes**: read
+[`docs/database/CONTRIBUTING.md`](../../docs/database/CONTRIBUTING.md) — the only authoritative
+workflow doc — and nothing else.
 
 ---
 
-Last updated: 2026-05-17
+Last updated: 2026-07-10

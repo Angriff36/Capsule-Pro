@@ -411,5 +411,6 @@ Key migrations:
 - **Table Documentation**: `docs/database/tables/`
 - **Enum Documentation**: `docs/database/enums/`
 - **Migration Documentation**: `docs/database/migrations/`
-- **Prisma Schema**: `packages/database/prisma/schema.prisma`
+- **Prisma Schema**: `packages/database/prisma/schema/` (multi-file; `manifest.prisma` generated, `infra.prisma` hand-owned)
+- **Workflow (canonical)**: `docs/database/CONTRIBUTING.md`
 - **Schema Contract**: `docs/legacy-contracts/schema-contract-v2.txt`

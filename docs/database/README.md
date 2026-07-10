@@ -181,56 +181,11 @@ model Example {
 
 ## Database Workflow
 
-**Complete workflow for schema changes** (authoritative source: `docs/workflows/database.md`)
-
-### Step-by-Step Process
-
-1. **Edit Prisma Schema**
-   ```bash
-   # Edit packages/database/prisma/schema.prisma
-   ```
-
-2. **Update Schema Registry**
-   ```bash
-   # Update packages/database/schema-registry-v2.txt BEFORE migration
-   ```
-
-3. **Generate Migration**
-   ```bash
-   pnpm migrate
-   # Runs: prisma format + prisma generate + prisma migrate dev
-   ```
-
-4. **Edit Generated Migration**
-   ```bash
-   # Add required SQL to packages/database/prisma/migrations/<timestamp>_<name>/migration.sql
-   # Examples: triggers, partial indexes, custom functions, backfills
-   ```
-
-5. **Add Checklist Entry**
-   ```bash
-   # Append entry to packages/database/DATABASE_PRE_MIGRATION_CHECKLIST.md
-   ```
-
-6. **Deploy Migration**
-   ```bash
-   pnpm db:deploy
-   # Must happen BEFORE db:check/dev to avoid drift
-   ```
-
-7. **Verify Clean State** (Optional)
-   ```bash
-   pnpm db:check
-   # Confirms no drift after deployment
-   ```
-
-### Important Notes
-
-- **NEVER** use `prisma db push` (disabled in this repo)
-- **ALWAYS** update `schema-registry-v2.txt` before generating migrations
-- **ALWAYS** add checklist entry before committing
-- **NEVER** edit existing migrations after deployment
-- If drift exists, run `pnpm db:repair` to generate a safe repair migration
+> ⚠️ Workflow instructions live in **ONE** place: [`CONTRIBUTING.md`](./CONTRIBUTING.md)
+> (this directory). Do not follow workflow steps from any other file. This README covers
+> architecture and patterns only. (The old steps here — `schema.prisma` single-file edits,
+> schema-registry, checklist entries, `db:repair` — were removed 2026-07-10; `db:repair`
+> and the accepted-drift model no longer exist.)
 
 ---
 
@@ -338,56 +293,9 @@ END $$;
 
 ## Commands Reference
 
-### Migration Commands
-
-```bash
-# Create new migration (includes db:check + generate)
-pnpm migrate
-
-# Check for drift (detects missing columns/tables/indexes)
-pnpm db:check
-
-# Generate safe repair migration for drift
-pnpm db:repair
-
-# Apply migrations to database
-pnpm db:deploy
-
-# Check migration status
-pnpm migrate:status
-
-# Regenerate Prisma client
-pnpm prisma:check
-
-# Format Prisma schema
-pnpm --filter @repo/database exec prisma format
-```
-
-### Drift Resolution Workflow
-
-```bash
-# 1. Detect drift
-pnpm db:check
-
-# 2. Generate repair migration (safe, additive-only)
-pnpm db:repair
-
-# 3. Review generated SQL
-# Check packages/database/prisma/migrations/<timestamp>_repair_drift/migration.sql
-
-# 4. Apply repair migration
-pnpm db:deploy
-
-# 5. Re-check drift
-pnpm db:check
-```
-
-### Important Notes
-
-- `pnpm db:check` blocks additive drift (missing columns/tables/indexes)
-- `pnpm db:check` ignores drop-only diffs (like DB foreign keys, because `relationMode = "prisma"`)
-- `pnpm db:repair` generates safe, additive-only migrations
-- `pnpm db:repair` will drop/recreate indexes when fixing index drift (no data loss)
+> ⚠️ Commands and drift resolution are documented in **ONE** place:
+> [`CONTRIBUTING.md`](./CONTRIBUTING.md). (`db:repair` no longer exists; `pnpm db:check`
+> is a strict full diff — any difference fails.)
 
 ---
 
@@ -439,34 +347,18 @@ model ExampleTable {
 
 ### Key Files
 
-- **Schema**: `packages/database/prisma/schema.prisma`
+- **Schema**: `packages/database/prisma/schema/` (multi-file directory: `manifest.prisma` is
+  projection-generated — never hand-edit; `infra.prisma` is hand-owned)
 - **Migrations**: `packages/database/prisma/migrations/`
-- **Schema Registry**: `packages/database/schema-registry-v2.txt`
-- **Checklist**: `packages/database/DATABASE_PRE_MIGRATION_CHECKLIST.md`
-- **Known Issues**: `packages/database/KNOWN_ISSUES.md`
-
-### Documentation
-
-- **Workflow**: `docs/workflows/database.md`
-- **Migration Docs**: `docs/database/migrations/` (21 documented migrations)
-- **CLAUDE.md**: Critical Prisma schema rules (see "Database Changes" section)
-- **AGENTS.md**: Database workflow reference for AI agents
-
-### Migration Documentation
-
-All 21 migrations are documented in `docs/database/migrations/`:
-
-- `0000_init.md` - Schema initialization
-- `0001_enable_pgcrypto.md` - UUID generation
-- `0002_employee_seniority.md` - Employee ranks
-- ... (see `docs/database/migrations/README.md` for full list)
+- **Workflow (canonical)**: [`CONTRIBUTING.md`](./CONTRIBUTING.md)
+- **Known Issues**: `docs/database/KNOWN_ISSUES.md`
 
 ### Getting Help
 
-- **Current Issues**: See `KNOWN_ISSUES.md` for active TODOs and critical issues
-- **Schema Questions**: Check `schema-registry-v2.txt` for table definitions
-- **Migration Questions**: See migration docs in `docs/database/migrations/`
-- **Workflow Questions**: See `docs/workflows/database.md`
+- **Workflow / migration / drift questions**: [`CONTRIBUTING.md`](./CONTRIBUTING.md) — the only
+  authoritative source
+- **Current Issues**: `docs/database/KNOWN_ISSUES.md`
+- **Historical migration docs**: `docs/database/migrations/`
 
 ---
 
@@ -476,20 +368,13 @@ All 21 migrations are documented in `docs/database/migrations/`:
 
 1. ✅ PostgreSQL on Neon + Prisma ORM
 2. ✅ Multi-tenant via shared DB + `tenant_id` isolation
-3. ✅ Foreign keys enforced at database level (108 constraints)
-4. ✅ Clerk handles auth (NO RLS policies)
-5. ✅ Ably handles realtime (via outbox pattern)
-6. ✅ Prisma Migrate for all schema changes (NOT `db push`)
-7. ✅ Always update `schema-registry-v2.txt` before migrations
-8. ✅ Always add checklist entry before committing
+3. ✅ Clerk handles auth (NO RLS policies)
+4. ✅ Ably handles realtime (via outbox pattern)
+5. ✅ Prisma Migrate for all schema changes (NOT `db push`)
 
-**Before making schema changes**:
-1. Read `schema-registry-v2.txt`
-2. Read CLAUDE.md "Database Changes" section
-3. Follow the workflow above
-4. Check `KNOWN_ISSUES.md` for current problems
+**Before making schema changes**: read [`CONTRIBUTING.md`](./CONTRIBUTING.md) and nothing else.
 
 ---
 
-Last updated: 2025-02-07
+Last updated: 2026-07-10
 

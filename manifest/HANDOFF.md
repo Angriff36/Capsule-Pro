@@ -71,13 +71,15 @@ Central DSL fixes applied during integration (lessons for future authoring):
   default permanently pins computeds (payment.isRefundable etc.) → use nullable + `== null`/`!= null`.
 - Completion/event timestamps must be nullable (no `= now()` default) — only createdAt/updatedAt/issuedAt default.
 
-### ⬜ FINAL STEP — DB baseline regen (per user "regenerate baseline at end" decision)
-Schema columns run AHEAD of the committed baseline migration. `pnpm db:check` shows drift that is
-**100% additive** (`ADD COLUMN IF NOT EXISTS`, all nullable/defaulted — zero data loss). To finish:
-EITHER (a) regenerate the single baseline migration from the 250-model schema + `prisma migrate reset`
-(destructive reset — needs PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION token), OR (b) the non-destructive
-path: one additive migration via `pnpm db:dev --create-only` (or `pnpm db:repair`) applying the drift.
-NOT yet executed — destructive/consequential DB op left for explicit user go-ahead.
+### ✅ RESOLVED 2026-07-10 — DB baseline regen (historical)
+> **2026-07-10:** Superseded. Migration history was fully reconciled with the schema
+> (`20260710142245_reconcile_schema_truth` + `20260710153700`), `pnpm db:check` is strict and
+> clean, and `db:repair` no longer exists. The ONLY DB workflow doc is
+> `docs/database/CONTRIBUTING.md`. Original text kept below for history.
+
+Schema columns ran AHEAD of the committed baseline migration; `pnpm db:check` showed additive-only
+drift. Options considered were (a) baseline regen + destructive reset, or (b) one additive
+migration via `pnpm db:dev --create-only`.
 
 ### Still-out-of-scope (untouched, appropriately simple): email-template/workflow, sms-automation,
 override-audit (audit log), sample-data, command-board/battle-board (internal tools), workflow,

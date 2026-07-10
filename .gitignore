@@ -367,6 +367,14 @@ apps/web/new 2.txt
 .automaker/
 # scripts/ directory is ignored, except for manifest validation and build scripts
 scripts/*
+# DB workflow scripts — referenced by package.json (db:check, db:validate-*, migrate:baseline)
+# and by CI (migrate:deploy, migration-preview). MUST be tracked or fresh clones/CI break.
+!scripts/db-drift-check.mjs
+!scripts/validate-migration-table-schemas.mjs
+!scripts/validate-generated-migration.mjs
+!scripts/migrate-baseline.mjs
+!scripts/__tests__/
+!scripts/__tests__/*.test.mjs
 !scripts/validate-manifests.mjs
 !scripts/manifest/
 !scripts/manifest/*.mjs
@@ -646,3 +654,6 @@ CLAUDE-FABLE-5.md
 __previewjs__/
 previewjs.config.js
 /packages/sentry-integration/dist
+
+# SonarQube scanner working directory
+.scannerwork/
