@@ -1,0 +1,17 @@
+{
+  "_comment": "API segments deliberately or historically not proxied through apps/app. webhooks/cron/health/vercel/sentry-fixer/async-reactions are called directly (external callers or platform). The rest are UNTRIAGED legacy gaps found 2026-07-11 — each is either dead or a live silent-404; triage and either add the rewrite or record why here. Only shrink this list.",
+  "segments": [
+    "ai-event-setup",
+    "async-reactions",
+    "contracts",
+    "cron",
+    "documents",
+    "health",
+    "lead",
+    "menu-story",
+    "mobile",
+    "sentry-fixer",
+    "vercel",
+    "webhooks"
+  ]
+}

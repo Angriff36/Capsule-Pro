@@ -9,10 +9,21 @@ updates:
     open-pull-requests-limit: 10
     labels:
       - dependencies
-    ignore:
-      - dependency-name: "*"
+    # Majors are no longer blanket-ignored (that is how upgrades become
+    # quarter-long projects). They arrive as ONE grouped PR to review or
+    # close — visible on a schedule instead of invisible forever.
+    groups:
+      major-updates:
         update-types:
-          - version-update:semver-major
+          - major
+        patterns:
+          - "*"
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+        patterns:
+          - "*"
 
   - package-ecosystem: github-actions
     directory: /

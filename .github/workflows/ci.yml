@@ -120,6 +120,23 @@ jobs:
         # Import { isPlainRecord, assertRecord } from "@/app/lib/is-record" instead.
         run: node scripts/check-no-local-isrecord.mjs
 
+      - name: Biome ratchet (full lint vs committed baseline)
+        # Full ultracite check finally has teeth: new violations over
+        # ci/biome-baseline.json fail; improvements should lower the baseline.
+        run: node ci/check-biome-baseline.mjs
+
+      - name: Native-shrink ratchet (NATIVE-REWRITE-PLAN counts only go down)
+        run: node ci/check-native-shrink.mjs
+
+      - name: Route ⇄ rewrite parity (new api segment without app rewrite = silent 404)
+        run: node ci/check-route-rewrite-parity.mjs
+
+      - name: Branch-protection drift (required contexts ⇄ workflow jobs)
+        run: node ci/check-protection-drift.mjs
+
+      - name: knip (unused files / exports / dependencies)
+        run: pnpm knip
+
       - name: Run tests
         run: pnpm test
 

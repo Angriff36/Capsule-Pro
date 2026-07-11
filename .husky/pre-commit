@@ -11,3 +11,13 @@ if [ -n "$staged_manifests" ]; then
     exit 1
   }
 fi
+
+# Secret scan on staged files only (fast path; the full-tree scan runs in CI
+# via security.yml). A key must be caught BEFORE it reaches the remote.
+staged_files=$(git diff --cached --name-only --diff-filter=ACM)
+if [ -n "$staged_files" ]; then
+  printf '%s\n' "$staged_files" | tr '\n' '\0' | xargs -0 pnpm exec secretlint || {
+    echo "✗ secretlint found potential secrets in staged files. Commit blocked."
+    exit 1
+  }
+fi

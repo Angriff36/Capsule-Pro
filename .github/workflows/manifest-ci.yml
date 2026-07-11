@@ -5,6 +5,10 @@ on:
   # integration-check, enforce-surface) must observe ANY source change, not
   # only changes under manifest paths. A handler edit elsewhere in apps/api
   # can introduce a bypass that needs surfacing.
+  # push added 2026-07-11: a gate that depends on how the change arrives isn't
+  # a gate — direct pushes to main previously skipped every manifest check.
+  push:
+    branches: [main, develop]
   pull_request:
     branches: [main, develop]
   workflow_dispatch:
@@ -117,6 +121,13 @@ jobs:
           fi
 
           echo "Manifest-owned generated artifacts are up-to-date"
+
+      - name: Wiring contract gate (baseline-ratcheted)
+        # The contract check that caught 218 real runtime 400s in 2026-07.
+        # Runs here because this job already regenerated the wiring artifacts
+        # (manifest:build above). Upstream CLI exits 0 even on failure, so the
+        # gate is the finding-count comparison against ci/wiring-baseline.json.
+        run: node ci/check-wiring-baseline.mjs
 
   manifest-typescript-check:
     name: TypeScript Compilation Check
