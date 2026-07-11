@@ -53,10 +53,10 @@ function generateRecommendations(
   const recommendations: string[] = [];
 
   const segments = Object.entries(metrics.customerSegments);
-  if (segments.length > 0) {
-    const best = segments.sort((a, b) => b[1].revenue - a[1].revenue)[0];
+  const [bestSegment] = segments.sort((a, b) => b[1].revenue - a[1].revenue);
+  if (bestSegment) {
     recommendations.push(
-      `"${best[0]}" events generated the highest revenue at ${formatCurrencyFull(best[1].revenue)} — prioritize marketing and capacity for this segment.`
+      `"${bestSegment[0]}" events generated the highest revenue at ${formatCurrencyFull(bestSegment[1].revenue)} — prioritize marketing and capacity for this segment.`
     );
   }
 
@@ -71,20 +71,18 @@ function generateRecommendations(
   }
 
   const referrals = Object.entries(metrics.referralPerformance);
-  if (referrals.length > 0) {
-    const best = referrals.sort(
-      (a, b) => b[1].conversionRate - a[1].conversionRate
-    )[0];
-    if (best[1].conversionRate > 0) {
-      recommendations.push(
-        `"${best[0]}" has the highest conversion rate at ${formatPercent(best[1].conversionRate)}. Consider increasing investment in this lead channel.`
-      );
-    }
+  const [bestReferral] = referrals.sort(
+    (a, b) => b[1].conversionRate - a[1].conversionRate
+  );
+  if (bestReferral && bestReferral[1].conversionRate > 0) {
+    recommendations.push(
+      `"${bestReferral[0]}" has the highest conversion rate at ${formatPercent(bestReferral[1].conversionRate)}. Consider increasing investment in this lead channel.`
+    );
   }
 
   const trends = metrics.pricingTrends;
   if (trends.length >= 2) {
-    const first = trends[0].avgValue;
+    const first = trends[0]?.avgValue ?? 0;
     const last = trends.at(-1)?.avgValue;
     if (first > 0 && last !== undefined && last > first) {
       const change = (((last - first) / first) * 100).toFixed(0);
@@ -123,7 +121,6 @@ function computeGoals(
   const currentConversion = conversionRate(records);
   const conversionTarget = Math.min(currentConversion + 0.05, 0.95);
 
-  const _wonRevenue = sumRevenue(filterByStatus(records, "won"));
   const avgDealSize = averageRevenue(filterByStatus(records, "won"));
   const dealsNeeded =
     avgDealSize > 0 ? Math.ceil(revenueTarget / avgDealSize) : 0;

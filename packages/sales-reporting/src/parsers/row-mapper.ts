@@ -274,11 +274,11 @@ export function parseRowToRecord(
 
   return {
     date,
-    eventName: eventCol ? row[eventCol] : "",
-    eventType: typeCol ? row[typeCol] : "",
-    clientName: clientCol ? row[clientCol] : "",
-    leadSource: sourceCol ? row[sourceCol] : "",
-    status: statusCol ? normalizeStatus(row[statusCol]) : "pending",
+    eventName: (eventCol ? row[eventCol] : "") ?? "",
+    eventType: (typeCol ? row[typeCol] : "") ?? "",
+    clientName: (clientCol ? row[clientCol] : "") ?? "",
+    leadSource: (sourceCol ? row[sourceCol] : "") ?? "",
+    status: statusCol ? normalizeStatus(row[statusCol] ?? "") : "pending",
     proposalDate: proposalDateCol ? parseDate(row[proposalDateCol]) : null,
     closeDate: closeDateCol ? parseDate(row[closeDateCol]) : null,
     revenue: revenueCol ? parseNumber(row[revenueCol]) : 0,

@@ -79,10 +79,11 @@ export function drawLineChart(
       value: d.value,
     }));
 
-    if (points.length > 1) {
-      doc.moveTo(points[0].x, points[0].y);
-      for (let i = 1; i < points.length; i++) {
-        doc.lineTo(points[i].x, points[i].y);
+    const [firstPoint, ...restPoints] = points;
+    if (firstPoint && restPoints.length > 0) {
+      doc.moveTo(firstPoint.x, firstPoint.y);
+      for (const pt of restPoints) {
+        doc.lineTo(pt.x, pt.y);
       }
       doc.strokeColor(s.color).lineWidth(2).stroke();
     }

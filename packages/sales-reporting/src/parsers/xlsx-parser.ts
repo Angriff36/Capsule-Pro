@@ -8,6 +8,9 @@ export function parseXlsx(data: Buffer, dateColumn?: string): SalesRecord[] {
 
   for (const sheetName of workbook.SheetNames) {
     const sheet = workbook.Sheets[sheetName];
+    if (!sheet) {
+      continue;
+    }
     const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
       defval: "",
     });
@@ -18,7 +21,7 @@ export function parseXlsx(data: Buffer, dateColumn?: string): SalesRecord[] {
         const normalizedKey = key.trim().toLowerCase().replace(/\s+/g, "_");
         mapped[normalizedKey] =
           value instanceof Date
-            ? value.toISOString().split("T")[0]
+            ? value.toISOString().slice(0, 10)
             : String(value ?? "");
       }
       return mapped;

@@ -115,6 +115,7 @@ const baseConfig: NextConfig = withLogging({
   // Transpile workspace packages imported by API routes (not every @repo/* dep).
   transpilePackages: [
     "@angriff36/manifest",
+    "@capsule-pro/sales-reporting",
     "@repo/auth",
     "@repo/database",
     "@repo/analytics",

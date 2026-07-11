@@ -11,7 +11,12 @@ import {
 } from "./pdf";
 import type { ReportInput } from "./types";
 
-export { FileInput, ReportConfig, ReportInput, SalesRecord } from "./types";
+export type {
+  FileInput,
+  ReportConfig,
+  ReportInput,
+  SalesRecord,
+} from "./types";
 
 export async function generateSalesReport(input: ReportInput): Promise<Buffer> {
   const { files, config } = input;

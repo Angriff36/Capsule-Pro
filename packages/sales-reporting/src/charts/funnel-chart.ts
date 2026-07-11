@@ -40,10 +40,10 @@ export function drawFunnelChart(
 
   stages.forEach((stage, i) => {
     const currentWidth = maxWidth * (stage.value / maxValue);
-    const nextWidth =
-      i < stages.length - 1
-        ? maxWidth * (stages[i + 1].value / maxValue)
-        : currentWidth * 0.7;
+    const nextStage = stages[i + 1];
+    const nextWidth = nextStage
+      ? maxWidth * (nextStage.value / maxValue)
+      : currentWidth * 0.7;
 
     const topY = chartTop + i * stageHeight;
     const bottomY = topY + stageHeight - gap;
@@ -82,8 +82,9 @@ export function drawFunnelChart(
         lineBreak: false,
       });
 
-    if (i > 0) {
-      const conversionRate = stage.value / stages[i - 1].value;
+    const prevStage = stages[i - 1];
+    if (prevStage) {
+      const conversionRate = stage.value / prevStage.value;
       const rateText = formatPercent(conversionRate);
       doc
         .fontSize(7)
