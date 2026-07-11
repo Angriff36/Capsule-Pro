@@ -18,7 +18,7 @@ entity User mixin TenantScoped, SoftDeletable {
   property terminationDate: datetime?
   property required isActive: boolean = true
   property avatarUrl: string? = ""
-  property roleId: uuid? = ""
+  property roleId: uuid?
   property payoutMethod: string = "check"
   timestamps
 

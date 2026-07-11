@@ -61,7 +61,8 @@ Not a blind `s/= ""//`: per field, classify **nullable-vs-required** and **mutat
 
 - [x] Pilot: `TrainingAssignment` (done 2026-07-07 — `employeeId` required + param renamed, `assignedBy → uuid?`, migration `20260707125708_...`, full flow proven against Postgres)
 - [x] WS0 · knowledge-base (1 field) — DONE 2026-07-11: `authorId: uuid? = ""` → `uuid?` (nullable → IR-only, NO migration; `manifest:ci` green, `manifest.prisma` byte-identical). Warm-up batch validated the pipeline.
-- [ ] WS0 · platform (10 fields)
+- [x] WS0 · platform (9/10 IR-only) — DONE 2026-07-11: `roleId`, `entityId`, `overriddenBy` (required, param-seeded), `authorizedBy` (+4 sentinel checks → `null`), `createdById`, `supersededBy` (+`isLatest` simplify), `templateId` (+`hasTemplate`/`hasMessageOrTemplate` simplify), `emailTemplateId`, `emailTemplateTenantId`. All IR-only, no migration (`manifest:ci` green, `manifest.prisma` byte-identical). Lesson: nullable uuid fields whose `""` is a sentinel need the `==""`/`!=""` checks moved to `==null`/`!=null` in the same commit.
+- [ ] WS0 · platform/api-key `createdByUserId` (required, optional-param + `: user.id` mutate fallback → needs nullable change `uuid→uuid?` → migration; separate batch)
 - [ ] WS0 · administrative (14 fields)
 - [ ] WS0 · sales (17 fields)
 - [ ] WS0 · tenant-team (19 fields; TrainingAssignment already done — reconcile remainder)
@@ -188,3 +189,9 @@ If P5 confirms reads bypass masking, this is a fork (route reads through runtime
 - [ ] 10/10 crons as `schedule`, generated route proven (AC-006)
 - [ ] `pnpm manifest:ci` green at every commit; no new governance-allowlist entries (AC-007)
 - [ ] Every Phase-3/fork item is a written NEEDS-RYAN entry, not silent code (AC-008)
+
+---
+
+## Pre-existing issues noticed during WS0 (unrelated to the rewrite — tracked, not ignored)
+
+- **`pnpm check` red on `@repo/manifest-runtime` only** (noticed 2026-07-11, proven pre-existing): `manifest/runtime/src/bottleneck-detector/ai-suggestions.ts` lines 97/163/165 fail **TS2589** ("Type instantiation excessively deep") on Vercel-AI-SDK `generateObject({ schema: <complex inline zod schema> })`, and line 203 fails **TS7006** (implicit-any `s`, cascading from the unresolved `result.object`). Verified unrelated to manifest work: the file imports only `@ai-sdk/openai`, `ai`, `zod`, `@repo/observability`, `@sentry/node`, `./types` — no manifest entity/generated/store-metadata types. Surfaces now because turbo ran cold ("0 cached"). 26/27 typecheck tasks pass (app/api/web all green), so it does NOT block manifest batches. Fix needs AI-flow verification (OpenAI key) — candidate: extract the inline schema to a named const + annotate the `.map` callback. Separate focused commit.

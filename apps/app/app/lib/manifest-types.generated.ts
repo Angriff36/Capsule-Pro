@@ -2188,10 +2188,10 @@ export interface OverrideAudit {
   tenantId: string;
   deletedAt?: string | null;
   entityType?: string;
-  entityId?: string;
+  entityId: string;
   constraintId?: string;
   guardExpression?: string | null;
-  overriddenBy?: string;
+  overriddenBy: string;
   overrideReason?: string;
   authorizedBy?: string | null;
   authorizedAt?: string | null;

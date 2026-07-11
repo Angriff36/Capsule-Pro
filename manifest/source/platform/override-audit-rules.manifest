@@ -6,18 +6,18 @@ entity OverrideAudit mixin TenantScoped, SoftDeletable {
   // No relationships: entityType/entityId are polymorphic references, not direct FKs to a single entity
   key [tenantId, id]
   property entityType: string = ""
-  property entityId: uuid = ""
+  property entityId: uuid
   property constraintId: string = ""
   property guardExpression: string? = ""
-  property overriddenBy: uuid = ""
+  property overriddenBy: uuid
   property overrideReason: string = ""
-  property authorizedBy: uuid? = ""
+  property authorizedBy: uuid?
   property authorizedAt: datetime?
   // No `timestamps` keyword: tenant_kitchen.override_audit is append-only (createdAt + authorizedAt only, no updated_at column)
   property createdAt: datetime = now()
 
-  computed isAuthorized: boolean = self.authorizedBy != ""
-  computed isPendingAuthorization: boolean = self.authorizedBy == ""
+  computed isAuthorized: boolean = self.authorizedBy != null
+  computed isPendingAuthorization: boolean = self.authorizedBy == null
   computed hasGuardExpression: boolean = self.guardExpression != ""
 
   constraint requireEntityType: self.entityType != "" "Entity type is required"
@@ -26,7 +26,7 @@ entity OverrideAudit mixin TenantScoped, SoftDeletable {
   constraint requireOverriddenBy: self.overriddenBy != "" "Overridden by user is required"
   constraint requireOverrideReason: self.overrideReason != "" "Override reason is required"
 
-  constraint cannotAuthorizeTwice:warn self.authorizedBy != "" "Override already authorized"
+  constraint cannotAuthorizeTwice:warn self.authorizedBy != null "Override already authorized"
 
   default policy OverrideAuditDefaultAccess execute: user.role in ["manager", "admin"] "Override audit"
   command create(entityType: string, entityId: string, constraintId: string, guardExpression: string, overriddenBy: string, overrideReason: string) {
@@ -49,7 +49,7 @@ entity OverrideAudit mixin TenantScoped, SoftDeletable {
 
   command authorize(authorizedBy: string) {
     guard authorizedBy != null and authorizedBy != "" "Authorized by user is required"
-    guard self.authorizedBy == "" "Override has already been authorized"
+    guard self.authorizedBy == null "Override has already been authorized"
 
     mutate authorizedBy = authorizedBy
     mutate authorizedAt = now()

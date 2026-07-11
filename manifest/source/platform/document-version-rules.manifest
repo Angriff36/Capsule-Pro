@@ -9,11 +9,11 @@ entity DocumentVersion mixin TenantScoped {
   unique property required versionNumber: int
   property required content: string
   property changeSummary: string = ""
-  property createdById: uuid? = ""
+  property createdById: uuid?
   indexed property status: string? = "draft"
   property approvedBy: string? = ""
   property publishedBy: string? = ""
-  property supersededBy: uuid? = ""
+  property supersededBy: uuid?
   // createdAt/updatedAt are audit timestamps — = now() is correct
   timestamps
   // Lifecycle datetimes — no default
@@ -25,7 +25,7 @@ entity DocumentVersion mixin TenantScoped {
   computed isApproved: boolean = self.status == "approved"
   computed isPublished: boolean = self.status == "published"
   computed isSuperseded: boolean = self.status == "superseded"
-  computed isLatest: boolean = self.supersededBy == "" or self.supersededBy == null
+  computed isLatest: boolean = self.supersededBy == null
 
   transition status from "draft" to ["approved", "superseded"]
   transition status from "approved" to ["published", "superseded"]

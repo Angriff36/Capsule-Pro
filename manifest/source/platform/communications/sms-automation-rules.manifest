@@ -8,7 +8,7 @@ entity SmsAutomationRule mixin TenantScoped, SoftDeletable {
   searchable property description: string? = ""
   property required triggerType: string = "custom_event"
   property triggerConfig: json = {}
-  property templateId: uuid? = ""
+  property templateId: uuid?
   property customMessage: string? = ""
   property recipientType: string = "employee"
   property recipientConfig: json = {}
@@ -17,14 +17,14 @@ entity SmsAutomationRule mixin TenantScoped, SoftDeletable {
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null
-  computed hasTemplate: boolean = self.templateId != null and self.templateId != ""
+  computed hasTemplate: boolean = self.templateId != null
   computed hasCustomMessage: boolean = self.customMessage != null and self.customMessage != ""
   computed hasTriggerConfig: boolean = self.triggerConfig != null and self.triggerConfig != "" and self.triggerConfig != "{}"
   computed isEnabled: boolean = self.isActive == true and self.deletedAt == null
 
   constraint requireName: self.name != null and self.name != "" "Rule name is required"
   constraint validTriggerType: self.triggerType != null and self.triggerType != "" "Trigger type is required"
-  constraint hasMessageOrTemplate: (self.templateId != null and self.templateId != "") or (self.customMessage != null and self.customMessage != "") "Either template or custom message is required"
+  constraint hasMessageOrTemplate: (self.templateId != null) or (self.customMessage != null and self.customMessage != "") "Either template or custom message is required"
 
   default policy SmsAutomationRuleDefaultAccess execute: user.role in ["manager", "admin"] "SMS automation"
   command create(name: string, description: string, triggerType: string, triggerConfig: json, templateId: string, customMessage: string, recipientType: string, recipientConfig: json, isActive: boolean, priority: number) {

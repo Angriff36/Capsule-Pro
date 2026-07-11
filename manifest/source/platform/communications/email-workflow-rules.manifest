@@ -7,8 +7,8 @@ entity EmailWorkflow mixin TenantScoped, SoftDeletable {
   searchable property name: string = ""
   property triggerType: string = "custom"
   property triggerConfig: json = {}
-  property emailTemplateId: uuid? = ""
-  property emailTemplateTenantId: uuid? = ""
+  property emailTemplateId: uuid?
+  property emailTemplateTenantId: uuid?
   property recipientConfig: json = {}
   property isActive: boolean = true
   property lastTriggeredAt: datetime?
