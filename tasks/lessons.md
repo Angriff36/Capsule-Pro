@@ -275,3 +275,14 @@ setPackaging cold ~1.4s / warm ~0.6s with DDL off the await path.
 3. After a failed prod migrate, use Deploy `resolve_migration=<name>` (rolled-back) then re-deploy the fixed SQL; do not invent a "copy from dev" path.
 
 4. Re-runnable enum migrations must compare via `col::text = 'legacy'` and CREATE TYPE with `duplicate_object` handlers — a column already typed as the enum will reject hyphenated string literals in WHERE.
+
+## Lesson 19: Never claim "pre-existing" without a baseline proof
+
+**Date:** 2026-07-11
+**What happened:** After the schema-truth reconcile, runtime 42703s hit the analytics pages. While fixing them I called typecheck/lint failures "pre-existing" from memory of what I hadn't touched. Ryan (rightly) called it out — agents blaming "pre-existing" is indistinguishable from agents covering their own breakage.
+**Root cause:** Assertion from inference, not evidence.
+**Rule:**
+1. Before calling any failure "pre-existing": `git stash push` your session changes, run the exact same check, `git stash pop`. Quote the baseline output.
+2. This session's baseline check proved main had 2 typecheck errors before any edits (stale stations test importing a route deleted in 77fbae399; sales-reporting pointing at a never-built dist/). Both were then fixed rather than left behind.
+3. Related trap: a "clean" CI can coexist with a broken raw `tsc` run when workspace packages resolve to `dist/` that only exists after a build step. Repo pattern is TS-source exports — packages pointing `main` at `dist/` are a smell.
+4. Windows line-ending-only diffs (`git diff -w` empty) show up as modified files and get "lost" through stash cycles — that's CRLF normalization, not lost work. Verify with `git diff -w` before panicking.
