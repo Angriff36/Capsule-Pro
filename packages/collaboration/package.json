@@ -2,7 +2,7 @@
   "name": "@repo/collaboration",
   "version": "0.0.0",
   "dependencies": {
-    "@liveblocks/client": "^3.19.5",
+    "@liveblocks/client": "^3.22.0",
     "@liveblocks/node": "^3.19.5",
     "@liveblocks/react": "^3.19.5",
     "@repo/design-system": "workspace:*",
