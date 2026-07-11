@@ -1855,6 +1855,8 @@ export type {
 };
 export { CATEGORIES, CHART_TYPES };
 
+const IDENT_SAFE_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
+
 /**
  * Replace placeholder field names in a spec with actual column names.
  *
@@ -1866,8 +1868,19 @@ function replaceFields(
 ): TopLevelSpec {
   let json = JSON.stringify(spec);
   for (const [placeholder, columnName] of Object.entries(mappings)) {
-    // Replace both as JSON string values and in expressions
-    json = json.replaceAll(placeholder, columnName);
+    // JSON-escaped column name (no surrounding quotes) so names with quotes/
+    // backslashes stay valid inside the serialized spec.
+    const jsonName = JSON.stringify(columnName).slice(1, -1);
+    // Vega expressions (test/calculate) reference fields as `datum.NAME`,
+    // which only parses for identifier-safe names. Bracket-quote the rest
+    // (e.g. "Balance Due" -> datum['Balance Due']). Do this BEFORE the bare
+    // replacement so the expression form wins.
+    const accessor = IDENT_SAFE_RE.test(columnName)
+      ? `datum.${jsonName}`
+      : `datum['${jsonName.replaceAll("'", "\\\\'")}']`;
+    json = json.replaceAll(`datum.${placeholder}`, accessor);
+    // Replace remaining occurrences (JSON string values like "field": "FIELD_Y")
+    json = json.replaceAll(placeholder, jsonName);
   }
   return JSON.parse(json) as TopLevelSpec;
 }
