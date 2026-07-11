@@ -164,7 +164,7 @@ export async function getExecutiveKPIMetrics(): Promise<ExecutiveKPIMetrics> {
       margins_by_month AS (
         SELECT
           DATE_TRUNC('month', calculated_at) as month,
-          COALESCE(AVG(actual_gross_margin_pct), 0)::numeric as gross_margin_pct
+          COALESCE(AVG(CASE WHEN actual_revenue <> 0 THEN actual_gross_margin / actual_revenue * 100 ELSE 0 END), 0)::numeric as gross_margin_pct
         FROM tenant_events.event_profitability
         WHERE tenant_id = $3::uuid
           AND deleted_at IS NULL

@@ -154,7 +154,7 @@ export async function GET(request: Request) {
           event_id,
           actual_revenue,
           actual_gross_margin,
-          actual_gross_margin_pct,
+          (CASE WHEN actual_revenue <> 0 THEN actual_gross_margin / actual_revenue * 100 ELSE 0 END)::text as actual_gross_margin_pct,
           calculated_at
         FROM tenant_events.event_profitability
         WHERE tenant_id = $1
