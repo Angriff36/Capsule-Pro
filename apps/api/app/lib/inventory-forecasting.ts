@@ -830,21 +830,11 @@ export async function getForecastAccuracyMetrics(
   tenantId: string,
   sku: string
 ): Promise<ForecastAccuracyMetrics> {
-  // Get all tracked forecasts for this SKU
-  const forecasts = await database.inventoryForecast.findMany({
-    where: {
-      tenantId,
-      sku,
-      accuracy_tracked: true,
-      error_days: {
-        not: null,
-      },
-    },
-    select: {
-      error_days: true,
-      confidence: true,
-    },
-  });
+  // The accuracy-tracking columns (accuracy_tracked / error_days) do not
+  // exist in the truthful schema (see trackForecastAccuracy above), so no
+  // forecasts can be "tracked" — report totals with zeroed accuracy metrics.
+  const forecasts: Array<{ error_days: number | null; confidence: unknown }> =
+    [];
 
   const totalForecasts = await database.inventoryForecast.count({
     where: {

@@ -194,10 +194,10 @@ async function main() {
           await prisma.$executeRaw`
             INSERT INTO tenant_kitchen.recipe_ingredients (
               tenant_id, id, recipe_version_id, ingredient_id, quantity, unit_id,
-              is_optional, sort_order, waste_factor, adjusted_quantity
+              is_optional, sort_order, waste_factor
             ) VALUES (
               ${TENANT_ID}::uuid, gen_random_uuid(), ${rv.id}::uuid, ${ingredientId}::uuid,
-              ${ri.quantity}, ${unitId}, false, 0, 1.0, ${ri.quantity}
+              ${ri.quantity}, ${unitId}, false, 0, 1.0
             )
           `;
           ingredientsAdded++;
