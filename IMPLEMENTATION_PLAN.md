@@ -11,7 +11,7 @@ Authoritative plan: `manifest/NATIVE-REWRITE-PLAN.md` (WS0–WS16, Phase 0 P1–
 
 | Workstream | Metric | Plan-time | Verified 2026-07-11 |
 | --- | --- | --- | --- |
-| WS0 | `uuid … = ""` defaults | 188 / 69 files | **187 / 69 files** |
+| WS0 | `uuid … = ""` defaults | 188 / 69 files | **164 / 57 files** (post-administrative batch; was 177/64 pre-batch — the prior "187/69" here was stale) |
 | WS1 | `user.role in [...]` literals | 464 | **461** |
 | WS7 | `status: string` (raw, incl. command params) | 82 fields | **140 raw** / 92 `validStatus` constraints |
 | WS5 | native `schedule` decls | 0 | **0** (10 crons in `apps/api/vercel.json`) |
@@ -25,7 +25,7 @@ Authoritative plan: `manifest/NATIVE-REWRITE-PLAN.md` (WS0–WS16, Phase 0 P1–
 | Domain | uuid="" | role-in | status:string |
 | --- | --- | --- | --- |
 | accounting | 28 | 26 | 21 |
-| administrative | 14 | 14 | 5 |
+| administrative | 1 (userId deferred) | 14 | 5 |
 | events | 24 | 72 | 31 |
 | knowledge-base | 1 | 3 | 1 |
 | operations | 74 | 185 | 53 |
@@ -63,7 +63,8 @@ Not a blind `s/= ""//`: per field, classify **nullable-vs-required** and **mutat
 - [x] WS0 · knowledge-base (1 field) — DONE 2026-07-11: `authorId: uuid? = ""` → `uuid?` (nullable → IR-only, NO migration; `manifest:ci` green, `manifest.prisma` byte-identical). Warm-up batch validated the pipeline.
 - [x] WS0 · platform (9/10 IR-only) — DONE 2026-07-11: `roleId`, `entityId`, `overriddenBy` (required, param-seeded), `authorizedBy` (+4 sentinel checks → `null`), `createdById`, `supersededBy` (+`isLatest` simplify), `templateId` (+`hasTemplate`/`hasMessageOrTemplate` simplify), `emailTemplateId`, `emailTemplateTenantId`. All IR-only, no migration (`manifest:ci` green, `manifest.prisma` byte-identical). Lesson: nullable uuid fields whose `""` is a sentinel need the `==""`/`!=""` checks moved to `==null`/`!=null` in the same commit.
 - [ ] WS0 · platform/api-key `createdByUserId` (required, optional-param + `: user.id` mutate fallback → needs nullable change `uuid→uuid?` → migration; separate batch)
-- [ ] WS0 · administrative (14 fields)
+- [x] WS0 · administrative (13/14 IR-only) — DONE 2026-07-11: dropped `= ""` from 13 fields (7 nullable + 6 required-but-param-seeded — each has a same-named create param that seeds the bootstrap INSERT, so the column stays NOT NULL with zero schema change). Fields: BoardConfig.createdBy; AdminTaskAttachment.{taskId,uploadedBy}; AdminTaskDevMeta.taskId; AdminTaskComment.{taskId,authorId}; AdminChatParticipant.threadId; AdminTaskFileRef.{taskId,refId,linkedBy}; AdminTask.{assignedTo,createdBy,sourceId}. Also fixed `admin-task-rules` `mutate sourceId = … : ""` → `: null` (the mutate fallback was writing a bad `""` into `@db.Uuid` — same WS0 bug class; null is valid for the nullable column). `manifest:ci` green; `manifest.prisma` byte-identical (no migration). `apps/app` typecheck green.
+- [ ] WS0 · administrative/admin-chat-participant `userId` (1 field deferred) — required `uuid`, NO create param, filled only by `mutate userId = user.id` (context) → bootstrap INSERT writes `""` to NOT NULL `@db.Uuid`. Clean IR-only fix: add a trusted create param `userId: string from context.user.id` (≥3.4.23 projects it optional in zod; seeds the INSERT AND closes the userId-spoofing hole the 2026-07-10 sweep flagged) — no migration, no caller change. Fallback: make column nullable → migration. Verify with a Postgres create smoke-test.
 - [ ] WS0 · sales (17 fields)
 - [ ] WS0 · tenant-team (19 fields; TrainingAssignment already done — reconcile remainder)
 - [ ] WS0 · events (24 fields)

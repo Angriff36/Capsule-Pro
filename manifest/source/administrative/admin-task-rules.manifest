@@ -22,11 +22,11 @@ entity AdminTask mixin TenantScoped, SoftDeletable {
   property position: int = 0
   property labels: array<string>? = []
   property estimatedHours: decimal? = 0
-  property assignedTo: uuid? = ""
+  property assignedTo: uuid?
   property dueDate: datetime?
-  property createdBy: uuid? = ""
+  property createdBy: uuid?
   property sourceType: string? = ""
-  property sourceId: uuid? = ""
+  property sourceId: uuid?
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -52,7 +52,7 @@ entity AdminTask mixin TenantScoped, SoftDeletable {
     mutate dueDate = dueDate
     mutate createdBy = createdBy != null and createdBy != "" ? createdBy : user.id
     mutate sourceType = sourceType != null ? sourceType : ""
-    mutate sourceId = sourceId != null ? sourceId : ""
+    mutate sourceId = sourceId != null ? sourceId : null
     mutate position = position != null ? position : 0
     mutate labels = labels != null ? labels : []
     mutate estimatedHours = estimatedHours != null ? estimatedHours : 0

@@ -6,12 +6,12 @@ entity AdminTaskAttachment mixin TenantScoped, SoftDeletable {
   // No relationships: taskId is a loose key by design; AdminTask declares no
   // child relationships (see core/admin-task-rules.manifest).
   key [tenantId, id]
-  indexed property taskId: uuid = ""
+  indexed property taskId: uuid
   searchable property fileName: string = ""
   property fileUrl: string = ""
   property fileSize: int = 0
   property mimeType: string = ""
-  property uploadedBy: uuid? = ""
+  property uploadedBy: uuid?
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null

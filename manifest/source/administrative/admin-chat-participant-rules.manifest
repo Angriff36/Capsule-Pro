@@ -4,7 +4,7 @@ use "../_base.manifest"
 
 entity AdminChatParticipant mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property threadId: uuid = ""
+  property threadId: uuid
   property userId: uuid = ""
   property archivedAt: datetime?
   property clearedAt: datetime?

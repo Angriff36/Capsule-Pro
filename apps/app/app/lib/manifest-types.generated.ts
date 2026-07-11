@@ -66,7 +66,7 @@ export interface AdminChatParticipant {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  threadId?: string;
+  threadId: string;
   userId?: string;
   archivedAt?: string | null;
   clearedAt?: string | null;
@@ -112,7 +112,7 @@ export interface AdminTaskAttachment {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  taskId?: string;
+  taskId: string;
   fileName?: string;
   fileUrl?: string;
   fileSize?: number;
@@ -126,7 +126,7 @@ export interface AdminTaskComment {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  taskId?: string;
+  taskId: string;
   authorId?: string | null;
   authorName?: string;
   text?: string;
@@ -138,7 +138,7 @@ export interface AdminTaskDevMeta {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  taskId?: string;
+  taskId: string;
   severity?: string;
   environment?: string | null;
   stepsToRepro?: string | null;
@@ -152,9 +152,9 @@ export interface AdminTaskFileRef {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  taskId?: string;
+  taskId: string;
   refType?: string;
-  refId?: string;
+  refId: string;
   refLabel?: string;
   linkedBy?: string | null;
   createdAt: string;

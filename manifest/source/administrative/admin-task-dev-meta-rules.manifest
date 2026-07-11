@@ -6,7 +6,7 @@ entity AdminTaskDevMeta mixin TenantScoped, SoftDeletable {
   // No relationships: taskId is a loose key by design; AdminTask declares no
   // child relationships (see core/admin-task-rules.manifest).
   key [tenantId, id]
-  indexed property taskId: uuid = ""
+  indexed property taskId: uuid
   property severity: string = "medium"
   property environment: string? = ""
   searchable property stepsToRepro: string? = ""
