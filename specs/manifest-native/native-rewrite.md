@@ -11,7 +11,7 @@ Rewrite `manifest/source/**/*.manifest` (~104 files) to use the native Manifest 
 Operating rules (from the plan's standing constraints — violations are drift, not progress):
 
 - Edit `.manifest` source only; regenerate everything with `pnpm manifest:build`; gate with `pnpm manifest:ci`. Never hand-edit generated artifacts; never run the bare `manifest` CLI.
-- One domain-batch = one commit (`[refactor(manifest)] <domain>: <workstream> — <what>`), staged by explicit pathspec, green gates at every commit.
+- One domain-batch = one commit (`refactor(manifest): <domain> <workstream> — <what>` — conventional format; the commit-msg hook rejects bracket prefixes), staged by explicit pathspec, green gates at every commit.
 - Schema changes: `pnpm db:dev -- --create-only` and review the SQL. Deploy is a human step — record migrations as awaiting deploy.
 - Unanswered Phase 0 preflights gate their workstreams; record answers in the plan document itself.
 - WS0's persist-before-mutate wrinkle is the trap: a blind `s/= ""//` is NOT sufficient — classify each field nullable-vs-required and mutate-filled-vs-param-seeded per the plan.
