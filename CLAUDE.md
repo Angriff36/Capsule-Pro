@@ -237,7 +237,7 @@ Last: [first session]
 
 ## Last Session Bridge
 [Emergency bridge — running bridge was not updated]
-No changes or facts in this session.
+Files: packages/database/prisma/AGENTS.md (edit), docs/database/README.md (edit), docs/database/KNOWN_ISSUES.md (edit), docs/database/SCHEMA_PLACEMENT_POLICY.md (edit), packages/database/README.md (edit)
 
 # === END COGNILAYER ===
 

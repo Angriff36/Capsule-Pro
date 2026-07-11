@@ -660,3 +660,4 @@ previewjs.config.js
 # SonarQube scanner working directory
 .scannerwork/
 /.ralph
+sonar-project.properties
