@@ -15,14 +15,14 @@ entity Lead mixin TenantScoped, SoftDeletable {
   property estimatedGuests: int? = 0
   property estimatedValue: decimal? = 0
   indexed property status: string = "new"
-  property assignedTo: uuid? = ""
+  property assignedTo: uuid?
   searchable property notes: string? = ""
-  property convertedToClientId: uuid? = ""
+  property convertedToClientId: uuid?
   property convertedAt: datetime?
   property scoreBreakdown: json = {}
   timestamps
 
-  computed isConverted: boolean = self.convertedToClientId != "" and self.convertedAt != null
+  computed isConverted: boolean = self.convertedToClientId != null and self.convertedAt != null
   computed isHighValue: boolean = self.estimatedValue >= 10000
   computed isOpen: boolean = self.status in ["new", "contacted", "qualified", "proposal"]
   computed isArchived: boolean = self.deletedAt != null
@@ -37,7 +37,7 @@ entity Lead mixin TenantScoped, SoftDeletable {
   transition status from "qualified" to ["proposal", "disqualified", "lost"]
   transition status from "proposal" to ["won", "lost", "disqualified"]
 
-  constraint warnHighValueUnassigned:warn (self.estimatedValue >= 10000) and self.assignedTo == "" {
+  constraint warnHighValueUnassigned:warn (self.estimatedValue >= 10000) and self.assignedTo == null {
     messageTemplate: "High-value lead '{contactName}' (${estimatedValue}) is not assigned to anyone"
     details: {
       contactName: self.contactName
@@ -91,12 +91,12 @@ entity Lead mixin TenantScoped, SoftDeletable {
 
   command update(optional companyName: string, optional contactName: string, optional contactEmail: string, optional contactPhone: string, optional eventType: string, optional eventDate: datetime, optional estimatedGuests: number, optional estimatedValue: money, optional status: string, optional assignedTo: string, optional notes: string) {
     guard self.deletedAt == null "Cannot update an archived lead"
-    // Stored-prop form of `!self.isConverted` (isConverted = convertedToClientId != ""
+    // Stored-prop form of `!self.isConverted` (isConverted = convertedToClientId != null
     // and convertedAt != null). Computeds do NOT resolve inside guards in this runtime
     // (they evaluate to undefined → `undefined == false` is false → the guard rejected
     // EVERY update, making Lead.update dead for all callers). Inlining the stored props
     // revives it. Same fix pattern as Proposal.send's isDraft inline.
-    guard self.convertedToClientId == "" or self.convertedAt == null "Cannot update a converted lead"
+    guard self.convertedToClientId == null or self.convertedAt == null "Cannot update a converted lead"
     guard contactName == null or contactName != "" "Contact name cannot be empty"
 
     constraint warnStatusRegression:warn status == "new" and self.status != "new" {
@@ -126,7 +126,7 @@ entity Lead mixin TenantScoped, SoftDeletable {
     guard self.deletedAt == null "Cannot convert an archived lead"
     guard clientId != null and clientId != "" "Client ID is required"
 
-    constraint blockAlreadyConverted:block !(self.convertedToClientId != "" and self.convertedAt != null) {
+    constraint blockAlreadyConverted:block !(self.convertedToClientId != null and self.convertedAt != null) {
       messageTemplate: "Lead '{contactName}' has already been converted to client '{existingClientId}'"
       details: {
         contactName: self.contactName
@@ -152,7 +152,7 @@ entity Lead mixin TenantScoped, SoftDeletable {
 
   command disqualify(reason: string, userId: string) {
     guard self.deletedAt == null "Cannot disqualify an archived lead"
-    guard (self.convertedToClientId != "" and self.convertedAt != null) == false "Cannot disqualify a converted lead"
+    guard (self.convertedToClientId != null and self.convertedAt != null) == false "Cannot disqualify a converted lead"
 
     constraint warnHighValueDisqualify:warn (self.estimatedValue >= 10000) {
       messageTemplate: "Disqualifying high-value lead '{contactName}' (${estimatedValue})"

@@ -116,7 +116,7 @@ entity ProposalTemplate mixin TenantScoped, SoftDeletable {
 
 entity InteractionAttachment mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property interactionId: uuid = ""
+  property interactionId: uuid
   property fileName: string = ""
   property fileUrl: string = ""
   property fileType: string = ""
@@ -275,7 +275,7 @@ entity Report mixin TenantScoped, SoftDeletable {
   property queryConfig: json = {}
   property displayConfig: json = {}
   property isShared: boolean? = false
-  property createdBy: uuid? = ""
+  property createdBy: uuid?
   timestamps
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -426,7 +426,7 @@ entity AdminChatThread mixin TenantScoped, SoftDeletable {
   property threadType: string = "direct"
   unique property slug: string? = ""
   property directKey: string? = ""
-  property createdBy: uuid? = ""
+  property createdBy: uuid?
   property lastMessageAt: datetime?
   timestamps
 
@@ -466,8 +466,8 @@ entity AdminChatThread mixin TenantScoped, SoftDeletable {
 
 entity AdminChatMessage mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property threadId: uuid = ""
-  property authorId: uuid = ""
+  property threadId: uuid
+  property authorId: uuid
   property authorName: string = ""
   property text: string = ""
   timestamps

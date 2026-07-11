@@ -4,7 +4,7 @@ use "../_base.manifest"
 
 entity ProposalDraft mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  indexed property draftId: uuid = ""
+  indexed property draftId: uuid
   property userId: string = ""
   indexed property status: string = "draft"
   property version: int = 1
@@ -23,7 +23,7 @@ entity ProposalDraft mixin TenantScoped, SoftDeletable {
   property visionSummary: string? = ""
   property notes: string? = ""
   property nextSteps: string? = ""
-  property templateId: uuid? = ""
+  property templateId: uuid?
   // magicToken defaults to "" and is set by create()/refreshToken(); a
   // `required`/non-empty invariant here would fail the create bootstrap
   // (entity defaults must satisfy every block invariant at createInstance).
@@ -110,7 +110,7 @@ entity ProposalDraft mixin TenantScoped, SoftDeletable {
     mutate visionSummary = visionSummary != null ? visionSummary : ""
     mutate notes = notes != null ? notes : ""
     mutate nextSteps = nextSteps != null ? nextSteps : ""
-    mutate templateId = templateId != null ? templateId : ""
+    mutate templateId = templateId != null ? templateId : null
     // `status` is intentionally NOT mutated: the property default seeds the
     // initial "draft" state and draft -> draft is a rejected no-op
     // self-transition under the rules above.

@@ -11,7 +11,7 @@ Authoritative plan: `manifest/NATIVE-REWRITE-PLAN.md` (WS0–WS16, Phase 0 P1–
 
 | Workstream | Metric | Plan-time | Verified 2026-07-11 |
 | --- | --- | --- | --- |
-| WS0 | `uuid … = ""` defaults | 188 / 69 files | **164 / 57 files** (post-administrative batch; was 177/64 pre-batch — the prior "187/69" here was stale) |
+| WS0 | `uuid … = ""` defaults | 188 / 69 files | **147 / 51 files** (post-sales batch; was 164/57 post-administrative) |
 | WS1 | `user.role in [...]` literals | 464 | **461** |
 | WS7 | `status: string` (raw, incl. command params) | 82 fields | **140 raw** / 92 `validStatus` constraints |
 | WS5 | native `schedule` decls | 0 | **0** (10 crons in `apps/api/vercel.json`) |
@@ -30,7 +30,7 @@ Authoritative plan: `manifest/NATIVE-REWRITE-PLAN.md` (WS0–WS16, Phase 0 P1–
 | knowledge-base | 1 | 3 | 1 |
 | operations | 74 | 185 | 53 |
 | platform | 10 | 51 | 2 |
-| sales | 17 | 44 | 10 |
+| sales | 0 ✓ | 44 | 10 |
 | tenant-team | 19 | 64 | 17 |
 
 `operations/` is too large for one commit — sub-batch by subdirectory: kitchen (uuid 30 / role 90), inventory (18 / 48), procurement (11 / 23), logistics (7 / 9), equipment (4 / 5), facilities (3 / 7), maintenance (1 / 3).
@@ -65,7 +65,7 @@ Not a blind `s/= ""//`: per field, classify **nullable-vs-required** and **mutat
 - [ ] WS0 · platform/api-key `createdByUserId` (required, optional-param + `: user.id` mutate fallback → needs nullable change `uuid→uuid?` → migration; separate batch)
 - [x] WS0 · administrative (13/14 IR-only) — DONE 2026-07-11: dropped `= ""` from 13 fields (7 nullable + 6 required-but-param-seeded — each has a same-named create param that seeds the bootstrap INSERT, so the column stays NOT NULL with zero schema change). Fields: BoardConfig.createdBy; AdminTaskAttachment.{taskId,uploadedBy}; AdminTaskDevMeta.taskId; AdminTaskComment.{taskId,authorId}; AdminChatParticipant.threadId; AdminTaskFileRef.{taskId,refId,linkedBy}; AdminTask.{assignedTo,createdBy,sourceId}. Also fixed `admin-task-rules` `mutate sourceId = … : ""` → `: null` (the mutate fallback was writing a bad `""` into `@db.Uuid` — same WS0 bug class; null is valid for the nullable column). `manifest:ci` green; `manifest.prisma` byte-identical (no migration). `apps/app` typecheck green.
 - [ ] WS0 · administrative/admin-chat-participant `userId` (1 field deferred) — required `uuid`, NO create param, filled only by `mutate userId = user.id` (context) → bootstrap INSERT writes `""` to NOT NULL `@db.Uuid`. Clean IR-only fix: add a trusted create param `userId: string from context.user.id` (≥3.4.23 projects it optional in zod; seeds the INSERT AND closes the userId-spoofing hole the 2026-07-10 sweep flagged) — no migration, no caller change. Fallback: make column nullable → migration. Verify with a Postgres create smoke-test.
-- [ ] WS0 · sales (17 fields)
+- [x] WS0 · sales (17 fields) — DONE 2026-07-11: dropped `= ""` from 17 uuid fields across 6 files (12 nullable + 5 required-but-param-seeded — each required field has a same-name create param that seeds the bootstrap INSERT, so the NOT NULL column stays satisfied). **All IR-only**: `manifest:ci` green, `manifest.prisma` byte-identical (no migration, no `db:dev`; independently re-confirmed by the prisma-drift gate), apps/app+api+web typecheck green. Sentinel moves (nullable fields whose `""` was the unset marker → `null`, in the same commit): `Lead.convertedToClientId` (the `isConverted` computed + 3 guards/constraints + the explanatory comment — load-bearing: `null != ""` would have flipped the computed true), `Lead.assignedTo` (warnHighValueUnassigned), `Client.assignedTo` (warnArchiveWithAssignment), `ClientInteraction.{clientId,leadId}` (warnNoClientOrLead); `Proposal.publicToken` (`generatePublicLink` guard `== ""` → `== null` — load-bearing: without it the guard would block first link generation); `ProposalDraft.templateId` mutate `: ""` → `: null` (the mutate was itself writing a bad `""` into `@db.Uuid` — same WS0 bug class as admin-task `sourceId`). **Side effect to expect on every WS0 IR-only batch**: dropping a *required* uuid's default tightens its generated TypeScript read type `string?` → `string` (the generator treated defaulted fields as optional; removing the default reveals the true NOT NULL shape) — correct, and no consumer broke here.
 - [ ] WS0 · tenant-team (19 fields; TrainingAssignment already done — reconcile remainder)
 - [ ] WS0 · events (24 fields)
 - [ ] WS0 · accounting (28 fields)

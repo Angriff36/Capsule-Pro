@@ -4,9 +4,9 @@ use "../_base.manifest"
 
 entity ClientInteraction mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property clientId: uuid? = ""
-  property leadId: uuid? = ""
-  property employeeId: uuid = ""
+  property clientId: uuid?
+  property leadId: uuid?
+  property employeeId: uuid
   property interactionType: string = "note"
   property interactionDate: datetime = now()
   property subject: string? = ""
@@ -34,7 +34,7 @@ entity ClientInteraction mixin TenantScoped, SoftDeletable {
   relationship belongsTo lead: Lead fields [tenantId, leadId] references [tenantId, id]
   relationship belongsTo employee: User fields [tenantId, employeeId] references [tenantId, id]
 
-  constraint warnNoClientOrLead:warn self.clientId == "" and self.leadId == "" {
+  constraint warnNoClientOrLead:warn self.clientId == null and self.leadId == null {
     messageTemplate: "Interaction '{subject}' is not linked to any client or lead"
     details: {
       subject: self.subject

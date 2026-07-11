@@ -17,9 +17,9 @@ entity Proposal mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property templateId: uuid?
   unique property proposalNumber: string = ""
-  property clientId: uuid? = ""
-  property leadId: uuid? = ""
-  property eventId: uuid? = ""
+  property clientId: uuid?
+  property leadId: uuid?
+  property eventId: uuid?
   searchable property title: string = ""
   property eventDate: datetime?
   property eventType: string? = ""
@@ -40,7 +40,7 @@ entity Proposal mixin TenantScoped, SoftDeletable {
   searchable property notes: string? = ""
   property termsAndConditions: string? = ""
   property lineItemCount: int? = 0
-  property publicToken: uuid? = ""
+  property publicToken: uuid?
   timestamps
 
   computed isDraft: boolean = self.status == "draft"
@@ -279,7 +279,7 @@ entity Proposal mixin TenantScoped, SoftDeletable {
 
   command generatePublicLink(userId: string) {
     guard self.deletedAt == null "Cannot generate link for a deleted proposal"
-    guard self.publicToken == "" "Public link already generated"
+    guard self.publicToken == null "Public link already generated"
 
     mutate publicToken = uuid()
 

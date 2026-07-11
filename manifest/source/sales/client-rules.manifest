@@ -23,7 +23,7 @@ entity Client mixin TenantScoped, SoftDeletable {
   searchable searchable property notes: string? = ""
   property required tags: array<string>
   property source: string? = ""
-  property assignedTo: uuid? = ""
+  property assignedTo: uuid?
   timestamps
 
   computed displayName: string = self.clientType == "company" ? self.companyName : self.firstName + " " + self.lastName
@@ -118,7 +118,7 @@ entity Client mixin TenantScoped, SoftDeletable {
   command archive(reason: string, userId: string) {
     guard self.deletedAt == null "Client is already archived"
 
-    constraint warnArchiveWithAssignment:warn self.assignedTo != "" {
+    constraint warnArchiveWithAssignment:warn self.assignedTo != null {
       messageTemplate: "Archiving client '{clientName}' who is assigned to a sales rep"
       details: {
         clientName: self.displayName

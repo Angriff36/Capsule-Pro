@@ -54,8 +54,8 @@ export interface AdminChatMessage {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  threadId?: string;
-  authorId?: string;
+  threadId: string;
+  authorId: string;
   authorName?: string;
   text?: string;
   createdAt: string;
@@ -555,7 +555,7 @@ export interface ClientInteraction {
   deletedAt?: string | null;
   clientId?: string | null;
   leadId?: string | null;
-  employeeId?: string;
+  employeeId: string;
   interactionType?: string;
   interactionDate: string;
   subject?: string | null;
@@ -1630,7 +1630,7 @@ export interface InteractionAttachment {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  interactionId?: string;
+  interactionId: string;
   fileName?: string;
   fileUrl?: string;
   fileType?: string;
@@ -2630,7 +2630,7 @@ export interface ProposalDraft {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  draftId?: string;
+  draftId: string;
   userId?: string;
   status?: string;
   version?: number;
