@@ -20,7 +20,7 @@
     "@t3-oss/env-nextjs": "^0.13.11",
     "@vercel/analytics": "^2.0.1",
     "date-fns": "^4.4.0",
-    "fumadocs-core": "^16.10.2",
+    "fumadocs-core": "^16.11.2",
     "geist": "^1.7.2",
     "import-in-the-middle": "^3.0.2",
     "lucide-react": "^1.18.0",
