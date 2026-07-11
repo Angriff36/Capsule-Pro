@@ -1,0 +1,11 @@
+# Commit-format gate: the format was specified in three docs and enforced
+# nowhere. Accepts both styles in active use:
+#   [type] what and why          (CLAUDE.md CogniLayer format)
+#   type(scope): what and why    (conventional, dominant in git log)
+# plus merges/reverts/fixups. Anything else is a typo'd or empty message.
+msg=$(head -n1 "$1")
+if ! printf '%s' "$msg" | grep -qE '^(\[[a-z-]+\] .+|[a-z]+(\([^)]+\))?!?: .+|Merge .+|Revert .+|fixup! .+|squash! .+)$'; then
+  echo "✗ commit message must match '[type] what' or 'type(scope): what'"
+  echo "  got: $msg"
+  exit 1
+fi
