@@ -1,6 +1,6 @@
 // Generated from manifest.config.yaml + prisma-model-metadata — DO NOT EDIT
 // Producer: manifest/scripts/generate-entity-accessor.mjs
-// Re-run: pnpm manifest:generate-metadata
+// Re-run: pnpm manifest:build
 /* eslint-disable */
 
 export interface EntityResolution {

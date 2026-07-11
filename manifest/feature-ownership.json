@@ -2027,6 +2027,7 @@
       "apiSegment": "accounting/invoices",
       "commands": [
         "applyPayment",
+        "create",
         "markAsPaid",
         "markOverdue",
         "markViewed",
@@ -2366,6 +2367,7 @@
       "sourceManifest": "C:\\Projects\\capsule-pro\\manifest\\source\\accounting\\payment-rules.manifest",
       "apiSegment": "accounting/payments",
       "commands": [
+        "create",
         "markAcceptedNotApplied",
         "markChargeback",
         "markFraudFailed",

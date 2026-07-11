@@ -1,6 +1,6 @@
 {
-  "irHash": "1d0ea9c4a459a7bc886314929c44cce54ab5a353d610f16b18dfdbc1fb2951fb",
-  "compilerVersion": "3.3.1",
+  "irHash": "bf94c148edbb55b5b89ff0c3ec9d80ffafcecf18f372c2953b6b90740f5b25f0",
+  "compilerVersion": "3.4.24",
   "entities": [
     {
       "name": "ActionMilestone",
@@ -1066,6 +1066,7 @@
         "entityId",
         "entityType",
         "version",
+        "vectorClock",
         "createdAt",
         "updatedAt"
       ]
@@ -1895,6 +1896,7 @@
         "quantityServings",
         "specialInstructions",
         "course",
+        "serviceStyle",
         "createdAt",
         "updatedAt"
       ]
@@ -1958,6 +1960,7 @@
         "rsvpStatus",
         "rsvpRespondedAt",
         "checkedInAt",
+        "waitlistPosition",
         "createdAt",
         "updatedAt"
       ]
@@ -1987,6 +1990,11 @@
         "skippedRows",
         "parseErrors",
         "parsedAt",
+        "fileSize",
+        "detectedFormat",
+        "confidence",
+        "extractedData",
+        "content",
         "createdAt",
         "updatedAt"
       ]
@@ -2244,6 +2252,8 @@
         "durationMinutes",
         "notes",
         "sortOrder",
+        "isCompleted",
+        "responsibleRole",
         "createdAt",
         "updatedAt"
       ]
@@ -2785,6 +2795,7 @@
         "tenantId",
         "deletedAt",
         "requestedAt",
+        "transferNumber",
         "fromLocationId",
         "toLocationId",
         "status",
@@ -2819,6 +2830,7 @@
         "itemId",
         "quantity",
         "unitId",
+        "receivedQuantity",
         "createdAt",
         "updatedAt"
       ]
@@ -2829,6 +2841,7 @@
       "tenantScoped": true,
       "commands": [
         "applyPayment",
+        "create",
         "markAsPaid",
         "markOverdue",
         "markViewed",
@@ -2865,6 +2878,7 @@
         "sentAt",
         "viewedAt",
         "overdueSince",
+        "voidedAt",
         "reminderCount",
         "lastReminderAt",
         "notes",
@@ -3036,6 +3050,7 @@
         "tenantId",
         "deletedAt",
         "title",
+        "slug",
         "category",
         "content",
         "tags",
@@ -3075,6 +3090,11 @@
         "description",
         "approvedBy",
         "approvedAt",
+        "budgetUnit",
+        "overrideReason",
+        "threshold80Pct",
+        "threshold90Pct",
+        "threshold100Pct",
         "createdAt",
         "updatedAt"
       ]
@@ -3109,6 +3129,7 @@
         "notes",
         "convertedToClientId",
         "convertedAt",
+        "scoreBreakdown",
         "createdAt",
         "updatedAt"
       ]
@@ -3208,6 +3229,12 @@
         "totalCost",
         "partsUsed",
         "notes",
+        "reportedAt",
+        "assignedVendor",
+        "completedBy",
+        "laborHours",
+        "partsCost",
+        "laborCost",
         "createdAt",
         "updatedAt"
       ]
@@ -3234,6 +3261,7 @@
         "description",
         "category",
         "isActive",
+        "isTemplate",
         "basePrice",
         "pricePerPerson",
         "minGuests",
@@ -3393,12 +3421,14 @@
       "properties": [
         "id",
         "tenantId",
+        "deletedAt",
         "scheduleId",
         "role",
         "shiftStart",
         "shiftEnd",
         "status",
         "claimedBy",
+        "roleDuringShift",
         "createdAt",
         "updatedAt"
       ]
@@ -3431,6 +3461,7 @@
       "classification": "governed",
       "tenantScoped": true,
       "commands": [
+        "create",
         "markAcceptedNotApplied",
         "markChargeback",
         "markFraudFailed",
@@ -3531,6 +3562,9 @@
         "effectiveAmount",
         "refundReason",
         "success",
+        "originalGatewayTransactionId",
+        "refundTransactionId",
+        "failureReason",
         "createdAt"
       ]
     },
@@ -3867,10 +3901,16 @@
         "dueByDate",
         "priority",
         "dishId",
+        "recipeVersionId",
+        "methodId",
+        "containerId",
         "locationId",
         "estimatedMinutes",
         "dueByTime",
         "notes",
+        "isEventFinish",
+        "doNotCompleteUntil",
+        "actualMinutes",
         "createdAt",
         "updatedAt"
       ]
@@ -4557,6 +4597,7 @@
         "preparationNotes",
         "isOptional",
         "wasteFactor",
+        "ingredientCost",
         "createdAt",
         "updatedAt"
       ]
@@ -4634,6 +4675,7 @@
         "dropOffNotes",
         "bringHotNotes",
         "cookOnSiteNotes",
+        "costCalculatedAt",
         "createdAt",
         "updatedAt"
       ]
@@ -5438,6 +5480,9 @@
         "storageType",
         "temperatureZone",
         "isActive",
+        "temperatureMin",
+        "temperatureMax",
+        "temperatureUnit",
         "createdAt",
         "updatedAt"
       ]
@@ -5667,6 +5712,11 @@
         "notes",
         "sortOrder",
         "completedAt",
+        "progress",
+        "dependencies",
+        "isOnCriticalPath",
+        "slackMinutes",
+        "priority",
         "createdAt",
         "updatedAt"
       ]
@@ -5921,6 +5971,7 @@
         "isActive",
         "avatarUrl",
         "roleId",
+        "payoutMethod",
         "createdAt",
         "updatedAt"
       ]

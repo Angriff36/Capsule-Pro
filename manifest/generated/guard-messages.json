@@ -894,7 +894,7 @@
     "Dish is not marked seasonal"
   ],
   "Dish.update": [
-    "Dish name is required",
+    "Dish name cannot be empty",
     "Cannot update a deactivated dish"
   ],
   "Dish.updateLeadTime": [
@@ -1255,7 +1255,7 @@
     "Guest is already deleted"
   ],
   "EventGuest.update": [
-    "Guest name is required",
+    "Guest name cannot be empty",
     "Cannot update a deleted guest"
   ],
   "EventImport.complete": [
@@ -1820,6 +1820,11 @@
     "Payment amount must be positive",
     "Payment amount cannot exceed amount due"
   ],
+  "Invoice.create": [
+    "Invoice number is required",
+    "Event ID is required",
+    "Client ID is required"
+  ],
   "Invoice.markOverdue": [
     "Invoice must be sent to be marked overdue",
     "Invoice must be past due date",
@@ -2003,7 +2008,7 @@
   "Lead.update": [
     "Cannot update an archived lead",
     "Cannot update a converted lead",
-    "Contact name is required"
+    "Contact name cannot be empty"
   ],
   "LogisticsDispatch.assign": [
     "Route ID is required",
@@ -2187,6 +2192,10 @@
     "Constraint ID is required",
     "Overridden by user is required",
     "Override reason is required"
+  ],
+  "Payment.create": [
+    "Invoice ID is required",
+    "Payment amount must be positive"
   ],
   "Payment.markAcceptedNotApplied": [
     "Can only mark processing or completed payments"
