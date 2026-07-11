@@ -236,8 +236,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[pre-compact bridge — saved before context compaction]
-(no changes or facts recorded in this session segment)
+[auto-bridge snapshot @ 10 changes]
+Files: manifest/source/administrative/admin-task-file-ref-rules.manifest (edit), manifest/source/administrative/admin-chat-participant-rules.manifest (edit), manifest/source/administrative/admin-task-comment-rules.manifest (edit), manifest/source/administrative/admin-task-dev-meta-rules.manifest (edit), manifest/source/administrative/admin-task-attachment-rules.manifest (edit), manifest/source/administrative/board-config-rules.manifest (edit)
 
 # === END COGNILAYER ===
 
