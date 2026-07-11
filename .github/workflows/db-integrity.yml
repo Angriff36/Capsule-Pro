@@ -1,0 +1,76 @@
+name: DB Integrity Sweep
+
+# Compensating control for the no-foreign-keys + soft-delete schema:
+# scripts/db-integrity-sweep.mjs looks for orphaned child rows (e.g. live
+# prep_tasks / prep_list_items / event_dishes pointing at a soft-deleted or
+# absent dish/event — the raw-SQL-delete-skips-governed-prune bug class).
+on:
+  schedule:
+    # Weekly, Monday 06:00 UTC
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+  issues: write
+
+jobs:
+  db-integrity-sweep:
+    name: DB Integrity Sweep
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Order matters: pnpm/action-setup MUST come before actions/setup-node when
+      # cache: pnpm is used. setup-node invokes pnpm to compute the cache key
+      # and fails with "Unable to locate executable file: pnpm" if pnpm isn't
+      # on PATH yet. See https://github.com/pnpm/action-setup#use-cache-to-reduce-installation-time
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ github.token }}
+
+      - name: Run DB integrity sweep
+        # PRODUCTION_DATABASE_URL is the existing repo secret for the prod
+        # Neon database (same one deploy.yml uses for prisma migrate deploy).
+        # The sweep is strictly read-only (SELECTs with LIMIT 50 samples).
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+        run: |
+          set -o pipefail
+          node scripts/db-integrity-sweep.mjs 2>&1 | tee sweep-report.txt
+
+      - name: Create or update findings issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TITLE="DB integrity sweep findings"
+          {
+            echo "Scheduled DB integrity sweep failed on run [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})."
+            echo ""
+            echo '```'
+            cat sweep-report.txt 2>/dev/null || echo "(no report captured — sweep failed before producing output)"
+            echo '```'
+          } > issue-body.md
+
+          EXISTING=$(gh issue list --state open --search "in:title \"$TITLE\"" --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            echo "Updating existing issue #$EXISTING"
+            gh issue comment "$EXISTING" --body-file issue-body.md
+          else
+            echo "Creating new issue"
+            gh issue create --title "$TITLE" --body-file issue-body.md
+          fi
