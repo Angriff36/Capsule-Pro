@@ -398,6 +398,8 @@ scripts/*
 !scripts/__tests__/validate-migration-table-schemas.test.mjs
 !scripts/__tests__/validate-generated-migration.test.mjs
 !scripts/ensure-github-packages-npmrc.sh
+# Scheduled DB integrity sweep — run by .github/workflows/db-integrity.yml
+!scripts/db-integrity-sweep.mjs
 
 # Local Netlify folder
 .netlify
