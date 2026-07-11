@@ -93,8 +93,8 @@ entity EntityVersion mixin TenantScoped {
   property changeReason: string? = ""
   property changeSummary: string? = ""
   property required changeType: string
-  property snapshotData: string? = {}
-  property metadata: string? = {}
+  property snapshotData: string?
+  property metadata: string?
   property isApproved: boolean? = false
   property approvedAt: datetime?
   property approvedBy: string? = ""

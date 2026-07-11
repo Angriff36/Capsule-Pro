@@ -8,7 +8,7 @@
     "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
-    "@angriff36/manifest": "3.4.24",
+    "@angriff36/manifest": "3.4.25",
     "@auto-it/first-time-contributor": "^11.3.6",
     "@babel/parser": "^7.29.7",
     "@biomejs/biome": "2.5.2",
@@ -25,7 +25,6 @@
     "baseline-browser-mapping": "^2.10.42",
     "commander": "^14.0.3",
     "cross-env": "^10.1.0",
-    "dependency-cruiser": "^17.4.3",
     "fallow": "^2.96.0",
     "form-data": "^4.0.6",
     "husky": "^9.1.7",
@@ -81,7 +80,7 @@
     "db:validate-generated-migration:test": "node --test scripts/__tests__/validate-generated-migration.test.mjs",
     "db:deploy": "pnpm --filter @repo/database exec prisma migrate deploy",
     "db:dev": "pnpm --filter @repo/database exec prisma migrate dev",
-    "db:push": "echo \"\u274c Disabled. Use pnpm migrate (dev) or pnpm migrate:deploy (CI/prod).\" && exit 1",
+    "db:push": "echo \"❌ Disabled. Use pnpm migrate (dev) or pnpm migrate:deploy (CI/prod).\" && exit 1",
     "dev": "turbo dev --parallel",
     "dev:app": "turbo run dev --filter=./apps/app",
     "dev:api": "turbo run dev --filter=./apps/api",

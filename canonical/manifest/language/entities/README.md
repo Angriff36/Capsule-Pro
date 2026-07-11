@@ -64,6 +64,13 @@ Do not create entities in code without a corresponding .manifest source definiti
 
 ## 3. Current Status
 
+> **2026-07-11 — EntityVersion nullable string defaults corrected.** `EntityVersion.snapshotData`
+> and `EntityVersion.metadata` are nullable serialized-string fields backed by Prisma `String?` /
+> PostgreSQL `TEXT`. `EntityVersion.create(snapshot: string)` persists the supplied snapshot into
+> `snapshotData`; omitted `metadata` materializes as `null`. The Capsule source therefore declares
+> both fields without defaults. Empty object defaults were invalid under Manifest 3.4.25 and did not
+> represent the persistence contract.
+
 Current recorded status:
 
 ```text
@@ -335,4 +342,5 @@ Agents may add rows. Agents may not decide for Ryan.
 
 | Date       | Decision | Made by | Reason |
 | ---------- | -------- | ------- | ------ |
+| 2026-07-11 | Keep EntityVersion snapshotData and metadata as nullable serialized strings with no source default | agent | Prisma, migrations, runtime command behavior, and generated contracts agree; Manifest 3.4.25 rejects the former object literals |
 | 2026-06-26 | Initial evidence gathered | agent | Canonical unit created with real repo evidence |

@@ -35,6 +35,7 @@ session-ses_*.md
 *.bak
 
 # Agent-generated audit / report artifacts (local only, not app code)
+/.artifacts/
 /manifest-audit/
 /reports/implementation-theatre/
 /package-scripts-audit.json
@@ -661,3 +662,12 @@ previewjs.config.js
 .scannerwork/
 /.ralph
 sonar-project.properties
+
+# Ralph loop runtime/config (local-only, like loop.sh/PROMPT_* above)
+check_done.sh
+lint_specs.sh
+rollback.sh
+.ralph.env
+.ralph-checkpoint
+.ralph-telemetry.jsonl
+.ralph-failures.md

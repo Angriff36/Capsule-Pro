@@ -1,0 +1,1758 @@
+// ============================================================================
+// EVENT DOMAIN
+// ============================================================================
+//
+// This file owns the meaning and lifecycle of an Event.
+//
+// It intentionally includes:
+//
+// - tenant isolation
+// - roles and inherited permissions
+// - enums instead of free-text workflow strings
+// - reusable value objects
+// - external entity references
+// - composite tenant-safe keys and foreign keys
+// - exact money types
+// - masking and encryption
+// - computed properties and caching
+// - entity constraints
+// - command constraints
+// - overrideable rules
+// - optimistic concurrency
+// - timestamps
+// - explicit state transitions
+// - approvals
+// - synchronous commands
+// - asynchronous commands
+// - retry
+// - rate limiting
+// - typed events with explicit payloads
+// - reactions
+// - fan-out reactions
+// - saga orchestration with compensation
+// - scheduled commands
+// - authenticated/idempotent webhooks
+// - realtime projection metadata
+// - persistence declarations
+//
+// Compiler/runtime-generated objects such as provenance, JobRecord,
+// ConcurrencyConflict, ConstraintOutcome, and effectivePermissions do NOT
+// belong in source. Manifest derives or creates those itself.
+//
+// ============================================================================
+
+
+// ============================================================================
+// TENANCY
+// ============================================================================
+
+tenant tenantId : string from context.tenantId
+
+
+// ============================================================================
+// EVENT MODULE
+// ============================================================================
+
+module events {
+
+  // ==========================================================================
+  // ROLES
+  // ==========================================================================
+  //
+  // Roles define capabilities.
+  //
+  // Commands do not hardcode lists like:
+  //
+  //   user.role in ["coordinator", "manager", "director", "admin"]
+  //
+  // Instead, higher roles inherit lower-role permissions and commands ask
+  // whether the current user has the exact capability required.
+  //
+
+  role EventViewer {
+    allow event_access
+    allow event_read
+  }
+
+  role EventCoordinator extends EventViewer {
+    allow event_update
+    allow event_schedule
+    allow event_submit
+    allow event_read_sensitive
+    allow event_recalculate_readiness
+    allow event_workflow
+  }
+
+  role EventManager extends EventCoordinator {
+    allow event_confirm
+    allow event_hold
+    allow event_cancel
+    allow event_complete
+    allow event_finance
+    allow event_override_capacity
+  }
+
+  role EventDirector extends EventManager {
+    allow event_approve_large
+    allow event_archive
+    allow delete
+  }
+
+  role EventAutomation extends EventViewer {
+    allow event_automation
+    allow event_calendar_webhook
+    allow event_recalculate_readiness
+    allow event_workflow
+  }
+
+
+  // ==========================================================================
+  // ENUMS
+  // ==========================================================================
+  //
+  // Workflow states are closed sets.
+  //
+  // They are not arbitrary strings.
+  //
+
+  enum EventStatus {
+    inquiry,
+    tentative,
+    pendingApproval,
+    confirmed,
+    onHold,
+    inProgress,
+    completed,
+    cancelled,
+    archived
+  }
+
+  enum EventType {
+    wedding,
+    corporate,
+    social,
+    nonprofit,
+    internal,
+    other
+  }
+
+  enum ServiceStyle {
+    plated,
+    buffet,
+    stations,
+    cocktail,
+    dropOff,
+    delivery,
+    pickup,
+    other
+  }
+
+  enum EventSource {
+    referral,
+    website,
+    repeatClient,
+    sales,
+    partner,
+    import,
+    other
+  }
+
+  enum CalendarSyncStatus {
+    notLinked,
+    idle,
+    queued,
+    synced,
+    failed
+  }
+
+  enum ReservationStatus {
+    pending,
+    reserved,
+    released,
+    cancelled
+  }
+
+  enum FinancialAuthorizationStatus {
+    pending,
+    authorized,
+    revoked
+  }
+
+  enum ReminderBatchStatus {
+    pending,
+    active,
+    cancelled
+  }
+
+
+  // ==========================================================================
+  // VALUE OBJECTS
+  // ==========================================================================
+  //
+  // EventAddress is embedded data.
+  //
+  // It has no identity, independent lifecycle, commands, or table of its own.
+  //
+
+  value EventAddress {
+    property required line1: string
+    property line2: string?
+    property required city: string
+    property required region: string
+    property required postalCode: string
+    property required country: string
+  }
+
+
+  // ==========================================================================
+  // EXTERNAL ENTITIES
+  // ==========================================================================
+  //
+  // Events reference these concepts, but this module does not own them.
+  //
+  // Persistence projections must not generate duplicate Client, Venue, or
+  // UserAccount storage from these declarations.
+  //
+
+  external entity Client {
+    key [tenantId, id]
+
+    property required readonly id: string
+    property required name: string
+  }
+
+  external entity Venue {
+    key [tenantId, id]
+
+    property required readonly id: string
+    property required name: string
+    property capacity: number = 0
+  }
+
+  external entity UserAccount {
+    key [tenantId, id]
+
+    property required readonly id: string
+    property required displayName: string
+  }
+
+
+  // ==========================================================================
+  // EVENT AGGREGATE
+  // ==========================================================================
+
+  entity Event {
+
+    // ------------------------------------------------------------------------
+    // IDENTITY
+    // ------------------------------------------------------------------------
+
+    key [tenantId, id]
+
+    unique [tenantId, eventNumber]
+
+    property required readonly id: string
+
+    property required readonly searchable eventNumber: string
+
+    property required searchable title: string
+
+    property searchable description: string = ""
+
+
+    // ------------------------------------------------------------------------
+    // CLASSIFICATION
+    // ------------------------------------------------------------------------
+
+    property eventType: EventType = other
+
+    property serviceStyle: ServiceStyle = other
+
+    property source: EventSource = other
+
+    property status: EventStatus = inquiry
+
+
+    // ------------------------------------------------------------------------
+    // OWNERSHIP AND RELATIONSHIPS
+    // ------------------------------------------------------------------------
+
+    property required indexed clientId: string
+
+    property indexed venueId: string?
+
+    property required indexed coordinatorId: string
+
+    belongsTo client: Client
+      fields [tenantId, clientId]
+      references [tenantId, id]
+      onDelete restrict
+      onUpdate restrict
+
+    belongsTo venue: Venue
+      fields [tenantId, venueId]
+      references [tenantId, id]
+      onDelete restrict
+      onUpdate restrict
+
+    belongsTo coordinator: UserAccount
+      fields [tenantId, coordinatorId]
+      references [tenantId, id]
+      onDelete restrict
+      onUpdate restrict
+
+
+    // ------------------------------------------------------------------------
+    // SCHEDULE
+    // ------------------------------------------------------------------------
+
+    property startAt: datetime?
+
+    property endAt: datetime?
+
+    property timezone: string = "America/Toronto"
+
+
+    // ------------------------------------------------------------------------
+    // LOCATION
+    // ------------------------------------------------------------------------
+
+    property customAddress: EventAddress?
+
+    property encrypted masked(last4) accessCode: string
+      unmask when hasPermission(user, "event_read_sensitive")
+
+
+    // ------------------------------------------------------------------------
+    // GUESTS
+    // ------------------------------------------------------------------------
+
+    property guestCount: number = 1
+
+
+    // ------------------------------------------------------------------------
+    // PRIMARY CONTACT
+    // ------------------------------------------------------------------------
+
+    property required searchable primaryContactName: string
+
+    property masked(email) primaryContactEmail: string
+      unmask when hasPermission(user, "event_read_sensitive")
+
+    property masked(phone) primaryContactPhone: string
+      unmask when hasPermission(user, "event_read_sensitive")
+
+
+    // ------------------------------------------------------------------------
+    // FINANCIAL SUMMARY
+    // ------------------------------------------------------------------------
+
+    property budget: money(12, 2) = 0
+
+    property depositRequired: money(12, 2) = 0
+
+    property depositPaid: money(12, 2) = 0
+
+
+    // ------------------------------------------------------------------------
+    // INTERNAL STATE
+    // ------------------------------------------------------------------------
+
+    property private encrypted internalNotes: string = ""
+
+    property holdReason: string?
+
+    property cancellationReason: string?
+
+    property confirmedAt: datetime?
+
+    property cancelledAt: datetime?
+
+    property completedAt: datetime?
+
+    property archivedAt: datetime?
+
+
+    // ------------------------------------------------------------------------
+    // EXTERNAL CALENDAR STATE
+    // ------------------------------------------------------------------------
+
+    property private indexed externalCalendarId: string?
+
+    property calendarSyncStatus: CalendarSyncStatus = notLinked
+
+    property private externalCalendarStatus: string?
+
+    property lastCalendarSyncAt: datetime?
+
+
+    // ------------------------------------------------------------------------
+    // OPERATIONAL READINESS
+    // ------------------------------------------------------------------------
+
+    property readinessScore: number = 0
+
+
+    // ------------------------------------------------------------------------
+    // RELATED EVENT-OWNED RECORDS
+    // ------------------------------------------------------------------------
+
+    hasMany venueReservations: EventVenueReservation
+
+    hasMany financialAuthorizations: EventFinancialAuthorization
+
+    hasMany reminderBatches: EventReminderBatch
+
+
+    // ------------------------------------------------------------------------
+    // COMPUTED PROPERTIES
+    // ------------------------------------------------------------------------
+    //
+    // These values are derived from canonical state.
+    //
+    // They are not separate editable fields.
+    //
+
+    computed isScheduled: boolean = self.startAt != null and self.endAt != null cache request
+
+    computed durationMinutes: number = ( self.startAt == null or self.endAt == null ? 0 : durationMinutes(durationBetween(self.startAt, self.endAt)) ) cache request
+
+    computed balanceDue: money(12, 2) = self.depositRequired - self.depositPaid cache request
+
+    computed requiresDirectorApproval: boolean = self.budget >= 25000 or self.guestCount >= 500 cache request
+
+    computed isUpcoming: boolean = self.startAt != null and self.startAt > now() and not ( self.status in [completed, cancelled, archived] ) cache request
+
+    computed displayLabel: string = self.eventNumber + " — " + self.title cache request
+
+
+    // ------------------------------------------------------------------------
+    // ENTITY-WIDE CONSTRAINTS
+    // ------------------------------------------------------------------------
+    //
+    // These describe valid Event state regardless of which page or API
+    // happens to modify it.
+    //
+
+    constraint eventNumberPresent {
+      expression: self.eventNumber != ""
+      severity: block
+      message: "Event number is required"
+    }
+
+    constraint titlePresent {
+      expression: self.title != ""
+      severity: block
+      message: "Event title is required"
+    }
+
+    constraint guestCountPositive {
+      expression: self.guestCount > 0
+      severity: block
+      message: "Guest count must be greater than zero"
+    }
+
+    constraint budgetNonNegative {
+      expression: self.budget >= 0
+      severity: block
+      message: "Event budget cannot be negative"
+    }
+
+    constraint depositRequiredNonNegative {
+      expression: self.depositRequired >= 0
+      severity: block
+      message: "Required deposit cannot be negative"
+    }
+
+    constraint depositPaidNonNegative {
+      expression: self.depositPaid >= 0
+      severity: block
+      message: "Paid deposit cannot be negative"
+    }
+
+    constraint depositWithinBudget {
+      expression: self.budget == 0 or self.depositRequired <= self.budget
+      severity: block
+
+      message: "Required deposit cannot exceed the event budget"
+    }
+
+    constraint scheduleCoherent {
+      expression: ( self.startAt == null and self.endAt == null ) or ( self.startAt != null and self.endAt != null and self.endAt > self.startAt )
+      severity: block
+
+      message: "Event start and end must either both be absent or form a valid time range"
+    }
+
+
+    // ------------------------------------------------------------------------
+    // AUTHORIZATION POLICIES
+    // ------------------------------------------------------------------------
+    //
+    // The default execute policy protects every Event command.
+    //
+    // Individual commands add stricter capability checks through guards.
+    //
+
+    default policy EventCommandAccess execute:
+      user.id != null
+      and hasPermission(user, "event_access")
+      "You do not have access to event commands"
+
+    policy EventReadAccess read:
+      hasPermission(user, "event_read")
+      "You do not have permission to read events"
+
+    policy EventWriteAccess write:
+      hasPermission(user, "event_update")
+      or hasPermission(user, "event_workflow")
+      "You do not have permission to modify events"
+
+    policy CanOverrideVenueCapacity override:
+      hasPermission(user, "event_override_capacity")
+      "You do not have permission to override venue capacity"
+
+
+    // ------------------------------------------------------------------------
+    // COMMAND: UPDATE CORE DETAILS
+    // ------------------------------------------------------------------------
+
+    command updateDetails(
+      title: string,
+      description: string,
+      eventType: EventType,
+      serviceStyle: ServiceStyle,
+      guestCount: number,
+      budget: money(12, 2),
+      depositRequired: money(12, 2),
+      primaryContactName: string,
+      primaryContactEmail: string,
+      primaryContactPhone: string
+    ) {
+      guard hasPermission(user, "event_update")
+
+      guard self.status in [inquiry, tentative, onHold]
+
+      constraint validTitle {
+        expression: title != ""
+        severity: block
+        message: "Event title is required"
+      }
+
+      constraint validGuestCount {
+        expression: guestCount > 0
+        severity: block
+        message: "Guest count must be greater than zero"
+      }
+
+      constraint validBudget {
+        expression: budget >= 0
+        severity: block
+        message: "Budget cannot be negative"
+      }
+
+      constraint validDeposit {
+        expression: depositRequired >= 0 and ( budget == 0 or depositRequired <= budget )
+      severity: block
+
+        message: "Required deposit must be valid for the event budget"
+      }
+
+      mutate title = title
+
+      mutate description = description
+
+      mutate eventType = eventType
+
+      mutate serviceStyle = serviceStyle
+
+      mutate guestCount = guestCount
+
+      mutate budget = budget
+
+      mutate depositRequired = depositRequired
+
+      mutate primaryContactName = primaryContactName
+
+      mutate primaryContactEmail = primaryContactEmail
+
+      mutate primaryContactPhone = primaryContactPhone
+
+      emit EventDetailsUpdated {
+        eventId: self.id
+      }
+    }
+
+
+    // ------------------------------------------------------------------------
+    // COMMAND: SET LOCATION
+    // ------------------------------------------------------------------------
+
+    command setLocation(
+      venueId: string?,
+      customAddress: EventAddress?
+    ) {
+      guard hasPermission(user, "event_update")
+
+      guard self.status in [inquiry, tentative, onHold]
+
+      constraint exactlyOneLocation {
+        expression: ( venueId != null and customAddress == null ) or ( venueId == null and customAddress != null )
+      severity: block
+
+        message: "Choose either a venue or a custom event address"
+      }
+
+      mutate venueId = venueId
+
+      mutate customAddress = customAddress
+
+      emit EventLocationUpdated {
+        eventId: self.id
+      }
+    }
+
+
+    // ------------------------------------------------------------------------
+    // COMMAND: ASSIGN COORDINATOR
+    // ------------------------------------------------------------------------
+
+    command assignCoordinator(coordinatorId: string) {
+      guard hasPermission(user, "event_update")
+
+      guard coordinatorId != ""
+
+      guard not (self.status in [completed, cancelled, archived])
+
+      mutate coordinatorId = coordinatorId
+
+      emit EventCoordinatorAssigned {
+        eventId: self.id
+        coordinatorId: coordinatorId
+      }
+    }
+
+
+    // ------------------------------------------------------------------------
+    // COMMAND: INITIAL SCHEDULING
+    // ------------------------------------------------------------------------
+
+    command schedule(
+      startAt: datetime,
+      endAt: datetime,
+      timezone: string
+    ) {
+      guard hasPermission(user, "event_schedule")
+
+      guard self.status == inquiry
+
+      constraint validSchedule {
+        expression: startAt > now() and endAt > startAt
+      severity: block
+
+        message: "The event must start in the future and end after it starts"
+      }
+
+      mutate startAt = startAt
+
+      mutate endAt = endAt
+
+      mutate timezone = timezone
+
+      mutate status = tentative
+
+      emit EventScheduled {
+        eventId: self.id
+        startAt: self.startAt
+        endAt: self.endAt
+      }
+    }
+
+
+    // ------------------------------------------------------------------------
+    // COMMAND: RESCHEDULE
+    // ------------------------------------------------------------------------
+
+    command reschedule(
+      startAt: datetime,
+      endAt: datetime,
+      timezone: string
+    ) {
+      guard hasPermission(user, "event_schedule")
+
+      guard self.status in [tentative, pendingApproval, confirmed, onHold]
+
+      constraint validReschedule {
+        expression: startAt > now() and endAt > startAt
+      severity: block
+
+        message: "The new schedule must start in the future and end after it starts"
+      }
+
+      mutate startAt = startAt
+
+      mutate endAt = endAt
+
+      mutate timezone = timezone
+
+      emit EventRescheduled {
+        eventId: self.id
+        startAt: self.startAt
+        endAt: self.endAt
+      }
+    }
+
+
+    // ------------------------------------------------------------------------
+    // COMMAND: SUBMIT FOR CONFIRMATION
+    // ------------------------------------------------------------------------
+
+    command submitForConfirmation() {
+      guard hasPermission(user, "event_submit")
+
+      guard self.status in [tentative, onHold]
+
+      constraint schedulePresent {
+        expression: self.startAt != null and self.endAt != null
+      severity: block
+
+        message: "The event must be scheduled before confirmation"
+      }
+
+      constraint locationPresent {
+        expression: self.venueId != null or self.customAddress != null
+      severity: block
+
+        message: "The event must have a location before confirmation"
+      }
+
+      mutate status = pendingApproval
+
+      emit EventSubmittedForConfirmation {
+        eventId: self.id
+      }
+    }
+
+
+    // ------------------------------------------------------------------------
+    // COMMAND: CONFIRM
+    // ------------------------------------------------------------------------
+    //
+    // This command is gated by the approval workflow below.
+    //
+
+    command confirm() {
+      guard hasPermission(user, "event_confirm")
+
+      guard self.status == pendingApproval
+
+      constraint scheduleStillValid {
+        expression: self.startAt != null and self.endAt != null and self.startAt > now() and self.endAt > self.startAt
+      severity: block
+
+        message: "The event schedule is no longer valid for confirmation"
+      }
+
+      constraint locationStillPresent {
+        expression: self.venueId != null or self.customAddress != null
+      severity: block
+
+        message: "The event must have a location before confirmation"
+      }
+
+      constraint overrideable venueCapacitySufficient {
+        expression: self.venueId == null or self.venue.capacity >= self.guestCount
+      severity: block
+
+        messageTemplate: "Guest count {guestCount} exceeds venue capacity {venueCapacity}"
+
+        details: {
+          guestCount: self.guestCount
+          venueCapacity: self.venue.capacity
+        }
+
+        overridePolicy: CanOverrideVenueCapacity
+      }
+
+      constraint depositStatus:warn self.depositPaid >= self.depositRequired "The required deposit has not been fully paid"
+
+      mutate status = confirmed
+
+      mutate confirmedAt = now()
+
+      emit EventConfirmed {
+        eventId: self.id
+        guestCount: self.guestCount
+        budget: self.budget
+      }
+    }
+
+
+    // ------------------------------------------------------------------------
+    // COMMAND: COMPENSATE FAILED CONFIRMATION WORKFLOW
+    // ------------------------------------------------------------------------
+
+    command revertConfirmation() {
+      guard hasPermission(user, "event_workflow")
+
+      guard self.status == confirmed
+
+      mutate status = pendingApproval
+
+      mutate confirmedAt = null
+
+      emit EventConfirmationReverted {
+        eventId: self.id
+      }
+    }
+
+
+    // ------------------------------------------------------------------------
+    // COMMAND: PUT ON HOLD
+    // ------------------------------------------------------------------------
+
+    command putOnHold(reason: string) {
+      guard hasPermission(user, "event_hold")
+
+      guard self.status == confirmed
+
+      guard reason != ""
+
+      mutate status = onHold
+
+      mutate holdReason = reason
+
+      emit EventPutOnHold {
+        eventId: self.id
+        reason: reason
+      }
+    }
+
+
+    // ------------------------------------------------------------------------
+    // COMMAND: RESUME
+    // ------------------------------------------------------------------------
+
+    command resume() {
+      guard hasPermission(user, "event_hold")
+
+      guard self.status == onHold
+
+      mutate status = confirmed
+
+      mutate holdReason = null
+
+      emit EventResumed {
+        eventId: self.id
+      }
+    }
+
+
+    // ------------------------------------------------------------------------
+    // COMMAND: START EXECUTION
+    // ------------------------------------------------------------------------
+
+    command start() {
+      guard hasPermission(user, "event_complete")
+
+      guard self.status == confirmed
+
+      guard self.startAt != null
+
+      mutate status = inProgress
+
+      emit EventStarted {
+        eventId: self.id
+      }
+    }
+
+
+    // ------------------------------------------------------------------------
+    // COMMAND: COMPLETE
+    // ------------------------------------------------------------------------
+
+    command complete() {
+      guard hasPermission(user, "event_complete")
+
+      guard self.status == inProgress
+
+      mutate status = completed
+
+      mutate completedAt = now()
+
+      emit EventCompleted {
+        eventId: self.id
+      }
+    }
+
+
+    // ------------------------------------------------------------------------
+    // COMMAND: CANCEL
+    // ------------------------------------------------------------------------
+
+    command cancel(reason: string) {
+      guard hasPermission(user, "event_cancel")
+
+      guard self.status in [inquiry, tentative, pendingApproval, confirmed, onHold]
+
+      guard reason != ""
+
+      mutate status = cancelled
+
+      mutate cancellationReason = reason
+
+      mutate cancelledAt = now()
+
+      emit EventCancelled {
+        eventId: self.id
+        reason: reason
+      }
+    }
+
+
+    // ------------------------------------------------------------------------
+    // COMMAND: ARCHIVE
+    // ------------------------------------------------------------------------
+
+    command archive() {
+      guard hasPermission(user, "event_archive")
+
+      guard self.status in [completed, cancelled]
+
+      mutate status = archived
+
+      mutate archivedAt = now()
+
+      emit EventArchived {
+        eventId: self.id
+      }
+    }
+
+
+    // ------------------------------------------------------------------------
+    // COMMAND: RECORD DEPOSIT
+    // ------------------------------------------------------------------------
+
+    command recordDeposit(amount: money(12, 2)) {
+      guard hasPermission(user, "event_finance")
+
+      guard not (self.status in [cancelled, archived])
+
+      constraint amountPositive {
+        expression: amount > 0
+        severity: block
+        message: "Deposit amount must be greater than zero"
+      }
+
+      mutate depositPaid = self.depositPaid + amount
+
+      emit EventDepositRecorded {
+        eventId: self.id
+        amount: amount
+      }
+    }
+
+
+    // ------------------------------------------------------------------------
+    // COMMAND: APPLY TRUSTED EXTERNAL CALENDAR UPDATE
+    // ------------------------------------------------------------------------
+
+    command applyExternalCalendarUpdate(
+      startAt: datetime,
+      endAt: datetime,
+      providerStatus: string
+    ) {
+      guard hasPermission(user, "event_calendar_webhook")
+
+      guard not (self.status in [completed, cancelled, archived])
+
+      constraint validExternalSchedule {
+        expression: endAt > startAt
+        severity: block
+        message: "External calendar update contains an invalid time range"
+      }
+
+      mutate startAt = startAt
+
+      mutate endAt = endAt
+
+      mutate externalCalendarStatus = providerStatus
+
+      mutate calendarSyncStatus = synced
+
+      mutate lastCalendarSyncAt = now()
+
+      emit ExternalCalendarUpdateApplied {
+        eventId: self.id
+      }
+    }
+
+
+    // ------------------------------------------------------------------------
+    // ASYNC COMMAND: RECALCULATE OPERATIONAL READINESS
+    // ------------------------------------------------------------------------
+    //
+    // Validation happens immediately.
+    //
+    // The actual calculation is queued and executed by the job worker.
+    //
+
+    async command recalculateReadiness() {
+      retry {
+        maxAttempts: 3
+        backoff: exponential
+        delay: 1000
+        jitter: true
+      }
+
+      rateLimit {
+        maxRequests: 120
+        windowMs: 60000
+        scope: tenant
+      }
+
+      guard hasPermission(user, "event_recalculate_readiness")
+
+      compute newReadinessScore = (self.isScheduled ? 25 : 0) + ( self.venueId != null or self.customAddress != null ? 25 : 0 ) + ( self.primaryContactName != "" ? 15 : 0 ) + ( self.depositPaid >= self.depositRequired ? 15 : 0 ) + ( self.status in [ confirmed, onHold, inProgress, completed ] ? 20 : 0 )
+      mutate readinessScore = newReadinessScore
+      emit EventReadinessRecalculated {
+        eventId: self.id
+        readinessScore: self.readinessScore
+      }
+    }
+
+
+    // ------------------------------------------------------------------------
+    // APPROVAL WORKFLOW
+    // ------------------------------------------------------------------------
+    //
+    // Every confirmation requires one manager-level approval.
+    //
+    // Large events additionally require director approval.
+    //
+
+    approval confirmationApproval {
+      command: confirm
+
+      stages {
+        manager {
+          policy: hasPermission(user, "event_confirm")
+
+          required: 1
+        }
+
+        director {
+          policy: hasPermission(user, "event_approve_large")
+
+          required: 1
+
+          when: self.requiresDirectorApproval
+        }
+      }
+
+      timeout: 72
+
+      on_timeout: cancel
+
+      emit EventConfirmationApprovalRequested
+
+      emit EventConfirmationApprovalGranted
+    }
+
+
+    // ------------------------------------------------------------------------
+    // STATE MACHINE
+    // ------------------------------------------------------------------------
+    //
+    // Every state has a transition rule.
+    //
+    // This is important because a state with no matching "from" rule would be
+    // unconstrained.
+    //
+
+    transition status from "inquiry" to ["tentative", "cancelled"]
+
+    transition status from "tentative" to ["pendingApproval", "cancelled"]
+
+    transition status from "pendingApproval" to ["confirmed", "tentative", "cancelled"]
+
+    transition status from "confirmed" to ["pendingApproval", "onHold", "inProgress", "cancelled"]
+
+    transition status from "onHold" to ["pendingApproval", "confirmed", "cancelled"]
+
+    transition status from "inProgress" to ["completed"]
+
+    transition status from "completed" to ["archived"]
+
+    transition status from "cancelled" to ["archived"]
+
+    transition status from "archived" to [""]
+
+
+    // ------------------------------------------------------------------------
+    // OPTIMISTIC CONCURRENCY
+    // ------------------------------------------------------------------------
+
+    versionProperty version: number
+
+    versionAtProperty versionAt: datetime
+
+
+    // ------------------------------------------------------------------------
+    // AUTOMATIC TIMESTAMPS
+    // ------------------------------------------------------------------------
+
+    timestamps
+
+
+    // ------------------------------------------------------------------------
+    // REALTIME PROJECTION HINT
+    // ------------------------------------------------------------------------
+
+    realtime
+  }
+
+
+  // ==========================================================================
+  // EVENT VENUE RESERVATION
+  // ==========================================================================
+  //
+  // Separate identity because reservation has its own lifecycle and is one
+  // independently compensatable step in the confirmation saga.
+  //
+
+  entity EventVenueReservation {
+
+    key [tenantId, id]
+
+    unique [tenantId, eventId]
+
+    property required readonly id: string
+
+    property required indexed eventId: string
+
+    property required indexed venueId: string
+
+    property status: ReservationStatus = pending
+
+    property reservationReference: string?
+
+    property reservedAt: datetime?
+
+    property releasedAt: datetime?
+
+    belongsTo event: Event
+      fields [tenantId, eventId]
+      references [tenantId, id]
+      onDelete cascade
+      onUpdate restrict
+
+    belongsTo venue: Venue
+      fields [tenantId, venueId]
+      references [tenantId, id]
+      onDelete restrict
+      onUpdate restrict
+
+    default policy EventReservationWorkflowAccess execute:
+      user.id != null
+      and hasPermission(user, "event_workflow")
+      "You do not have permission to execute the event reservation workflow"
+
+    command reserve(reference: string) {
+      guard self.status == pending
+
+      mutate reservationReference = reference
+
+      mutate status = reserved
+
+      mutate reservedAt = now()
+
+      emit EventVenueReserved {
+        eventId: self.eventId
+        reservationId: self.id
+      }
+    }
+
+    command release(reference: string) {
+      guard self.status in [pending, reserved]
+
+      mutate reservationReference = reference
+
+      mutate status = released
+
+      mutate releasedAt = now()
+
+      emit EventVenueReleased {
+        eventId: self.eventId
+        reservationId: self.id
+      }
+    }
+
+    transition status from "pending" to ["reserved", "released", "cancelled"]
+
+    transition status from "reserved" to ["released"]
+
+    transition status from "released" to [""]
+
+    transition status from "cancelled" to [""]
+
+    timestamps
+  }
+
+
+  // ==========================================================================
+  // EVENT FINANCIAL AUTHORIZATION
+  // ==========================================================================
+  //
+  // Separate from Event because authorization can succeed and later need
+  // compensation when a later confirmation step fails.
+  //
+
+  entity EventFinancialAuthorization {
+
+    key [tenantId, id]
+
+    unique [tenantId, eventId]
+
+    property required readonly id: string
+
+    property required indexed eventId: string
+
+    property status: FinancialAuthorizationStatus = pending
+
+    property authorizedAmount: money(12, 2) = 0
+
+    property authorizedAt: datetime?
+
+    property revokedAt: datetime?
+
+    belongsTo event: Event
+      fields [tenantId, eventId]
+      references [tenantId, id]
+      onDelete cascade
+      onUpdate restrict
+
+    default policy EventFinancialWorkflowAccess execute:
+      user.id != null
+      and hasPermission(user, "event_workflow")
+      "You do not have permission to execute the event financial workflow"
+
+    command authorize(amount: money(12, 2)) {
+      guard self.status == pending
+
+      constraint positiveAuthorization {
+        expression: amount >= 0
+        severity: block
+        message: "Authorized amount cannot be negative"
+      }
+
+      mutate authorizedAmount = amount
+
+      mutate status = authorized
+
+      mutate authorizedAt = now()
+
+      emit EventFinancialsAuthorized {
+        eventId: self.eventId
+        authorizationId: self.id
+      }
+    }
+
+    command revoke(amount: money(12, 2)) {
+      guard self.status in [pending, authorized]
+
+      mutate authorizedAmount = amount
+
+      mutate status = revoked
+
+      mutate revokedAt = now()
+
+      emit EventFinancialAuthorizationRevoked {
+        eventId: self.eventId
+        authorizationId: self.id
+      }
+    }
+
+    transition status from "pending" to ["authorized", "revoked"]
+
+    transition status from "authorized" to ["revoked"]
+
+    transition status from "revoked" to [""]
+
+    timestamps
+  }
+
+
+  // ==========================================================================
+  // EVENT REMINDER BATCH
+  // ==========================================================================
+
+  entity EventReminderBatch {
+
+    key [tenantId, id]
+
+    unique [tenantId, eventId]
+
+    property required readonly id: string
+
+    property required indexed eventId: string
+
+    property status: ReminderBatchStatus = pending
+
+    property activatedAt: datetime?
+
+    property cancelledAt: datetime?
+
+    belongsTo event: Event
+      fields [tenantId, eventId]
+      references [tenantId, id]
+      onDelete cascade
+      onUpdate restrict
+
+    default policy EventReminderWorkflowAccess execute:
+      user.id != null
+      and hasPermission(user, "event_workflow")
+      "You do not have permission to execute the event reminder workflow"
+
+    command activate(source: string) {
+      guard self.status == pending
+
+      mutate status = active
+
+      mutate activatedAt = now()
+
+      emit EventReminderBatchActivated {
+        eventId: self.eventId
+        reminderBatchId: self.id
+      }
+    }
+
+    command cancel(source: string) {
+      guard self.status in [pending, active]
+
+      mutate status = cancelled
+
+      mutate cancelledAt = now()
+
+      emit EventReminderBatchCancelled {
+        eventId: self.eventId
+        reminderBatchId: self.id
+      }
+    }
+
+    transition status from "pending" to ["active", "cancelled"]
+
+    transition status from "active" to ["cancelled"]
+
+    transition status from "cancelled" to [""]
+
+    timestamps
+  }
+
+
+  // ==========================================================================
+  // GLOBAL AUTOMATION COMMANDS
+  // ==========================================================================
+
+  command requestEventReminderSweep() {
+    guard context.source == "schedule" or hasPermission(user, "event_automation")
+
+    emit EventReminderSweepRequested {
+      requestedAt: now()
+    }
+  }
+
+
+  // ==========================================================================
+  // GLOBAL WEBHOOK COMMANDS
+  // ==========================================================================
+
+  command receiveExternalCalendarUpdate(
+    eventId: string,
+    startAt: datetime,
+    endAt: datetime,
+    providerStatus: string
+  ) {
+    rateLimit {
+      maxRequests: 600
+      windowMs: 60000
+      scope: tenant
+    }
+
+    guard hasPermission(user, "event_calendar_webhook")
+
+    guard eventId != ""
+
+    guard endAt > startAt
+
+    emit ExternalCalendarUpdateReceived {
+      eventId: eventId
+      startAt: startAt
+      endAt: endAt
+      providerStatus: providerStatus
+    }
+  }
+
+
+  // ==========================================================================
+  // EVENTS
+  // ==========================================================================
+  //
+  // Events describe things that already happened.
+  //
+  // They use stable names and channels.
+  //
+
+  event EventDetailsUpdated: "events.details.updated" {
+    eventId: string
+  }
+
+  event EventLocationUpdated: "events.location.updated" {
+    eventId: string
+  }
+
+  event EventCoordinatorAssigned: "events.coordinator.assigned" {
+    eventId: string
+    coordinatorId: string
+  }
+
+  event EventScheduled: "events.scheduled" {
+    eventId: string
+    startAt: timestamp
+    endAt: timestamp
+  }
+
+  event EventRescheduled: "events.rescheduled" {
+    eventId: string
+    startAt: timestamp
+    endAt: timestamp
+  }
+
+  event EventSubmittedForConfirmation:
+    "events.confirmation.submitted" {
+      eventId: string
+    }
+
+  event EventConfirmationApprovalRequested:
+    "events.confirmation.approval.requested" {
+      eventId: string
+    }
+
+  event EventConfirmationApprovalGranted:
+    "events.confirmation.approval.granted" {
+      eventId: string
+    }
+
+  event EventConfirmed: "events.confirmed" {
+    eventId: string
+    guestCount: number
+    budget: number
+  }
+
+  event EventConfirmationReverted:
+    "events.confirmation.reverted" {
+      eventId: string
+    }
+
+  event EventPutOnHold: "events.hold.placed" {
+    eventId: string
+    reason: string
+  }
+
+  event EventResumed: "events.resumed" {
+    eventId: string
+  }
+
+  event EventStarted: "events.started" {
+    eventId: string
+  }
+
+  event EventCompleted: "events.completed" {
+    eventId: string
+  }
+
+  event EventCancelled: "events.cancelled" {
+    eventId: string
+    reason: string
+  }
+
+  event EventArchived: "events.archived" {
+    eventId: string
+  }
+
+  event EventDepositRecorded: "events.deposit.recorded" {
+    eventId: string
+    amount: number
+  }
+
+  event EventReadinessRecalculated:
+    "events.readiness.recalculated" {
+      eventId: string
+      readinessScore: number
+    }
+
+  event EventVenueReserved: "events.venue.reserved" {
+    eventId: string
+    reservationId: string
+  }
+
+  event EventVenueReleased: "events.venue.released" {
+    eventId: string
+    reservationId: string
+  }
+
+  event EventFinancialsAuthorized:
+    "events.financials.authorized" {
+      eventId: string
+      authorizationId: string
+    }
+
+  event EventFinancialAuthorizationRevoked:
+    "events.financials.authorization.revoked" {
+      eventId: string
+      authorizationId: string
+    }
+
+  event EventReminderBatchActivated:
+    "events.reminders.activated" {
+      eventId: string
+      reminderBatchId: string
+    }
+
+  event EventReminderBatchCancelled:
+    "events.reminders.cancelled" {
+      eventId: string
+      reminderBatchId: string
+    }
+
+  event EventReminderSweepRequested:
+    "events.reminders.sweep.requested" {
+      requestedAt: timestamp
+    }
+
+  event ExternalCalendarUpdateReceived:
+    "events.calendar.external-update.received" {
+      eventId: string
+      startAt: timestamp
+      endAt: timestamp
+      providerStatus: string
+    }
+
+  event ExternalCalendarUpdateApplied:
+    "events.calendar.external-update.applied" {
+      eventId: string
+    }
+
+
+  // --------------------------------------------------------------------------
+  // SAGA LIFECYCLE EVENTS
+  // --------------------------------------------------------------------------
+
+  event ConfirmEventWorkflowStarted:
+    "events.confirmation.workflow.started" {}
+
+  event ConfirmEventWorkflowStepCompleted:
+    "events.confirmation.workflow.step-completed" {}
+
+  event ConfirmEventWorkflowCompleted:
+    "events.confirmation.workflow.completed" {}
+
+  event ConfirmEventWorkflowStepCompensated:
+    "events.confirmation.workflow.step-compensated" {}
+
+  event ConfirmEventWorkflowFailed:
+    "events.confirmation.workflow.failed" {}
+
+
+  // ==========================================================================
+  // REACTIONS
+  // ==========================================================================
+  //
+  // Reactions declare causal wiring.
+  //
+  // No page, API route, or handwritten callback needs to remember to run these.
+  // ==========================================================================
+
+
+  // --------------------------------------------------------------------------
+  // RECALCULATE READINESS AFTER IMPORTANT EVENT CHANGES
+  // --------------------------------------------------------------------------
+
+  on EventDetailsUpdated run Event.recalculateReadiness
+    resolve payload.eventId
+
+  on EventLocationUpdated run Event.recalculateReadiness
+    resolve payload.eventId
+
+  on EventScheduled run Event.recalculateReadiness
+    resolve payload.eventId
+
+  on EventRescheduled run Event.recalculateReadiness
+    resolve payload.eventId
+
+  on EventConfirmed run Event.recalculateReadiness
+    resolve payload.eventId
+
+  on EventDepositRecorded run Event.recalculateReadiness
+    resolve payload.eventId
+
+  on ExternalCalendarUpdateApplied run Event.recalculateReadiness
+    resolve payload.eventId
+
+
+  // --------------------------------------------------------------------------
+  // APPLY AUTHENTICATED EXTERNAL CALENDAR CHANGES
+  // --------------------------------------------------------------------------
+
+  on ExternalCalendarUpdateReceived run Event.applyExternalCalendarUpdate
+
+    resolve payload.eventId
+
+    params {
+      startAt: payload.startAt
+      endAt: payload.endAt
+      providerStatus: payload.providerStatus
+    }
+
+
+  // --------------------------------------------------------------------------
+  // CANCELLATION CLEANUP
+  // --------------------------------------------------------------------------
+
+  on EventCancelled fanOut EventVenueReservation where eventId = payload.eventId
+
+    run release
+
+    params {
+      reference: "event_cancelled"
+    }
+
+  on EventCancelled fanOut EventFinancialAuthorization where eventId = payload.eventId
+
+    run revoke
+
+    params {
+      amount: 0
+    }
+
+  on EventCancelled fanOut EventReminderBatch where eventId = payload.eventId
+
+    run cancel
+
+    params {
+      source: "event_cancelled"
+    }
+
+
+  // ==========================================================================
+  // CONFIRMATION SAGA
+  // ==========================================================================
+  //
+  // The caller supplies each step's instance ID and input to runSaga.
+  //
+  // If a later step fails, previously completed steps compensate in reverse.
+  //
+
+  saga ConfirmEventWorkflow {
+
+    step reserveVenue {
+      command: EventVenueReservation.reserve
+      compensate: EventVenueReservation.release
+    }
+
+    step authorizeFinancials {
+      command: EventFinancialAuthorization.authorize
+      compensate: EventFinancialAuthorization.revoke
+    }
+
+    step confirmEvent {
+      command: Event.confirm
+      compensate: Event.revertConfirmation
+    }
+
+    step activateReminders {
+      command: EventReminderBatch.activate
+      compensate: EventReminderBatch.cancel
+    }
+
+    on_failure: "compensate"
+
+    emit ConfirmEventWorkflowStarted
+
+    emit ConfirmEventWorkflowStepCompleted
+
+    emit ConfirmEventWorkflowCompleted
+
+    emit ConfirmEventWorkflowStepCompensated
+
+    emit ConfirmEventWorkflowFailed
+  }
+
+
+  // ==========================================================================
+  // SCHEDULES
+  // ==========================================================================
+  //
+  // Fires every 15 minutes.
+  //
+  // The scheduled command emits a canonical sweep request event. A worker or
+  // projection can consume that event and process due reminders.
+  //
+
+  schedule eventReminderSweep cron "*/15 * * * *"
+    run requestEventReminderSweep
+
+
+  // ==========================================================================
+  // WEBHOOKS
+  // ==========================================================================
+  //
+  // Authenticated.
+  //
+  // Idempotent.
+  //
+  // Payload is transformed into the canonical command contract.
+  //
+
+  webhook externalCalendarUpdate
+    "/webhooks/events/calendar"
+    run receiveExternalCalendarUpdate
+
+    method: "POST"
+
+    idempotencyHeader: "X-Idempotency-Key"
+
+    signature {
+      algorithm: "hmac-sha256"
+      header: "X-Calendar-Signature"
+      secret: "context.calendarWebhookSecret"
+    }
+
+    transform: {
+      eventId: payload.data.eventId,
+      startAt: payload.data.startAt,
+      endAt: payload.data.endAt,
+      providerStatus: payload.data.status
+    }
+
+
+  // ==========================================================================
+  // PERSISTENCE
+  // ==========================================================================
+
+  store Event in postgres {
+    table: "events"
+  }
+
+  store EventVenueReservation in postgres {
+    table: "event_venue_reservations"
+  }
+
+  store EventFinancialAuthorization in postgres {
+    table: "event_financial_authorizations"
+  }
+
+  store EventReminderBatch in postgres {
+    table: "event_reminder_batches"
+  }
+}

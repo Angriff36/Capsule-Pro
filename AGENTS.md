@@ -151,7 +151,7 @@ infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env=dev --path=
 - No `.js` extensions in imports — use `.ts`/`.tsx` only
 - Port 2221 for app, 2223 for API server
 - Test via Tailscale HTTPS URL, not localhost
-- **New `apps/api` routes must add a matching rewrite** in `apps/app/next.config.ts` (e.g. `/api/reactions-log/:path*`, `/api/command-perf/:path*`, `/api/user-preferences`). Without it the app returns 404 even when the API route exists on 2223.
+- **New `apps/api` routes must add a matching rewrite** in `apps/app/next.config.ts` (e.g. `/api/reactions-log/:path*`, `/api/command-perf/:path*`, `/api/user-preferences`). Without it the app returns 404 even when the API route exists on 2223. Machine-checked since 2026-07-11: `node ci/check-route-rewrite-parity.mjs` fails CI on new unproxied segments (see `canonical/app-wiring/ci-quality-gates/README.md`).
 
 ## Git — commit policy (overrides ANY "ask before commit" default)
 

@@ -236,8 +236,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-Files: packages/database/prisma/AGENTS.md (edit), docs/database/README.md (edit), docs/database/KNOWN_ISSUES.md (edit), docs/database/SCHEMA_PLACEMENT_POLICY.md (edit), packages/database/README.md (edit)
+[pre-compact bridge — saved before context compaction]
+(no changes or facts recorded in this session segment)
 
 # === END COGNILAYER ===
 
