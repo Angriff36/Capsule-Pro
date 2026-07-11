@@ -123,9 +123,9 @@ export async function getLaborBudgets(
         lb.budget_target,
         lb.budget_unit,
         lb.actual_spend,
-        lb.threshold_80_pct,
-        lb.threshold_90_pct,
-        lb.threshold_100_pct,
+        lb.threshold80_pct AS threshold_80_pct,
+        lb.threshold90_pct AS threshold_90_pct,
+        lb.threshold100_pct AS threshold_100_pct,
         lb.status,
         lb.override_reason,
         lb.created_at,
@@ -180,9 +180,9 @@ export async function getLaborBudgetById(tenantId: string, budgetId: string) {
         lb.budget_target,
         lb.budget_unit,
         lb.actual_spend,
-        lb.threshold_80_pct,
-        lb.threshold_90_pct,
-        lb.threshold_100_pct,
+        lb.threshold80_pct AS threshold_80_pct,
+        lb.threshold90_pct AS threshold_90_pct,
+        lb.threshold100_pct AS threshold_100_pct,
         lb.status,
         lb.override_reason,
         lb.created_at,
@@ -660,9 +660,9 @@ async function getApplicableBudgets(
     Prisma.sql`
       SELECT
         lb.id,
-        lb.threshold_80_pct,
-        lb.threshold_90_pct,
-        lb.threshold_100_pct
+        lb.threshold80_pct AS threshold_80_pct,
+        lb.threshold90_pct AS threshold_90_pct,
+        lb.threshold100_pct AS threshold_100_pct
       FROM tenant_staff.labor_budgets lb
       WHERE ${Prisma.join(conditions, " AND ")}
       ORDER BY
