@@ -57,10 +57,10 @@ None are recorded as answered in the plan document's Phase-0 table. WS0 needs no
 
 ## WS0 — Empty-string UUID defaults ⛔ CRITICAL (do FIRST; active create-breaking bug) → AC-001, AC-002, AC-007
 
-Not a blind `s/= ""//`: per field, classify **nullable-vs-required** and **mutate-filled-vs-param-seeded** (the persist-before-mutate trap). Nullable `uuid? = ""` → drop default (inserts null; migration drops the column default). Required uuid set only by a rename-mutate → seed at bootstrap (rename create param to match the field, accept it as a param, or make the column nullable). Per batch: manifest edit → `pnpm manifest:build` → `pnpm db:dev -- --create-only` → review SQL → record migration as awaiting deploy → `pnpm db:check`. Gate: `manifest:audit:strict` + a **Postgres-backed create smoke-test per touched entity** (in-memory stores accept `""` and hide the bug).
+Not a blind `s/= ""//`: per field, classify **nullable-vs-required** and **mutate-filled-vs-param-seeded** (the persist-before-mutate trap). **Nullable `uuid? = ""` (129/186) → drop default = IR-ONLY, NO migration** (verified 2026-07-11: compiler 3.4.25 no longer projects `@default("")` on `@db.Uuid` columns, so `manifest.prisma` is unchanged → no `db:dev`, no "awaiting deploy"; just `manifest:build` + `manifest:ci`). **Required `uuid = ""` (57/186)** set only by a rename-mutate → seed at bootstrap (rename create param to match the field, accept it as a param, or make the column nullable) — these MAY touch schema → migration, case-by-case. Nullable per batch: manifest edit → `pnpm manifest:build` → `pnpm manifest:ci` → commit. Gate: `manifest:ci` green + a **Postgres-backed create smoke-test per touched entity** (in-memory stores accept `""` and hide the bug).
 
 - [x] Pilot: `TrainingAssignment` (done 2026-07-07 — `employeeId` required + param renamed, `assignedBy → uuid?`, migration `20260707125708_...`, full flow proven against Postgres)
-- [ ] WS0 · knowledge-base (1 field) — smallest, warm-up batch
+- [x] WS0 · knowledge-base (1 field) — DONE 2026-07-11: `authorId: uuid? = ""` → `uuid?` (nullable → IR-only, NO migration; `manifest:ci` green, `manifest.prisma` byte-identical). Warm-up batch validated the pipeline.
 - [ ] WS0 · platform (10 fields)
 - [ ] WS0 · administrative (14 fields)
 - [ ] WS0 · sales (17 fields)
