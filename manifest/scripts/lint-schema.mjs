@@ -34,8 +34,8 @@
  *   manifest/reports/schema-naming/schema-naming.md    — human-readable summary
  *
  * Usage:
- *   pnpm manifest:lint-schema            # report only (exit 0)
- *   pnpm manifest:lint-schema:strict     # exit 1 on any violation (CI gate)
+ *   node manifest/scripts/lint-schema.mjs            # report only (exit 0)
+ *   node manifest/scripts/lint-schema.mjs --strict     # exit 1 on any violation (CI gate)
  *   node manifest/scripts/lint-schema.mjs --self-test   # assert the rules can fail
  */
 

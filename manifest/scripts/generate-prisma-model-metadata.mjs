@@ -307,7 +307,7 @@ const bridgeOutPath = resolve(
 );
 const bridgeHeader = `// Generated from manifest.config.yaml — DO NOT EDIT
 // Produced by manifest/scripts/generate-prisma-model-metadata.mjs
-// Re-run via \`pnpm manifest:generate-metadata\` after bridge map changes.
+// Re-run via \`pnpm manifest:build\` after bridge map changes.
 /* eslint-disable */
 `;
 const bridgeBody = `export const ENTITY_TO_PRISMA_MODEL: Readonly<Record<string, string>> = ${JSON.stringify(

@@ -385,7 +385,7 @@ async function compileMergedManifests() {
 
   // Idempotent provenance timestamp: if the committed IR was produced from the
   // SAME sources (identical contentHash), reuse its `compiledAt` so re-running
-  // `pnpm manifest:compile` is byte-identical (zero git drift — phase-out
+  // `pnpm manifest:build` is byte-identical (zero git drift — phase-out
   // exit criterion #3). A live `new Date()` here previously dirtied the IR,
   // provenance, and merge-report on every run even when nothing changed.
   // The timestamp now means "when the sources last actually changed."

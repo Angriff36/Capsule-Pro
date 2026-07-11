@@ -94,7 +94,7 @@ jobs:
           NPM_TOKEN: ${{ github.token }}
 
       - name: Regenerate manifest-owned artifacts
-        run: pnpm manifest:sync-artifacts && pnpm prisma:check
+        run: pnpm manifest:build && pnpm prisma:check
         env:
           DATABASE_URL: "******localhost:5432/dummy"
       - name: Check if manifest artifacts differ
@@ -106,7 +106,7 @@ jobs:
           git checkout -- '.npmrc' 2>/dev/null || true
 
           if ! git diff --quiet; then
-            echo "::error::Manifest-owned generated artifacts are out of date. Please run 'pnpm manifest:sync-artifacts && pnpm prisma:check' locally and commit the changes."
+            echo "::error::Manifest-owned generated artifacts are out of date. Please run 'pnpm manifest:build && pnpm prisma:check' locally and commit the changes."
             echo ""
             echo "The following files have uncommitted changes after regeneration:"
             git diff --name-only

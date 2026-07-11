@@ -3,15 +3,15 @@
 /**
  * Capsule-Pro one-command wiring remediation wrapper.
  *
- * Uses the contract produced by normal `pnpm manifest:generate` (no ad-hoc
+ * Uses the contract produced by normal `pnpm manifest:build` (no ad-hoc
  * contract path). Default mode is one-defect: inspect → select highest-
  * confidence auto-fixable finding → apply exactly one repair → verify.
  *
  * Usage:
- *   pnpm manifest:wiring:remediate              # one-defect (default)
- *   pnpm manifest:wiring:remediate -- --mode plan
- *   pnpm manifest:wiring:remediate -- --mode dry-run
- *   pnpm manifest:wiring:inspect                # inspect only (sibling script)
+ *   node manifest/scripts/wiring-remediate.mjs              # one-defect (default)
+ *   node manifest/scripts/wiring-remediate.mjs -- --mode plan
+ *   node manifest/scripts/wiring-remediate.mjs -- --mode dry-run
+ *   node manifest/scripts/wiring-inspect.mjs                # inspect only (sibling script)
  */
 
 import { existsSync } from "node:fs";
@@ -30,7 +30,7 @@ const contractPath = resolve(repoRoot, outputRel, contractHint);
 if (!existsSync(contractPath)) {
   console.error(
     `[manifest/wiring] Contract missing: ${contractPath}\n` +
-      "Run `pnpm manifest:generate` (or `pnpm manifest:build`) first — " +
+      "Run `pnpm manifest:build` (or `pnpm manifest:build`) first — " +
       "wiring artifacts are produced by the normal generation path."
   );
   process.exit(1);

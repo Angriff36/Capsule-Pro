@@ -3,7 +3,7 @@
 /**
  * Capsule-Pro wiring-inspect wrapper.
  *
- * Uses the contract from normal `pnpm manifest:generate` — no manual contract
+ * Uses the contract from normal `pnpm manifest:build` — no manual contract
  * generation. Roots: apps/app + apps/api (full product surface).
  */
 
@@ -23,7 +23,7 @@ const contractPath = resolve(repoRoot, outputRel, contractHint);
 if (!existsSync(contractPath)) {
   console.error(
     `[manifest/wiring] Contract missing: ${contractPath}\n` +
-      "Run `pnpm manifest:generate` (or `pnpm manifest:build`) first — " +
+      "Run `pnpm manifest:build` (or `pnpm manifest:build`) first — " +
       "wiring artifacts are produced by the normal generation path."
   );
   process.exit(1);

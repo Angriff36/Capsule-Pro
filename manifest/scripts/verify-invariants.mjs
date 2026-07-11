@@ -294,7 +294,7 @@ async function main() {
       "ir",
       "committed IR is NOT stale (matches fresh compile)",
       sameCounts,
-      `committed e=${committed.entities?.length} c=${committed.commands?.length} s=${committed.sagas?.length ?? 0} r=${committed.reactions?.length ?? 0} vs fresh e=${fresh.entities?.length} c=${fresh.commands?.length} s=${fresh.sagas?.length ?? 0} r=${fresh.reactions?.length ?? 0} — run pnpm manifest:compile`
+      `committed e=${committed.entities?.length} c=${committed.commands?.length} s=${committed.sagas?.length ?? 0} r=${committed.reactions?.length ?? 0} vs fresh e=${fresh.entities?.length} c=${fresh.commands?.length} s=${fresh.sagas?.length ?? 0} r=${fresh.reactions?.length ?? 0} — run pnpm manifest:build`
     );
     const stored = committed.provenance?.irHash ?? "";
     const clone = JSON.parse(JSON.stringify(committed));

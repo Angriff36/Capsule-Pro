@@ -20,8 +20,8 @@
  * Outputs: manifest/reports/parent-context/parent-context.{json,md}
  *
  * Usage:
- *   pnpm manifest:audit-parent-context          # report only
- *   pnpm manifest:audit-parent-context:strict   # exit 1 on unallowlisted violations
+ *   node manifest/scripts/audit-parent-context.mjs          # report only
+ *   node manifest/scripts/audit-parent-context.mjs --strict   # exit 1 on unallowlisted violations
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -170,7 +170,7 @@ function main() {
   const ir = loadJson(IR_PATH, null);
   if (!ir) {
     console.error(
-      `[audit-parent-context] IR not found at ${IR_PATH}. Run pnpm manifest:compile.`
+      `[audit-parent-context] IR not found at ${IR_PATH}. Run pnpm manifest:build.`
     );
     process.exit(2);
   }

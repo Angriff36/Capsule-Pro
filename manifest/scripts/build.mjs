@@ -26,10 +26,14 @@ import { spawnSync } from "node:child_process";
 function compileMergedManifests() {
   console.log("[manifest/build] Step 1: Compiling manifests...");
   const bin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
-  const result = spawnSync(bin, ["run", "manifest:compile"], {
-    stdio: "inherit",
-    shell: process.platform === "win32",
-  });
+  const result = spawnSync(
+    bin,
+    ["exec", "node", "manifest/scripts/compile.mjs"],
+    {
+      stdio: "inherit",
+      shell: process.platform === "win32",
+    }
+  );
 
   if (result.status !== 0) {
     console.error("[manifest/build] Compilation failed.");
@@ -43,7 +47,7 @@ function generateFromIR() {
   // Delegate to generate.mjs which uses the installed CLI and applies ENTITY_DOMAIN_MAP
   // path remapping so routes land in the correct domain directories.
   const bin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
-  const args = ["run", "manifest:generate"];
+  const args = ["exec", "node", "manifest/scripts/generate.mjs"];
 
   const result = spawnSync(bin, args, {
     stdio: "inherit",

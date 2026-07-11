@@ -73,7 +73,7 @@ function main() {
   if (checkOnly) {
     console.error(
       "[embed-ir] DRIFT: apps/api/lib/manifest/kitchen.ir.generated.json is stale " +
-        "vs manifest/ir/kitchen.ir.json. Run `pnpm manifest:ir:embed` and commit."
+        "vs manifest/ir/kitchen.ir.json. Run `pnpm manifest:build` and commit."
     );
     process.exit(1);
   }

@@ -1094,7 +1094,7 @@ function renderMarkdown(summary, violations) {
   lines.push("## How to resolve");
   lines.push("");
   lines.push(
-    "1. **Prisma mismatch** — align the `.manifest` source type to match the column (e.g. `number` → `datetime`/`money`), recompile (`pnpm manifest:compile`), and verify the store boundary."
+    "1. **Prisma mismatch** — align the `.manifest` source type to match the column (e.g. `number` → `datetime`/`money`), recompile (`pnpm manifest:build`), and verify the store boundary."
   );
   lines.push(
     "2. **OpenAPI mismatch/missing** — run `pnpm manifest:openapi` and commit the regenerated `manifest/api-docs/openapi.json`."

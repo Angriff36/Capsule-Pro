@@ -49,7 +49,7 @@ const OUT_PATH = resolve(outDir, "manifest-field-hints.generated.ts");
 
 if (!existsSync(IR_PATH)) {
   console.error(
-    `IR not found at ${IR_PATH}. Run \`pnpm manifest:compile\` first.`
+    `IR not found at ${IR_PATH}. Run \`pnpm manifest:build\` first.`
   );
   process.exit(1);
 }

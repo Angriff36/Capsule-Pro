@@ -20,7 +20,28 @@ The upstream manifest CLI is single-file → single-surface → one artifact per
 
 ## Part 2 — Current implementation (maps vision → repo today)
 
-This section documents **how the repo currently implements Part 1**, including gaps. When implementation diverges from Part 1, **fix the code** — do not weaken Part 1.
+> **Consolidated 2026-07-11 (owner directive): the public pnpm surface is THREE
+> pipeline commands plus one server launcher.** Everything else runs inside
+> them or directly via `node manifest/scripts/<file>` (Part 3).
+
+| Command | What it is | Implementation |
+| --- | --- | --- |
+| **`pnpm manifest:build`** | THE regeneration hammer. Part 1 §2 (compile) + §3 (build) — recompiles all 104 sources into the single IR, then regenerates **every** committed manifest-owned artifact: Next.js routes + dispatcher + wiring, route surface, **Prisma schema projection**, typed client, runtime metadata (model metadata, accessors, store options/projection, guard messages), command param schemas, field hints, governance registries, feature ownership, OpenAPI spec, and the embedded IR in apps/api. | `manifest/scripts/full-build.mjs` |
+| **`pnpm manifest:ci`** | THE gate. Part 1 §1 (validate) and every drift/audit check, read-only: invariants, IR validate, embedded-IR drift, doctor, contract import boundary, governance direct-writes (both apps), accessor config, schema-drift audit, parent-context audit, reaction payloads, command param types, command coverage, **prisma schema drift, openapi drift, field-hints drift, feature-ownership drift**. Fails fast, names the failing gate, tells you to run `manifest:build`. | `manifest/scripts/full-ci.mjs` |
+| **`pnpm manifest:update`** | Compiler bump: updates the `@angriff36/manifest` pin across all workspace packages. Follow with `manifest:build` (regenerate under the new compiler) then `manifest:ci`. | `pnpm -r update @angriff36/manifest@latest` |
+| `pnpm manifest:mcp` | Server launcher (not a pipeline command) — upstream Manifest MCP server for agents/Cursor. | `manifest-mcp` bin |
+
+### Vision → command mapping
+
+- **Part 1 §1 `manifest:validate`** → folded into `manifest:ci` (owner directive 2026-07-11: "validate should just be part of ci"). The husky pre-commit hook still validates staged `.manifest` changes directly via `pnpm exec manifest validate manifest/ir/kitchen.ir.json`. The Part 1 gap (per-source validation, annoyance-guard detection) is unchanged — tracked as a `full-ci.mjs` improvement, not a separate script.
+- **Part 1 §2 `manifest:compile`** → step 1 of `manifest:build` (`compile.mjs` — native `compileProjectToIR` merge, topo-sort, deterministic `irHash`, idempotent provenance; writes `kitchen.ir.json` + commands registry + provenance + merge report + module graph).
+- **Part 1 §3 `manifest:build`** → `manifest:build`, now genuinely "brings everything together": it is the ONLY regen command and covers surfaces the old `manifest:sync-artifacts` missed (Prisma schema projection was previously a separate hand-typed CLI invocation).
+
+### Known exclusions (documented, deliberate)
+
+- **`manifest fmt`** — NOT in either command. The upstream CLI parses each source file standalone and fails on cross-file references (`mixin TenantScoped` from `_base.manifest`) in 101/104 files. Blocked upstream until fmt resolves `use` imports. Do not wire it in; do not "fix" by removing mixins.
+- **Advisory audits with open debt** — `audit-dead-commands`, `audit-ir-drift`, `lint-schema`, `validate-ai`: not blocking gates; run directly (Part 3) when mining debt.
+- **`check:manifest:structure` / `check:manifest:domain`** — repo-level audits under `tools/`, not part of the manifest pipeline surface.
 
 ### Source of truth
 
@@ -30,52 +51,16 @@ manifest/source/**/*.manifest  →  compile  →  manifest/ir/kitchen.ir.json  �
                                                    schema / routes / stores / hooks / client
 ```
 
-The IR is the single semantic source of truth. Prisma models, API routes, runtime stores, and UI hooks are projections of the IR — not the other way around. Drift means someone skipped the pipeline (hand-edited `schema.prisma` or routes, forgot compile/regenerate/migrate). Follow the workflows in Part 3 and drift cannot accumulate.
+The IR is the single semantic source of truth. Prisma models, API routes, runtime stores, and UI hooks are projections of the IR — not the other way around. All projections are **committed**; `manifest:ci` (and the CI workflow's regenerate + `git diff` job) prove committed == freshly generated.
 
-**Current Prisma-related artifacts / targets on this branch (do not conflate):**
-
-| File                                     | Role                                                             |
-| ---------------------------------------- | ---------------------------------------------------------------- |
-| `packages/database/prisma/schema/`       | Live multi-file DB schema — must reflect IR; migrations apply here |
-| `manifest/ir/generated-schema.prisma`    | **Not present on this branch.** Historical target name from the schema-projection plan; not a current committed artifact or CI gate. |
-| `manifest/ir/candidate-schema.prisma`    | **Not present on this branch.** Historical dev harness target; not part of the current workflow. |
-
-### Core trio — vision vs today
-
-#### `pnpm manifest:validate`
-
-|                     |                                                                                                                                  |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| **Vision (Part 1)** | Validate every source under `manifest/source/`; no annoyance guards; no required fields Manifest can auto-generate               |
-| **Today**           | `pnpm exec manifest validate manifest/ir/kitchen.ir.json` — validates **compiled IR**, not raw `.manifest` files per-file        |
-| **Also**            | `manifest:validate-ai` — same IR + `--min-score 100` (useful for debt surfacing, not part of the blocking CI chain on this branch) |
-| **Gap**             | Extend to glob `manifest/source/**/*.manifest` or fold source validation into `compile.mjs` pre-merge so behavior matches Part 1 |
-| **Under the hood**  | `@angriff36/manifest validate` — structural IR validation (entity/command graph, types, saga/reaction wiring, stores)            |
-
-#### `pnpm manifest:compile`
-
-|                     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Vision (Part 1)** | Single IR everywhere; normalized case/types; no unused/unwired/slop definitions                                                                                                                                                                                                                                                                                                                                                                                           |
-| **Script**          | `manifest/scripts/compile.mjs`                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| **Steps**           | (a) Glob 104 `.manifest` files; `compileToIR()` per file (not CLI `--glob` — last-file-wins bug). (b) `compileProjectToIR()` merge — topo-sort, cycles, cross-file validation. (c) `enrichComputedDependencies()` for computed→computed chains. (d) `validateCommandIntentRegistry()`. (e) Deterministic `irHash`; idempotent provenance. (f) Writes `kitchen.ir.json`, `kitchen.commands.json`, `commands.registry.json`, provenance, merge-report, `module-graph.json`. |
-| **Invariant**       | Tenant declared exactly once in `_base.manifest`; every domain file `use`s it (`verify-invariants` enforces)                                                                                                                                                                                                                                                                                                                                                              |
-| **Counts**          | Read from `kitchen.ir.json` after compile — do not hardcode in docs                                                                                                                                                                                                                                                                                                                                                                                                       |
-
-#### `pnpm manifest:build`
-
-|                     |                                                                                                                                                                                                                                                                                                    |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Vision (Part 1)** | Bridge code, DB, IR, API, hooks, UI into one interconnected system                                                                                                                                                                                                                                 |
-| **Script**          | `manifest/scripts/build.mjs`                                                                                                                                                                                                                                                                       |
-| **Steps**           | 1 → `manifest:compile`. 2 → `manifest:generate` (nextjs routes + dispatcher + `projections.wiring` contract/bindings). 3 → `manifest:routes:ir` → `manifest/runtime/routes.manifest.json`. 4 → `audit-routes-strict.mjs` (ownership rules + governance exemptions). 5 → `cleanup-generated-orphans.mjs`. Any step failure exits non-zero. |
-
-### Schema & DB workflow (when vision requires persisted entities)
+### Schema & DB workflow
 
 > ⚠️ The DB workflow is documented in **ONE** canonical place:
 > [`docs/database/README.md`](../../docs/database/README.md). Follow it, not any
 > step list embedded here or elsewhere. Any `db:check` failure is a defect to fix — there is no
-> "normal drift."
+> "normal drift." Short form: `manifest:build` regenerates `manifest.prisma`; if it changed,
+> `pnpm db:dev -- --create-only --name <x>` → review SQL → `pnpm db:deploy` → `pnpm db:check`
+> → `pnpm --filter @repo/database generate`.
 
 ### What Capsule scripts do that the upstream CLI cannot
 
@@ -83,140 +68,114 @@ The IR is the single semantic source of truth. Prisma models, API routes, runtim
 - **Domain route remapping** — `generate.mjs` + `ENTITY_DOMAIN_MAP`
 - **Post-generation patching** — accessor config, field overrides, orphan cleanup
 - **Typed Capsule client** — `generate-capsule-client.mjs`
-- **CI drift gates** — byte-compare committed artifacts vs fresh regeneration (`manifest:sync-artifacts` in CI, plus local `openapi:check`, `ir:embed:check`, `field-hints:check`, `verify-invariants`, governance registry diff)
+- **CI drift gates** — byte-compare committed artifacts vs fresh regeneration
 
 ---
 
-## Part 3 — Full script list and definitions
+## Part 3 — Full file registry (`manifest/scripts/`)
 
-Every script below must exist in FULL per Part 1. Implementation files live in `manifest/scripts/*.mjs`, `scripts/*.mjs`, and root `package.json`.
+Everything runs inside `manifest:build` / `manifest:ci` unless marked **tool** (run
+directly) or **lib** (imported, never run). Direct invocation is always
+`node manifest/scripts/<file>` (or `pnpm exec tsx` for the one `.ts`).
 
-### Tier 1 — Core pipeline
+### Orchestrators
 
-Run in order when changing domain semantics. Detailed implementation: Part 2.
+| File | Role |
+| --- | --- |
+| `full-build.mjs` | `pnpm manifest:build` — all 14 regen steps, fail-fast |
+| `full-ci.mjs` | `pnpm manifest:ci` — all 17 gates, fail-fast |
+| `build.mjs` | Inner build: compile → generate → route surface → route audit → orphan cleanup (step 1 of full-build) |
 
-| Script                 | Entry point                                               |
-| ---------------------- | --------------------------------------------------------- |
-| `manifest:validate`    | `pnpm exec manifest validate manifest/ir/kitchen.ir.json` |
-| `manifest:validate-ai` | above + `--min-score 100`                                 |
-| `manifest:compile`     | `manifest/scripts/compile.mjs`                            |
-| `manifest:build`       | `manifest/scripts/build.mjs`                              |
+### Regeneration steps (inside `manifest:build`)
 
-### Tier 2 — Schema & database
+| File | Emits |
+| --- | --- |
+| `compile.mjs` | `manifest/ir/kitchen.ir.json`, `kitchen.commands.json`, `commands.registry.json`, provenance, merge report, module graph, command source map |
+| `generate.mjs` | Next.js domain routes + the single dispatcher + `projections.wiring` contract/bindings (`manifest/generated/wiring/`, gitignored) |
+| `generate-route-manifest.ts` | `manifest/runtime/routes.manifest.json` (route surface used by apiFetch dev validation) |
+| `generate-capsule-client.mjs` | Typed fetch client |
+| `generate-prisma-model-metadata.mjs` | Runtime model metadata |
+| `generate-entity-accessor.mjs` | Entity accessor map (`manifest/runtime/src/generated/`) |
+| `build-prisma-store-options.mjs` | Prisma store options |
+| `generate-prisma-store-projection.mjs` | Prisma store projection |
+| `generate-guard-messages.mjs` | Guard message catalog |
+| `generate-command-param-schemas.mjs` | Command-parameter Zod registry |
+| `generate-field-hints.mjs` | Field hint metadata (`--check` = drift gate) |
+| `emit-registries.mjs` | `manifest/governance/{commands,entities}.json` |
+| `emit-feature-ownership.mjs` | `manifest/feature-ownership.json` (`--check` = drift gate) |
+| `generate-openapi.mjs` | OpenAPI spec |
+| `embed-ir.mjs` | `apps/api/lib/manifest/kitchen.ir.generated.json` (embedded IR; also turbo `api#manifest-embed`) |
+| `audit-routes-strict.mjs` | Route-boundary audit run by `build.mjs` step 4 (blocking) |
+| `cleanup-generated-orphans.mjs` | Removes generated artifacts for retired surfaces (`build.mjs` step 5) |
 
-| Script                               | Entry point                            | What it does                                                                                               |
-| ------------------------------------ | -------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `manifest:audit-schema-drift`        | `audit-schema-drift.mjs`               | Manifest ↔ Prisma required-column cross-check                                                              |
-| `manifest:audit-schema-drift:strict` | `--strict`                             | Exit 1 on unallowlisted violations                                                                         |
-| `migrate`                            | chain                                  | `db:validate-migrations` → `db:check` → `prisma:check` → `db:dev`                                          |
-| `migrate:deploy`                     | chain                                  | `db:validate-migrations` → `prisma:check` → `db:deploy`                                                    |
-| `migrate:status`                     | prisma                                 | Migration status                                                                                           |
-| `migrate:resolve`                    | prisma                                 | Resolve failed migration                                                                                   |
-| `migrate:baseline`                   | `migrate-baseline.mjs`                 | Baseline an existing DB (`migrate resolve --applied`)                                                      |
-| `db:check`                           | `scripts/db-drift-check.mjs`           | Live DB vs `prisma/schema` STRICT full diff — any difference fails                                         |
-| `db:validate-migrations`             | `validate-migration-table-schemas.mjs` | Migration SQL `@@schema` correctness                                                                       |
-| `db:validate-generated-migration`    | `validate-generated-migration.mjs`     | Post-authoring gate on new migration folder                                                                |
-| `db:dev`                             | prisma migrate dev                     | Create/apply migrations                                                                                    |
-| `db:deploy`                          | prisma migrate deploy                  | CI/prod apply                                                                                              |
-| `db:push`                            | disabled                               | Use `migrate` / `migrate:deploy` only                                                                      |
+### Gates (inside `manifest:ci`)
 
-(`db:repair` and the `db:neon-*` entries were removed 2026-07-10 along with the accepted-drift
-workflow — see `docs/database/README.md`.)
+| File | Gate |
+| --- | --- |
+| `verify-invariants.mjs` | Tenant-once, native merge, saga/reaction floors, committed-IR freshness, compiler pin |
+| `check-ir-embed-drift.mjs` | Embedded IR ↔ DSL sources (`--self-test` available) |
+| `audit-contract-imports.mjs` | Generated-artifact import boundary |
+| `check-accessor-config.mjs` | Accessor config vs IR (`--strict` in ci) |
+| `audit-schema-drift.mjs` | Manifest ↔ Prisma required-column cross-check (`--strict` in ci) |
+| `audit-parent-context.mjs` | Nested-command parent context (`--strict` in ci) |
+| `check-reaction-payloads.mjs` | Reaction payload shapes (`--strict` in ci) |
+| `audit-command-param-types.mjs` | Param-type baseline (`--strict` in ci; `--update-baseline`, `--self-test` available) |
+| `check-openapi-drift.mjs` | OpenAPI spec drift (`--self-test` available) |
+| (CLI) `manifest validate` | IR structural validation |
+| (CLI) `manifest doctor` | Environment/config sanity |
+| (CLI) `manifest audit-governance … --only direct-writes --strict` | Direct-write governance, apps/api + apps/app |
+| (CLI) `manifest coverage … --min-coverage 10 --strict` | Command coverage floor |
+| (CLI) `manifest generate -p prisma … --check` | Committed `manifest.prisma` vs fresh projection |
 
-### Tier 3 — Code generation
+### Tools (run directly, on demand)
 
-| Script                        | Entry point                       | What it does                                                |
-| ----------------------------- | --------------------------------- | ----------------------------------------------------------- |
-| `manifest:generate`           | `generate.mjs`                    | Nextjs routes + dispatcher + wiring contract/bindings       |
-| `manifest:wiring`             | `generate-wiring.mjs`             | Wiring contract + bindings (also run from `manifest:generate`) |
-| `manifest:wiring:inspect`     | `wiring-inspect.mjs`              | Inspect apps against generated wiring contract              |
-| `manifest:wiring:remediate`   | `wiring-remediate.mjs`            | One-defect (default) automatic wiring repair                |
-| `manifest:client`             | `generate-capsule-client.mjs`     | Typed fetch client                                          |
-| `manifest:generate-metadata`  | chain of 4 scripts                | Prisma metadata, accessors, store options, store projection |
-| `manifest:openapi`            | `generate-openapi.mjs`            | OpenAPI spec                                                |
-| `manifest:command-schemas`    | `generate-command-param-schemas.mjs` | Runtime command-parameter Zod registry                   |
-| `manifest:field-hints`        | `generate-field-hints.mjs`        | Field hint metadata                                         |
-| `manifest:field-hints:check`  | `--check`                         | Drift gate                                                  |
-| `manifest:ir:embed`           | `embed-ir.mjs`                    | Embed IR hash in runtime                                    |
-| `manifest:registries`         | `emit-registries.mjs`             | `manifest/governance/{commands,entities}.json`              |
-| `manifest:sync-artifacts`     | chain                             | Rebuild every committed manifest-owned artifact             |
-| `manifest:try-prisma`         | `try-prisma.mjs`                  | Per-entity generated vs committed Prisma diff               |
-| `manifest:routes:ir`          | `generate-route-manifest.ts`      | Canonical route surface index                               |
+| File | Use |
+| --- | --- |
+| `wiring-inspect.mjs` | Inspect apps/app + apps/api against the generated wiring contract (triage buckets: app bug / contract bug / product gap) |
+| `wiring-remediate.mjs` | One-defect wiring auto-repair (`--mode plan`, `--mode dry-run`) |
+| `generate-wiring.mjs` | Wiring contract/bindings only (also inside `generate.mjs`) |
+| `try-prisma.mjs` | Per-entity generated-vs-committed Prisma diff (`try-prisma Event --full`) |
+| `audit-dead-commands.mjs` | FSM commands with unreachable mutate targets (advisory; `--strict` available) |
+| `audit-ir-drift.mjs` | Source `.manifest` vs compiled IR (advisory; `--strict` available) |
+| `lint-schema.mjs` | Prisma schema lint (advisory; `--strict`, `--self-test`) |
+| `check.mjs` | Light structural sanity |
+| (CLI) `manifest validate-ai … --min-score 100` | AI-lint debt surfacing (advisory) |
+| (CLI) `manifest fmt` | ⛔ broken for this repo (see Part 2 exclusions) |
 
-### Tier 4 — CI gates & audits
+### Libs (imported only — never run)
 
-| Script                               | Entry point                             | What it does                                                                                                                                       |
-| ------------------------------------ | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `manifest:ci`                        | chain                                   | `verify-invariants` → `validate` → `doctor` → `contract:check` → `audit-governance:direct-writes` → `audit:strict` → `coverage:ci` |
-| `manifest:verify-invariants`         | `verify-invariants.mjs`                 | Tenant-once, native merge, saga/reaction floors, committed IR freshness, Manifest version                                                          |
-| `manifest:check`                     | `check.mjs`                             | Light structural sanity                                                                                                                            |
-| `manifest:audit`                     | chain                                   | schema + parent-context + reaction-payloads (report)                                                                                               |
-| `manifest:audit:strict`              | chain                                   | accessor strict + schema drift + parent context + reaction payloads + command param types                                                         |
-| `manifest:audit-parent-context`      | `audit-parent-context.mjs`              | Nested command parent context                                                                                                                      |
-| `manifest:audit-dead-commands`       | `audit-dead-commands.mjs`               | Guard-admitted FSM commands with unreachable mutate targets (real debt surfaced, but not part of the blocking CI chain on this branch)           |
-| `manifest:audit-ir-drift`            | `audit-ir-drift.mjs`                    | Source `.manifest` vs compiled IR                                                                                                                  |
-| `manifest:audit-reaction-payloads`   | `check-reaction-payloads.mjs --strict`  | Reaction payload shapes                                                                                                                            |
-| `manifest:audit-command-param-types` | `audit-command-param-types.mjs`         | Param type baseline                                                                                                                                |
-| `manifest:lint-schema`               | `lint-schema.mjs`                       | Prisma schema lint                                                                                                                                 |
-| `manifest:contract:check`            | `audit-contract-imports.mjs`            | Generated-artifact import boundary gate                                                                                                            |
-| `manifest:audit-governance:direct-writes` | native CLI chain                     | Blocking direct-write governance audit for both `apps/api` and `apps/app`                                                                           |
-| `manifest:coverage:ci`               | CLI                                     | `--min-coverage 10 --strict`                                                                                                                       |
-| `check:manifest:structure`           | `tools/manifest-structure-audit.mjs`    | Repo-level structure audit                                                                                                                         |
-| `check:manifest:domain`              | `tools/manifest-domain-drift-audit.mjs` | Domain drift audit                                                                                                                                 |
+| File | Imported by |
+| --- | --- |
+| `entity-domain-map.mjs` | `generate.mjs` route remapping — **new entities need an entry here FIRST** |
+| `accessor-resolution.mjs` | accessor generation/checking |
+| `scalar-type-map.mjs` | type mapping shared by generators |
+| `read-config.mjs` | `manifest.config.yaml` loader |
 
-Committed-artifact drift now runs through `manifest:sync-artifacts` + CI `git diff`, with local helper checks (`openapi:check`, `ir:embed:check`, `field-hints:check`) retained for spot use.
+### Committed config (hand-curated, review required)
 
-### Tier 5 — Thin CLI wrappers
-
-Pinned paths only — no extra capability beyond `@angriff36/manifest` CLI.
-
-| Script                   | Command                                                            |
-| ------------------------ | ------------------------------------------------------------------ |
-| `manifest:doctor`        | `pnpm exec manifest doctor`                                        |
-| `manifest:fmt`           | `manifest fmt manifest/source -g "**/*.manifest" --write`          |
-| `manifest:fmt:check`     | same + `--check`                                                   |
-| `manifest:coverage`      | `manifest coverage --ir manifest/ir/kitchen.ir.json --format text` |
-| `manifest:coverage:json` | `--format json`                                                    |
-| `manifest:mcp`           | `manifest-mcp`                                                     |
-| `manifest:update`        | `pnpm -r update @angriff36/manifest@latest`                        |
-
-### Tier 6 — Accessor & config guardrails
-
-| Script                                  | Entry point                    |
-| --------------------------------------- | ------------------------------ |
-| `manifest:check-accessor-config`        | `check-accessor-config.mjs`    |
-| `manifest:check-accessor-config:strict` | `--strict` (in `audit:strict`) |
-
-**Committed config (hand-curated, review required):**
-
-- `manifest/prisma-options.config.json` — Prisma projection overrides
+- `manifest.config.yaml` — projection config (prisma options, nextjs routeSegments, wiring)
 - `manifest/accessor.config.json` — `entityToPrismaModel`, store options
 - `manifest/governance/schema-drift-allowlist.json`
 - `manifest/governance/audit-routes-exemptions.json`
 
 ### Quick reference
 
-**Domain semantics only (no new DB tables):**
+**Edited `.manifest` source:**
 
 ```bash
-pnpm manifest:compile && pnpm manifest:build && pnpm check
+pnpm manifest:build          # regenerate everything
+# manifest.prisma changed? → docs/database/README.md migration workflow
+pnpm manifest:ci             # all gates
+# restart the API dev server (it boots on the embedded IR)
+# commit source + regenerated artifacts together
 ```
 
-**New/changed durable entity:**
+**Compiler bump:**
 
 ```bash
-pnpm manifest:compile
-pnpm manifest:sync-artifacts
-# merge projection into packages/database/prisma/schema.prisma
-pnpm prisma:check
-pnpm db:dev -- --create-only --name <name>
-# review migration SQL
-pnpm db:deploy && pnpm db:check
-```
-
-**Before PR (manifest touch):**
-
-```bash
-pnpm manifest:sync-artifacts
+pnpm manifest:update && pnpm install
+pnpm manifest:build
 pnpm manifest:ci
 ```
+
+**Nothing changed?** Run nothing. Generation is a change-time concern; CI re-proves the world on every PR.

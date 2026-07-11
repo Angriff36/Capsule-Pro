@@ -4,9 +4,9 @@
  * compiled IR, for one entity or as a whole-IR summary. READ-ONLY: writes nothing.
  *
  * Usage:
- *   pnpm manifest:try-prisma                 # summary: store targets + models emitted + skips
- *   pnpm manifest:try-prisma Event           # generated `model Event` + diagnostics + diff vs committed schema
- *   pnpm manifest:try-prisma Event --full    # also print the entity's IR properties/relationships
+ *   node manifest/scripts/try-prisma.mjs                 # summary: store targets + models emitted + skips
+ *   node manifest/scripts/try-prisma.mjs Event           # generated `model Event` + diagnostics + diff vs committed schema
+ *   node manifest/scripts/try-prisma.mjs Event --full    # also print the entity's IR properties/relationships
  *
  * Why this exists: the Prisma projection only emits models for entities whose IR store
  * target is `durable` (it skips `memory`/`localStorage`/no-store). The model name is the
@@ -38,7 +38,7 @@ function fail(msg) {
 }
 
 if (!existsSync(IR_PATH)) {
-  fail(`IR not found at ${IR_PATH}. Run 'pnpm manifest:compile' first.`);
+  fail(`IR not found at ${IR_PATH}. Run 'pnpm manifest:build' first.`);
 }
 if (!existsSync(PKG_PRISMA_INDEX)) {
   fail(
@@ -110,7 +110,7 @@ if (!entityArg) {
     `\ndiagnostics (${diagnostics.length}): ${JSON.stringify(skipCodes)}`
   );
   console.log(
-    `\nTip: 'pnpm manifest:try-prisma <Entity>' to inspect one entity.`
+    `\nTip: 'node manifest/scripts/try-prisma.mjs <Entity>' to inspect one entity.`
   );
   console.log(
     `To make a memory entity emit a model, flip its source 'store X in memory' -> 'durable' and recompile.`

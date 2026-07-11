@@ -37,7 +37,7 @@ const warnings = [];
 
 if (!existsSync(metadataPath)) {
   fail(
-    `Missing ${metadataPath} — run pnpm manifest:generate-metadata first.`
+    `Missing ${metadataPath} — run pnpm manifest:build first.`
   );
 } else {
   const metadata = JSON.parse(readFileSync(metadataPath, "utf8"));

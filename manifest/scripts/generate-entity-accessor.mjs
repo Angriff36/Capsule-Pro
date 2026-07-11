@@ -4,7 +4,7 @@
  * Replaces hand-maintained apps/api/lib/manifest/entity-accessor.ts maps.
  *
  * Run: node manifest/scripts/generate-entity-accessor.mjs
- * Chained in: pnpm manifest:generate-metadata
+ * Chained in: pnpm manifest:build
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -17,7 +17,7 @@ const outPaths = [
 ];
 
 if (!existsSync(irPath)) {
-  console.error(`Missing ${irPath} — run pnpm manifest:compile first.`);
+  console.error(`Missing ${irPath} — run pnpm manifest:build first.`);
   process.exit(1);
 }
 
@@ -31,7 +31,7 @@ for (const name of entityNames) {
 
 const header = `// Generated from manifest.config.yaml + prisma-model-metadata — DO NOT EDIT
 // Producer: manifest/scripts/generate-entity-accessor.mjs
-// Re-run: pnpm manifest:generate-metadata
+// Re-run: pnpm manifest:build
 /* eslint-disable */
 `;
 

@@ -217,7 +217,7 @@ function requiredCreateFields(model) {
 function loadIR() {
   if (!existsSync(PATHS.ir)) {
     console.error(`[schema-drift] IR not found at ${PATHS.ir}.`);
-    console.error("[schema-drift] Run `pnpm manifest:compile` first.");
+    console.error("[schema-drift] Run `pnpm manifest:build` first.");
     process.exit(2);
   }
   return JSON.parse(readFileSync(PATHS.ir, "utf-8"));
@@ -555,7 +555,7 @@ function loadModelMetadata() {
       `[schema-drift] Model metadata not found: ${PATHS.modelMetadata}`
     );
     console.error(
-      "[schema-drift] Run `pnpm manifest:generate-metadata` first."
+      "[schema-drift] Run `pnpm manifest:build` first."
     );
     process.exit(2);
   }
@@ -706,7 +706,7 @@ function renderMarkdown(summary, results) {
   lines.push("Per constitution §14, the resolution order is:");
   lines.push("");
   lines.push(
-    "1. **Add to manifest** — update the entity's `.manifest` source: add the field as a `command create` parameter or as a `property` with a default, then run `pnpm manifest:compile`."
+    "1. **Add to manifest** — update the entity's `.manifest` source: add the field as a `command create` parameter or as a `property` with a default, then run `pnpm manifest:build`."
   );
   lines.push(
     '2. **Adapter-derived rule** — if the field is intentionally infrastructural (e.g. looked up from a parent entity), add an entry to `manifest/governance/schema-drift-allowlist.json` under `adapterDerived.<Entity>.<field>` with `{ "rule": "...", "owner": "...", "reviewBy": "YYYY-MM-DD" }`.'

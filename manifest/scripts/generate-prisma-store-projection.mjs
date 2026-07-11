@@ -24,7 +24,7 @@ const optionsPath = join(
 const outDir = join(root, "manifest/runtime/src/generated");
 
 if (!existsSync(irPath)) {
-  console.error(`IR not found: ${irPath}. Run pnpm manifest:compile first.`);
+  console.error(`IR not found: ${irPath}. Run pnpm manifest:build first.`);
   process.exit(1);
 }
 if (!existsSync(optionsPath)) {

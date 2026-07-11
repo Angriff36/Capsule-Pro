@@ -1,11 +1,12 @@
 # Manifest pre-commit hook (U16/U18): when .manifest source is staged, enforce
-# formatting and validation before the commit lands. No-op when no .manifest
-# files are staged so non-manifest commits stay fast.
+# validation before the commit lands. No-op when no .manifest files are staged
+# so non-manifest commits stay fast. (Uses the CLI directly — the consolidated
+# pnpm surface is manifest:build / manifest:ci / manifest:update only.)
 staged_manifests=$(git diff --cached --name-only --diff-filter=ACM -- '*.manifest')
 
 if [ -n "$staged_manifests" ]; then
   echo "manifest pre-commit: validating IR after staged .manifest changes…"
-  pnpm manifest:validate || {
+  pnpm exec manifest validate manifest/ir/kitchen.ir.json || {
     echo "✗ manifest validation failed."
     exit 1
   }

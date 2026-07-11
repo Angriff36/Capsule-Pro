@@ -173,7 +173,7 @@ function runGate() {
       "DRIFT DETECTED. The frozen IR snapshot in apps/api is stale vs the DSL sources."
     );
     console.error(
-      "Fix: run `pnpm manifest:compile && pnpm manifest:ir:embed` and commit:"
+      "Fix: run `pnpm manifest:build` and commit:"
     );
     console.error("  - manifest/ir/kitchen.ir.json");
     console.error("  - apps/api/lib/manifest/kitchen.ir.generated.json");
