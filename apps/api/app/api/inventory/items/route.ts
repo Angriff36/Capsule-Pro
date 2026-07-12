@@ -6,7 +6,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database, type Prisma } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -102,6 +102,92 @@ function calculateStockStatus(
 }
 
 /**
+ * Prisma row type for an inventory item (default findMany payload).
+ */
+type InventoryItemRow = Awaited<
+  ReturnType<typeof database.inventoryItem.findMany>
+>[number];
+
+/**
+ * Map a hydrated inventory row to the API response shape with computed
+ * `stock_status` and `total_value`. Pure — stock-status *filtering* is applied
+ * in SQL (see buildStockStatusConditions), not here.
+ */
+function mapInventoryItemWithStatus(
+  item: InventoryItemRow
+): InventoryItemWithStatus {
+  const quantityOnHand = Number(item.quantityOnHand);
+  const reorderLevel = Number(item.reorder_level);
+  return {
+    id: item.id,
+    tenant_id: item.tenantId,
+    item_number: item.item_number,
+    name: item.name,
+    description: item.description,
+    category: item.category,
+    unit_of_measure: item.unitOfMeasure,
+    unit_cost: Number(item.unitCost),
+    quantity_on_hand: quantityOnHand,
+    par_level: Number(item.parLevel),
+    reorder_level: reorderLevel,
+    supplier_id: item.supplierId,
+    tags: item.tags,
+    fsa_status: (item.fsa_status ?? "unknown") as FSAStatus,
+    fsa_temp_logged: item.fsa_temp_logged ?? false,
+    fsa_allergen_info: item.fsa_allergen_info ?? false,
+    fsa_traceable: item.fsa_traceable ?? false,
+    created_at: item.createdAt,
+    updated_at: item.updatedAt,
+    deleted_at: item.deletedAt,
+    stock_status: calculateStockStatus(quantityOnHand, reorderLevel),
+    total_value: quantityOnHand * Number(item.unitCost),
+  };
+}
+
+/**
+ * Build the parameterized SQL WHERE conditions for a stock-status-filtered
+ * inventory query.
+ *
+ * Stock status compares `quantity_on_hand` against `reorder_level` — a
+ * column-to-column predicate Prisma's `where` cannot express — so it is
+ * resolved in SQL via a CASE that mirrors `calculateStockStatus` exactly. This
+ * fixes the prior behavior where `low_stock` always returned empty (SQL filtered
+ * `qty <= 0` then JS discarded every row) and `in_stock` leaked low-stock rows.
+ * The remaining filters mirror the Prisma `where` built for the non-stock path.
+ */
+function buildStockStatusConditions(
+  tenantId: string,
+  filters: InventoryItemListFilters
+): Prisma.Sql[] {
+  const conditions: Prisma.Sql[] = [
+    Prisma.sql`tenant_id = ${tenantId}`,
+    Prisma.sql`deleted_at IS NULL`,
+    Prisma.sql`(CASE WHEN quantity_on_hand <= 0 THEN 'out_of_stock'
+                     WHEN quantity_on_hand <= reorder_level THEN 'low_stock'
+                     ELSE 'in_stock' END) = ${filters.stock_status}`,
+  ];
+  if (filters.search) {
+    const pattern = `%${filters.search}%`;
+    conditions.push(
+      Prisma.sql`(item_number ILIKE ${pattern} OR name ILIKE ${pattern})`
+    );
+  }
+  if (filters.category) {
+    conditions.push(Prisma.sql`category = ${filters.category}`);
+  }
+  if (filters.supplier_id) {
+    conditions.push(Prisma.sql`supplier_id = ${filters.supplier_id}`);
+  }
+  if (filters.fsa_status) {
+    conditions.push(Prisma.sql`fsa_status = ${filters.fsa_status}`);
+  }
+  if (filters.tags && filters.tags.length > 0) {
+    conditions.push(Prisma.sql`tags && ${filters.tags}::text[]`);
+  }
+  return conditions;
+}
+
+/**
  * GET /api/inventory/items - List inventory items with pagination and filters
  */
 export async function GET(request: Request) {
@@ -159,22 +245,51 @@ export async function GET(request: Request) {
       };
     }
 
-    // Stock status filter (requires calculation)
+    // Stock status compares quantity_on_hand against reorder_level — a
+    // column-to-column predicate Prisma `where` cannot express — so when a
+    // stock_status filter is set, resolve the matching page of IDs + the total
+    // in SQL (CASE mirrors calculateStockStatus), then hydrate full rows via
+    // findMany to preserve the camelCase Decimal mapping the response relies on.
     if (filters.stock_status) {
-      switch (filters.stock_status) {
-        case "out_of_stock":
-          where.quantityOnHand = { equals: 0 };
-          break;
-        case "low_stock":
-          where.quantityOnHand = { lte: 0 }; // Will be refined with client-level filtering
-          break;
-        case "in_stock":
-          where.quantityOnHand = { gt: 0 };
-          break;
-        default:
-          // Exhaustive check - all StockStatus cases handled above
-          break;
-      }
+      const conditions = buildStockStatusConditions(tenantId, filters);
+
+      const countRows = await database.$queryRaw<Array<{ count: bigint }>>`
+        SELECT COUNT(*) AS count
+        FROM tenant_inventory.inventory_items
+        WHERE ${Prisma.join(conditions, " AND ")}`;
+      const total = countRows[0] ? Number(countRows[0].count) : 0;
+
+      const idRows = await database.$queryRaw<Array<{ id: string }>>`
+        SELECT id
+        FROM tenant_inventory.inventory_items
+        WHERE ${Prisma.join(conditions, " AND ")}
+        ORDER BY category ASC, name ASC
+        LIMIT ${limit} OFFSET ${(page - 1) * limit}`;
+      const pageIds = idRows.map((row) => row.id);
+
+      const stockItems = pageIds.length
+        ? await database.inventoryItem.findMany({
+            where: { tenantId, id: { in: pageIds } },
+            orderBy: [{ category: "asc" }, { name: "asc" }],
+          })
+        : [];
+      // findMany({ id: { in } }) does not preserve the SQL ORDER BY, so remap
+      // the hydrated rows back to the SQL-determined page order.
+      const itemsById = new Map(stockItems.map((item) => [item.id, item]));
+      const data = pageIds
+        .map((id) => itemsById.get(id))
+        .filter((item): item is InventoryItemRow => item !== undefined)
+        .map(mapInventoryItemWithStatus);
+
+      return NextResponse.json({
+        data,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      });
     }
 
     // Get total count for pagination
@@ -189,58 +304,15 @@ export async function GET(request: Request) {
     });
 
     // Calculate stock status and total value for each item
-    const mappedItems = items.map((item) => {
-      const quantityOnHand = Number(item.quantityOnHand);
-      const reorderLevel = Number(item.reorder_level);
-
-      const stockStatus = calculateStockStatus(quantityOnHand, reorderLevel);
-
-      // Apply stock status filter that requires calculation
-      if (filters.stock_status === "low_stock" && stockStatus !== "low_stock") {
-        return null;
-      }
-
-      return {
-        id: item.id,
-        tenant_id: item.tenantId,
-        item_number: item.item_number,
-        name: item.name,
-        description: item.description,
-        category: item.category,
-        unit_of_measure: item.unitOfMeasure,
-        unit_cost: Number(item.unitCost),
-        quantity_on_hand: quantityOnHand,
-        par_level: Number(item.parLevel),
-        reorder_level: reorderLevel,
-        supplier_id: item.supplierId,
-        tags: item.tags,
-        fsa_status: (item.fsa_status ?? "unknown") as FSAStatus,
-        fsa_temp_logged: item.fsa_temp_logged ?? false,
-        fsa_allergen_info: item.fsa_allergen_info ?? false,
-        fsa_traceable: item.fsa_traceable ?? false,
-        created_at: item.createdAt,
-        updated_at: item.updatedAt,
-        deleted_at: item.deletedAt,
-        stock_status: stockStatus,
-        total_value: quantityOnHand * Number(item.unitCost),
-      } as InventoryItemWithStatus | null;
-    });
-
-    const itemsWithStatus = mappedItems.filter(
-      (item): item is InventoryItemWithStatus => item !== null
-    );
-
-    // Recalculate total after stock status filtering
-    const filteredTotal =
-      filters.stock_status === "low_stock" ? itemsWithStatus.length : total;
+    const data = items.map(mapInventoryItemWithStatus);
 
     return NextResponse.json({
-      data: itemsWithStatus,
+      data,
       pagination: {
         page,
         limit,
-        total: filteredTotal,
-        totalPages: Math.ceil(filteredTotal / limit),
+        total,
+        totalPages: Math.ceil(total / limit),
       },
     });
   } catch (error) {

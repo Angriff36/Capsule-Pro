@@ -277,44 +277,116 @@ describe("Inventory Items CRUD API", () => {
     });
 
     describe("stock status filter", () => {
+      // Stock status compares quantity_on_hand against reorder_level — a
+      // column-to-column predicate Prisma `where` cannot express — so the filter
+      // is resolved in SQL ($queryRaw count + page of IDs), then rows are
+      // hydrated via findMany({ id: { in } }). The CASE in SQL mirrors
+      // calculateStockStatus exactly. low_stock is the key regression: before
+      // the fix the SQL predicate was qty<=0 and a JS post-filter then discarded
+      // every row, so low_stock ALWAYS returned an empty list.
       it("should filter by out_of_stock status", async () => {
-        vi.mocked(database.inventoryItem.count).mockResolvedValue(1);
+        vi.mocked(database.$queryRaw)
+          .mockResolvedValueOnce([{ count: 1 }] as never)
+          .mockResolvedValueOnce([{ id: "oos-1" }] as never);
         vi.mocked(database.inventoryItem.findMany).mockResolvedValue([
-          createMockInventoryItem({ quantityOnHand: 0 }),
+          createMockInventoryItem({
+            id: "oos-1",
+            quantityOnHand: 0,
+            reorder_level: 10,
+          }),
         ] as never);
 
         const request = new Request(
           "http://localhost/api/inventory/items?stock_status=out_of_stock"
         );
-        await GET(request);
+        const response = await GET(request);
+        const body = await response.json();
 
+        expect(body.data).toHaveLength(1);
+        expect(body.data[0].stock_status).toBe("out_of_stock");
+        expect(body.pagination.total).toBe(1);
+        // Stock status is resolved via the SQL CASE, so findMany hydrates by id
+        // and carries no quantityOnHand predicate.
         expect(database.inventoryItem.findMany).toHaveBeenCalledWith(
           expect.objectContaining({
             where: expect.objectContaining({
-              quantityOnHand: { equals: 0 },
+              id: expect.objectContaining({ in: expect.any(Array) }),
             }),
           })
         );
       });
 
       it("should filter by in_stock status", async () => {
-        vi.mocked(database.inventoryItem.count).mockResolvedValue(1);
+        vi.mocked(database.$queryRaw)
+          .mockResolvedValueOnce([{ count: 1 }] as never)
+          .mockResolvedValueOnce([{ id: "in-1" }] as never);
         vi.mocked(database.inventoryItem.findMany).mockResolvedValue([
-          createMockInventoryItem({ quantityOnHand: 100 }),
+          createMockInventoryItem({
+            id: "in-1",
+            quantityOnHand: 100,
+            reorder_level: 20,
+          }),
         ] as never);
 
         const request = new Request(
           "http://localhost/api/inventory/items?stock_status=in_stock"
         );
-        await GET(request);
+        const response = await GET(request);
+        const body = await response.json();
 
-        expect(database.inventoryItem.findMany).toHaveBeenCalledWith(
-          expect.objectContaining({
-            where: expect.objectContaining({
-              quantityOnHand: { gt: 0 },
-            }),
-          })
+        expect(body.data).toHaveLength(1);
+        expect(body.data[0].stock_status).toBe("in_stock");
+        expect(body.pagination.total).toBe(1);
+      });
+
+      it("should filter by low_stock status (qty > 0 and qty <= reorder_level)", async () => {
+        vi.mocked(database.$queryRaw)
+          .mockResolvedValueOnce([{ count: 2 }] as never)
+          .mockResolvedValueOnce([{ id: "low-1" }, { id: "low-2" }] as never);
+        vi.mocked(database.inventoryItem.findMany).mockResolvedValue([
+          createMockInventoryItem({
+            id: "low-1",
+            quantityOnHand: 5,
+            reorder_level: 10,
+          }),
+          createMockInventoryItem({
+            id: "low-2",
+            quantityOnHand: 10,
+            reorder_level: 10,
+          }),
+        ] as never);
+
+        const request = new Request(
+          "http://localhost/api/inventory/items?stock_status=low_stock"
         );
+        const response = await GET(request);
+        const body = await response.json();
+
+        // Regression: low_stock used to ALWAYS return empty.
+        expect(response.status).toBe(200);
+        expect(body.data).toHaveLength(2);
+        expect(body.data[0].stock_status).toBe("low_stock");
+        expect(body.data[1].stock_status).toBe("low_stock");
+        expect(body.pagination.total).toBe(2);
+        expect(database.$queryRaw).toHaveBeenCalledTimes(2);
+      });
+
+      it("should return empty data and a zero total when no items match low_stock", async () => {
+        vi.mocked(database.$queryRaw)
+          .mockResolvedValueOnce([{ count: 0 }] as never)
+          .mockResolvedValueOnce([] as never);
+
+        const request = new Request(
+          "http://localhost/api/inventory/items?stock_status=low_stock"
+        );
+        const response = await GET(request);
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(body.data).toEqual([]);
+        expect(body.pagination.total).toBe(0);
+        // No page IDs → no hydration query fires.
+        expect(database.inventoryItem.findMany).not.toHaveBeenCalled();
       });
 
       it("should calculate stock status based on quantity and reorder level", async () => {
