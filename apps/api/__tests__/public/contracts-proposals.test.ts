@@ -145,13 +145,13 @@ describe("GET /api/public/contracts/[token]", () => {
       createdAt: new Date("2025-06-01"),
       contractNumber: "CTR-2025-001",
       tenantId: TENANT_ID,
+      eventId: EVENT_ID,
+      clientId: CLIENT_ID,
     } as never;
 
-    // First findFirst call — the main contract query
-    vi.mocked(database.eventContract.findFirst)
-      .mockResolvedValueOnce(contract) // main select
-      .mockResolvedValueOnce({ id: EVENT_ID } as never) // eventId lookup
-      .mockResolvedValueOnce({ id: CLIENT_ID } as never); // clientId lookup
+    // Single findFirst — eventId/clientId are now on the main select, so the
+    // two extra token-row lookups the serial version made are gone.
+    vi.mocked(database.eventContract.findFirst).mockResolvedValueOnce(contract);
 
     vi.mocked(database.event.findFirst).mockResolvedValueOnce({
       title: "Summer Gala",
@@ -235,23 +235,21 @@ describe("GET /api/public/contracts/[token]", () => {
   });
 
   it("returns contract without client when clientId is null", async () => {
-    vi.mocked(database.eventContract.findFirst)
-      .mockResolvedValueOnce({
-        id: CONTRACT_ID,
-        title: "No Client Contract",
-        status: "draft",
-        documentUrl: null,
-        documentType: null,
-        notes: null,
-        expiresAt: FUTURE_DATE,
-        createdAt: new Date("2025-06-01"),
-        contractNumber: "CTR-2025-002",
-        tenantId: TENANT_ID,
-      } as never)
-      .mockResolvedValueOnce({ eventId: null } as never)
-      .mockResolvedValueOnce(null); // clientId is null
+    vi.mocked(database.eventContract.findFirst).mockResolvedValueOnce({
+      id: CONTRACT_ID,
+      title: "No Client Contract",
+      status: "draft",
+      documentUrl: null,
+      documentType: null,
+      notes: null,
+      expiresAt: FUTURE_DATE,
+      createdAt: new Date("2025-06-01"),
+      contractNumber: "CTR-2025-002",
+      tenantId: TENANT_ID,
+      eventId: null,
+      clientId: null,
+    } as never);
 
-    vi.mocked(database.event.findFirst).mockResolvedValueOnce(null);
     vi.mocked(database.contractSignature.findMany).mockResolvedValueOnce([]);
     vi.mocked(database.account.findFirst).mockResolvedValueOnce(null);
 

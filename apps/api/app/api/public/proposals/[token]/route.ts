@@ -79,110 +79,91 @@ export async function GET(_request: Request, { params }: { params: Params }) {
       );
     }
 
-    // Get line items
-    const lineItems = await database.proposalLineItem.findMany({
-      where: {
-        proposalId: proposal.id,
-        tenantId: proposal.tenantId,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        itemType: true,
-        category: true,
-        description: true,
-        quantity: true,
-        unitOfMeasure: true,
-        unitPrice: true,
-        totalPrice: true,
-        sortOrder: true,
-      },
-      orderBy: {
-        sortOrder: "asc",
-      },
-    });
-
-    // Get client details
-    let client: Array<{
-      company_name: string | null;
-      first_name: string | null;
-      last_name: string | null;
-      email: string | null;
-      phone: string | null;
-    }> | null = null;
-    if (proposal.clientId) {
-      client = await database.$queryRaw<
-        Array<{
-          company_name: string | null;
-          first_name: string | null;
-          last_name: string | null;
-          email: string | null;
-          phone: string | null;
-        }>
-      >`
-        SELECT company_name, first_name, last_name, email, phone
-        FROM tenant_crm.clients
-        WHERE id = ${proposal.clientId}
-          AND tenant_id = ${proposal.tenantId}
-          AND deleted_at IS NULL
-      `;
-    }
-
-    // Get lead details if no client
-    let lead: Array<{
-      first_name: string | null;
-      last_name: string | null;
-      email: string | null;
-      phone: string | null;
-    }> | null = null;
-    if (!client && proposal.leadId) {
-      lead = await database.$queryRaw<
-        Array<{
-          first_name: string | null;
-          last_name: string | null;
-          email: string | null;
-          phone: string | null;
-        }>
-      >`
-        SELECT first_name, last_name, email, phone
-        FROM tenant_crm.leads
-        WHERE id = ${proposal.leadId}
-          AND tenant_id = ${proposal.tenantId}
-          AND deleted_at IS NULL
-      `;
-    }
-
-    // Get event details if linked
-    let event: Array<{
-      title: string;
-      event_date: Date | null;
-      venue_name: string | null;
-    }> | null = null;
-    if (proposal.eventId) {
-      event = await database.$queryRaw<
-        Array<{
-          title: string;
-          event_date: Date | null;
-          venue_name: string | null;
-        }>
-      >`
-        SELECT title, event_date, venue_name
-        FROM tenant_kitchen.events
-        WHERE id = ${proposal.eventId}
-          AND tenant_id = ${proposal.tenantId}
-          AND deleted_at IS NULL
-      `;
-    }
-
-    // Get tenant/organization info
-    const tenant = await database.account.findFirst({
-      where: {
-        id: proposal.tenantId,
-      },
-      select: {
-        name: true,
-      },
-    });
+    // Fetch line items, client/lead/event details, and org in ONE batch
+    // instead of 5 serial round-trips. Array order is chosen to preserve the
+    // original serial $queryRaw call order (client → lead → event); Promise.all
+    // still runs them concurrently. `lead` is fetched only when there is no
+    // clientId — equivalent to the original `!client` gate, since `client` is
+    // populated only when `clientId` is present.
+    const [lineItems, client, lead, event, tenant] = await Promise.all([
+      database.proposalLineItem.findMany({
+        where: {
+          proposalId: proposal.id,
+          tenantId: proposal.tenantId,
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+          itemType: true,
+          category: true,
+          description: true,
+          quantity: true,
+          unitOfMeasure: true,
+          unitPrice: true,
+          totalPrice: true,
+          sortOrder: true,
+        },
+        orderBy: {
+          sortOrder: "asc",
+        },
+      }),
+      proposal.clientId
+        ? database.$queryRaw<
+            Array<{
+              company_name: string | null;
+              first_name: string | null;
+              last_name: string | null;
+              email: string | null;
+              phone: string | null;
+            }>
+          >`
+            SELECT company_name, first_name, last_name, email, phone
+            FROM tenant_crm.clients
+            WHERE id = ${proposal.clientId}
+              AND tenant_id = ${proposal.tenantId}
+              AND deleted_at IS NULL
+          `
+        : Promise.resolve(null),
+      !proposal.clientId && proposal.leadId
+        ? database.$queryRaw<
+            Array<{
+              first_name: string | null;
+              last_name: string | null;
+              email: string | null;
+              phone: string | null;
+            }>
+          >`
+            SELECT first_name, last_name, email, phone
+            FROM tenant_crm.leads
+            WHERE id = ${proposal.leadId}
+              AND tenant_id = ${proposal.tenantId}
+              AND deleted_at IS NULL
+          `
+        : Promise.resolve(null),
+      proposal.eventId
+        ? database.$queryRaw<
+            Array<{
+              title: string;
+              event_date: Date | null;
+              venue_name: string | null;
+            }>
+          >`
+            SELECT title, event_date, venue_name
+            FROM tenant_kitchen.events
+            WHERE id = ${proposal.eventId}
+              AND tenant_id = ${proposal.tenantId}
+              AND deleted_at IS NULL
+          `
+        : Promise.resolve(null),
+      database.account.findFirst({
+        where: {
+          id: proposal.tenantId,
+        },
+        select: {
+          name: true,
+        },
+      }),
+    ]);
 
     // Update viewedAt timestamp if this is the first view (governed via Manifest)
     if (!proposal.viewedAt) {

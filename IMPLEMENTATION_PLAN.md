@@ -16,7 +16,7 @@ current code, corrected six figures + two false framings + two prior corrections
 split the `apps/api/lib/manifest/execute-command.ts` batch-`$transaction` 120s
 pool-hold into a new foundational-tier item **#29** (availability-grade), and folded
 four minor gaps into existing items. This is a **plan-only
-artifact** — ~~nothing here is implemented yet~~ **(2026-07-12: items #1 core, #2 partial, #3, #4, #5, #29 have SHIPPED/RESOLVED — see each item's implementation log; the rest remains plan-only)**. The spec's "Acceptance criteria" and
+artifact** — ~~nothing here is implemented yet~~ **(2026-07-12: items #1 core, #2 partial, #3, #4, #5, #11, #29 have SHIPPED/RESOLVED — see each item's implementation log; the rest remains plan-only)**. The spec's "Acceptance criteria" and
 "Constraints" sections (`specs/db-performance/database-performance.md`) are the gate;
 every item ties its acceptance check back to them.
 
@@ -165,12 +165,17 @@ mechanical sweeps; then cleanup + the optional test guard.
 - **Scope:** `route` (apps/api) + `manifest-source` (the tsvector GIN index)
 - **Acceptance check:** `apps/api` omni-type search does one round-trip batch, not 15; KB search hits the GIN index (`EXPLAIN` confirms); before/after on the search route.
 
-### 11. `[VERIFIED]` Public proposal/contract parallel queries
+### 11. `[RESOLVED 2026-07-12]` Public proposal/contract parallel queries
 - **What:** Collapse the serial independent reads on the public proposal and contract token routes.
 - **Why / evidence:** `public/proposals/[token]/route.ts:33-188` runs 1 prerequisite (proposal) + 5 serial independent queries (lineItems, client, lead, event, account) — **(4th rev, 2026-07-12)** parallelize the 5, not all 6 (they depend on the proposal row); `public/contracts/[token]/route.ts:32,71,85` runs triple `findFirst` on the same `signingToken`. These are user-facing (externally shared links). (Cross-ref item #21 for the unauthenticated `public/contracts/[token]/sign/route.ts:75` over-fetch.)
 - **Fix:** One `Promise.all` for the independent reads; collapse the triple `findFirst` to one query with `select` (**(4th rev, 2026-07-12)** the first `select` omits `eventId`/`clientId`, forcing the 2nd/3rd — add those fields to the first `select`).
 - **Scope:** `route`
 - **Acceptance check:** Public proposal route does 1 round-trip batch instead of 6; contract route 1 instead of 3; before/after measured.
+- **Implementation log (2026-07-12, RESOLVED):** Collapsed both public token routes' serial reads into single `Promise.all` batches — these are **unauthenticated, externally-shared links** (no Clerk session), so every proposal/contract view paid the full serial cost up front.
+  - **Proposal** (`apps/api/app/api/public/proposals/[token]/route.ts`): 6 serial round-trips → **2** (1 prerequisite `proposal.findFirst` + 1 batch of `lineItems`/`client`/`lead`/`event`/`tenant`). The `lead` branch is gated `!proposal.clientId && proposal.leadId`, which is provably equivalent to the original serial `!client && proposal.leadId` (since `client` was assigned only when `clientId` existed) — so the lead query is data-independent of the client result and can join the batch.
+  - **Contract** (`apps/api/app/api/public/contracts/[token]/route.ts`): the prior "3 findFirst on the same token" framing **under-counted** — it was actually **7 serial round-trips** (contract select + a `eventId` findFirst **nested inside the event query's `where`** + the event query + a standalone `clientId` findFirst + the client raw query + signatures + tenant). Fix: added `eventId`+`clientId` to the first `select` (killing both redundant same-row fetches) and batched `event`/`client`/`signatures`/`tenant` → **2 round-trips**. Also incidentally fixed a latent bug where a null `eventId` made the event query filter on `id: undefined` (Prisma treats as no-filter → returned an arbitrary tenant event); now guarded on `contract.eventId`.
+  - **Why it matters:** the public contract view is the worst offender of the two (3 of its 7 round-trips re-fetched the SAME row); this is exactly the kind of cold-start tax a recipient hits when they open a shared link.
+  - **Verification:** existing `apps/api/__tests__/public/contracts-proposals.test.ts` **35/35 green**. **Reusable technique for future parallelization items (#7/#23/etc.):** the suite uses order-dependent `mockResolvedValueOnce` on a single mocked `$queryRaw` `vi.fn`. `Promise.all` invokes its array elements left-to-right synchronously, so **ordering the batch array to match the original serial call order preserves mock-call sequence** — the 5 proposal-route `$queryRaw` tests pass **unchanged**. Only the 2 contract-route tests that asserted the redundant token refetches needed edits (merged `eventId`/`clientId` into the single main-select mock + dropped the 2 extra `findFirst` mock chains); the 3 contract tests that return before the reads (404/410/500) were untouched. `apps/api` typecheck: **17 pre-existing errors, ZERO in the two touched route files**. No schema/manifest touched → `db:check`/`manifest:ci` baseline unchanged. Live before/after latency (item #1's instrumentation) deferred to a seeded-DB measurement pass.
 
 ### 12. `[VERIFIED]` Calendar sync N+1 batch preload
 - **What:** Batch-load existing events once per calendar sync instead of per external event.

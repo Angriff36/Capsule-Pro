@@ -45,6 +45,8 @@ export async function GET(_request: Request, { params }: { params: Params }) {
         createdAt: true,
         contractNumber: true,
         tenantId: true,
+        eventId: true,
+        clientId: true,
       },
     });
 
@@ -63,74 +65,65 @@ export async function GET(_request: Request, { params }: { params: Params }) {
       );
     }
 
-    // Get event details
-    const event = await database.event.findFirst({
-      where: {
-        tenantId: contract.tenantId,
-        id: (
-          await database.eventContract.findFirst({
-            where: { signingToken: token },
-            select: { eventId: true },
+    // Fetch event, client, signatures, and org in ONE batch. eventId/clientId
+    // are now on the first select, so the two extra findFirst round-trips the
+    // same signing-token row previously forced (one nested in the event query,
+    // one for clientId) are gone — 7 serial round-trips collapse to 2.
+    const [event, client, signatures, tenant] = await Promise.all([
+      contract.eventId
+        ? database.event.findFirst({
+            where: {
+              tenantId: contract.tenantId,
+              id: contract.eventId,
+            },
+            select: {
+              title: true,
+              eventDate: true,
+              venueName: true,
+            },
           })
-        )?.eventId,
-      },
-      select: {
-        title: true,
-        eventDate: true,
-        venueName: true,
-      },
-    });
-
-    // Get client details using raw query for composite key
-    const contractWithClient = await database.eventContract.findFirst({
-      where: { signingToken: token },
-      select: { clientId: true },
-    });
-
-    const client = contractWithClient
-      ? await database.$queryRaw<
-          Array<{
-            company_name: string | null;
-            first_name: string | null;
-            last_name: string | null;
-            email: string | null;
-          }>
-        >`
-        SELECT company_name, first_name, last_name, email
-        FROM tenant_crm.clients
-        WHERE id = ${contractWithClient.clientId}
-          AND tenant_id = ${contract.tenantId}
-          AND deleted_at IS NULL
-      `
-      : null;
-
-    // Get existing signatures
-    const signatures = await database.contractSignature.findMany({
-      where: {
-        contractId: contract.id,
-        tenantId: contract.tenantId,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        signerName: true,
-        signerEmail: true,
-        signedAt: true,
-      },
-      orderBy: {
-        signedAt: "desc",
-      },
-    });
-
-    // Get tenant/organization info
-    const tenant = await database.account.findFirst({
-      where: {
-        id: contract.tenantId,
-      },
-      select: {
-        name: true,
-      },
-    });
+        : Promise.resolve(null),
+      contract.clientId
+        ? database.$queryRaw<
+            Array<{
+              company_name: string | null;
+              first_name: string | null;
+              last_name: string | null;
+              email: string | null;
+            }>
+          >`
+          SELECT company_name, first_name, last_name, email
+          FROM tenant_crm.clients
+          WHERE id = ${contract.clientId}
+            AND tenant_id = ${contract.tenantId}
+            AND deleted_at IS NULL
+        `
+        : Promise.resolve(null),
+      database.contractSignature.findMany({
+        where: {
+          contractId: contract.id,
+          tenantId: contract.tenantId,
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+          signerName: true,
+          signerEmail: true,
+          signedAt: true,
+        },
+        orderBy: {
+          signedAt: "desc",
+        },
+      }),
+      database.account.findFirst({
+        where: {
+          id: contract.tenantId,
+        },
+        select: {
+          name: true,
+        },
+      }),
+    ]);
 
     return NextResponse.json({
       contract: {
