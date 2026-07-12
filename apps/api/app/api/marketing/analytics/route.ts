@@ -30,30 +30,57 @@ export async function GET(request: Request) {
   const window = searchParams.get("window") || "30d";
   const { now, startDate } = calculateWindow(window);
 
-  const [emailLogs, leads, smsLogs, workflows, smsRules] = await Promise.all([
-    database.emailLog.findMany({
-      where: {
-        tenantId,
-        sentAt: { gte: startDate, lte: now },
-      },
-      select: {
-        status: true,
-        workflowId: true,
-        sentAt: true,
-      },
-    }),
-    database.lead.findMany({
-      where: {
-        tenantId,
-        createdAt: { gte: startDate, lte: now },
-        deletedAt: null,
-      },
-      select: {
-        status: true,
-        source: true,
-        createdAt: true,
-      },
-    }),
+  // ponytail: aggregate at the source via GROUP BY (mirrors the sms_logs query below)
+  // instead of materializing every email log / lead into JS. A busy tenant can write
+  // 100k+ email logs in a 180d window — O(groups) rows beats O(rows) in memory + latency.
+  // email_logs is in tenant_admin; leads is in tenant_crm (different schema).
+  const [
+    emailByStatus,
+    emailByWorkflow,
+    leadByStatus,
+    leadBySource,
+    smsLogs,
+    workflows,
+    smsRules,
+  ] = await Promise.all([
+    database.$queryRaw<Array<{ status: string; total: bigint }>>`
+      SELECT status, COUNT(*)::bigint AS total
+      FROM tenant_admin.email_logs
+      WHERE tenant_id = ${tenantId}::uuid
+        AND sent_at >= ${startDate}
+        AND sent_at <= ${now}
+      GROUP BY status
+    `,
+    database.$queryRaw<
+      Array<{ workflow_id: string | null; sent: bigint; opened: bigint }>
+    >`
+      SELECT workflow_id,
+             COUNT(*)::bigint AS sent,
+             COUNT(*) FILTER (WHERE status IN ('opened', 'delivered'))::bigint AS opened
+      FROM tenant_admin.email_logs
+      WHERE tenant_id = ${tenantId}::uuid
+        AND sent_at >= ${startDate}
+        AND sent_at <= ${now}
+      GROUP BY workflow_id
+    `,
+    database.$queryRaw<Array<{ status: string; total: bigint }>>`
+      SELECT status, COUNT(*)::bigint AS total
+      FROM tenant_crm.leads
+      WHERE tenant_id = ${tenantId}::uuid
+        AND created_at >= ${startDate}
+        AND created_at <= ${now}
+        AND deleted_at IS NULL
+      GROUP BY status
+    `,
+    database.$queryRaw<Array<{ source: string | null; total: bigint }>>`
+      SELECT source, COUNT(*)::bigint AS total
+      FROM tenant_crm.leads
+      WHERE tenant_id = ${tenantId}::uuid
+        AND created_at >= ${startDate}
+        AND created_at <= ${now}
+        AND deleted_at IS NULL
+      GROUP BY source
+    `,
     database.$queryRaw<Array<{ status: string; total: bigint }>>`
       SELECT status, COUNT(*)::bigint as total FROM tenant_admin.sms_logs
       WHERE tenant_id = ${tenantId}::uuid
@@ -87,51 +114,30 @@ export async function GET(request: Request) {
     }),
   ]);
 
-  // Email metrics
-  const totalSent = emailLogs.length;
-  const opened = emailLogs.filter(
-    (l) => l.status === "opened" || l.status === "delivered"
-  ).length;
-  const bounced = emailLogs.filter((l) => l.status === "bounced").length;
+  // Email metrics (aggregated by status). "opened" counts delivered too — preserved
+  // from the prior JS aggregation (openRate has always included delivered).
+  const emailStatusCounts = new Map<string, number>(
+    emailByStatus.map((row) => [row.status, Number(row.total)])
+  );
+  const totalSent = emailByStatus.reduce((sum, r) => sum + Number(r.total), 0);
+  const opened =
+    (emailStatusCounts.get("opened") ?? 0) +
+    (emailStatusCounts.get("delivered") ?? 0);
+  const bounced = emailStatusCounts.get("bounced") ?? 0;
   const openRate = totalSent > 0 ? (opened / totalSent) * 100 : null;
 
-  // Lead metrics
-  const totalLeads = leads.length;
-  const convertedLeads = leads.filter((l) => l.status === "converted").length;
-  const conversionRate =
-    totalLeads > 0 ? (convertedLeads / totalLeads) * 100 : null;
-  const leadsBySource = leads.reduce<Record<string, number>>((acc, l) => {
-    const src = l.source || "manual";
-    acc[src] = (acc[src] || 0) + 1;
-    return acc;
-  }, {});
-
-  // SMS metrics (aggregated by status)
-  const smsStatusCounts = smsLogs.reduce<Record<string, number>>((acc, row) => {
-    acc[row.status] = Number(row.total);
-    return acc;
-  }, {});
-  const totalSms = Object.values(smsStatusCounts).reduce((a, b) => a + b, 0);
-  const smsDelivered = smsStatusCounts.delivered || 0;
-  const smsDeliveryRate = totalSms > 0 ? (smsDelivered / totalSms) * 100 : null;
-
-  // Email performance by workflow
-  const workflowEmailCounts = emailLogs.reduce<
-    Record<string, { sent: number; opened: number }>
-  >((acc, log) => {
-    const wId = log.workflowId || "unlinked";
-    if (!acc[wId]) {
-      acc[wId] = { sent: 0, opened: 0 };
-    }
-    acc[wId].sent++;
-    if (log.status === "opened" || log.status === "delivered") {
-      acc[wId].opened++;
-    }
-    return acc;
-  }, {});
-
+  // Email performance by workflow (aggregated by workflow_id; null → "unlinked").
+  const workflowEmailCounts = new Map<
+    string,
+    { sent: number; opened: number }
+  >(
+    emailByWorkflow.map((row) => [
+      row.workflow_id ?? "unlinked",
+      { sent: Number(row.sent), opened: Number(row.opened) },
+    ])
+  );
   const emailPerformanceByWorkflow = workflows.map((w) => {
-    const counts = workflowEmailCounts[w.id] || { sent: 0, opened: 0 };
+    const counts = workflowEmailCounts.get(w.id) ?? { sent: 0, opened: 0 };
     return {
       id: w.id,
       name: w.name,
@@ -142,6 +148,32 @@ export async function GET(request: Request) {
       openRate: counts.sent > 0 ? (counts.opened / counts.sent) * 100 : null,
     };
   });
+
+  // Lead metrics (aggregated by status / source).
+  const leadStatusCounts = new Map<string, number>(
+    leadByStatus.map((row) => [row.status, Number(row.total)])
+  );
+  const totalLeads = leadByStatus.reduce((sum, r) => sum + Number(r.total), 0);
+  const convertedLeads = leadStatusCounts.get("converted") ?? 0;
+  const conversionRate =
+    totalLeads > 0 ? (convertedLeads / totalLeads) * 100 : null;
+  const leadsBySource = leadBySource.reduce<Record<string, number>>(
+    (acc, row) => {
+      const src = row.source || "manual";
+      acc[src] = (acc[src] || 0) + Number(row.total);
+      return acc;
+    },
+    {}
+  );
+
+  // SMS metrics (aggregated by status).
+  const smsStatusCounts = smsLogs.reduce<Record<string, number>>((acc, row) => {
+    acc[row.status] = Number(row.total);
+    return acc;
+  }, {});
+  const totalSms = Object.values(smsStatusCounts).reduce((a, b) => a + b, 0);
+  const smsDelivered = smsStatusCounts.delivered || 0;
+  const smsDeliveryRate = totalSms > 0 ? (smsDelivered / totalSms) * 100 : null;
 
   // SMS performance summary
   const smsPerformanceSummary = smsRules.map((r) => ({
