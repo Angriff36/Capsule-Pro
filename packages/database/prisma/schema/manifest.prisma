@@ -1855,7 +1855,7 @@ model Equipment {
   locationId String @map("location_id") @db.Uuid
   name String
   type String @default("general")
-  status String @default("active")
+  status EquipmentStatus @default(active)
   serialNumber String? @map("serial_number") @default("")
   manufacturer String? @default("")
   model String? @default("")
@@ -3453,7 +3453,7 @@ model MaintenanceWorkOrder {
   title String
   workOrderType String @map("workOrderType") @default("corrective")
   priority String @default("medium")
-  status String @default("open")
+  status MaintenanceWorkOrderStatus @default(open)
   description String? @db.Text @default("")
   reportedBy String? @map("reported_by") @db.Uuid
   assignedTo String? @map("assigned_to") @db.Uuid
@@ -6973,6 +6973,15 @@ enum DocumentVersionStatus {
   @@schema("public")
 }
 
+enum EquipmentStatus {
+  active
+  maintenance
+  out_of_service
+  retired
+
+  @@schema("public")
+}
+
 enum KitchenTaskStatus {
   pending
   in_progress
@@ -6986,6 +6995,17 @@ enum KnowledgeBaseEntryStatus {
   draft
   published
   archived
+
+  @@schema("public")
+}
+
+enum MaintenanceWorkOrderStatus {
+  open
+  assigned
+  in_progress
+  awaiting_parts
+  completed
+  cancelled
 
   @@schema("public")
 }

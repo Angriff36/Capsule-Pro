@@ -1191,31 +1191,31 @@
     },
     "command:Equipment.create": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 173
+      "line": 188
     },
     "command:Equipment.recordMaintenance": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 118
+      "line": 133
     },
     "command:Equipment.recordUsage": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 165
+      "line": 180
     },
     "command:Equipment.retire": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 200
+      "line": 215
     },
     "command:Equipment.scheduleMaintenance": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 99
+      "line": 114
     },
     "command:Equipment.updateCondition": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 148
+      "line": 163
     },
     "command:Equipment.updateStatus": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 129
+      "line": 144
     },
     "command:Event.archive": {
       "file": "events/event-rules.manifest",
@@ -2287,23 +2287,23 @@
     },
     "command:MaintenanceWorkOrder.assign": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 278
+      "line": 292
     },
     "command:MaintenanceWorkOrder.completeWork": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 298
+      "line": 312
     },
     "command:MaintenanceWorkOrder.create": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 328
+      "line": 342
     },
     "command:MaintenanceWorkOrder.startWork": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 290
+      "line": 304
     },
     "command:MaintenanceWorkOrder.updateStatus": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 309
+      "line": 323
     },
     "command:Menu.archive": {
       "file": "operations/kitchen/menu-rules.manifest",
@@ -5123,55 +5123,51 @@
     },
     "constraint:Equipment.positiveMaintenanceInterval": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 59
+      "line": 74
     },
     "constraint:Equipment.positiveMaxUsage": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 60
+      "line": 75
     },
     "constraint:Equipment.validCondition": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 58
+      "line": 73
     },
     "constraint:Equipment.validEquipmentType": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 56
-    },
-    "constraint:Equipment.validStatus": {
-      "file": "operations/equipment/equipment-rules.manifest",
-      "line": 57
+      "line": 72
     },
     "constraint:Equipment.warnConditionDegraded": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 151
+      "line": 166
     },
     "constraint:Equipment.warnConflictWithEvents": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 104
+      "line": 119
     },
     "constraint:Equipment.warnDeactivateActiveEquipment": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 133
+      "line": 148
     },
     "constraint:Equipment.warnHighUsage": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 80
+      "line": 95
     },
     "constraint:Equipment.warnMaintenanceDue": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 62
+      "line": 77
     },
     "constraint:Equipment.warnOverdueMaintenance": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 71
+      "line": 86
     },
     "constraint:Equipment.warnPoorCondition": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 90
+      "line": 105
     },
     "constraint:Equipment.warnRetireFunctionalEquipment": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 203
+      "line": 218
     },
     "constraint:Event.blockNoGuestCount": {
       "file": "events/event-rules.manifest",
@@ -5847,27 +5843,23 @@
     },
     "constraint:MaintenanceWorkOrder.validPriority": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 264
-    },
-    "constraint:MaintenanceWorkOrder.validStatus": {
-      "file": "operations/equipment/equipment-rules.manifest",
-      "line": 265
+      "line": 279
     },
     "constraint:MaintenanceWorkOrder.validWorkOrderType": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 263
+      "line": 278
     },
     "constraint:MaintenanceWorkOrder.warnCancelWorkOrder": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 313
+      "line": 327
     },
     "constraint:MaintenanceWorkOrder.warnCriticalWithoutSchedule": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 333
+      "line": 347
     },
     "constraint:MaintenanceWorkOrder.warnOverdueWorkOrder": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 267
+      "line": 281
     },
     "constraint:Menu.positiveMinGuests": {
       "file": "operations/kitchen/menu-rules.manifest",
@@ -7427,7 +7419,7 @@
     },
     "entity:Equipment": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 5
+      "line": 21
     },
     "entity:Event": {
       "file": "events/event-rules.manifest",
@@ -7607,7 +7599,7 @@
     },
     "entity:MaintenanceWorkOrder": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 233
+      "line": 248
     },
     "entity:Menu": {
       "file": "operations/kitchen/menu-rules.manifest",
@@ -8135,7 +8127,7 @@
     },
     "transition:Equipment.status": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 225
+      "line": 240
     },
     "transition:Event.status": {
       "file": "events/event-rules.manifest",

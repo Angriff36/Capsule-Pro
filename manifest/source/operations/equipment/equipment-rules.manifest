@@ -2,6 +2,22 @@ use "../../_base.manifest"
 // Equipment Maintenance Scheduler - Equipment Rules
 // Manifest spec for equipment management, maintenance tracking, and predictive failure alerts
 
+enum EquipmentStatus {
+  active
+  maintenance
+  out_of_service
+  retired
+}
+
+enum MaintenanceWorkOrderStatus {
+  open
+  assigned
+  in_progress
+  awaiting_parts
+  completed
+  cancelled
+}
+
 entity Equipment mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property connectionStatus: string = "disconnected"
@@ -9,7 +25,7 @@ entity Equipment mixin TenantScoped, SoftDeletable {
   property required locationId: uuid
   searchable property required name: string
   property required type: string = "general"
-  indexed property required status: string = "active"
+  indexed property required status: EquipmentStatus = active
   unique property serialNumber: string? = ""
   property manufacturer: string? = ""
   property model: string? = ""
@@ -54,7 +70,6 @@ entity Equipment mixin TenantScoped, SoftDeletable {
   relationship hasMany equipmentWorkOrders: WorkOrder
 
   constraint validEquipmentType: self.type in ["cooking", "refrigeration", "prep", "baking", "cleaning", "transport", "general"] "Invalid equipment type"
-  constraint validStatus: self.status in ["active", "maintenance", "out_of_service", "retired"] "Invalid equipment status"
   constraint validCondition: self.condition in ["excellent", "good", "fair", "poor"] "Invalid equipment condition"
   constraint positiveMaintenanceInterval: self.maintenanceIntervalDays > 0 "Maintenance interval must be positive"
   constraint positiveMaxUsage: self.maxUsageHours > 0 "Max usage hours must be positive"
@@ -239,7 +254,7 @@ entity MaintenanceWorkOrder mixin TenantScoped, SoftDeletable {
   searchable property required title: string
   property required workOrderType: string = "corrective"
   property required priority: string = "medium"
-  indexed property required status: string = "open"
+  indexed property required status: MaintenanceWorkOrderStatus = open
   searchable property description: string? = ""
   property reportedBy: uuid?
   property assignedTo: uuid?
@@ -262,7 +277,6 @@ entity MaintenanceWorkOrder mixin TenantScoped, SoftDeletable {
 
   constraint validWorkOrderType: self.workOrderType in ["corrective", "repair", "replacement", "inspection", "upgrade", "preventive", "emergency"] "Invalid work order type"
   constraint validPriority: self.priority in ["low", "medium", "high", "critical"] "Invalid priority"
-  constraint validStatus: self.status in ["open", "assigned", "in_progress", "awaiting_parts", "completed", "cancelled"] "Invalid status"
 
   constraint warnOverdueWorkOrder:warn (self.scheduledDate != null and self.status in ["open", "in_progress"] and now() > self.scheduledDate) {
     messageTemplate: "Work order '{title}' for {equipment} is overdue by {days} day(s)"

@@ -10,9 +10,13 @@ export type DealStatus = "open" | "won" | "lost" | "abandoned";
 
 export type DocumentVersionStatus = "draft" | "approved" | "published" | "superseded";
 
+export type EquipmentStatus = "active" | "maintenance" | "out_of_service" | "retired";
+
 export type KitchenTaskStatus = "pending" | "in_progress" | "done" | "cancelled";
 
 export type KnowledgeBaseEntryStatus = "draft" | "published" | "archived";
+
+export type MaintenanceWorkOrderStatus = "open" | "assigned" | "in_progress" | "awaiting_parts" | "completed" | "cancelled";
 
 export type MenuStatus = "draft" | "published" | "archived";
 
@@ -1123,7 +1127,7 @@ export interface Equipment {
   locationId: string;
   name: string;
   type?: string;
-  status?: string;
+  status?: EquipmentStatus;
   serialNumber?: string | null;
   manufacturer?: string | null;
   model?: string | null;
@@ -2053,7 +2057,7 @@ export interface MaintenanceWorkOrder {
   title: string;
   workOrderType?: string;
   priority?: string;
-  status?: string;
+  status?: MaintenanceWorkOrderStatus;
   description?: string | null;
   reportedBy?: string | null;
   assignedTo?: string | null;

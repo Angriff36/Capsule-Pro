@@ -10672,17 +10672,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
         "name": "serial_number",
         "irName": "serialNumber",
         "type": "String",
@@ -19874,17 +19863,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "priority",
         "irName": "priority",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
         "type": "String",
         "isEnum": false,
         "isList": false,

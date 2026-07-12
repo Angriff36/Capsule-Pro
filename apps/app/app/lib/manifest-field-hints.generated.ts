@@ -2025,12 +2025,6 @@ export const MANIFEST_FIELD_HINTS: Record<string, EntityFieldHints> = {
     ],
     "status": [
       {
-        message: "Invalid equipment status",
-        severity: "block",
-        constraintName: "validStatus",
-        overrideable: false,
-      },
-      {
         message: "Scheduling maintenance type maintenance for 'name' - check for event conflicts",
         severity: "warn",
         constraintName: "warnConflictWithEvents",
@@ -3540,12 +3534,6 @@ export const MANIFEST_FIELD_HINTS: Record<string, EntityFieldHints> = {
       },
     ],
     "status": [
-      {
-        message: "Invalid status",
-        severity: "block",
-        constraintName: "validStatus",
-        overrideable: false,
-      },
       {
         message: "Cancelling work order 'title' - ensure equipment is properly addressed",
         severity: "warn",
