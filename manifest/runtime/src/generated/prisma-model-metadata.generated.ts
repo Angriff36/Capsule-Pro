@@ -9407,8 +9407,8 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "status",
         "irName": "status",
-        "type": "String",
-        "isEnum": false,
+        "type": "DocumentVersionStatus",
+        "isEnum": true,
         "isList": false,
         "optional": true,
         "hasDefault": true,
@@ -39644,8 +39644,8 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "status",
         "irName": "status",
-        "type": "String",
-        "isEnum": false,
+        "type": "VersionApprovalStatus",
+        "isEnum": true,
         "isList": false,
         "optional": false,
         "hasDefault": false,

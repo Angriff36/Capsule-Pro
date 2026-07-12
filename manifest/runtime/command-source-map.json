@@ -1031,27 +1031,27 @@
     },
     "command:DocumentVersion.approve": {
       "file": "platform/document-version-rules.manifest",
-      "line": 65
+      "line": 72
     },
     "command:DocumentVersion.create": {
       "file": "platform/document-version-rules.manifest",
-      "line": 42
+      "line": 49
     },
     "command:DocumentVersion.markPublished": {
       "file": "platform/document-version-rules.manifest",
-      "line": 76
+      "line": 83
     },
     "command:DocumentVersion.restore": {
       "file": "platform/document-version-rules.manifest",
-      "line": 98
+      "line": 105
     },
     "command:DocumentVersion.supersede": {
       "file": "platform/document-version-rules.manifest",
-      "line": 87
+      "line": 94
     },
     "command:DocumentVersion.updateContent": {
       "file": "platform/document-version-rules.manifest",
-      "line": 55
+      "line": 62
     },
     "command:Driver.create": {
       "file": "operations/logistics/logistics-all-rules.manifest",
@@ -1175,19 +1175,19 @@
     },
     "command:EntityVersion.approve": {
       "file": "platform/version-control-rules.manifest",
-      "line": 130
+      "line": 140
     },
     "command:EntityVersion.create": {
       "file": "platform/version-control-rules.manifest",
-      "line": 113
+      "line": 123
     },
     "command:EntityVersion.reject": {
       "file": "platform/version-control-rules.manifest",
-      "line": 141
+      "line": 151
     },
     "command:EntityVersion.restore": {
       "file": "platform/version-control-rules.manifest",
-      "line": 147
+      "line": 157
     },
     "command:Equipment.create": {
       "file": "operations/equipment/equipment-rules.manifest",
@@ -4171,35 +4171,35 @@
     },
     "command:VersionApproval.approve": {
       "file": "platform/version-control-rules.manifest",
-      "line": 212
+      "line": 220
     },
     "command:VersionApproval.cancel": {
       "file": "platform/version-control-rules.manifest",
-      "line": 232
+      "line": 240
     },
     "command:VersionApproval.create": {
       "file": "platform/version-control-rules.manifest",
-      "line": 200
+      "line": 208
     },
     "command:VersionApproval.reject": {
       "file": "platform/version-control-rules.manifest",
-      "line": 222
+      "line": 230
     },
     "command:VersionedEntity.lock": {
       "file": "platform/version-control-rules.manifest",
-      "line": 49
+      "line": 59
     },
     "command:VersionedEntity.register": {
       "file": "platform/version-control-rules.manifest",
-      "line": 37
+      "line": 47
     },
     "command:VersionedEntity.unlock": {
       "file": "platform/version-control-rules.manifest",
-      "line": 65
+      "line": 75
     },
     "command:VersionedEntity.updateName": {
       "file": "platform/version-control-rules.manifest",
-      "line": 73
+      "line": 83
     },
     "command:WasteEntry.approve": {
       "file": "operations/kitchen/waste-entry-rules.manifest",
@@ -5015,19 +5015,15 @@
     },
     "constraint:DocumentVersion.positiveVersion": {
       "file": "platform/document-version-rules.manifest",
-      "line": 37
+      "line": 44
     },
     "constraint:DocumentVersion.requireContent": {
       "file": "platform/document-version-rules.manifest",
-      "line": 35
+      "line": 43
     },
     "constraint:DocumentVersion.requireDocument": {
       "file": "platform/document-version-rules.manifest",
-      "line": 34
-    },
-    "constraint:DocumentVersion.validStatus": {
-      "file": "platform/document-version-rules.manifest",
-      "line": 36
+      "line": 42
     },
     "constraint:Driver.validStatus": {
       "file": "operations/logistics/logistics-all-rules.manifest",
@@ -5111,19 +5107,19 @@
     },
     "constraint:EntityVersion.validChangeType": {
       "file": "platform/version-control-rules.manifest",
-      "line": 109
+      "line": 119
     },
     "constraint:EntityVersion.validSnapshot": {
       "file": "platform/version-control-rules.manifest",
-      "line": 110
+      "line": 120
     },
     "constraint:EntityVersion.validVersionNumber": {
       "file": "platform/version-control-rules.manifest",
-      "line": 108
+      "line": 118
     },
     "constraint:EntityVersion.warnRestoreOldVersion": {
       "file": "platform/version-control-rules.manifest",
-      "line": 151
+      "line": 161
     },
     "constraint:Equipment.positiveMaintenanceInterval": {
       "file": "operations/equipment/equipment-rules.manifest",
@@ -7093,33 +7089,29 @@
       "file": "events/events-extended-rules.manifest",
       "line": 37
     },
-    "constraint:VersionApproval.validStatus": {
-      "file": "platform/version-control-rules.manifest",
-      "line": 183
-    },
     "constraint:VersionApproval.warnPendingTooLong": {
       "file": "platform/version-control-rules.manifest",
-      "line": 188
+      "line": 196
     },
     "constraint:VersionedEntity.validEntityId": {
       "file": "platform/version-control-rules.manifest",
-      "line": 25
+      "line": 35
     },
     "constraint:VersionedEntity.validEntityName": {
       "file": "platform/version-control-rules.manifest",
-      "line": 26
+      "line": 36
     },
     "constraint:VersionedEntity.validEntityType": {
       "file": "platform/version-control-rules.manifest",
-      "line": 24
+      "line": 34
     },
     "constraint:VersionedEntity.warnLock": {
       "file": "platform/version-control-rules.manifest",
-      "line": 52
+      "line": 62
     },
     "constraint:VersionedEntity.warnManyVersions": {
       "file": "platform/version-control-rules.manifest",
-      "line": 28
+      "line": 38
     },
     "constraint:WasteEntry.positiveCost": {
       "file": "operations/kitchen/waste-entry-rules.manifest",
@@ -7403,7 +7395,7 @@
     },
     "entity:DocumentVersion": {
       "file": "platform/document-version-rules.manifest",
-      "line": 5
+      "line": 13
     },
     "entity:Driver": {
       "file": "operations/logistics/logistics-all-rules.manifest",
@@ -7431,7 +7423,7 @@
     },
     "entity:EntityVersion": {
       "file": "platform/version-control-rules.manifest",
-      "line": 86
+      "line": 96
     },
     "entity:Equipment": {
       "file": "operations/equipment/equipment-rules.manifest",
@@ -8027,11 +8019,11 @@
     },
     "entity:VersionApproval": {
       "file": "platform/version-control-rules.manifest",
-      "line": 166
+      "line": 176
     },
     "entity:VersionedEntity": {
       "file": "platform/version-control-rules.manifest",
-      "line": 6
+      "line": 16
     },
     "entity:WasteEntry": {
       "file": "operations/kitchen/waste-entry-rules.manifest",
@@ -8131,7 +8123,7 @@
     },
     "transition:DocumentVersion.status": {
       "file": "platform/document-version-rules.manifest",
-      "line": 30
+      "line": 38
     },
     "transition:Driver.status": {
       "file": "operations/logistics/logistics-all-rules.manifest",
@@ -8419,7 +8411,7 @@
     },
     "transition:VersionApproval.status": {
       "file": "platform/version-control-rules.manifest",
-      "line": 186
+      "line": 194
     },
     "transition:WasteEntry.status": {
       "file": "operations/kitchen/waste-entry-rules.manifest",

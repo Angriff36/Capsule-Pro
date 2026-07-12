@@ -3,6 +3,16 @@ use "../_base.manifest"
 // Manifest spec for versioning documents, templates, and configurations
 // with change history, rollback capabilities, and approval workflows
 
+// U7: Closed-vocabulary status enum for VersionApproval lifecycle.
+// Members are the union of the transition targets + cancel command value;
+// the prior validStatus constraint omitted "cancelled" — the enum corrects that.
+enum VersionApprovalStatus {
+  pending
+  approved
+  rejected
+  cancelled
+}
+
 entity VersionedEntity mixin TenantScoped {
   // id is text in the live DB (not uuid) — pin so the uuid mixin doesn't derive @db.Uuid
   property required id: string
@@ -170,7 +180,7 @@ entity VersionApproval mixin TenantScoped {
   key [tenantId, id]
   property required entityVersionId: string
   property required approverId: string
-  indexed property required status: string
+  indexed property required status: VersionApprovalStatus
   property comments: string? = ""
   property reviewedAt: datetime?
   timestamps
@@ -179,8 +189,6 @@ entity VersionApproval mixin TenantScoped {
   computed isApproved: boolean = self.status == "approved"
   computed isRejected: boolean = self.status == "rejected"
   computed waitingTime: number = now() - self.createdAt cache request
-
-  constraint validStatus: self.status in ["pending", "approved", "rejected"] "Status must be pending, approved, or rejected"
 
   // State transitions
   transition status from "pending" to ["approved", "rejected", "cancelled"]

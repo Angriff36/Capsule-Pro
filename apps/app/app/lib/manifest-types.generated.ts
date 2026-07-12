@@ -8,6 +8,8 @@ export type BudgetStatus = "draft" | "active" | "closed" | "archived";
 
 export type DealStatus = "open" | "won" | "lost" | "abandoned";
 
+export type DocumentVersionStatus = "draft" | "approved" | "published" | "superseded";
+
 export type KitchenTaskStatus = "pending" | "in_progress" | "done" | "cancelled";
 
 export type KnowledgeBaseEntryStatus = "draft" | "published" | "archived";
@@ -35,6 +37,8 @@ export type RecipeVersionStatus = "draft" | "published";
 export type ScheduleStatus = "draft" | "approved" | "published" | "closed";
 
 export type ShipmentStatus = "draft" | "scheduled" | "preparing" | "in_transit" | "delivered" | "returned" | "cancelled";
+
+export type VersionApprovalStatus = "pending" | "approved" | "rejected" | "cancelled";
 
 export type WorkOrderStatus = "open" | "assigned" | "in_progress" | "completed" | "cancelled";
 
@@ -983,7 +987,7 @@ export interface DocumentVersion {
   content: string;
   changeSummary?: string;
   createdById?: string | null;
-  status?: string | null;
+  status?: DocumentVersionStatus | null;
   approvedBy?: string | null;
   publishedBy?: string | null;
   supersededBy?: string | null;
@@ -4030,7 +4034,7 @@ export interface VersionApproval {
   tenantId: string;
   entityVersionId: string;
   approverId: string;
-  status: string;
+  status: VersionApprovalStatus;
   comments?: string | null;
   reviewedAt?: string | null;
   createdAt: string;

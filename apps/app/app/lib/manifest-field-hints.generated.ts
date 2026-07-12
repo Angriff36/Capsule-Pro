@@ -1737,14 +1737,6 @@ export const MANIFEST_FIELD_HINTS: Record<string, EntityFieldHints> = {
         overrideable: false,
       },
     ],
-    "status": [
-      {
-        message: "Status must be draft, approved, published, or superseded",
-        severity: "block",
-        constraintName: "validStatus",
-        overrideable: false,
-      },
-    ],
     "versionNumber": [
       {
         message: "Version number must be positive",
@@ -6302,12 +6294,6 @@ export const MANIFEST_FIELD_HINTS: Record<string, EntityFieldHints> = {
       },
     ],
     "status": [
-      {
-        message: "Status must be pending, approved, or rejected",
-        severity: "block",
-        constraintName: "validStatus",
-        overrideable: false,
-      },
       {
         message: "Approval pending for days days - may need follow-up",
         severity: "warn",

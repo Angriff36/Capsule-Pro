@@ -9347,17 +9347,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
         "name": "approved_by",
         "irName": "approvedBy",
         "type": "String",
@@ -39428,17 +39417,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "approver_id",
         "irName": "approverId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
         "type": "String",
         "isEnum": false,
         "isList": false,

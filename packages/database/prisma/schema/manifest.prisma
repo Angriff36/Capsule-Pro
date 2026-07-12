@@ -1614,7 +1614,7 @@ model DocumentVersion {
   content String @db.Text
   changeSummary String @map("change_summary") @db.Text @default("")
   createdById String? @map("created_by_id") @db.Uuid
-  status String? @default("draft")
+  status DocumentVersionStatus? @default(draft)
   approvedBy String? @map("approved_by") @default("")
   publishedBy String? @map("published_by") @default("")
   supersededBy String? @map("superseded_by") @db.Uuid
@@ -6773,7 +6773,7 @@ model VersionApproval {
   tenantId String @map("tenantId")
   entityVersionId String @map("entityVersionId")
   approverId String @map("approverId")
-  status String
+  status VersionApprovalStatus
   comments String? @default("")
   reviewedAt DateTime? @map("reviewedAt")
   createdAt DateTime @map("createdAt") @default(now())
@@ -6964,6 +6964,15 @@ enum DealStatus {
   @@schema("public")
 }
 
+enum DocumentVersionStatus {
+  draft
+  approved
+  published
+  superseded
+
+  @@schema("public")
+}
+
 enum KitchenTaskStatus {
   pending
   in_progress
@@ -7094,6 +7103,15 @@ enum ShipmentStatus {
   in_transit
   delivered
   returned
+  cancelled
+
+  @@schema("public")
+}
+
+enum VersionApprovalStatus {
+  pending
+  approved
+  rejected
   cancelled
 
   @@schema("public")

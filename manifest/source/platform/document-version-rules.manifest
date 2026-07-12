@@ -2,6 +2,14 @@ use "../_base.manifest"
 // Document Version Control Rules
 // Manifest spec for document versioning, approval, and publish lifecycle
 
+// U7: Closed-vocabulary status enum for DocumentVersion lifecycle.
+enum DocumentVersionStatus {
+  draft
+  approved
+  published
+  superseded
+}
+
 entity DocumentVersion mixin TenantScoped {
   key [tenantId, id]
   property documentType: string
@@ -10,7 +18,7 @@ entity DocumentVersion mixin TenantScoped {
   property required content: string
   property changeSummary: string = ""
   property createdById: uuid?
-  indexed property status: string? = "draft"
+  indexed property status: DocumentVersionStatus? = draft
   property approvedBy: string? = ""
   property publishedBy: string? = ""
   property supersededBy: uuid?
@@ -33,7 +41,6 @@ entity DocumentVersion mixin TenantScoped {
 
   constraint requireDocument: self.documentId != null and self.documentId != "" "Document ID is required"
   constraint requireContent: self.content != null and self.content != "" "Content is required"
-  constraint validStatus: self.status in ["draft", "approved", "published", "superseded"] "Status must be draft, approved, published, or superseded"
   constraint positiveVersion: self.versionNumber > 0 "Version number must be positive"
 
   relationship belongsTo document: Document with documentId
