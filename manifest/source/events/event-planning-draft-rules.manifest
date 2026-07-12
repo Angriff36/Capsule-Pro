@@ -8,7 +8,7 @@ entity EventPlanningDraft mixin TenantScoped, SoftDeletable {
   property required userId: string
   indexed property status: string = "active"
   searchable property clientName: string? = ""
-  property clientContactId: uuid? = ""
+  property clientContactId: uuid?
   property eventType: string? = ""
   property eventDate: datetime?
   property eventTime: string? = ""
@@ -16,7 +16,7 @@ entity EventPlanningDraft mixin TenantScoped, SoftDeletable {
   property guestCountMin: int? = 0
   property guestCountMax: int? = 0
   property venuePreference: string? = ""
-  property venueId: uuid? = ""
+  property venueId: uuid?
   property serviceStyle: string? = ""
   property dietaryRestrictions: string? = ""
   // menuPreferences/customItems: JSON-as-string payloads (Manifest IR grammar
@@ -32,8 +32,8 @@ entity EventPlanningDraft mixin TenantScoped, SoftDeletable {
   property specialNotes: string? = ""
   property aiSummary: string? = ""
   property overallConfidence: decimal? = 0
-  property convertedEventId: uuid? = ""
-  property proposalId: uuid? = ""
+  property convertedEventId: uuid?
+  property proposalId: uuid?
   property expiresAt: datetime?
   timestamps
 
@@ -41,7 +41,7 @@ entity EventPlanningDraft mixin TenantScoped, SoftDeletable {
   computed isReview: boolean = self.status == "review"
   computed isConverted: boolean = self.status == "converted"
   computed isExpired: boolean = self.expiresAt != null and self.expiresAt < now()
-  computed hasVenue: boolean = self.venueId != null and self.venueId != ""
+  computed hasVenue: boolean = self.venueId != null
   computed hasBudget: boolean = self.budgetMin > 0 or self.budgetMax > 0
   computed hasPackages: boolean = length(self.packageIds) > 0
   computed isHighConfidence: boolean = self.overallConfidence >= 0.8

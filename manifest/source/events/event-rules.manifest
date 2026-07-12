@@ -5,7 +5,7 @@ use "../_base.manifest"
 entity Event mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property maxCapacity: int?
-  property clientId: uuid? = ""
+  property clientId: uuid?
   unique property eventNumber: string? = ""
   searchable property required title: string = "Untitled Event"
   property required eventType: string = "general"
@@ -21,10 +21,10 @@ entity Event mixin TenantScoped, SoftDeletable {
   property eventFormat: string? = ""
   property required accessibilityOptions: array<string>
   property featuredMediaUrl: string? = ""
-  property locationId: uuid? = ""
-  property venueId: uuid? = ""
-  property venueEntityId: uuid? = ""
-  property assignedTo: uuid? = ""
+  property locationId: uuid?
+  property venueId: uuid?
+  property venueEntityId: uuid?
+  property assignedTo: uuid?
   property venueName: string? = ""
   property venueAddress: string? = ""
   searchable property notes: string? = ""

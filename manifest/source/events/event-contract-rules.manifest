@@ -19,7 +19,7 @@ entity EventContract mixin TenantScoped, SoftDeletable {
   property viewedAt: datetime?
   property signedAt: datetime?
   timestamps
-  property canceledBy: uuid? = ""
+  property canceledBy: uuid?
 
   computed isDraft: boolean = self.status == "draft"
   computed isSent: boolean = self.status == "sent"

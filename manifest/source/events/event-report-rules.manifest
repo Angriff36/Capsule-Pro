@@ -14,12 +14,12 @@ entity EventReport mixin TenantScoped, SoftDeletable {
   property reportConfig: json? = {}
   property autoFillScore: int? = 0
   property reviewNotes: string? = ""
-  property reviewedBy: uuid? = ""
+  property reviewedBy: uuid?
   // Bug fix: lifecycle datetimes — no default
   property reviewedAt: datetime?
   property completedAt: datetime?
   property rejectedAt: datetime?
-  property rejectedBy: uuid? = ""
+  property rejectedBy: uuid?
   property rejectionReason: string? = ""
   timestamps
 
@@ -30,7 +30,7 @@ entity EventReport mixin TenantScoped, SoftDeletable {
   computed isRejected: boolean = self.status == "rejected"
   computed hasContent: boolean = self.checklistData != "{}" and self.checklistData != ""
   computed isFullyComplete: boolean = self.completion == 100
-  computed isReviewed: boolean = self.reviewedBy != "" and self.reviewedBy != null
+  computed isReviewed: boolean = self.reviewedBy != null
 
   transition status from "draft" to ["in_progress", "completed"]
   // self-loop added: updateProgress admits in_progress and re-mutates status = "in_progress"

@@ -6,7 +6,7 @@ use "../_base.manifest"
 
 entity CommandBoard mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property eventId: uuid? = ""
+  property eventId: uuid?
   searchable property name: string = ""
   searchable property description: string? = ""
   indexed property status: string = "draft"
@@ -100,8 +100,8 @@ entity CommandBoardCard mixin TenantScoped, SoftDeletable {
   property zIndex: int = 0
   property color: string? = ""
   property metadata: json = {}
-  property groupId: uuid? = ""
-  property entityId: uuid? = ""
+  property groupId: uuid?
+  property entityId: uuid?
   property entityType: string? = ""
   property version: int = 0
   property vectorClock: json?

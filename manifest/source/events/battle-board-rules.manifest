@@ -6,7 +6,7 @@ use "../_base.manifest"
 
 entity BattleBoard mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property eventId: uuid? = ""
+  property eventId: uuid?
   property boardName: string = ""
   property boardType: string = "event-specific"
   property schemaVersion: string = "mangia-battle-board@1"
@@ -143,7 +143,7 @@ entity BattleBoard mixin TenantScoped, SoftDeletable {
   // on create only). run-manifest-command-core pre-fills body from the linked
   // Event before this command executes.
   command syncFromEvent(eventDate: datetime, clientId: string, guestCount: int, venueName: string, venueAddress: string, locationId: string) {
-    guard self.eventId != null and self.eventId != "" "Battle board must be linked to an event"
+    guard self.eventId != null "Battle board must be linked to an event"
 
     mutate eventDate = eventDate
     mutate clientId = clientId

@@ -5,8 +5,8 @@ use "../_base.manifest"
 entity CateringOrder mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   unique property required orderNumber: string
-  property customerId: uuid = ""
-  property eventId: uuid? = ""
+  property customerId: uuid
+  property eventId: uuid?
   property orderStatus: string = "draft"
   property orderDate: datetime = now()
   property deliveryDate: datetime
@@ -251,7 +251,7 @@ entity CateringOrder mixin TenantScoped, SoftDeletable {
   // eventId-link guard makes it a no-op for unlinked orders (the middleware never
   // dispatches to them anyway).
   command syncVenue(venueName: string, venueAddress: string) {
-    guard self.eventId != null and self.eventId != "" "Catering order must be linked to an event"
+    guard self.eventId != null "Catering order must be linked to an event"
 
     mutate venueName = venueName
     mutate venueAddress = venueAddress

@@ -344,7 +344,7 @@ export interface BoardProjection {
   deletedAt?: string | null;
   boardId: string;
   entityType?: string;
-  entityId?: string;
+  entityId: string;
   positionX?: number;
   positionY?: number;
   width?: number;
@@ -457,7 +457,7 @@ export interface CateringOrder {
   tenantId: string;
   deletedAt?: string | null;
   orderNumber: string;
-  customerId?: string;
+  customerId: string;
   eventId?: string | null;
   orderStatus?: string;
   orderDate: string;
@@ -1238,7 +1238,7 @@ export interface EventGuest {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  eventId?: string;
+  eventId: string;
   guestName?: string;
   guestEmail?: string | null;
   guestPhone?: string | null;

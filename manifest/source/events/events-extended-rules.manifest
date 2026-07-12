@@ -253,7 +253,7 @@ entity TimelineTask mixin TenantScoped, SoftDeletable {
   property startTime: datetime
   property endTime: datetime
   indexed property status: string = "pending"
-  property assigneeId: uuid? = ""
+  property assigneeId: uuid?
   searchable property notes: string? = ""
   property sortOrder: int? = 0
   property completedAt: datetime?
@@ -525,7 +525,7 @@ entity EventFollowup mixin TenantScoped, SoftDeletable {
   // Bug fix: lifecycle datetime — no default
   property dueDate: datetime?
   indexed property status: string = "pending"
-  property assignedTo: uuid? = ""
+  property assignedTo: uuid?
   searchable property notes: string? = ""
   property completedAt: datetime?
   timestamps
@@ -617,7 +617,7 @@ entity BoardProjection mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required boardId: uuid
   property required entityType: string = ""
-  property required entityId: uuid = ""
+  property required entityId: uuid
   property positionX: int = 0
   property positionY: int = 0
   property width: int = 280
@@ -771,7 +771,7 @@ entity Note mixin TenantScoped, SoftDeletable {
   // Bug fix: array<string> is not valid DSL — use string[]
   property tags: array<string>? = []
   property entityType: string? = ""
-  property entityId: uuid? = ""
+  property entityId: uuid?
   timestamps
 
   constraint requireTitle: self.title != "" "Note title is required"
