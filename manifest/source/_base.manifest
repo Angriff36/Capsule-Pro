@@ -20,8 +20,8 @@ tenant tenantId : string from context.tenantId
 //   BEFORE:  policy execute: user.role in ["manager", "admin"]
 //   AFTER:   policy execute: roleAllows(user.role, "manageAccess")
 //
-// Because Admin extends Manager, an Admin user automatically has "manageAccess".
-// Similarly Manager extends Staff, so a Manager has "staffAccess".
+// Because admin extends manager, an admin user automatically has "manageAccess".
+// Similarly manager extends staff, so a manager has "staffAccess".
 //
 // Deny is absolute — deny at any level overrides allows from parents.
 // Unknown roles (not declared here) default to deny (no permissions).
@@ -30,69 +30,69 @@ tenant tenantId : string from context.tenantId
 // ---------------------------------------------------------------------------
 
 // ── Base tier ──────────────────────────────────────────────────────────────
-// Staff: every employee. Read-level access, clock in/out, request edits.
-role Staff {
+// staff: every employee. Read-level access, clock in/out, request edits.
+role staff {
   allow staffAccess
 }
 
-// Kitchen staff: cooks, prep cooks, dishwashers.
-role KitchenStaff extends Staff {}
+// kitchen_staff: cooks, prep cooks, dishwashers.
+role kitchen_staff extends staff {}
 
-// Kitchen leads: shift leads in the kitchen. Can add entries, manage basics.
-role KitchenLead extends KitchenStaff {
+// kitchen_lead: shift leads in the kitchen. Can add entries, manage basics.
+role kitchen_lead extends kitchen_staff {
   allow leadAccess
 }
 
 // ── Domain-specific staff ──────────────────────────────────────────────────
-role Driver extends Staff {}
-role Sales extends Staff {
+role driver extends staff {}
+role sales extends staff {
   allow salesAccess
 }
-role SalesRep extends Sales {}
-role Finance extends Staff {
+role sales_rep extends sales {}
+role finance extends staff {
   allow financeAccess
 }
-role EventCoordinator extends Staff {}
-role Analyst extends Staff {}
-role Editor extends Staff {}
+role event_coordinator extends staff {}
+role analyst extends staff {}
+role editor extends staff {}
 
 // ── Manager tier ───────────────────────────────────────────────────────────
-// Manager: general managers. Full operational control below admin.
-role Manager extends Staff {
+// manager: general managers. Full operational control below admin.
+role manager extends staff {
   allow manageAccess
   allow leadAccess
   allow financeAccess
   allow salesAccess
 }
 
-// Specialized managers — each extends Manager (inherits manageAccess).
-role KitchenManager extends Manager {}
-role EventManager extends Manager {}
-role SalesManager extends Manager {}
-role FinanceManager extends Manager {}
-role InventoryManager extends Manager {}
-role FacilitiesManager extends Manager {}
-role FacilityManager extends FacilitiesManager {}
-role LogisticsManager extends Manager {}
-role ProcurementManager extends Manager {}
-role CateringManager extends Manager {}
+// Specialized managers — each extends manager (inherits manageAccess).
+role kitchen_manager extends manager {}
+role event_manager extends manager {}
+role sales_manager extends manager {}
+role finance_manager extends manager {}
+role inventory_manager extends manager {}
+role facilities_manager extends manager {}
+role facility_manager extends facilities_manager {}
+role logistics_manager extends manager {}
+role procurement_manager extends manager {}
+role catering_manager extends manager {}
 
 // Administrative managers — HR/payroll/billing.
-role HRAdmin extends Manager {}
-role PayrollAdmin extends Manager {}
-role BillingAdmin extends Manager {}
+role hr_admin extends manager {}
+role payroll_admin extends manager {}
+role billing_admin extends manager {}
 
 // Generic lead role (alias used in some policies).
-role Lead extends Manager {}
+role lead extends manager {}
 
 // ── Admin tier ─────────────────────────────────────────────────────────────
-// Admin: full system access.
-role Admin extends Manager {
+// admin: full system access.
+role admin extends manager {
   allow adminAccess
 }
 
-role Owner extends Admin {}
-role System extends Admin {}
+role owner extends admin {}
+role system extends admin {}
 
 // ---------------------------------------------------------------------------
 // U4: Mixin source entities for common infrastructure fields.

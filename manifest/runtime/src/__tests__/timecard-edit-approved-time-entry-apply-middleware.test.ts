@@ -34,9 +34,9 @@ import { fileURLToPath } from "node:url";
 import type { Store } from "@angriff36/manifest";
 import { describe, expect, it } from "vitest";
 import { createCustomBuiltins } from "../manifest-builtins.js";
+import { createTimecardEditApprovedTimeEntryApplyMiddleware } from "../middleware/timecard-edit-approved-time-entry-apply-middleware.js";
 import { runManifestCommandCore } from "../run-manifest-command-core.js";
 import { ManifestRuntimeEngine } from "../runtime-engine.js";
-import { createTimecardEditApprovedTimeEntryApplyMiddleware } from "../middleware/timecard-edit-approved-time-entry-apply-middleware.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const irPath = join(here, "..", "..", "..", "ir", "kitchen.ir.json");
@@ -45,11 +45,13 @@ const ir: any = JSON.parse(readFileSync(irPath, "utf8"));
 
 const TENANT = "t-timecard-edit";
 // Role must match a governed role NAME in the IR exactly — roleAllows() resolves
-// via a case-sensitive roleIndex.get(role.name), and the IR defines "Admin"
-// (capitalized), not "admin". "Admin" carries `manageAccess`, which satisfies both
-// TimecardEditRequest.approve's policy AND TimeEntry.applyEdit's policy, so neither
-// the source command nor the downstream dispatch is denied.
-const USER = { id: "u-timecard-mgr", tenantId: TENANT, role: "Admin" } as const;
+// via a case-sensitive roleIndex.get(role.name). _base declares roles snake_case
+// (admin, manager, …) to match the snake_case values capsule injects from the DB
+// (P1 fix; was PascalCase, which silently denied every real user). "admin" extends
+// "manager" → carries manageAccess, satisfying both TimecardEditRequest.approve's
+// policy AND TimeEntry.applyEdit's policy, so neither the source command nor the
+// downstream dispatch is denied.
+const USER = { id: "u-timecard-mgr", tenantId: TENANT, role: "admin" } as const;
 
 const REQUEST_ID = "tcedit-001";
 const TIME_ENTRY_ID = "tentry-001";
@@ -217,10 +219,9 @@ describe("Middleware conformance: TimecardEditApproved → TimeEntry.applyEdit",
 
     // THE PROOF: the middleware ran TimeEntry.applyEdit against the SAME store, so the
     // entry now carries the corrected window + break.
-    const entry = (await provider("TimeEntry").getById(TIME_ENTRY_ID)) as Record<
-      string,
-      unknown
-    >;
+    const entry = (await provider("TimeEntry").getById(
+      TIME_ENTRY_ID
+    )) as Record<string, unknown>;
     expect(entry.clockIn).toBe(FIXED_CLOCK_IN);
     expect(entry.clockOut).toBe(FIXED_CLOCK_OUT);
     expect(entry.breakMinutes).toBe(45);
@@ -249,10 +250,9 @@ describe("Middleware conformance: TimecardEditApproved → TimeEntry.applyEdit",
     const result = await approveRequest(engine);
     expect(result.ok).toBe(true);
 
-    const entry = (await provider("TimeEntry").getById(TIME_ENTRY_ID)) as Record<
-      string,
-      unknown
-    >;
+    const entry = (await provider("TimeEntry").getById(
+      TIME_ENTRY_ID
+    )) as Record<string, unknown>;
     // Clock-in PRESERVED (command coalesced null → self.clockIn); clock-out updated.
     expect(entry.clockIn).toBe(ORIG_CLOCK_IN);
     expect(entry.clockOut).toBe(FIXED_CLOCK_OUT);
@@ -268,10 +268,9 @@ describe("Middleware conformance: TimecardEditApproved → TimeEntry.applyEdit",
     // The approve itself still succeeds; the edit is simply not applied.
     expect(result.ok).toBe(true);
 
-    const entry = (await provider("TimeEntry").getById(TIME_ENTRY_ID)) as Record<
-      string,
-      unknown
-    >;
+    const entry = (await provider("TimeEntry").getById(
+      TIME_ENTRY_ID
+    )) as Record<string, unknown>;
     // Untouched original window — the middleware skipped the deleted entry.
     expect(entry.clockIn).toBe(ORIG_CLOCK_IN);
     expect(entry.clockOut).toBe(ORIG_CLOCK_OUT);
