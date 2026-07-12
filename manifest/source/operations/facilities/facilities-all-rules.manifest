@@ -119,7 +119,7 @@ entity Facility mixin TenantScoped, SoftDeletable {
 
 entity FacilityArea mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property venueId: uuid? = ""
+  property venueId: uuid?
   searchable property required name: string
   unique property code: string? = ""
   property areaType: string = "other"
@@ -195,8 +195,8 @@ entity FacilityArea mixin TenantScoped, SoftDeletable {
 
 entity FacilityAsset mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property facilityId: uuid? = ""
-  property areaId: uuid? = ""
+  property facilityId: uuid?
+  property areaId: uuid?
   searchable property required name: string
   property assetType: string = "other"
   indexed property status: string = "operational"
