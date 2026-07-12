@@ -15,9 +15,9 @@ entity PurchaseOrder mixin TenantScoped, SoftDeletable {
   property required shippingAmount: money = 0
   property required total: money = 0
   searchable property notes: string? = ""
-  property submittedBy: uuid? = ""
+  property submittedBy: uuid?
   property submittedAt: datetime?
-  property receivedBy: uuid? = ""
+  property receivedBy: uuid?
   property receivedAt: datetime?
   timestamps
   property itemCount: int? = 0

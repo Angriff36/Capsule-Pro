@@ -26,9 +26,9 @@ entity VendorContract mixin TenantScoped, SoftDeletable {
   // spendToPeriod: the physical column is a DATE (spend_to_period @db.Date) — period boundary, not an amount; nullable, no default
   property spendToPeriod: datetime?
   property currencyCode: string = "USD"
-  property approvedBy: uuid? = ""
+  property approvedBy: uuid?
   property approvedAt: datetime?
-  property terminatedBy: uuid? = ""
+  property terminatedBy: uuid?
   property terminatedAt: datetime?
   property terminationReason: string? = ""
   property contractUrl: string? = ""

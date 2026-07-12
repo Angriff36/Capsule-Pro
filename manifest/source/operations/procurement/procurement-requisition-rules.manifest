@@ -9,10 +9,10 @@ use "../../_base.manifest"
 
 entity PurchaseRequisition mixin TenantScoped, SoftDeletable {
   unique property required requisitionNumber: string
-  property required requestedBy: uuid = ""
+  property required requestedBy: uuid
   property required requestDate: datetime = now()
   property requiredBy: datetime?
-  property locationId: uuid? = ""
+  property locationId: uuid?
   property department: string? = ""
   property justification: string? = ""
   indexed property required status: string = "draft"
@@ -20,13 +20,13 @@ entity PurchaseRequisition mixin TenantScoped, SoftDeletable {
   property required estimatedTax: money = 0
   property required estimatedShipping: money = 0
   property required estimatedTotal: money = 0
-  property approvedBy: uuid? = ""
+  property approvedBy: uuid?
   property approvedAt: datetime?
-  property managerApprovalBy: uuid? = ""
+  property managerApprovalBy: uuid?
   property managerApprovalAt: datetime?
-  property financeApprovalBy: uuid? = ""
+  property financeApprovalBy: uuid?
   property financeApprovalAt: datetime?
-  property convertedToPoId: uuid? = ""
+  property convertedToPoId: uuid?
   property convertedAt: datetime?
   property rejectionReason: string? = ""
   searchable property notes: string? = ""
@@ -169,7 +169,7 @@ entity PurchaseRequisition mixin TenantScoped, SoftDeletable {
     mutate status = self.estimatedTotal >= 5000 ? "pending_finance" : "approved"
     mutate managerApprovalBy = userId
     mutate managerApprovalAt = now()
-    mutate approvedBy = self.estimatedTotal >= 5000 ? "" : userId
+    mutate approvedBy = self.estimatedTotal >= 5000 ? null : userId
     mutate approvedAt = self.estimatedTotal >= 5000 ? null : now()
 
     emit PurchaseRequisitionManagerApproved
@@ -230,7 +230,7 @@ entity PurchaseRequisitionItem mixin TenantScoped, SoftDeletable {
   property unitId: int? = 0
   property required estimatedUnitCost: money = 0
   property required estimatedTotalCost: money = 0
-  property suggestedVendorId: uuid? = ""
+  property suggestedVendorId: uuid?
   property suggestedVendorName: string? = ""
   property specifications: string? = ""
   searchable property notes: string? = ""
@@ -246,7 +246,7 @@ entity PurchaseRequisitionItem mixin TenantScoped, SoftDeletable {
   belongsTo suggestedVendor: Vendor with suggestedVendorId
 
   computed totalCost: money = self.quantityRequested * self.estimatedUnitCost
-  computed hasSuggestedVendor: boolean = self.suggestedVendorId != ""
+  computed hasSuggestedVendor: boolean = self.suggestedVendorId != null
 
   constraint positiveQuantity: self.quantityRequested > 0 "Quantity requested must be positive"
   constraint nonNegativeCost: self.estimatedUnitCost >= 0 "Unit cost cannot be negative"

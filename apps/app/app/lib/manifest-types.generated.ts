@@ -2751,7 +2751,7 @@ export interface PurchaseRequisition {
   tenantId: string;
   deletedAt?: string | null;
   requisitionNumber: string;
-  requestedBy?: string;
+  requestedBy: string;
   requestDate: string;
   requiredBy?: string | null;
   locationId?: string | null;
