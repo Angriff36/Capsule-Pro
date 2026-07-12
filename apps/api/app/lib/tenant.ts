@@ -9,8 +9,24 @@ import { getRequiredScope } from "@/lib/scope-guard";
 import { authenticateApiKey, hasScope } from "@/middleware/api-key-auth";
 import { invariant } from "./invariant";
 
+// In-memory cache to deduplicate org→tenant lookups within the same server
+// process. getTenantIdForOrg is called from ~120 sites and resolves on every
+// authenticated request — and twice per request in routes like user-preferences
+// that call it directly AND via requireCurrentUser. The orgId→tenantId mapping
+// is immutable, so a short TTL is safe; keyed by the authenticated orgId so
+// there is no cross-tenant leakage. Mirrors apps/app/app/lib/tenant.ts.
+const tenantCache = new Map<string, { id: string; expiresAt: number }>();
+const TENANT_CACHE_TTL_MS = 30_000; // 30 seconds
+
 export const getTenantIdForOrg = async (orgId: string): Promise<string> => {
   invariant(orgId, "orgId must exist to resolve tenant");
+
+  // Check cache first
+  const cached = tenantCache.get(orgId);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.id;
+  }
+
   // Get or create account by slug
   let account = await database.account.findFirst({
     where: { slug: orgId, deletedAt: null },
@@ -25,6 +41,13 @@ export const getTenantIdForOrg = async (orgId: string): Promise<string> => {
       },
     });
   }
+
+  // Cache only on success — a thrown findFirst/create never reaches here, so a
+  // transient failure can't pin a bad result for the TTL window.
+  tenantCache.set(orgId, {
+    id: account.id,
+    expiresAt: Date.now() + TENANT_CACHE_TTL_MS,
+  });
 
   return account.id;
 };
