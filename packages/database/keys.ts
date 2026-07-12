@@ -13,6 +13,12 @@ import { z } from "zod";
  *
  * Pool idle lifetime is NOT set here — Prisma v7 driver adapters ignore URL
  * `max_idle_connection_lifetime`. See `create-pg-adapter.ts` (`idleTimeoutMillis`).
+ *
+ * Pool-sizing URL params (`pgbouncer`, `connection_limit`, `pool_timeout`) are
+ * intentionally ABSENT: this runtime uses the `@prisma/adapter-pg` TCP driver,
+ * whose pool is governed by `create-pg-adapter.ts` (`max: 20`, connect/idle
+ * timeouts) — NOT by PgBouncer/Prisma connection-string flags. Do not re-add
+ * them here. (Documented 2026-07-12 per db-performance spec "documented with a reason".)
  */
 function toNeonPoolerUrl(url: string): string {
   try {
