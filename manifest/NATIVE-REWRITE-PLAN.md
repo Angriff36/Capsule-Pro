@@ -185,14 +185,16 @@ Deliverable of this WS: a one-page candidates table with the hand-coded flow loc
 >
 > Counting rule going forward: **`rg 'property (required )?status: string' manifest/source -g '*.manifest'`** for remaining scope; `rg 'validStatus'` for the closed-set count. Never use bare `'status: string'` — it both over-counts (params) and under-counts (`required`).
 
-**What:** Type the remaining **70 enum-candidate** `property (required )?status: string` fields (plus other closed sets: priorities, types where vocab is stable) as source `enum`s. Enum→Prisma emission is confirmed working (20 declarations / 19 entity-status retypes already generated). The 8 free-form fields are out of scope unless a NEEDS-RYAN decision enumerates them (Invoice/Payment are the live fork).
+> **2026-07-12 — equipment batch DONE (commit de08278d8).** `Equipment.status` → `EquipmentStatus {active maintenance out_of_service retired}`, `MaintenanceWorkOrder.status` → `MaintenanceWorkOrderStatus {open assigned in_progress awaiting_parts completed cancelled}`; both `validStatus` deleted; transitions/guards/computeds unchanged (P3-proven FSM-safe). Migration `20260712084329` awaiting human deploy (DROP/ADD→USING-cast caveat for non-empty tables; applies clean on empty dev DB). Empty no-op dup `20260712085252` committed (harmless — folder matches dev `_prisma_migrations` → zero drift). Updated counts (re-verified via bare `rg`): **76 remain** (68 enum-candidate + 8 free-form); **21 retyped** to enum; **22 enum decls**; **88 validStatus** (14 redundant on unclean retyped enums; 7 clean). Prior "78/19/90" was stale because equipment's retype was already in the working tree before the opus reconciliation. Recommended next batch: sales (5 fields).
+
+**What:** Type the remaining **68 enum-candidate** `property (required )?status: string` fields (plus other closed sets: priorities, types where vocab is stable) as source `enum`s. Enum→Prisma emission is confirmed working (22 declarations / 21 entity-status retypes already generated). The 8 free-form fields are out of scope unless a NEEDS-RYAN decision enumerates them (Invoice/Payment are the live fork).
 **How:**
 1. P2/P3 pilot first (one entity, full chain, one migration).
 2. Extract the vocabulary per field from its `validStatus` constraint + transition table (they already agree — the FSM audit keeps them honest).
 3. Batch per domain: declare `enum XStatus { ... }` top-level in the domain file → retype the property → **delete the now-redundant `validStatus` constraint** (the type is the constraint) → keep transitions (string-based unless P3 shows enum-awareness).
 4. Migration per batch: Postgres enum type + column alter. Watch the known projection drift (~620-line accepted residual — don't fight it, but don't add to it: run `pnpm db:check` before and after and diff the drift).
 5. Regen: `compile · generate · schema:check · client · generate-hooks · generate-metadata · openapi` (`schema:full` no longer exists — PR #78). App-side: enum unions flow into generated types — fix consumer type errors per batch (bounded by domain).
-**Order:** low-write-volume domains first (quality, integrations) → kitchen/inventory → events/finance last. **Concrete next batch (2026-07-12 reconcile):** operations/equipment (2 `required` fields) → facilities/procurement/logistics → inventory/kitchen → tenant-team → sales → accounting (BLOCKED on Invoice/Payment NEEDS-RYAN + UPPERCASE-vocab convention) → events (flagship Event, highest volume, last).
+**Order:** low-write-volume domains first (quality, integrations) → kitchen/inventory → events/finance last. **Concrete next batch (2026-07-12):** sales (5 fields) → facilities/procurement/logistics → inventory/kitchen → tenant-team → accounting (BLOCKED on Invoice/Payment NEEDS-RYAN + UPPERCASE-vocab convention) → events (flagship Event, highest volume, last).
 **Risk:** enum column migrations lock briefly; values in DB that fall outside the declared vocab will fail the alter — run a pre-flight `SELECT DISTINCT status` per table and reconcile stragglers first. **Deploy caveat (proven on platform batch):** Prisma emits DROP-COLUMN+ADD-COLUMN for text→enum (can't cast); on a NON-EMPTY table edit the migration to `ALTER COLUMN "status" TYPE "<Enum>" USING "status"::"<Enum>"` or data is lost. Applies clean as-is on the empty dev DB.
 
 ### WS8 — Composite unique keys
@@ -248,7 +250,7 @@ Phase 3: survey docs → NEEDS-RYAN forks
 
 0. `uuid … = ""` count in source: 188 → 0 (WS0); every touched entity has a passing Postgres-backed create smoke-test.
 1. `user.role in [` count in source: 464 → 0 (WS1).
-2. `status: string` count: **78 entity `property (required )?status: string` (reconciled 2026-07-12; 70 enum-candidate + 8 free-form) → 0** for true closed sets (WS7). Use `rg 'property (required )?status: string' manifest/source -g '*.manifest'` — never bare `'status: string'`.
+2. `status: string` count: **76 entity `property (required )?status: string` (reconciled 2026-07-12; 68 enum-candidate + 8 free-form) → 0** for true closed sets (WS7). Use `rg 'property (required )?status: string' manifest/source -g '*.manifest'` — never bare `'status: string'`.
 3. Wired middleware count reduced by every portable handler, each with a ported passing test (WS3).
 4. 10/10 crons declared as `schedule` (WS5).
 5. `manifest:ci` green at every commit; no new governance-allowlist entries.
