@@ -111,6 +111,13 @@ jobs:
             DIRECT_URL="${DATABASE_URL/-pooler./.}"
           fi
           export DATABASE_URL DIRECT_URL
+          # prisma migrate reads `datasource.url` from packages/database/prisma.config.ts,
+          # which is process.env.DATABASE_URL — Prisma 7 REMOVED `directUrl` from the
+          # config, so there is no separate migration-endpoint field. Override DATABASE_URL
+          # to the DIRECT (non-pooler) endpoint derived above for the migration steps:
+          # Neon reserves the -pooler host for runtime; migrations must use a direct
+          # connection (Neon + Prisma guidance; db-performance spec criterion #1).
+          DATABASE_URL="$DIRECT_URL"
           # Recovery: mark a previously-FAILED migration rolled-back so it can be
           # re-applied (e.g. after fixing it to be idempotent). Opt-in via input.
           if [ -n "$RESOLVE_MIGRATION" ]; then
