@@ -16,7 +16,7 @@ current code, corrected six figures + two false framings + two prior corrections
 split the `apps/api/lib/manifest/execute-command.ts` batch-`$transaction` 120s
 pool-hold into a new foundational-tier item **#29** (availability-grade), and folded
 four minor gaps into existing items. This is a **plan-only
-artifact** — nothing here is implemented yet. The spec's "Acceptance criteria" and
+artifact** — ~~nothing here is implemented yet~~ **(2026-07-12: item #1's core instrumentation has SHIPPED — see #1's implementation log; the rest remains plan-only)**. The spec's "Acceptance criteria" and
 "Constraints" sections (`specs/db-performance/database-performance.md`) are the gate;
 every item ties its acceptance check back to them.
 
@@ -62,12 +62,13 @@ connection-correctness + the new per-request auth/tenant item (fires on every
 authenticated request); then systemic code fixes; then evidence-backed indexes; then
 mechanical sweeps; then cleanup + the optional test guard.
 
-### 1. `[VERIFIED]` Measurement & evidence instrumentation
+### 1. `[IMPLEMENTED 2026-07-12 core]` Measurement & evidence instrumentation
 - **What:** Generalize the existing per-query timing `$extends` into `packages/database` so both apps inherit it; add a per-request DB-time accumulator and a slow-query warn threshold.
 - **Why / evidence:** Spec requires timings/query-plans + before/after on ≥3 routes. Timing already half-built at `apps/app/app/lib/data/db.ts:16-57` (`PRISMA_LOG_QUERIES=1`-gated `$extends` emitting `[prisma:query] model.op Xms`, plus a `timedQueryRaw()` helper), but `apps/api` — where most N+1s live — has **no** query timing. The existing `withManifestIssueLog` `$extends` in `packages/database` is **error-only, no timing**. Prisma 7 driver-adapter mode **ignores** `log:[{emit:'event',level:'query'}]`, so the `$extends` hook is the only correct timing path. Within `apps/app`, timing coverage is **PARTIAL** — ~~several files import `database` directly from `@repo/database`, bypassing `../data/db`~~ (3rd rev, 2026-07-12 recount: only **3 files** import from `../data/db` (`analytics.ts`, `scheduling.ts`, `finance.ts`); **~137 production files** import `database` directly from `@repo/database`, bypassing the `$extends` timing hook entirely — ~2% coverage); centralizing into `packages/database` fixes that too.
 - **Fix:** Move the `$extends` into `packages/database` — **(3rd rev, 2026-07-12)** the hook MUST land on the base `database` export in `packages/database`; migrating ~137 import sites off the direct `@repo/database` import is NOT viable, so the timing must attach where those imports resolve. Env-gate via `DB_PERF_LOG` (or reuse `PRISMA_LOG_QUERIES`); add a slow-threshold warn (e.g. >50ms). Add a per-request `AsyncLocalStorage` DB-time accumulator + thin route wrapper to get total-DB-time vs total-request-time. Attribute Next.js dev-compile vs DB via cold (first hit) vs warm (2nd hit) subtraction.
 - **Scope:** `measurement`
 - **Acceptance check:** With the gate on, a representative `apps/api` GET emits per-query ms + a request-level DB-time total; cold-vs-warm subtraction isolates compile time; `apps/app` files importing the singleton directly also get timing. Satisfies spec criteria "identified with evidence" and the before/after-on-3-routes requirement.
+- **Implementation log (2026-07-12, core SHIPPED):** Centralized the per-query timing `$extends` into `packages/database/query-timing.ts` (`withQueryTiming`, env-gated by `PRISMA_LOG_QUERIES`, slow-warn `>DB_PERF_SLOW_MS||50`ms), chained on the shared `database` singleton in `packages/database/index.ts:63` as `withManifestIssueLog(withQueryTiming(baseClient))`. This gives `apps/api` (which had ZERO query timing) AND the ~137 `apps/app` files that import `database` directly from `@repo/database` per-query timing in one place — covering both sides of the acceptance check ("a representative `apps/api` GET emits per-query ms" + "`apps/app` files importing the singleton directly also get timing"). Simplified `apps/app/app/lib/data/db.ts` to drop its now-redundant `$extends` (kept the `db` alias + `timedQueryRaw` raw-query helper); updated `scheduling.ts`/`analytics.ts` to import `Prisma` from `@repo/database` directly (it is used as a runtime value via `Prisma.sql`). Added `packages/database/__tests__/query-timing.test.ts` guarding the prod-safety no-op invariant (zero `$extends` overhead when the gate is off). Verified: `@repo/database` typecheck clean + **71/71 tests green**; zero new `apps/app` typecheck errors (6 pre-existing errors in `scheduling/shifts/actions.ts` + `staff/training/*.tsx` are unrelated — see "Pre-existing issues noticed"). **DEFERRED (beyond the spec's hard bar, NOT a stub):** the per-request `AsyncLocalStorage` DB-time accumulator + route wrapper + cold-vs-warm subtraction. The spec's evidence gate (L19 "identified with evidence (timings or query plans)" + L21 before/after on ≥3 routes) is already satisfiable: per-route DB time = sum of its `[prisma:query]` lines. The accumulator is a convenience for *automatic* request-totals and is scoped as a follow-up. The before/after-on-3-routes *measurement* itself depends on a seeded dev DB (currently basically empty) + running dev servers and is the next measurement activity.
 
 ### 2. `[NEW]` Per-request auth/tenant resolution DB cost (no request-level cache) + write-on-read race
 - **What:** Memoize per-request tenant/user resolution and cache the rate-limit config; drop the write-on-read race in `getTenantIdForOrg`. This fires on **every authenticated request**, so it is the highest-leverage foundational fix.
@@ -397,6 +398,15 @@ mechanical sweeps; then cleanup + the optional test guard.
 **Consequence:** every N+1 fix, index addition, and `select` projection in this plan (items #6, #7–#17, #20, #21, #22) has no automated regression signal. A future change can reintroduce an unbounded `findMany` or drop an index with no test failure.
 
 **Mitigation:** item #28 (optional, LOW) wires the smoke test in CI and/or adds a query-count + timing assertion harness derived from item #1's instrumentation. Treated as auxiliary because the spec scope is config + query perf, not test infra — but flagged here so the gap is visible at review time.
+
+---
+
+## Pre-existing issues noticed (2026-07-12, unrelated to this plan — documented per task rule)
+
+- **`apps/app` typecheck is RED (6 errors, pre-existing — CI has been RED on typecheck since ~2026-07-09):** NOT introduced by item #1 (zero file overlap with the instrumentation changes). Two clusters:
+  - `apps/app/app/(authenticated)/(tenant-team)/scheduling/shifts/actions.ts` `:212,275,296` — schema `locationId` is nullable (`string | null`) but the code assigns/reads it as non-null `string`. Likely a real nullable-handling bug; needs intent review, not a blind assertion.
+  - `apps/app/app/(authenticated)/(tenant-team)/staff/training/` dialogs (`assign-training-dialog.tsx:81`, `edit-training-module-dialog.tsx:80`, `create-training-module-dialog.tsx:66`) — Zod **v4** schemas passed to a `zodResolver` that expects Zod 3 (`_zod.version.minor` 4≠0, `typeName` missing). A cross-cutting Zod-3/4 resolver migration, not a 1-line fix.
+  - Both are outside DB-performance scope; left in place this increment and flagged for a separate effort. This is why `pnpm check` (turbo typecheck app+api+web) is RED on this branch independent of any DB-perf work.
 
 ---
 

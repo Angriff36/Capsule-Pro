@@ -1,46 +1,27 @@
 /**
- * Database client with optional query duration logging.
+ * apps/app database re-export + raw-query timing helper.
  *
- * Set PRISMA_LOG_QUERIES=1 to emit every Prisma query with its duration to stderr.
+ * Per-query model timing is now applied at the package level
+ * (packages/database/query-timing.ts → `withQueryTiming`, attached to the
+ * shared `database` singleton), so `database` — and this `db` alias — already
+ * emit `[prisma:query] model.op Xms` lines when PRISMA_LOG_QUERIES=1. That
+ * covers apps/app's data modules AND the ~137 files that import `database`
+ * directly from @repo/database (previously bypassed); apps/api inherits it too.
  *
- * Model-level queries (findMany, create, etc.) are intercepted via $extends.
  * Raw queries ($queryRaw) bypass $extends — use timedQueryRaw() explicitly.
  */
 
-import { database, Prisma } from "@repo/database";
-
-// ---------------------------------------------------------------------------
-// Query-logging guard
-// ---------------------------------------------------------------------------
+import type { Prisma } from "@repo/database";
+import { database } from "@repo/database";
 
 const isLoggingEnabled = process.env.PRISMA_LOG_QUERIES === "1";
 
-// ---------------------------------------------------------------------------
-// Extended client — model-level query timing
-// ---------------------------------------------------------------------------
+export const db = database;
 
-export const db = database.$extends({
-  query: {
-    $allModels: {
-      async $allOperations({ model, operation, args, query }) {
-        const start = isLoggingEnabled ? performance.now() : 0;
-        const result = await query(args);
-        if (isLoggingEnabled) {
-          const duration = performance.now() - start;
-          console.error(
-            `[prisma:query] ${model}.${operation} ${duration.toFixed(1)}ms`
-          );
-        }
-        return result;
-      },
-    },
-  },
-});
-
-// ---------------------------------------------------------------------------
-// Raw query timing helper — $queryRaw can't be intercepted by $extends
-// ---------------------------------------------------------------------------
-
+/**
+ * Raw-query timing — $queryRaw can't be intercepted by $extends, so time it
+ * explicitly when the gate is on.
+ */
 export async function timedQueryRaw<T>(
   query: Prisma.Sql,
   label: string
@@ -55,5 +36,3 @@ export async function timedQueryRaw<T>(
   console.error(`[prisma:query] raw:${label} ${duration.toFixed(1)}ms`);
   return result;
 }
-
-export { Prisma };

@@ -7,8 +7,9 @@
  * 10 raw SQL queries → 7 domain functions.
  */
 
+import { Prisma } from "@repo/database";
 import { cache } from "react";
-import { Prisma, timedQueryRaw } from "../data/db";
+import { timedQueryRaw } from "../data/db";
 
 // ============================================================================
 // Revenue

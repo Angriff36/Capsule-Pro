@@ -15,11 +15,12 @@
 
 import "server-only";
 
-import { PrismaClient } from "./generated/client";
+import { createAnalyticsDatabase } from "./analytics-database";
 import { createPrismaPgAdapter } from "./create-pg-adapter";
+import { PrismaClient } from "./generated/client";
 import { keys } from "./keys";
 import { withManifestIssueLog } from "./manifest-issue-log";
-import { createAnalyticsDatabase } from "./analytics-database";
+import { withQueryTiming } from "./query-timing";
 import { createTenantClient } from "./tenant";
 
 type GlobalPrisma = {
@@ -60,7 +61,9 @@ function createDatabaseClient(): PrismaClient {
     adapter,
     transactionOptions: { maxWait: 10_000, timeout: 30_000 },
   });
-  return withManifestIssueLog(baseClient);
+  // withQueryTiming is a no-op unless PRISMA_LOG_QUERIES=1 (dev-only
+  // per-query timing + slow-query warn); withManifestIssueLog captures errors.
+  return withManifestIssueLog(withQueryTiming(baseClient));
 }
 
 // Construct the adapter/client ONLY when globalThis has none.
