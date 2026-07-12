@@ -236,13 +236,11 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 80% context — saved before compacting]
-Files (5):
-  canonical/unresolved/manifest.ws1.capability-closure-fork.md (create)
-  manifest/NATIVE-REWRITE-PLAN.md (edit)
-  IMPLEMENTATION_PLAN.md (edit)
-  ACCEPTANCE_TESTS.md (edit)
-  C:/Users/Ryan/.claude/projects/C--Projects-capsule-pro/memory/native-source-rewrite-plan-2026-07-06.md (edit)
+[proactive bridge @ 87% context — saved before compacting]
+Files (3):
+  manifest/source/accounting/collections-rules.manifest (edit)
+  manifest/source/accounting/payment-rules.manifest (edit)
+  manifest/source/accounting/invoice-rules.manifest (edit)
 
 # === END COGNILAYER ===
 
