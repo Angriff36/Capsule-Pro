@@ -18,7 +18,7 @@ entity CycleCountSession mixin TenantScoped, SoftDeletable {
   property totalVariance: decimal = 0
   property variancePercentage: decimal = 0
   searchable property notes: string? = ""
-  property createdById: uuid = ""
+  property createdById: uuid
   property approvedById: uuid?
   timestamps
 
@@ -45,7 +45,7 @@ entity CycleCountSession mixin TenantScoped, SoftDeletable {
   transition status from "cancelled" to ["draft"]
 
   default policy CycleCountSessionDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Cycle count management"
-  command create(locationId: string, sessionId: string = "", sessionName: string, countType: string, optional scheduledDate: datetime, notes: string) {
+  command create(locationId: string, sessionId: string = "", sessionName: string, countType: string, optional scheduledDate: datetime, notes: string, createdById: string from context.user.id) {
     guard sessionName != null and sessionName != "" "Session name is required"
     guard locationId != null and locationId != "" "Location is required"
 
@@ -55,7 +55,6 @@ entity CycleCountSession mixin TenantScoped, SoftDeletable {
     mutate countType = countType
     mutate scheduledDate = scheduledDate
     mutate notes = notes
-    mutate createdById = user.id
     mutate totalItems = 0
     mutate countedItems = 0
     mutate totalVariance = 0
@@ -169,7 +168,7 @@ entity CycleCountRecord mixin TenantScoped, SoftDeletable {
   property variance: decimal = 0
   property variancePct: decimal = 0
   property countDate: datetime
-  property countedById: uuid = ""
+  property countedById: uuid
   property barcode: string? = ""
   searchable property notes: string? = ""
   property isVerified: boolean = false
@@ -191,7 +190,7 @@ entity CycleCountRecord mixin TenantScoped, SoftDeletable {
   relationship belongsTo verifiedBy: User fields [tenantId, verifiedById] references [tenantId, id]
 
   default policy CycleCountRecordDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Cycle count management"
-  command create(sessionId: string, itemId: string, itemNumber: string, itemName: string, storageLocationId: string, expectedQuantity: number, countedQuantity: number, optional barcode: string, notes: string) {
+  command create(sessionId: string, itemId: string, itemNumber: string, itemName: string, storageLocationId: string, expectedQuantity: number, countedQuantity: number, optional barcode: string, notes: string, countedById: string from context.user.id) {
     guard sessionId != null and sessionId != "" "Session ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
     guard countedQuantity != null and countedQuantity >= 0 "Counted quantity cannot be negative"
@@ -206,7 +205,6 @@ entity CycleCountRecord mixin TenantScoped, SoftDeletable {
     mutate variance = countedQuantity - expectedQuantity
     mutate variancePct = percent(countedQuantity - expectedQuantity, expectedQuantity)
     mutate countDate = now()
-    mutate countedById = user.id
     mutate barcode = barcode
     mutate notes = notes
     mutate isVerified = false

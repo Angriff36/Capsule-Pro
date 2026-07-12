@@ -13124,6 +13124,12 @@
           "type": "string",
           "location": "body",
           "required": true
+        },
+        {
+          "name": "countedById",
+          "type": "string",
+          "location": "body",
+          "required": true
         }
       ],
       "source": {
@@ -13295,6 +13301,12 @@
         },
         {
           "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "createdById",
           "type": "string",
           "location": "body",
           "required": true

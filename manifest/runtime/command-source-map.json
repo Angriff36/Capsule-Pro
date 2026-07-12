@@ -851,27 +851,27 @@
     },
     "command:CycleCountRecord.create": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 194
+      "line": 193
     },
     "command:CycleCountRecord.remove": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 253
+      "line": 251
     },
     "command:CycleCountRecord.update": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 218
+      "line": 216
     },
     "command:CycleCountRecord.verify": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 232
+      "line": 230
     },
     "command:CycleCountSession.cancel": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 128
+      "line": 127
     },
     "command:CycleCountSession.complete": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 85
+      "line": 84
     },
     "command:CycleCountSession.create": {
       "file": "operations/inventory/cycle-count-rules.manifest",
@@ -879,23 +879,23 @@
     },
     "command:CycleCountSession.finalize": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 104
+      "line": 103
     },
     "command:CycleCountSession.reopen": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 119
+      "line": 118
     },
     "command:CycleCountSession.softDelete": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 148
+      "line": 147
     },
     "command:CycleCountSession.start": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 76
+      "line": 75
     },
     "command:CycleCountSession.update": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 67
+      "line": 66
     },
     "command:Deal.abandon": {
       "file": "sales/deal-rules.manifest",
@@ -3975,23 +3975,23 @@
     },
     "command:VarianceReport.approve": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 350
+      "line": 348
     },
     "command:VarianceReport.create": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 309
+      "line": 307
     },
     "command:VarianceReport.reject": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 329
+      "line": 327
     },
     "command:VarianceReport.review": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 341
+      "line": 339
     },
     "command:VarianceReport.updateDiscrepancy": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 375
+      "line": 373
     },
     "command:Vehicle.create": {
       "file": "operations/logistics/logistics-all-rules.manifest",
@@ -4879,7 +4879,7 @@
     },
     "constraint:CycleCountRecord.warnLargeVariance": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 235
+      "line": 233
     },
     "constraint:CycleCountSession.validStatus": {
       "file": "operations/inventory/cycle-count-rules.manifest",
@@ -4887,11 +4887,11 @@
     },
     "constraint:CycleCountSession.warnCancelInProgress": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 133
+      "line": 132
     },
     "constraint:CycleCountSession.warnIncomplete": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 88
+      "line": 87
     },
     "constraint:Deal.positiveValue": {
       "file": "sales/deal-rules.manifest",
@@ -7003,11 +7003,11 @@
     },
     "constraint:VarianceReport.validStatus": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 302
+      "line": 300
     },
     "constraint:VarianceReport.warnHighVariance": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 353
+      "line": 351
     },
     "constraint:Vehicle.validStatus": {
       "file": "operations/logistics/logistics-all-rules.manifest",
@@ -7379,7 +7379,7 @@
     },
     "entity:CycleCountRecord": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 160
+      "line": 159
     },
     "entity:CycleCountSession": {
       "file": "operations/inventory/cycle-count-rules.manifest",
@@ -7999,7 +7999,7 @@
     },
     "entity:VarianceReport": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 265
+      "line": 263
     },
     "entity:Vehicle": {
       "file": "operations/logistics/logistics-all-rules.manifest",
@@ -8407,7 +8407,7 @@
     },
     "transition:VarianceReport.status": {
       "file": "operations/inventory/cycle-count-rules.manifest",
-      "line": 305
+      "line": 303
     },
     "transition:Vehicle.status": {
       "file": "operations/logistics/logistics-all-rules.manifest",

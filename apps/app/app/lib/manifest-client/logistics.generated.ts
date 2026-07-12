@@ -85,6 +85,7 @@ export interface CycleCountRecordCreateInput {
   countedQuantity?: number;
   barcode?: string;
   notes?: string;
+  countedById?: string;
 }
 export interface CycleCountRecordRemoveInput {
   id?: string;
@@ -116,6 +117,7 @@ export interface CycleCountSessionCreateInput {
   countType?: string;
   scheduledDate?: string;
   notes?: string;
+  createdById?: string;
 }
 export interface CycleCountSessionFinalizeInput {
   id?: string;

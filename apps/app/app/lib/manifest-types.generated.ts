@@ -835,7 +835,7 @@ export interface CycleCountRecord {
   variance?: number;
   variancePct?: number;
   countDate: string;
-  countedById?: string;
+  countedById: string;
   barcode?: string | null;
   notes?: string | null;
   isVerified?: boolean;
@@ -865,7 +865,7 @@ export interface CycleCountSession {
   totalVariance?: number;
   variancePercentage?: number;
   notes?: string | null;
-  createdById?: string;
+  createdById: string;
   approvedById?: string | null;
   createdAt: string;
   updatedAt: string;

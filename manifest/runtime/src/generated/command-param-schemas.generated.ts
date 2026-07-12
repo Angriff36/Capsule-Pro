@@ -993,6 +993,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   countedQuantity: z.number(),
   barcode: z.string().optional(),
   notes: z.string(),
+  countedById: z.string().optional(),
 }),
   "CycleCountRecord.remove": z.object({
   userId: z.string(),
@@ -1019,6 +1020,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   countType: z.string(),
   scheduledDate: z.coerce.date().optional(),
   notes: z.string(),
+  createdById: z.string().optional(),
 }),
   "CycleCountSession.finalize": z.object({
   userId: z.string().optional(),
