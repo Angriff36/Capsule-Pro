@@ -18917,8 +18917,8 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "status",
         "irName": "status",
-        "type": "String",
-        "isEnum": false,
+        "type": "KnowledgeBaseEntryStatus",
+        "isEnum": true,
         "isList": false,
         "optional": false,
         "hasDefault": true,

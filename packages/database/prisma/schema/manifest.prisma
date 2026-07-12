@@ -3278,7 +3278,7 @@ model KnowledgeBaseEntry {
   category String? @default("general")
   content String? @db.Text @default("")
   tags String[] @default([])
-  status String @default("draft")
+  status KnowledgeBaseEntryStatus @default(draft)
   authorId String? @map("author_id") @db.Uuid
   publishedAt DateTime? @map("published_at") @db.Timestamptz(6)
   viewCount Int? @map("view_count") @default(0)
@@ -6969,6 +6969,14 @@ enum KitchenTaskStatus {
   in_progress
   done
   cancelled
+
+  @@schema("public")
+}
+
+enum KnowledgeBaseEntryStatus {
+  draft
+  published
+  archived
 
   @@schema("public")
 }

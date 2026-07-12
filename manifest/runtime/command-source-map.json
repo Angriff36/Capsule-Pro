@@ -2163,27 +2163,27 @@
     },
     "command:KnowledgeBaseEntry.create": {
       "file": "knowledge-base/knowledge-base-rules.manifest",
-      "line": 31
+      "line": 37
     },
     "command:KnowledgeBaseEntry.publishEntry": {
       "file": "knowledge-base/knowledge-base-rules.manifest",
-      "line": 62
+      "line": 68
     },
     "command:KnowledgeBaseEntry.recordView": {
       "file": "knowledge-base/knowledge-base-rules.manifest",
-      "line": 83
+      "line": 89
     },
     "command:KnowledgeBaseEntry.remove": {
       "file": "knowledge-base/knowledge-base-rules.manifest",
-      "line": 45
+      "line": 51
     },
     "command:KnowledgeBaseEntry.unpublish": {
       "file": "knowledge-base/knowledge-base-rules.manifest",
-      "line": 74
+      "line": 80
     },
     "command:KnowledgeBaseEntry.update": {
       "file": "knowledge-base/knowledge-base-rules.manifest",
-      "line": 51
+      "line": 57
     },
     "command:LaborBudget.approve": {
       "file": "accounting/labor-budget-rules.manifest",
@@ -5771,11 +5771,7 @@
     },
     "constraint:KnowledgeBaseEntry.validCategory": {
       "file": "knowledge-base/knowledge-base-rules.manifest",
-      "line": 22
-    },
-    "constraint:KnowledgeBaseEntry.validStatus": {
-      "file": "knowledge-base/knowledge-base-rules.manifest",
-      "line": 21
+      "line": 28
     },
     "constraint:LaborBudget.blockApproveZero": {
       "file": "accounting/labor-budget-rules.manifest",
@@ -7599,7 +7595,7 @@
     },
     "entity:KnowledgeBaseEntry": {
       "file": "knowledge-base/knowledge-base-rules.manifest",
-      "line": 5
+      "line": 12
     },
     "entity:LaborBudget": {
       "file": "accounting/labor-budget-rules.manifest",
@@ -8247,7 +8243,7 @@
     },
     "transition:KnowledgeBaseEntry.status": {
       "file": "knowledge-base/knowledge-base-rules.manifest",
-      "line": 25
+      "line": 31
     },
     "transition:LaborBudget.status": {
       "file": "accounting/labor-budget-rules.manifest",

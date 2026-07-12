@@ -2,6 +2,13 @@ use "../_base.manifest"
 // Knowledge Base Domain — Entry Rules
 // Manifest spec for internal knowledge base articles and documentation
 
+// U7: Closed-vocabulary status enum for KnowledgeBaseEntry lifecycle.
+enum KnowledgeBaseEntryStatus {
+  draft
+  published
+  archived
+}
+
 entity KnowledgeBaseEntry mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property required title: string
@@ -9,7 +16,7 @@ entity KnowledgeBaseEntry mixin TenantScoped, SoftDeletable {
   property category: string? = "general"
   property content: string? = ""
   property tags: array<string>? = []
-  indexed property status: string = "draft"
+  indexed property status: KnowledgeBaseEntryStatus = draft
   property authorId: uuid?
   property publishedAt: datetime?
   property viewCount: int? = 0
@@ -18,7 +25,6 @@ entity KnowledgeBaseEntry mixin TenantScoped, SoftDeletable {
   computed isPublished: boolean = self.status == "published"
   computed isDraft: boolean = self.status == "draft"
 
-  constraint validStatus: self.status in ["draft", "published", "archived"] "Invalid entry status"
   constraint validCategory: self.category in ["general", "policies", "procedures", "recipes", "safety", "training", "other"] "Invalid category"
 
   // State transitions

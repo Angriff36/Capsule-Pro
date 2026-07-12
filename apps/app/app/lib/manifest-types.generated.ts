@@ -10,6 +10,8 @@ export type DealStatus = "open" | "won" | "lost" | "abandoned";
 
 export type KitchenTaskStatus = "pending" | "in_progress" | "done" | "cancelled";
 
+export type KnowledgeBaseEntryStatus = "draft" | "published" | "archived";
+
 export type MenuStatus = "draft" | "published" | "archived";
 
 export type PayrollPeriodStatus = "open" | "closed" | "locked";
@@ -1942,7 +1944,7 @@ export interface KnowledgeBaseEntry {
   category?: string | null;
   content?: string | null;
   tags?: string[] | null;
-  status?: string;
+  status?: KnowledgeBaseEntryStatus;
   authorId?: string | null;
   publishedAt?: string | null;
   viewCount?: number | null;

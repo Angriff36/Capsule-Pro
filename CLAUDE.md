@@ -236,8 +236,13 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: manifest/source/administrative/admin-task-file-ref-rules.manifest (edit), manifest/source/administrative/admin-chat-participant-rules.manifest (edit), manifest/source/administrative/admin-task-comment-rules.manifest (edit), manifest/source/administrative/admin-task-dev-meta-rules.manifest (edit), manifest/source/administrative/admin-task-attachment-rules.manifest (edit), manifest/source/administrative/board-config-rules.manifest (edit)
+[proactive bridge @ 80% context — saved before compacting]
+Files (5):
+  canonical/unresolved/manifest.ws1.capability-closure-fork.md (create)
+  manifest/NATIVE-REWRITE-PLAN.md (edit)
+  IMPLEMENTATION_PLAN.md (edit)
+  ACCEPTANCE_TESTS.md (edit)
+  C:/Users/Ryan/.claude/projects/C--Projects-capsule-pro/memory/native-source-rewrite-plan-2026-07-06.md (edit)
 
 # === END COGNILAYER ===
 

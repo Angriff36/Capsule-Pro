@@ -148,6 +148,7 @@ Gated on P9. Inventory `manifest-runtime-factory.ts` (69 `create*Middleware(` si
 Gated on P2/P3 pilot. Per field: extract vocabulary from its `validStatus` constraint + transition table (they already agree), declare `enum XStatus { }` top-level, retype the property, **delete the now-redundant `validStatus` constraint**, keep transitions (string-based unless P3 shows enum-awareness). Pre-flight per table: `SELECT DISTINCT status` and reconcile stragglers before the enum alter. Low-write-volume domains first. Fix app-side consumer type errors per batch. (140 raw `status: string` incl. params; ~92 `validStatus` constraints scope the true closed sets — classify per field.)
 
 - [ ] WS7 · pilot one entity end-to-end (one migration) — records P2/P3
+  - 2026-07-12: pilot EXECUTED on `knowledge-base` (KbEntryStatus enum → IR → manifest.prisma enum → full regen green). Migration `20260712035457_kb_entry_status_enum` created via `--create-only` — **awaiting human deploy** (`pnpm db:deploy && pnpm db:check`), then run the FSM conformance check to record P3. Committed by the babysitter after iteration 10 left it uncommitted.
 - [ ] WS7 · knowledge-base + platform (low volume: 1 + 2)
 - [ ] WS7 · administrative (5) + sales (10)
 - [ ] WS7 · tenant-team (17) + accounting (21)

@@ -3369,14 +3369,6 @@ export const MANIFEST_FIELD_HINTS: Record<string, EntityFieldHints> = {
         overrideable: false,
       },
     ],
-    "status": [
-      {
-        message: "Invalid entry status",
-        severity: "block",
-        constraintName: "validStatus",
-        overrideable: false,
-      },
-    ],
   },
   "LaborBudget": {
     "actualSpend": [
