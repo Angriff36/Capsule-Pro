@@ -917,7 +917,7 @@ export interface DisciplinaryAction {
   reason?: string;
   severity?: string | null;
   status?: string;
-  issuedBy?: string;
+  issuedBy: string;
   escalatedTo?: string | null;
   escalationReason?: string | null;
   escalatedAt?: string | null;
@@ -1043,7 +1043,7 @@ export interface EmployeeAvailability {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  employeeId?: string;
+  employeeId: string;
   dayOfWeek?: number;
   startTime: string;
   endTime: string;
@@ -1062,7 +1062,7 @@ export interface EmployeeCertification {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  employeeId?: string;
+  employeeId: string;
   certificationType?: string;
   certificationName?: string;
   issuedDate: string;
@@ -3661,7 +3661,7 @@ export interface TimeOffRequest {
   tenantId: string;
   deletedAt?: string | null;
   submittedAt: string;
-  employeeId?: string;
+  employeeId: string;
   startDate: string;
   endDate: string;
   reason?: string | null;
@@ -3680,7 +3680,7 @@ export interface TipPool {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  periodId?: string;
+  periodId: string;
   totalTips?: number;
   status?: string | null;
   allocationRule?: string;

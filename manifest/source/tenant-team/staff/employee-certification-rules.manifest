@@ -4,7 +4,7 @@ use "../../_base.manifest"
 
 entity EmployeeCertification mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property employeeId: uuid = ""
+  property employeeId: uuid
   property certificationType: string = ""
   property certificationName: string = ""
   property required issuedDate: datetime

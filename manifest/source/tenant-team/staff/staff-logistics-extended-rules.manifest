@@ -14,7 +14,7 @@ entity TimecardApproval mixin TenantScoped, SoftDeletable {
   property required payrollRunId: uuid
   property required submittedBy: uuid
   indexed property status: string = "pending"
-  property approvedBy: uuid? = ""
+  property approvedBy: uuid?
   property approvedAt: datetime?
   searchable property notes: string? = ""
   timestamps
@@ -154,7 +154,7 @@ entity PayrollLineItem mixin TenantScoped, SoftDeletable {
 
 entity TipPool mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property periodId: uuid = ""
+  property periodId: uuid
   property totalTips: money = 0
   indexed property status: string? = "open"
   // Allocation
@@ -163,7 +163,7 @@ entity TipPool mixin TenantScoped, SoftDeletable {
   // Distribution tracking
   property distributedAmount: money? = 0
   property distributedAt: datetime?
-  property distributedBy: uuid? = ""
+  property distributedBy: uuid?
   timestamps
 
   computed isOpen: boolean = self.status == "open"
@@ -255,8 +255,8 @@ entity DisciplinaryAction mixin TenantScoped, SoftDeletable {
   property reason: string = ""
   property severity: string? = "low"
   indexed property status: string = "open"
-  property issuedBy: uuid = ""
-  property escalatedTo: uuid? = ""
+  property issuedBy: uuid
+  property escalatedTo: uuid?
   property escalationReason: string? = ""
   property escalatedAt: datetime?
   property issuedDate: datetime = now()
@@ -583,7 +583,7 @@ entity OpenShift mixin TenantScoped, SoftDeletable {
   property shiftStart: datetime
   property shiftEnd: datetime
   indexed property status: string = "open"
-  property claimedBy: uuid? = ""
+  property claimedBy: uuid?
   property roleDuringShift: string?
   timestamps
 
@@ -610,7 +610,7 @@ entity OpenShift mixin TenantScoped, SoftDeletable {
     mutate role = role
     mutate shiftStart = shiftStart
     mutate shiftEnd = shiftEnd
-    mutate claimedBy = ""
+    mutate claimedBy = null
 
     emit OpenShiftCreated
   }
@@ -646,7 +646,7 @@ entity DeliveryRoute mixin TenantScoped, SoftDeletable {
   property vehicleId: uuid?
   searchable property name: string = ""
   property routeNumber: string = ""
-  property driverId: uuid? = ""
+  property driverId: uuid?
   property scheduledDate: datetime?
   indexed property status: string = "planned"
   // totalDistance is stored in km (delivery_routes.total_distance)
@@ -684,7 +684,7 @@ entity DeliveryRoute mixin TenantScoped, SoftDeletable {
 
   command start() {
     guard self.status == "planned" "Only planned routes can be started"
-    guard self.driverId != "" "A driver must be assigned before starting the route"
+    guard self.driverId != null "A driver must be assigned before starting the route"
 
     mutate status = "in_progress"
 
@@ -833,15 +833,15 @@ entity PaymentRefundAttempt mixin TenantScoped {
 entity PreventiveMaintenanceSchedule mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property scheduleNumber: string = ""
-  property areaId: uuid? = ""
-  property equipmentId: uuid? = ""
+  property areaId: uuid?
+  property equipmentId: uuid?
   searchable property title: string = ""
   searchable property description: string? = ""
   property frequency: string = "monthly"
   property intervalDays: int = 30
   property nextDueAt: datetime
   property lastCompletedAt: datetime?
-  property assignedTo: uuid? = ""
+  property assignedTo: uuid?
   property estimatedHours: decimal? = 0
   property estimatedCost: money? = 0
   indexed property status: string = "active"

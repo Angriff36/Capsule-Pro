@@ -151,7 +151,7 @@ entity TrainingModule mixin TenantScoped, SoftDeletable {
   property publishedAt: datetime?
   property archivedAt: datetime?
   searchable property notes: string? = ""
-  property createdBy: uuid? = ""
+  property createdBy: uuid?
 
   timestamps
 

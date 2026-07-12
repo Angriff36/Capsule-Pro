@@ -14,13 +14,13 @@ enum ScheduleStatus {
 
 entity Schedule mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property locationId: uuid? = ""
+  property locationId: uuid?
   // Bug fix: scheduleDate and publishedAt are lifecycle timestamps — must be nullable
   property scheduleDate: datetime
   indexed property status: ScheduleStatus = draft
   property publishedAt: datetime?
-  property publishedBy: uuid? = ""
-  property approvedBy: uuid? = ""
+  property publishedBy: uuid?
+  property approvedBy: uuid?
   property approvedAt: datetime?
   searchable property notes: string? = ""
   property shiftCount: int = 0
@@ -143,7 +143,7 @@ entity ScheduleShift mixin TenantScoped, SoftDeletable {
   property roleDuringShift: string? = ""
   searchable property notes: string? = ""
   // Swap offer fields
-  property swapOfferedTo: uuid? = ""
+  property swapOfferedTo: uuid?
   property swapStatus: string? = "none"
   property swapOfferedAt: datetime?
   property swapAcceptedAt: datetime?
@@ -236,7 +236,7 @@ entity ScheduleShift mixin TenantScoped, SoftDeletable {
     guard self.swapStatus == "offered" "No pending swap offer to decline"
 
     mutate swapStatus = "declined"
-    mutate swapOfferedTo = ""
+    mutate swapOfferedTo = null
 
     emit ScheduleShiftSwapDeclined
   }
@@ -246,7 +246,7 @@ entity ScheduleShift mixin TenantScoped, SoftDeletable {
     guard self.swapStatus == "offered" "No pending swap offer to cancel"
 
     mutate swapStatus = "none"
-    mutate swapOfferedTo = ""
+    mutate swapOfferedTo = null
 
     emit ScheduleShiftSwapCancelled
   }

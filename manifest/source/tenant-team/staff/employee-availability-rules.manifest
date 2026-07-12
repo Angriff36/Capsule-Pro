@@ -5,7 +5,7 @@ use "../../_base.manifest"
 
 entity EmployeeAvailability mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property employeeId: uuid = ""
+  property employeeId: uuid
   property dayOfWeek: int = 0
   property required startTime: datetime
   property required endTime: datetime
