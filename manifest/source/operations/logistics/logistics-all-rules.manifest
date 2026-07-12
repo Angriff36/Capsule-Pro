@@ -8,7 +8,7 @@ entity Driver mixin TenantScoped, SoftDeletable {
   encrypted property phone: string? = ""
   private encrypted property licenseNumber: string? = ""
   property licenseExpiry: datetime?
-  property vehicleId: uuid? = ""
+  property vehicleId: uuid?
   indexed property status: string = "available"
   searchable property notes: string? = ""
   timestamps
