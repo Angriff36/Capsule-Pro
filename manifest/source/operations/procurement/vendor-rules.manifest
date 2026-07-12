@@ -83,7 +83,7 @@ entity Vendor mixin TenantScoped {
     emit VendorDeleted
   }
 
-  command approve(approvedBy: string) {
+  command approve(approvedBy: string from context.user.id) {
     guard self.status != "blacklisted" "Blacklisted vendors cannot be approved"
     guard approvedBy != null and approvedBy != "" "Approving user is required"
 

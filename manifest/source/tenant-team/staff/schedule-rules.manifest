@@ -65,7 +65,7 @@ entity Schedule mixin TenantScoped, SoftDeletable {
   }
 
   // Manager approves the schedule before it is published to staff.
-  command approve(userId: string) {
+  command approve(userId: string from context.user.id) {
     guard self.status == "draft" "Only draft schedules can be approved"
     guard self.shiftCount > 0 "Cannot approve a schedule with no shifts"
     guard userId != null and userId != "" "Approver ID is required"
@@ -88,7 +88,7 @@ entity Schedule mixin TenantScoped, SoftDeletable {
     emit ScheduleReopened
   }
 
-  command release(userId: string) {
+  command release(userId: string from context.user.id) {
     guard self.status in ["draft", "approved"] "Can only publish draft or approved schedules"
 
     constraint blockNoShifts:block self.shiftCount > 0 {
@@ -137,7 +137,9 @@ entity ScheduleShift mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required scheduleId: uuid
   property required employeeId: uuid
-  property required locationId: uuid
+  // Nullable to match parent Schedule.locationId (also nullable): create never
+  // supplied it, so the required NOT-NULL column broke every INSERT at bootstrap.
+  property locationId: uuid?
   property required shiftStart: datetime
   property required shiftEnd: datetime
   property roleDuringShift: string? = ""
@@ -174,7 +176,7 @@ entity ScheduleShift mixin TenantScoped, SoftDeletable {
   }
 
   default policy ScheduleShiftDefaultAccess execute: user.role in ["manager", "admin"] "Schedule management"
-  command create(scheduleId: string, employeeId: string, shiftStart: datetime, shiftEnd: datetime, roleDuringShift: string, optional notes: string) {
+  command create(scheduleId: string, employeeId: string, shiftStart: datetime, shiftEnd: datetime, roleDuringShift: string, optional notes: string, optional locationId: string) {
     guard scheduleId != null and scheduleId != "" "Schedule ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard shiftStart != null "Shift start time is required"

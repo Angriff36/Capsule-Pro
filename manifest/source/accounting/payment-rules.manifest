@@ -89,7 +89,7 @@ entity Payment mixin TenantScoped, SoftDeletable {
     guard self.status == "PENDING" or self.status == "PROCESSING" "Can only process pending or processing payments"
     mutate status = "FAILED"
     mutate processedAt = now()
-    emit PaymentProcessed
+    emit PaymentFailed
   }
 
   command refund(refundAmount: money, reason: string) {
@@ -134,14 +134,14 @@ entity Payment mixin TenantScoped, SoftDeletable {
     emit PaymentFailedFraudCheck
   }
 
-  command markFraudReviewed(approved: boolean, reviewer: string) {
+  command markFraudReviewed(approved: boolean, reviewer: string from context.user.id) {
     guard self.fraudStatus == "MANUAL_REVIEW" "Payment must be in manual review"
     mutate reviewedAt = now()
     mutate reviewedBy = reviewer
     emit FraudReviewCompleted
   }
 
-  command markFraudPassed(reviewer: string) {
+  command markFraudPassed(reviewer: string from context.user.id) {
     guard self.fraudStatus == "MANUAL_REVIEW" "Payment must be in manual review"
     mutate fraudStatus = "PASSED"
     mutate reviewedAt = now()
@@ -149,7 +149,7 @@ entity Payment mixin TenantScoped, SoftDeletable {
     emit FraudReviewCompleted
   }
 
-  command markFraudFailed(reviewer: string) {
+  command markFraudFailed(reviewer: string from context.user.id) {
     guard self.fraudStatus == "MANUAL_REVIEW" "Payment must be in manual review"
     mutate fraudStatus = "FAILED"
     mutate status = "FAILED"
@@ -183,6 +183,13 @@ event PaymentProcessed: "payment.processed" {
   amount: money
   status: string
   gatewayTransactionId: string
+}
+
+event PaymentFailed: "payment.failed" {
+  paymentId: string
+  invoiceId: string
+  amount: money
+  status: string
 }
 
 event PaymentRefunded: "payment.refunded" {

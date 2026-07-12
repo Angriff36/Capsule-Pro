@@ -35,6 +35,8 @@ entity EmployeeAvailability mixin TenantScoped, SoftDeletable {
     guard startTime != null and startTime != "" "Start time is required"
     guard endTime != null and endTime != "" "End time is required"
     guard dayOfWeek >= 0 and dayOfWeek <= 6 "Day of week must be between 0 and 6"
+    guard endTime > startTime "End time must be after start time"
+    guard effectiveUntil == null or effectiveUntil == "" or effectiveUntil >= effectiveFrom "Effective-until must be on or after effective-from"
 
     mutate employeeId = employeeId
     mutate dayOfWeek = dayOfWeek

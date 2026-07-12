@@ -111,6 +111,7 @@ entity Invoice mixin TenantScoped, SoftDeletable {
     mutate dueDate = dueDate
     mutate paymentTerms = paymentTerms
     mutate lineItems = lineItems
+    emit InvoiceUpdated
   }
 
   command send(optional clientContactId: string) {
@@ -222,6 +223,12 @@ event InvoiceCreated: "invoice.created" {
   eventId: string
   clientId: string
   total: money
+}
+
+event InvoiceUpdated: "invoice.updated" {
+  invoiceId: string
+  total: money
+  amountDue: money
 }
 
 event InvoiceSent: "invoice.sent" {

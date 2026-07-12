@@ -1004,7 +1004,9 @@
     "Employee ID is required",
     "Start time is required",
     "End time is required",
-    "Day of week must be between 0 and 6"
+    "Day of week must be between 0 and 6",
+    "End time must be after start time",
+    "Effective-until must be on or after effective-from"
   ],
   "EmployeeAvailability.reinstate": [
     "Cannot reinstate a deleted availability record",
@@ -1498,7 +1500,8 @@
     "Facility name is required"
   ],
   "Facility.remove": [
-    "Cannot delete an active facility"
+    "Cannot delete an active facility",
+    "Facility is already removed"
   ],
   "Facility.restoreFromMaintenance": [
     "Facility is not in maintenance"
@@ -1516,6 +1519,9 @@
   ],
   "FacilityArea.edit": [
     "Area name is required"
+  ],
+  "FacilityArea.remove": [
+    "Area is already removed"
   ],
   "FacilityArea.reopen": [
     "Area is not in maintenance"
@@ -1976,7 +1982,10 @@
     "Cannot close a deleted budget"
   ],
   "LaborBudget.create": [
-    "Budget amount must be positive"
+    "Budget amount must be positive",
+    "Period start is required",
+    "Period end is required",
+    "Period end must be on or after period start"
   ],
   "LaborBudget.recordActual": [
     "Can only record actuals on approved budgets",
@@ -2586,7 +2595,8 @@
     "Tier name is required",
     "Minimum quantity must be at least 1",
     "Unit cost must be non-negative",
-    "Discount percent must be between 0 and 100"
+    "Discount percent must be between 0 and 100",
+    "Effective-to must be on or after effective-from"
   ],
   "PricingTier.deactivate": [
     "Cannot deactivate a deleted pricing tier",
@@ -2600,7 +2610,8 @@
     "Tier name is required",
     "Minimum quantity must be at least 1",
     "Unit cost must be non-negative",
-    "Discount percent must be between 0 and 100"
+    "Discount percent must be between 0 and 100",
+    "Effective-to must be on or after effective-from"
   ],
   "ProcurementBudget.close": [
     "Budget is already closed",
@@ -3412,6 +3423,7 @@
     "Employee ID is required",
     "Start date is required",
     "End date is required",
+    "End date must be on or after start date",
     "Request type is required"
   ],
   "TimeOffRequest.reconsider": [
@@ -3630,7 +3642,9 @@
   "User.create": [
     "Email is required",
     "First name is required",
-    "Last name is required"
+    "Last name is required",
+    "Hourly rate cannot be negative",
+    "Annual salary cannot be negative"
   ],
   "User.deactivate": [
     "User is already inactive"
@@ -3777,7 +3791,8 @@
   "VendorContract.create": [
     "Contract number is required",
     "Vendor is required",
-    "Start date is required"
+    "Start date is required",
+    "End date must be on or after start date"
   ],
   "VendorContract.recordSlaBreach": [
     "Can only record breaches for active contracts"

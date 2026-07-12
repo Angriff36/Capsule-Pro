@@ -41,7 +41,7 @@ entity AdminTask mixin TenantScoped, SoftDeletable {
   // create fail for any status that owns a transition rule (e.g. backlog->backlog
   // is rejected because backlog's `to` list is [todo, cancelled]). The command
   // body is authoritative for the initial state.
-  command create(title: string, description: string, optional status: string, priority: string, category: string, assignedTo: string, dueDate: datetime, optional createdBy: string, optional sourceType: string, optional sourceId: string, optional position: int, optional labels: array<string>, optional estimatedHours: decimal) {
+  command create(title: string, description: string, optional status: string, priority: string, category: string, assignedTo: string, dueDate: datetime, createdBy: string from context.user.id, optional sourceType: string, optional sourceId: string, optional position: int, optional labels: array<string>, optional estimatedHours: decimal) {
     guard title != null and title != "" "Title is required"
 
     mutate title = title
@@ -50,7 +50,7 @@ entity AdminTask mixin TenantScoped, SoftDeletable {
     mutate category = category
     mutate assignedTo = assignedTo
     mutate dueDate = dueDate
-    mutate createdBy = createdBy != null and createdBy != "" ? createdBy : user.id
+    mutate createdBy = createdBy
     mutate sourceType = sourceType != null ? sourceType : ""
     mutate sourceId = sourceId != null ? sourceId : null
     mutate position = position != null ? position : 0

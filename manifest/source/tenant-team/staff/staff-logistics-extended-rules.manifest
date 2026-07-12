@@ -28,7 +28,7 @@ entity TimecardApproval mixin TenantScoped, SoftDeletable {
   constraint validStatus: self.status in ["pending", "approved", "rejected"] "Invalid timecard approval status"
 
   default policy TimecardApprovalDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(employeeId: string, payrollRunId: string, submittedBy: string, notes: string) {
+  command create(employeeId: string, payrollRunId: string, submittedBy: string from context.user.id, notes: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard payrollRunId != null and payrollRunId != "" "Payroll run ID is required"
     guard submittedBy != null and submittedBy != "" "Submitter ID is required"
@@ -41,7 +41,7 @@ entity TimecardApproval mixin TenantScoped, SoftDeletable {
     emit TimecardApprovalCreated
   }
 
-  command approve(approvedBy: string, notes: string) {
+  command approve(approvedBy: string from context.user.id, notes: string) {
     guard self.status == "pending" "Only pending approvals can be approved"
     guard approvedBy != null and approvedBy != "" "Approver ID is required"
 
@@ -53,7 +53,7 @@ entity TimecardApproval mixin TenantScoped, SoftDeletable {
     emit TimecardApproved
   }
 
-  command reject(approvedBy: string, notes: string) {
+  command reject(approvedBy: string from context.user.id, notes: string) {
     guard self.status == "pending" "Only pending approvals can be rejected"
     guard approvedBy != null and approvedBy != "" "Reviewer ID is required"
     guard notes != null and notes != "" "Rejection reason is required"
@@ -67,7 +67,7 @@ entity TimecardApproval mixin TenantScoped, SoftDeletable {
 
   // Bulk-approve: manager stamps a batch of timecards in one operation.
   // Each instance is approved individually via this command — callers loop over IDs.
-  command bulkApprove(approvedBy: string) {
+  command bulkApprove(approvedBy: string from context.user.id) {
     guard self.status == "pending" "Only pending timecards can be bulk-approved"
     guard approvedBy != null and approvedBy != "" "Approver ID is required"
 
@@ -210,7 +210,7 @@ entity TipPool mixin TenantScoped, SoftDeletable {
 
   // Record per-employee distribution of tips from this pool.
   // Callers invoke once per employee — amount is additive against the pool total.
-  command distribute(employeeId: string, amount: money, distributedBy: string) {
+  command distribute(employeeId: string, amount: money, distributedBy: string from context.user.id) {
     guard self.status == "allocated" "Only allocated tip pools can be distributed"
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard amount > 0 "Distribution amount must be positive"
@@ -225,7 +225,7 @@ entity TipPool mixin TenantScoped, SoftDeletable {
   }
 
   // Mark distribution complete — moves pool to distributed status.
-  command finalizeDistribution(distributedBy: string) {
+  command finalizeDistribution(distributedBy: string from context.user.id) {
     guard self.status == "allocated" "Only allocated tip pools can be finalized"
     guard distributedBy != null and distributedBy != "" "Distributor ID is required"
 
@@ -279,7 +279,7 @@ entity DisciplinaryAction mixin TenantScoped, SoftDeletable {
   relationship belongsTo employee: User with employeeId
 
   default policy DisciplinaryActionDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(employeeId: string, actionType: string, reason: string, severity: string, issuedBy: string) {
+  command create(employeeId: string, actionType: string, reason: string, severity: string, issuedBy: string from context.user.id) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard actionType != null and actionType != "" "Action type is required"
     guard reason != null and reason != "" "Reason is required"

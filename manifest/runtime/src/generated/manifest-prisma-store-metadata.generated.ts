@@ -30485,7 +30485,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "type": "String",
         "isEnum": false,
         "isList": false,
-        "optional": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false

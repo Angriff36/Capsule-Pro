@@ -39,7 +39,7 @@ entity Ingredient mixin TenantScoped, SoftDeletable {
 
   constraint requireName: self.name != null and self.name != "" "Ingredient name is required"
   constraint positiveShelfLife: self.shelfLifeDays >= 0 "Shelf life days cannot be negative"
-  constraint warnNoInventoryItem:warn self.inventoryItemId == "" {
+  constraint warnNoInventoryItem:warn self.inventoryItemId == null {
     messageTemplate: "Ingredient '{ingredientName}' is not linked to an inventory item"
     details: {
       ingredientName: self.name
@@ -147,7 +147,7 @@ entity Ingredient mixin TenantScoped, SoftDeletable {
   }
 
   command unlinkInventoryItem(reason: string, userId: string) {
-    guard self.inventoryItemId != "" "Ingredient is not linked to an inventory item"
+    guard self.inventoryItemId != null "Ingredient is not linked to an inventory item"
     guard reason != null and reason != "" "Reason is required"
 
     mutate inventoryItemId = null

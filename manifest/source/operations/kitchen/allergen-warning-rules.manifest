@@ -88,7 +88,7 @@ entity AllergenWarning mixin TenantScoped, SoftDeletable {
     emit AllergenWarningResolved
   }
 
-  command applyOverride(overrideReason: string, acknowledgedBy: string) {
+  command applyOverride(overrideReason: string, acknowledgedBy: string from context.user.id) {
     guard overrideReason != null and overrideReason != "" "Override reason is required"
     guard acknowledgedBy != null and acknowledgedBy != "" "Acknowledged by user is required"
 

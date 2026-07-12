@@ -137,7 +137,7 @@ entity EntityVersion mixin TenantScoped {
     emit EntityVersionCreated
   }
 
-  command approve(approverId: string, comments: string) {
+  command approve(approverId: string from context.user.id, comments: string) {
     guard approverId != null and approverId != "" "Approver ID is required"
     guard self.isApproved == false "Version is already approved"
 

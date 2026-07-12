@@ -239,7 +239,7 @@ entity RecipeVersion mixin TenantScoped, SoftDeletable {
   }
 
   // Kitchen lead sign-off: stamps a published version as kitchen-approved for catering service.
-  command approve(approvedBy: string) {
+  command approve(approvedBy: string from context.user.id) {
     guard self.status == "published" "Only a published version can be approved"
     guard approvedBy != null and approvedBy != "" "Approver ID is required"
     guard self.approvedAt == null "Version is already approved"

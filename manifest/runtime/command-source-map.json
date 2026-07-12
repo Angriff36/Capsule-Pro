@@ -391,15 +391,15 @@
     },
     "command:BudgetAlert.acknowledge": {
       "file": "accounting/labor-budget-rules.manifest",
-      "line": 161
+      "line": 164
     },
     "command:BudgetAlert.create": {
       "file": "accounting/labor-budget-rules.manifest",
-      "line": 146
+      "line": 149
     },
     "command:BudgetAlert.markResolved": {
       "file": "accounting/labor-budget-rules.manifest",
-      "line": 171
+      "line": 174
     },
     "command:BudgetLineItem.create": {
       "file": "events/event-budget-rules.manifest",
@@ -1123,19 +1123,19 @@
     },
     "command:EmployeeAvailability.reinstate": {
       "file": "tenant-team/staff/employee-availability-rules.manifest",
-      "line": 79
+      "line": 81
     },
     "command:EmployeeAvailability.softDelete": {
       "file": "tenant-team/staff/employee-availability-rules.manifest",
-      "line": 90
+      "line": 92
     },
     "command:EmployeeAvailability.suspend": {
       "file": "tenant-team/staff/employee-availability-rules.manifest",
-      "line": 66
+      "line": 68
     },
     "command:EmployeeAvailability.update": {
       "file": "tenant-team/staff/employee-availability-rules.manifest",
-      "line": 51
+      "line": 53
     },
     "command:EmployeeCertification.create": {
       "file": "tenant-team/staff/employee-certification-rules.manifest",
@@ -1675,7 +1675,7 @@
     },
     "command:Facility.edit": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 80
+      "line": 81
     },
     "command:Facility.remove": {
       "file": "operations/facilities/facilities-all-rules.manifest",
@@ -1683,99 +1683,99 @@
     },
     "command:Facility.restoreFromMaintenance": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 109
+      "line": 110
     },
     "command:Facility.sendToMaintenance": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 99
+      "line": 100
     },
     "command:FacilityArea.closeForMaintenance": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 176
+      "line": 179
     },
     "command:FacilityArea.create": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 142
+      "line": 143
     },
     "command:FacilityArea.edit": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 162
+      "line": 165
     },
     "command:FacilityArea.remove": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 156
+      "line": 157
     },
     "command:FacilityArea.reopen": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 185
+      "line": 188
     },
     "command:FacilityAsset.create": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 239
+      "line": 242
     },
     "command:FacilityAsset.remove": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 258
+      "line": 261
     },
     "command:FacilityAsset.retire": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 296
+      "line": 299
     },
     "command:FacilityAsset.returnFromMaintenance": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 285
+      "line": 288
     },
     "command:FacilityAsset.sendToMaintenance": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 275
+      "line": 278
     },
     "command:FacilityAsset.update": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 264
+      "line": 267
     },
     "command:FacilitySchedule.cancel": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 407
+      "line": 410
     },
     "command:FacilitySchedule.complete": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 397
+      "line": 400
     },
     "command:FacilitySchedule.create": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 348
+      "line": 351
     },
     "command:FacilitySchedule.edit": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 371
+      "line": 374
     },
     "command:FacilitySchedule.remove": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 365
+      "line": 368
     },
     "command:FacilitySchedule.start": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 387
+      "line": 390
     },
     "command:FacilityWorkOrder.assign": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 491
+      "line": 494
     },
     "command:FacilityWorkOrder.cancel": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 527
+      "line": 530
     },
     "command:FacilityWorkOrder.complete": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 515
+      "line": 518
     },
     "command:FacilityWorkOrder.create": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 473
+      "line": 476
     },
     "command:FacilityWorkOrder.start": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 504
+      "line": 507
     },
     "command:FeatureFlag.create": {
       "file": "platform/feature-flag-rules.manifest",
@@ -2019,7 +2019,7 @@
     },
     "command:Invoice.applyPayment": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 131
+      "line": 132
     },
     "command:Invoice.create": {
       "file": "accounting/invoice-rules.manifest",
@@ -2027,27 +2027,27 @@
     },
     "command:Invoice.markAsPaid": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 141
+      "line": 142
     },
     "command:Invoice.markOverdue": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 157
+      "line": 158
     },
     "command:Invoice.markViewed": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 124
+      "line": 125
     },
     "command:Invoice.recordRefund": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 148
+      "line": 149
     },
     "command:Invoice.send": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 116
+      "line": 117
     },
     "command:Invoice.sendReminder": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 166
+      "line": 167
     },
     "command:Invoice.update": {
       "file": "accounting/invoice-rules.manifest",
@@ -2055,15 +2055,15 @@
     },
     "command:Invoice.updateLineItems": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 189
+      "line": 190
     },
     "command:Invoice.voidInvoice": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 174
+      "line": 175
     },
     "command:Invoice.writeOff": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 181
+      "line": 182
     },
     "command:IoTAlert.acknowledge": {
       "file": "operations/kitchen/kitchen-extended-rules.manifest",
@@ -2187,11 +2187,11 @@
     },
     "command:LaborBudget.approve": {
       "file": "accounting/labor-budget-rules.manifest",
-      "line": 77
+      "line": 80
     },
     "command:LaborBudget.close": {
       "file": "accounting/labor-budget-rules.manifest",
-      "line": 107
+      "line": 110
     },
     "command:LaborBudget.create": {
       "file": "accounting/labor-budget-rules.manifest",
@@ -2199,15 +2199,15 @@
     },
     "command:LaborBudget.recordActual": {
       "file": "accounting/labor-budget-rules.manifest",
-      "line": 97
+      "line": 100
     },
     "command:LaborBudget.softDelete": {
       "file": "accounting/labor-budget-rules.manifest",
-      "line": 116
+      "line": 119
     },
     "command:LaborBudget.update": {
       "file": "accounting/labor-budget-rules.manifest",
-      "line": 64
+      "line": 67
     },
     "command:Lead.archive": {
       "file": "sales/lead-rules.manifest",
@@ -2287,23 +2287,23 @@
     },
     "command:MaintenanceWorkOrder.assign": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 292
+      "line": 300
     },
     "command:MaintenanceWorkOrder.completeWork": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 312
+      "line": 320
     },
     "command:MaintenanceWorkOrder.create": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 342
+      "line": 350
     },
     "command:MaintenanceWorkOrder.startWork": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 304
+      "line": 312
     },
     "command:MaintenanceWorkOrder.updateStatus": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 323
+      "line": 331
     },
     "command:Menu.archive": {
       "file": "operations/kitchen/menu-rules.manifest",
@@ -2855,7 +2855,7 @@
     },
     "command:PricingTier.activate": {
       "file": "accounting/pricing-tier-rules.manifest",
-      "line": 93
+      "line": 95
     },
     "command:PricingTier.create": {
       "file": "accounting/pricing-tier-rules.manifest",
@@ -2863,15 +2863,15 @@
     },
     "command:PricingTier.deactivate": {
       "file": "accounting/pricing-tier-rules.manifest",
-      "line": 103
+      "line": 105
     },
     "command:PricingTier.softDelete": {
       "file": "accounting/pricing-tier-rules.manifest",
-      "line": 112
+      "line": 114
     },
     "command:PricingTier.update": {
       "file": "accounting/pricing-tier-rules.manifest",
-      "line": 63
+      "line": 64
     },
     "command:ProcurementBudget.close": {
       "file": "operations/inventory/inventory-extended-rules.manifest",
@@ -3455,31 +3455,31 @@
     },
     "command:ScheduleShift.acceptSwap": {
       "file": "tenant-team/staff/schedule-rules.manifest",
-      "line": 223
+      "line": 225
     },
     "command:ScheduleShift.cancelSwap": {
       "file": "tenant-team/staff/schedule-rules.manifest",
-      "line": 245
+      "line": 247
     },
     "command:ScheduleShift.create": {
       "file": "tenant-team/staff/schedule-rules.manifest",
-      "line": 177
+      "line": 179
     },
     "command:ScheduleShift.declineSwap": {
       "file": "tenant-team/staff/schedule-rules.manifest",
-      "line": 235
+      "line": 237
     },
     "command:ScheduleShift.offerSwap": {
       "file": "tenant-team/staff/schedule-rules.manifest",
-      "line": 209
+      "line": 211
     },
     "command:ScheduleShift.remove": {
       "file": "tenant-team/staff/schedule-rules.manifest",
-      "line": 254
+      "line": 256
     },
     "command:ScheduleShift.update": {
       "file": "tenant-team/staff/schedule-rules.manifest",
-      "line": 194
+      "line": 196
     },
     "command:SelOnboardingTrainingModuleDefinition.create": {
       "file": "tenant-team/training/training-module-sel-rules.manifest",
@@ -3763,15 +3763,15 @@
     },
     "command:TimeOffRequest.approve": {
       "file": "tenant-team/staff/time-off-request-rules.manifest",
-      "line": 71
+      "line": 72
     },
     "command:TimeOffRequest.attachBalance": {
       "file": "tenant-team/staff/time-off-request-rules.manifest",
-      "line": 60
+      "line": 61
     },
     "command:TimeOffRequest.cancel": {
       "file": "tenant-team/staff/time-off-request-rules.manifest",
-      "line": 110
+      "line": 111
     },
     "command:TimeOffRequest.create": {
       "file": "tenant-team/staff/time-off-request-rules.manifest",
@@ -3779,15 +3779,15 @@
     },
     "command:TimeOffRequest.reconsider": {
       "file": "tenant-team/staff/time-off-request-rules.manifest",
-      "line": 98
+      "line": 99
     },
     "command:TimeOffRequest.reject": {
       "file": "tenant-team/staff/time-off-request-rules.manifest",
-      "line": 83
+      "line": 84
     },
     "command:TimeOffRequest.softDelete": {
       "file": "tenant-team/staff/time-off-request-rules.manifest",
-      "line": 119
+      "line": 120
     },
     "command:TimecardApproval.approve": {
       "file": "tenant-team/staff/staff-logistics-extended-rules.manifest",
@@ -3951,27 +3951,27 @@
     },
     "command:User.deactivate": {
       "file": "platform/user-rules.manifest",
-      "line": 102
+      "line": 104
     },
     "command:User.reactivate": {
       "file": "platform/user-rules.manifest",
-      "line": 147
+      "line": 149
     },
     "command:User.softDelete": {
       "file": "platform/user-rules.manifest",
-      "line": 156
+      "line": 158
     },
     "command:User.terminate": {
       "file": "platform/user-rules.manifest",
-      "line": 110
+      "line": 112
     },
     "command:User.update": {
       "file": "platform/user-rules.manifest",
-      "line": 87
+      "line": 89
     },
     "command:User.updateRole": {
       "file": "platform/user-rules.manifest",
-      "line": 128
+      "line": 130
     },
     "command:VarianceReport.approve": {
       "file": "operations/inventory/cycle-count-rules.manifest",
@@ -4099,11 +4099,11 @@
     },
     "command:VendorContract.activate": {
       "file": "operations/procurement/vendor-contract-rules.manifest",
-      "line": 158
+      "line": 159
     },
     "command:VendorContract.approve": {
       "file": "operations/procurement/vendor-contract-rules.manifest",
-      "line": 138
+      "line": 139
     },
     "command:VendorContract.create": {
       "file": "operations/procurement/vendor-contract-rules.manifest",
@@ -4111,31 +4111,31 @@
     },
     "command:VendorContract.recordSlaBreach": {
       "file": "operations/procurement/vendor-contract-rules.manifest",
-      "line": 220
+      "line": 221
     },
     "command:VendorContract.reject": {
       "file": "operations/procurement/vendor-contract-rules.manifest",
-      "line": 148
+      "line": 149
     },
     "command:VendorContract.renew": {
       "file": "operations/procurement/vendor-contract-rules.manifest",
-      "line": 188
+      "line": 189
     },
     "command:VendorContract.submit": {
       "file": "operations/procurement/vendor-contract-rules.manifest",
-      "line": 112
+      "line": 113
     },
     "command:VendorContract.terminate": {
       "file": "operations/procurement/vendor-contract-rules.manifest",
-      "line": 167
+      "line": 168
     },
     "command:VendorContract.update": {
       "file": "operations/procurement/vendor-contract-rules.manifest",
-      "line": 96
+      "line": 97
     },
     "command:VendorContract.updateCompliance": {
       "file": "operations/procurement/vendor-contract-rules.manifest",
-      "line": 197
+      "line": 198
     },
     "command:VendorRating.create": {
       "file": "operations/inventory/inventory-extended-rules.manifest",
@@ -4467,7 +4467,7 @@
     },
     "constraint:BudgetAlert.validAlertType": {
       "file": "accounting/labor-budget-rules.manifest",
-      "line": 143
+      "line": 146
     },
     "constraint:BudgetLineItem.positiveActualAmount": {
       "file": "events/event-budget-rules.manifest",
@@ -5447,51 +5447,51 @@
     },
     "constraint:FacilityArea.validAreaType": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 132
+      "line": 133
     },
     "constraint:FacilityArea.validStatus": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 135
+      "line": 136
     },
     "constraint:FacilityAsset.validAssetType": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 220
+      "line": 223
     },
     "constraint:FacilityAsset.validStatus": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 224
+      "line": 227
     },
     "constraint:FacilityAsset.warnMaintenanceOverdue": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 230
+      "line": 233
     },
     "constraint:FacilityAsset.warnRetireOperational": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 300
+      "line": 303
     },
     "constraint:FacilitySchedule.validScheduleType": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 338
+      "line": 341
     },
     "constraint:FacilitySchedule.validStatus": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 342
+      "line": 345
     },
     "constraint:FacilityWorkOrder.validCategory": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 448
+      "line": 451
     },
     "constraint:FacilityWorkOrder.validPriority": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 446
+      "line": 449
     },
     "constraint:FacilityWorkOrder.validStatus": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 447
+      "line": 450
     },
     "constraint:FacilityWorkOrder.warnOverdue": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 454
+      "line": 457
     },
     "constraint:FeatureFlag.requireFlagKey": {
       "file": "platform/feature-flag-rules.manifest",
@@ -5767,7 +5767,7 @@
     },
     "constraint:LaborBudget.blockApproveZero": {
       "file": "accounting/labor-budget-rules.manifest",
-      "line": 82
+      "line": 85
     },
     "constraint:LaborBudget.positiveBudget": {
       "file": "accounting/labor-budget-rules.manifest",
@@ -5843,23 +5843,23 @@
     },
     "constraint:MaintenanceWorkOrder.validPriority": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 279
+      "line": 287
     },
     "constraint:MaintenanceWorkOrder.validWorkOrderType": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 278
+      "line": 286
     },
     "constraint:MaintenanceWorkOrder.warnCancelWorkOrder": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 327
+      "line": 335
     },
     "constraint:MaintenanceWorkOrder.warnCriticalWithoutSchedule": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 347
+      "line": 355
     },
     "constraint:MaintenanceWorkOrder.warnOverdueWorkOrder": {
       "file": "operations/equipment/equipment-rules.manifest",
-      "line": 281
+      "line": 289
     },
     "constraint:Menu.positiveMinGuests": {
       "file": "operations/kitchen/menu-rules.manifest",
@@ -6275,11 +6275,11 @@
     },
     "constraint:PricingTier.warnActiveTier": {
       "file": "accounting/pricing-tier-rules.manifest",
-      "line": 115
+      "line": 117
     },
     "constraint:PricingTier.warnPriceReduction": {
       "file": "accounting/pricing-tier-rules.manifest",
-      "line": 70
+      "line": 72
     },
     "constraint:PricingTier.warnZeroCost": {
       "file": "accounting/pricing-tier-rules.manifest",
@@ -6679,15 +6679,15 @@
     },
     "constraint:ScheduleShift.validShiftTimes": {
       "file": "tenant-team/staff/schedule-rules.manifest",
-      "line": 164
+      "line": 166
     },
     "constraint:ScheduleShift.validSwapStatus": {
       "file": "tenant-team/staff/schedule-rules.manifest",
-      "line": 165
+      "line": 167
     },
     "constraint:ScheduleShift.warnLongShift": {
       "file": "tenant-team/staff/schedule-rules.manifest",
-      "line": 167
+      "line": 169
     },
     "constraint:Shipment.blockNoItems": {
       "file": "operations/logistics/shipment-rules.manifest",
@@ -6971,7 +6971,7 @@
     },
     "constraint:User.blockAlreadyTerminated": {
       "file": "platform/user-rules.manifest",
-      "line": 113
+      "line": 115
     },
     "constraint:User.validEmploymentType": {
       "file": "platform/user-rules.manifest",
@@ -6983,7 +6983,7 @@
     },
     "constraint:User.warnAdminPromotion": {
       "file": "platform/user-rules.manifest",
-      "line": 132
+      "line": 134
     },
     "constraint:VarianceReport.validStatus": {
       "file": "operations/inventory/cycle-count-rules.manifest",
@@ -7059,7 +7059,7 @@
     },
     "constraint:VendorContract.warnLowCompliance": {
       "file": "operations/procurement/vendor-contract-rules.manifest",
-      "line": 203
+      "line": 204
     },
     "constraint:VendorRating.requireCategory": {
       "file": "operations/inventory/inventory-extended-rules.manifest",
@@ -7267,7 +7267,7 @@
     },
     "entity:BudgetAlert": {
       "file": "accounting/labor-budget-rules.manifest",
-      "line": 128
+      "line": 131
     },
     "entity:BudgetLineItem": {
       "file": "events/event-budget-rules.manifest",
@@ -7491,19 +7491,19 @@
     },
     "entity:FacilityArea": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 120
+      "line": 121
     },
     "entity:FacilityAsset": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 196
+      "line": 199
     },
     "entity:FacilitySchedule": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 316
+      "line": 319
     },
     "entity:FacilityWorkOrder": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 419
+      "line": 422
     },
     "entity:FeatureFlag": {
       "file": "platform/feature-flag-rules.manifest",
@@ -8183,19 +8183,19 @@
     },
     "transition:FacilityArea.status": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 138
+      "line": 139
     },
     "transition:FacilityAsset.status": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 227
+      "line": 230
     },
     "transition:FacilitySchedule.status": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 344
+      "line": 347
     },
     "transition:FacilityWorkOrder.status": {
       "file": "operations/facilities/facilities-all-rules.manifest",
-      "line": 463
+      "line": 466
     },
     "transition:InventoryAlert.status": {
       "file": "operations/inventory/inventory-extended-rules.manifest",
@@ -8211,7 +8211,7 @@
     },
     "transition:Invoice.status": {
       "file": "accounting/invoice-rules.manifest",
-      "line": 202
+      "line": 203
     },
     "transition:IoTAlert.status": {
       "file": "operations/kitchen/kitchen-extended-rules.manifest",
@@ -8244,6 +8244,10 @@
     "transition:LogisticsRoute.status": {
       "file": "operations/logistics/logistics-all-rules.manifest",
       "line": 324
+    },
+    "transition:MaintenanceWorkOrder.status": {
+      "file": "operations/equipment/equipment-rules.manifest",
+      "line": 260
     },
     "transition:Menu.status": {
       "file": "operations/kitchen/menu-rules.manifest",
@@ -8399,7 +8403,7 @@
     },
     "transition:VendorContract.status": {
       "file": "operations/procurement/vendor-contract-rules.manifest",
-      "line": 231
+      "line": 232
     },
     "transition:VersionApproval.status": {
       "file": "platform/version-control-rules.manifest",

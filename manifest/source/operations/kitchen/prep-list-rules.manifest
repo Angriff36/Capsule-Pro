@@ -325,7 +325,7 @@ entity PrepListItem mixin TenantScoped, SoftDeletable {
     emit PrepListItemNotesUpdated
   }
 
-  command markCompleted(completedByUserId: string) {
+  command markCompleted(completedByUserId: string from context.user.id) {
     guard self.isCompleted == false "Item is already completed"
     guard completedByUserId != null and completedByUserId != "" "User ID is required"
 

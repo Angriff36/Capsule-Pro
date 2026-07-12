@@ -90,7 +90,7 @@ entity Budget mixin TenantScoped {
     emit BudgetUpdated
   }
 
-  command approve(approvedBy: string) {
+  command approve(approvedBy: string from context.user.id) {
     guard self.status == "draft" "Only draft budgets can be approved"
     guard approvedBy != null and approvedBy != "" "Approver ID is required"
 

@@ -227,6 +227,7 @@ export interface ScheduleShiftCreateInput {
   shiftEnd?: string;
   roleDuringShift?: string;
   notes?: string;
+  locationId?: string;
 }
 export interface ScheduleShiftDeclineSwapInput {
   id?: string;

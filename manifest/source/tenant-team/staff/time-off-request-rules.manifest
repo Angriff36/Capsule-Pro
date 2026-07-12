@@ -45,6 +45,7 @@ entity TimeOffRequest mixin TenantScoped, SoftDeletable {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard startDate != null and startDate != "" "Start date is required"
     guard endDate != null and endDate != "" "End date is required"
+    guard endDate >= startDate "End date must be on or after start date"
     guard requestType != null and requestType != "" "Request type is required"
 
     mutate employeeId = employeeId
@@ -68,7 +69,7 @@ entity TimeOffRequest mixin TenantScoped, SoftDeletable {
     emit TimeOffBalanceAttached
   }
 
-  command approve(processedBy: string) {
+  command approve(processedBy: string from context.user.id) {
     guard self.deletedAt == null "Cannot approve a deleted request"
     guard self.status == "PENDING" "Can only approve pending requests"
     guard processedBy != null and processedBy != "" "Processor ID is required"
@@ -80,7 +81,7 @@ entity TimeOffRequest mixin TenantScoped, SoftDeletable {
     emit TimeOffRequestApproved
   }
 
-  command reject(processedBy: string, rejectionReason: string) {
+  command reject(processedBy: string from context.user.id, rejectionReason: string) {
     guard self.deletedAt == null "Cannot reject a deleted request"
     guard self.status == "PENDING" "Can only reject pending requests"
     guard processedBy != null and processedBy != "" "Processor ID is required"

@@ -159,7 +159,7 @@ entity PayrollApprovalHistory mixin TenantScoped, SoftDeletable {
   relationship belongsTo payrollRun: PayrollRun with payrollRunId
 
   default policy PayrollApprovalHistoryDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Payroll management"
-  command create(payrollRunId: string, action: string, previousStatus: string, newStatus: string, performedBy: string, reason: string) {
+  command create(payrollRunId: string, action: string, previousStatus: string, newStatus: string, performedBy: string from context.user.id, reason: string) {
     guard payrollRunId != null and payrollRunId != "" "Payroll run ID is required"
 
     mutate payrollRunId = payrollRunId
@@ -231,7 +231,7 @@ entity PayrollRun mixin TenantScoped, SoftDeletable {
     emit PayrollRunProcessed
   }
 
-  command approve(approvedBy: string) {
+  command approve(approvedBy: string from context.user.id) {
     guard self.status == "processing" "Only a processed run can be approved"
     guard approvedBy != null and approvedBy != "" "Approver is required"
 
@@ -242,7 +242,7 @@ entity PayrollRun mixin TenantScoped, SoftDeletable {
     emit PayrollRunApproved
   }
 
-  command reject(rejectedBy: string, rejectReason: string) {
+  command reject(rejectedBy: string from context.user.id, rejectReason: string) {
     guard self.status in ["pending", "processing"] "Only a pending or processing run can be rejected"
     guard rejectReason != null and rejectReason != "" "Rejection reason is required"
 

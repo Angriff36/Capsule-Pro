@@ -479,7 +479,7 @@ entity AdminChatMessage mixin TenantScoped, SoftDeletable {
   constraint requireText: self.text != null and self.text != "" "Message text is required"
 
   default policy AdminChatMessageDefaultAccess execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Admin chat"
-  command create(threadId: string, authorId: string, authorName: string, text: string) {
+  command create(threadId: string, authorId: string from context.user.id, authorName: string, text: string) {
     guard threadId != null and threadId != "" "Chat thread ID is required"
     guard authorId != null and authorId != "" "Author ID is required"
     guard text != null and text != "" "Message text is required"

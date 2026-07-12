@@ -123,7 +123,7 @@ entity PrepTaskPlanWorkflow mixin TenantScoped, SoftDeletable {
   }
 
   // Step 2: Review generated tasks
-  command startReviewing(reviewerId: string) {
+  command startReviewing(reviewerId: string from context.user.id) {
     guard self.status == "awaiting_review"
     guard self.generatedCount > 0 "No tasks to review"
 
@@ -154,7 +154,7 @@ entity PrepTaskPlanWorkflow mixin TenantScoped, SoftDeletable {
   }
 
   // Step 3: Approve or reject the plan
-  command startApproving(approverId: string) {
+  command startApproving(approverId: string from context.user.id) {
     guard self.status == "awaiting_approval"
     guard self.approvedCount > 0 "No tasks approved for instantiation"
 
@@ -261,7 +261,7 @@ entity PrepTaskPlanWorkflow mixin TenantScoped, SoftDeletable {
   }
 
   // Quick approve - skip review step
-  command quickApprove(approverId: string) {
+  command quickApprove(approverId: string from context.user.id) {
     guard self.status == "awaiting_review"
     guard self.generatedCount > 0 "No tasks to approve"
 

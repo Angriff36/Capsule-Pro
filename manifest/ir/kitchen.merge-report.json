@@ -110,7 +110,7 @@
   "counts": {
     "entities": 213,
     "commands": 1070,
-    "events": 1045,
+    "events": 1047,
     "sagas": 2,
     "reactions": 10
   },

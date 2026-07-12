@@ -324,7 +324,7 @@ entity VarianceReport mixin TenantScoped, SoftDeletable {
     emit VarianceReportCreated
   }
 
-  command reject(userId: string, reason: string) {
+  command reject(userId: string from context.user.id, reason: string) {
     guard self.status in ["pending", "reviewed"] "Can only reject pending or reviewed reports"
     guard reason != null and reason != "" "Rejection reason is required"
 

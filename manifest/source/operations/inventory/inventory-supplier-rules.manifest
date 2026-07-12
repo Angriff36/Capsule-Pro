@@ -111,7 +111,7 @@ entity InventorySupplier mixin TenantScoped, SoftDeletable {
   }
 
   // Approve a supplier after vetting — required before they can be used on purchase orders.
-  command approve(approvedBy: string) {
+  command approve(approvedBy: string from context.user.id) {
     guard self.qualificationStatus == "pending" "Only pending suppliers can be approved"
     guard approvedBy != null and approvedBy != "" "Approving user is required"
 

@@ -69,7 +69,7 @@ entity DocumentVersion mixin TenantScoped {
     emit DocumentVersionContentUpdated
   }
 
-  command approve(approvedBy: string) {
+  command approve(approvedBy: string from context.user.id) {
     guard self.status == "draft" "Can only approve draft versions"
     guard approvedBy != null and approvedBy != "" "Approver is required"
 
@@ -80,7 +80,7 @@ entity DocumentVersion mixin TenantScoped {
     emit DocumentVersionApproved
   }
 
-  command markPublished(publishedBy: string) {
+  command markPublished(publishedBy: string from context.user.id) {
     guard self.status == "approved" "Can only publish approved versions"
     guard publishedBy != null and publishedBy != "" "Publisher is required"
 

@@ -25,8 +25,9 @@ ALTER TABLE "tenant_kitchen"."equipment" ALTER COLUMN "status" TYPE "EquipmentSt
 ALTER TABLE "tenant_kitchen"."equipment" ALTER COLUMN "status" SET DEFAULT 'active';
 ALTER TABLE "tenant_kitchen"."equipment" ALTER COLUMN "status" SET NOT NULL;
 
--- CreateIndex
-CREATE INDEX "maintenance_work_orders_tenant_id_status_idx" ON "tenant_facilities"."maintenance_work_orders"("tenant_id", "status");
+-- CreateIndex (IF NOT EXISTS: unlike Prisma's DROP+ADD column, the in-place
+-- ALTER keeps the pre-existing indexes alive)
+CREATE INDEX IF NOT EXISTS "maintenance_work_orders_tenant_id_status_idx" ON "tenant_facilities"."maintenance_work_orders"("tenant_id", "status");
 
 -- CreateIndex
-CREATE INDEX "equipment_tenant_id_status_idx" ON "tenant_kitchen"."equipment"("tenant_id", "status");
+CREATE INDEX IF NOT EXISTS "equipment_tenant_id_status_idx" ON "tenant_kitchen"."equipment"("tenant_id", "status");

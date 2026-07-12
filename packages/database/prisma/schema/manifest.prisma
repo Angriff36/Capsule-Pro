@@ -5274,7 +5274,7 @@ model ScheduleShift {
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   scheduleId String @map("schedule_id") @db.Uuid
   employeeId String @map("employee_id") @db.Uuid
-  locationId String @map("location_id") @db.Uuid
+  locationId String? @map("location_id") @db.Uuid
   shiftStart DateTime @map("shift_start") @db.Timestamptz(6)
   shiftEnd DateTime @map("shift_end") @db.Timestamptz(6)
   roleDuringShift String? @map("role_during_shift") @default("")
@@ -5289,7 +5289,7 @@ model ScheduleShift {
 
   schedule Schedule @relation(fields: [tenantId, scheduleId], references: [tenantId, id])
   employee User @relation(fields: [employeeId], references: [id])
-  location Facility @relation(fields: [locationId], references: [id])
+  location Facility? @relation(fields: [locationId], references: [id])
   timeEntries TimeEntry[]
 
   @@map("schedule_shifts")

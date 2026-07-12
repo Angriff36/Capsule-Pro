@@ -42,7 +42,7 @@ entity Facility mixin TenantScoped, SoftDeletable {
 
   // State transitions
   transition status from "active" to ["inactive", "maintenance"]
-  transition status from "maintenance" to ["active"]
+  transition status from "maintenance" to ["active", "inactive"]
 
   default policy FacilityDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
   // NOTE: create does NOT `mutate status` — the entity default ("active") is seeded
@@ -71,6 +71,7 @@ entity Facility mixin TenantScoped, SoftDeletable {
 
   command remove() {
     guard self.status != "active" "Cannot delete an active facility"
+    guard self.status != "inactive" "Facility is already removed"
 
     mutate status = "inactive"
 
@@ -136,7 +137,7 @@ entity FacilityArea mixin TenantScoped, SoftDeletable {
 
   // State transitions
   transition status from "active" to ["inactive", "maintenance"]
-  transition status from "maintenance" to ["active"]
+  transition status from "maintenance" to ["active", "inactive"]
 
   default policy FacilityAreaDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
   command create(venueId: string, name: string, code: string, areaType: string, floor: string, description: string, squareFeet: number) {
@@ -154,6 +155,8 @@ entity FacilityArea mixin TenantScoped, SoftDeletable {
   }
 
   command remove() {
+    guard self.status != "inactive" "Area is already removed"
+
     mutate status = "inactive"
 
     emit FacilityAreaDeleted

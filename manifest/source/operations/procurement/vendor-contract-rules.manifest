@@ -69,6 +69,7 @@ entity VendorContract mixin TenantScoped, SoftDeletable {
     guard contractNumber != null and contractNumber != "" "Contract number is required"
     guard vendorId != null and vendorId != "" "Vendor is required"
     guard startDate != null "Start date is required"
+    guard endDate == null or endDate >= startDate "End date must be on or after start date"
 
     mutate contractNumber = contractNumber
     mutate vendorId = vendorId
@@ -135,7 +136,7 @@ entity VendorContract mixin TenantScoped, SoftDeletable {
     on_timeout: "cancel"
   }
 
-  command approve(userId: string) {
+  command approve(userId: string from context.user.id) {
     guard self.status == "pending_approval" "Can only approve contracts pending approval"
 
     mutate status = now() >= self.startDate ? "active" : "pending_activation"
@@ -164,7 +165,7 @@ entity VendorContract mixin TenantScoped, SoftDeletable {
     emit VendorContractActivated
   }
 
-  command terminate(userId: string, reason: string) {
+  command terminate(userId: string from context.user.id, reason: string) {
     guard self.status == "active" "Can only terminate active contracts"
     guard reason != null and reason != "" "Termination reason is required"
 

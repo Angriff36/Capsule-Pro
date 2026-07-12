@@ -46,6 +46,7 @@ entity PricingTier mixin TenantScoped, SoftDeletable {
     guard minQuantity >= 1 "Minimum quantity must be at least 1"
     guard unitCost >= 0 "Unit cost must be non-negative"
     guard discountPercent >= 0 and discountPercent <= 100 "Discount percent must be between 0 and 100"
+    guard effectiveTo == null or effectiveTo >= effectiveFrom "Effective-to must be on or after effective-from"
 
     mutate catalogEntryId = catalogEntryId
     mutate tierName = tierName
@@ -66,6 +67,7 @@ entity PricingTier mixin TenantScoped, SoftDeletable {
     guard minQuantity >= 1 "Minimum quantity must be at least 1"
     guard unitCost >= 0 "Unit cost must be non-negative"
     guard discountPercent >= 0 and discountPercent <= 100 "Discount percent must be between 0 and 100"
+    guard effectiveTo == null or effectiveTo >= effectiveFrom "Effective-to must be on or after effective-from"
 
     constraint warnPriceReduction:warn unitCost < self.unitCost and self.unitCost > 0 {
       messageTemplate: "Unit cost reduced from {oldCost} to {newCost} for tier '{tierName}'"

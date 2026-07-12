@@ -3135,7 +3135,7 @@ export interface ScheduleShift {
   deletedAt?: string | null;
   scheduleId: string;
   employeeId: string;
-  locationId: string;
+  locationId?: string | null;
   shiftStart: string;
   shiftEnd: string;
   roleDuringShift?: string | null;

@@ -99,7 +99,7 @@ entity InventoryTransaction mixin TenantScoped, SoftDeletable {
 
   // Reverse a mistaken transaction — creates an equal-and-opposite correction record.
   // The original transaction is marked reversed so it no longer counts toward stock.
-  command reverse(reversedBy: string, reason: string) {
+  command reverse(reversedBy: string from context.user.id, reason: string) {
     guard self.isReversed == false "Transaction has already been reversed"
     guard reversedBy != null and reversedBy != "" "Reversing user is required"
     guard reason != null and reason != "" "Reversal reason is required"

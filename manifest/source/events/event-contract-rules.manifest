@@ -108,7 +108,7 @@ entity EventContract mixin TenantScoped, SoftDeletable {
     emit ContractExpired
   }
 
-  command cancel(reason: string, canceledBy: string) {
+  command cancel(reason: string, canceledBy: string from context.user.id) {
     guard self.status != "signed" "Cannot cancel a signed contract"
     guard self.status != "cancelled" "Contract is already cancelled"
 

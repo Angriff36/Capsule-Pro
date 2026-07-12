@@ -66,7 +66,7 @@ entity PurchaseOrder mixin TenantScoped, SoftDeletable {
     emit PurchaseOrderCreated
   }
 
-  command submit(userId: string) {
+  command submit(userId: string from context.user.id) {
     guard self.status == "draft" "Can only submit draft orders"
 
     constraint blockNoItems:block self.itemCount > 0 {

@@ -69,7 +69,7 @@ entity InventoryTransfer mixin TenantScoped, SoftDeletable {
     emit TransferCreated
   }
 
-  command approve(approvedBy: string) {
+  command approve(approvedBy: string from context.user.id) {
     guard self.status == "pending_approval" "Transfer must be pending approval"
 
     mutate approvedBy = approvedBy
@@ -78,7 +78,7 @@ entity InventoryTransfer mixin TenantScoped, SoftDeletable {
     emit TransferApproved
   }
 
-  command ship(shippedBy: string) {
+  command ship(shippedBy: string from context.user.id) {
     guard self.status == "approved" "Transfer must be approved before shipping"
 
     mutate shippedBy = shippedBy
@@ -88,7 +88,7 @@ entity InventoryTransfer mixin TenantScoped, SoftDeletable {
     emit TransferShipped
   }
 
-  command receive(receivedBy: string) {
+  command receive(receivedBy: string from context.user.id) {
     guard self.status == "in_transit" "Transfer must be in transit before receiving"
 
     mutate receivedBy = receivedBy
@@ -110,7 +110,7 @@ entity InventoryTransfer mixin TenantScoped, SoftDeletable {
   // Record a partial receipt when the delivered quantities are less than requested.
   // The transfer stays open (in_transit) so the remainder can be received later or
   // a discrepancy can be flagged.
-  command partialReceive(receivedBy: string, receivedItems: string, notes: string) {
+  command partialReceive(receivedBy: string from context.user.id, receivedItems: string, notes: string) {
     guard self.status == "in_transit" "Transfer must be in transit to record a partial receipt"
     guard receivedBy != null and receivedBy != "" "Receiving user is required"
 

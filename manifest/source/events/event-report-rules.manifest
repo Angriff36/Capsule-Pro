@@ -87,7 +87,7 @@ entity EventReport mixin TenantScoped, SoftDeletable {
     emit EventReportSubmitted
   }
 
-  command approve(userId: string, reviewNotes: string) {
+  command approve(userId: string from context.user.id, reviewNotes: string) {
     guard self.status == "completed" "Can only approve completed reports"
     guard userId != null and userId != "" "Reviewer user ID is required"
 
@@ -99,7 +99,7 @@ entity EventReport mixin TenantScoped, SoftDeletable {
     emit EventReportApproved
   }
 
-  command reject(userId: string, reason: string) {
+  command reject(userId: string from context.user.id, reason: string) {
     guard self.status == "completed" "Can only reject completed reports"
     guard userId != null and userId != "" "Reviewer user ID is required"
     guard reason != null and reason != "" "Rejection reason is required"

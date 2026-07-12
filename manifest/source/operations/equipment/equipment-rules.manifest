@@ -255,6 +255,14 @@ entity MaintenanceWorkOrder mixin TenantScoped, SoftDeletable {
   property required workOrderType: string = "corrective"
   property required priority: string = "medium"
   indexed property required status: MaintenanceWorkOrderStatus = open
+  // State machine derived from the command set (assign/startWork/completeWork/updateStatus):
+  // ordering was previously unenforced — only the enum constrained vocabulary.
+  transition status from "open" to ["assigned", "in_progress", "cancelled"]
+  transition status from "assigned" to ["in_progress", "cancelled"]
+  transition status from "in_progress" to ["awaiting_parts", "completed", "cancelled"]
+  transition status from "awaiting_parts" to ["in_progress", "cancelled"]
+  transition status from "completed" to []
+  transition status from "cancelled" to []
   searchable property description: string? = ""
   property reportedBy: uuid?
   property assignedTo: uuid?
@@ -339,7 +347,7 @@ entity MaintenanceWorkOrder mixin TenantScoped, SoftDeletable {
     emit MaintenanceWorkOrderStatusUpdated
   }
 
-  command create(title: string, workOrderType: string, priority: string, description: string, areaId: string, optional equipmentId: string, assignedTo: string, reportedBy: string, scheduledDate: datetime, notes: string) {
+  command create(title: string, workOrderType: string, priority: string, description: string, areaId: string, optional equipmentId: string, assignedTo: string, reportedBy: string from context.user.id, scheduledDate: datetime, notes: string) {
     guard title != null and title != "" "Work order title is required"
     guard workOrderType in ["corrective", "repair", "replacement", "inspection", "upgrade", "preventive", "emergency"] "Invalid work order type"
     guard priority in ["low", "medium", "high", "critical"] "Invalid priority"

@@ -14,5 +14,6 @@ ALTER TABLE "tenant"."knowledge_base_entries" ALTER COLUMN "status" TYPE "Knowle
 ALTER TABLE "tenant"."knowledge_base_entries" ALTER COLUMN "status" SET DEFAULT 'draft';
 ALTER TABLE "tenant"."knowledge_base_entries" ALTER COLUMN "status" SET NOT NULL;
 
--- CreateIndex
-CREATE INDEX "knowledge_base_entries_tenant_id_status_idx" ON "tenant"."knowledge_base_entries"("tenant_id", "status");
+-- CreateIndex (IF NOT EXISTS: unlike Prisma's DROP+ADD column, the in-place
+-- ALTER keeps the pre-existing index alive)
+CREATE INDEX IF NOT EXISTS "knowledge_base_entries_tenant_id_status_idx" ON "tenant"."knowledge_base_entries"("tenant_id", "status");

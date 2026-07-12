@@ -162,7 +162,7 @@ entity PurchaseRequisition mixin TenantScoped, SoftDeletable {
     on_timeout: "cancel"
   }
 
-  command approveManager(userId: string) {
+  command approveManager(userId: string from context.user.id) {
     guard self.status == "pending_manager" "Can only approve requisitions pending manager approval"
 
     // Check if finance approval is needed based on amount (>= $5000 escalates to finance)
@@ -175,7 +175,7 @@ entity PurchaseRequisition mixin TenantScoped, SoftDeletable {
     emit PurchaseRequisitionManagerApproved
   }
 
-  command approveFinance(userId: string) {
+  command approveFinance(userId: string from context.user.id) {
     guard self.status == "pending_finance" "Can only approve requisitions pending finance approval"
 
     mutate status = "approved"
@@ -187,7 +187,7 @@ entity PurchaseRequisition mixin TenantScoped, SoftDeletable {
     emit PurchaseRequisitionFinanceApproved
   }
 
-  command reject(userId: string, reason: string) {
+  command reject(userId: string from context.user.id, reason: string) {
     guard self.status in ["pending_manager", "pending_finance"] "Can only reject pending requisitions"
     guard reason != null and reason != "" "Rejection reason is required"
 
@@ -285,7 +285,7 @@ entity PurchaseRequisitionItem mixin TenantScoped, SoftDeletable {
     mutate suggestedVendorName = suggestedVendorName
     mutate specifications = specifications
     mutate notes = notes
-    mutate sourcePrepListIds = sourcePrepListIds
+    mutate sourcePrepListIds = sourcePrepListIds != null ? sourcePrepListIds : self.sourcePrepListIds
 
     emit PurchaseRequisitionItemUpdated
   }

@@ -519,7 +519,7 @@ entity TrainingAssignment mixin TenantScoped, SoftDeletable {
     emit TrainingReminderRequested
   }
 
-  command waive(assignmentId: string, moduleId: string, staffMemberId: string, reason: string, approvedBy: string) {
+  command waive(assignmentId: string, moduleId: string, staffMemberId: string, reason: string, approvedBy: string from context.user.id) {
     guard assignmentId == self.id
     guard moduleId == self.moduleId
     guard staffMemberId == self.employeeId

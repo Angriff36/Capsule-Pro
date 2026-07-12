@@ -50,7 +50,7 @@ entity PrepComment mixin TenantScoped, SoftDeletable {
     emit PrepCommentEdited
   }
 
-  command markResolved(resolvedBy: string) {
+  command markResolved(resolvedBy: string from context.user.id) {
     guard resolvedBy != null and resolvedBy != "" "Resolver ID is required"
     guard (self.deletedAt == null) "Cannot resolve a deleted comment"
 

@@ -16,7 +16,7 @@ entity BoardConfig mixin TenantScoped, SoftDeletable {
 
   default policy BoardConfigDefaultAccess execute: user.role in ["manager", "admin"] "Kanban board config management"
 
-  command create(name: string, columns: json, settings: json, createdBy: string) {
+  command create(name: string, columns: json, settings: json, createdBy: string from context.user.id) {
     guard name != null and name != "" "Board name is required"
 
     mutate name = name

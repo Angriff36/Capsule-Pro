@@ -220,7 +220,7 @@ entity InventoryAlert mixin TenantScoped, SoftDeletable {
     emit InventoryAlertEscalated
   }
 
-  command acknowledge(acknowledgedBy: string) {
+  command acknowledge(acknowledgedBy: string from context.user.id) {
     guard self.status == "active" "Can only acknowledge active alerts"
     guard acknowledgedBy != null and acknowledgedBy != "" "Acknowledging user is required"
 
@@ -231,7 +231,7 @@ entity InventoryAlert mixin TenantScoped, SoftDeletable {
     emit InventoryAlertAcknowledged
   }
 
-  command markResolved(resolvedBy: string) {
+  command markResolved(resolvedBy: string from context.user.id) {
     guard self.status != "resolved" "Alert is already resolved"
     guard resolvedBy != null and resolvedBy != "" "Resolving user is required"
 
@@ -324,7 +324,7 @@ entity InventoryForecast mixin TenantScoped {
   }
 
   // Approve a published forecast so it drives reorder and event-planning automation.
-  command approve(approvedBy: string) {
+  command approve(approvedBy: string from context.user.id) {
     guard self.status == "published" "Only published forecasts can be approved"
     guard approvedBy != null and approvedBy != "" "Approver is required"
 
@@ -537,7 +537,7 @@ entity VendorRating mixin TenantScoped, SoftDeletable {
   }
 
   default policy VendorRatingDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
-  command create(supplierId: string, category: string, rating: int, comment: string, ratedBy: string) {
+  command create(supplierId: string, category: string, rating: int, comment: string, ratedBy: string from context.user.id) {
     guard supplierId != null and supplierId != "" "Supplier ID is required"
     guard category != null and category != "" "Rating category is required"
     guard between(rating, 0, 5) "Score must be between 0 and 5"
@@ -767,7 +767,7 @@ entity ProcurementBudgetAlert mixin TenantScoped, SoftDeletable {
     emit ProcurementBudgetAlertTriggered
   }
 
-  command acknowledge(acknowledgedBy: string) {
+  command acknowledge(acknowledgedBy: string from context.user.id) {
     guard not self.isAcknowledged "Alert is already acknowledged"
     guard acknowledgedBy != null and acknowledgedBy != "" "Acknowledging user is required"
 
@@ -813,7 +813,7 @@ entity AuditSchedule mixin TenantScoped, SoftDeletable {
   }
 
   default policy AuditScheduleDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
-  command create(name: string, frequency: string, time: string, nextRunAt: datetime, createdBy: string) {
+  command create(name: string, frequency: string, time: string, nextRunAt: datetime, createdBy: string from context.user.id) {
     guard name != null and name != "" "Audit schedule name is required"
     guard frequency != null and frequency != "" "Frequency is required"
     guard time != null and time != "" "Audit time is required"

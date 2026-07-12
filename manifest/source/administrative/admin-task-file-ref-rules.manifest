@@ -17,7 +17,7 @@ entity AdminTaskFileRef mixin TenantScoped, SoftDeletable {
 
   default policy AdminTaskFileRefDefaultAccess execute: user.role in ["manager", "admin"] "Admin task file reference management"
 
-  command create(taskId: string, refType: string, refId: string, refLabel: string, linkedBy: string) {
+  command create(taskId: string, refType: string, refId: string, refLabel: string, linkedBy: string from context.user.id) {
     guard taskId != null and taskId != "" "Task ID is required"
     guard refType != null and refType != "" "Reference type is required"
     guard refId != null and refId != "" "Reference ID is required"

@@ -6710,7 +6710,7 @@
           "name": "createdBy",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "sourceType",
@@ -33387,6 +33387,12 @@
         },
         {
           "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "locationId",
           "type": "string",
           "location": "body",
           "required": false

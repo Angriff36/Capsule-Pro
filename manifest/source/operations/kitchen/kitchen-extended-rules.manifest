@@ -107,7 +107,7 @@ entity TemperatureLog mixin TenantScoped, SoftDeletable {
   }
 
   default policy TemperatureLogDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
-  command create(equipmentId: string, logNumber: string, logType: string, loggedBy: string, temperature: number, loggedAt: datetime, withinRange: boolean, notes: string) {
+  command create(equipmentId: string, logNumber: string, logType: string, loggedBy: string from context.user.id, temperature: number, loggedAt: datetime, withinRange: boolean, notes: string) {
     guard equipmentId != null and equipmentId != "" "Equipment ID is required"
     guard logNumber != null and logNumber != "" "Log number is required"
     guard logType != null and logType != "" "Log type is required"

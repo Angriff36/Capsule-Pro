@@ -59,7 +59,7 @@ entity User mixin TenantScoped, SoftDeletable {
   computed isHourly: boolean = self.employmentType == "full_time" or self.employmentType == "part_time"
   computed isContractor: boolean = self.employmentType == "contractor"
 
-  constraint validRole: self.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Invalid user role"
+  constraint validRole: self.role in ["staff", "kitchen_staff", "kitchen_lead", "driver", "sales", "sales_rep", "finance", "event_coordinator", "analyst", "editor", "manager", "kitchen_manager", "event_manager", "sales_manager", "finance_manager", "inventory_manager", "facilities_manager", "facility_manager", "logistics_manager", "procurement_manager", "catering_manager", "hr_admin", "payroll_admin", "billing_admin", "lead", "admin", "owner", "system"] "Invalid user role"
   constraint validEmploymentType: self.employmentType in ["full_time", "part_time", "contractor", "temp"] "Invalid employment type"
 
   default policy UserDefaultAccess execute: user.role in ["manager", "admin"] "User management"
@@ -67,6 +67,8 @@ entity User mixin TenantScoped, SoftDeletable {
     guard email != null and email != "" "Email is required"
     guard firstName != null and firstName != "" "First name is required"
     guard lastName != null and lastName != "" "Last name is required"
+    guard hourlyRate == null or hourlyRate >= 0 "Hourly rate cannot be negative"
+    guard salaryAnnual == null or salaryAnnual >= 0 "Annual salary cannot be negative"
 
     mutate email = email
     mutate firstName = firstName

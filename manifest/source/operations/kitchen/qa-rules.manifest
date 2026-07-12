@@ -35,7 +35,7 @@ entity QACheck mixin TenantScoped, SoftDeletable {
   constraint validStatus: self.status in ["pending", "completed", "reinspection_required"] "Invalid check status"
 
   default policy QACheckDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Quality assurance"
-  command create(location: string, checkType: string, inspector: string, notes: string) {
+  command create(location: string, checkType: string, inspector: string from context.user.id, notes: string) {
     guard checkType in ["temperature", "sanitation", "storage", "labeling", "equipment"] "Invalid check type"
 
     mutate location = location
@@ -48,7 +48,7 @@ entity QACheck mixin TenantScoped, SoftDeletable {
   }
 
   // Complete a pending check with a passing or n/a result.
-  command complete(result: string, inspector: string, notes: string) {
+  command complete(result: string, inspector: string from context.user.id, notes: string) {
     guard self.status in ["pending", "reinspection_required"] "Check must be pending or awaiting reinspection"
     guard result in ["pass", "na"] "Use the fail command to record a failing check"
 
@@ -62,7 +62,7 @@ entity QACheck mixin TenantScoped, SoftDeletable {
   }
 
   // Record a failing result — callers should open a QACorrectiveAction.
-  command fail(inspector: string, notes: string) {
+  command fail(inspector: string from context.user.id, notes: string) {
     guard self.status in ["pending", "reinspection_required"] "Check must be pending or awaiting reinspection"
     guard inspector != null and inspector != "" "Inspector is required"
 
@@ -87,7 +87,7 @@ entity QACheck mixin TenantScoped, SoftDeletable {
   }
 
   // Complete a reinspection and record the updated result.
-  command reinspect(result: string, inspector: string, notes: string) {
+  command reinspect(result: string, inspector: string from context.user.id, notes: string) {
     guard self.status == "reinspection_required" "Check must be in reinspection_required state"
     guard result in ["pass", "fail", "na"] "Invalid reinspection result"
     guard inspector != null and inspector != "" "Inspector is required"
@@ -231,7 +231,7 @@ entity QATemperatureLog mixin TenantScoped {
   relationship belongsTo equipment: Equipment with equipmentId
 
   default policy QATemperatureLogDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Quality assurance"
-  command log(logType: string, temperature: number, unit: string, equipmentId: string, loggedBy: string, notes: string) {
+  command log(logType: string, temperature: number, unit: string, equipmentId: string, loggedBy: string from context.user.id, notes: string) {
     guard logType != null and logType != "" "Log type is required"
     guard logType in ["cooler", "freezer", "hot_hold", "cooking", "receiving", "cooling"] "Invalid log type"
     guard temperature != null "Temperature is required"
