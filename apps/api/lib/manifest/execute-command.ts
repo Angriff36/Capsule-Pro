@@ -16,6 +16,7 @@ import {
 import { captureException } from "@sentry/nextjs";
 import { recordManifestCommandActivity } from "@/app/lib/activity-feed-service";
 import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
+import { batchTransactionTimeout } from "@/lib/manifest/batch-timeout";
 import { mapFailureToExplanation } from "@/lib/manifest/friendly-error-mapper";
 import { logManifestIssue } from "@/lib/manifest/issue-log";
 import {
@@ -355,9 +356,11 @@ export async function runManifestBatch(
       },
       // Prisma interactive transactions default to a 5s timeout; a full batch of
       // governed commands (each running guards/constraints/reactions) can exceed
-      // that. Scale with batch size, capped at 120s.
+      // that. Scale with batch size, but bound the hold at the app-wide
+      // transaction ceiling so one batch can't pin a pool connection and starve
+      // other requests — see batch-timeout.ts (db-perf item #29).
       {
-        timeout: Math.min(operations.length * 2000 + 5000, 120_000),
+        timeout: batchTransactionTimeout(operations.length),
         maxWait: 10_000,
       }
     );
