@@ -10,7 +10,11 @@ import { createManifestRuntime } from "@/lib/manifest-runtime";
 export const runtime = "nodejs";
 
 /** User context required by Manifest runtime commands */
-type ManifestUser = { id: string; tenantId: string; role: string };
+interface ManifestUser {
+  id: string;
+  role: string;
+  tenantId: string;
+}
 
 /**
  * Run a Manifest command internally (not returning HTTP Response).
@@ -105,7 +109,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (!(sync?.accessToken)) {
+    if (!sync?.accessToken) {
       return NextResponse.json(
         { error: `${provider} is not connected. Please connect first.` },
         { status: 400 }
@@ -213,6 +217,47 @@ export async function POST(request: NextRequest) {
 }
 
 /**
+ * Dedup key matching the original per-event `findFirst` predicate
+ * (tenantId + title + eventDate + eventType). tenantId is constant per sync,
+ * so the key is title | eventDate ISO | eventType.
+ */
+function eventDedupKey(
+  title: string,
+  eventDate: Date,
+  eventType: string
+): string {
+  return `${title}|${eventDate.toISOString()}|${eventType}`;
+}
+
+/**
+ * Preload existing external events for this tenant/type into a Map keyed by
+ * {@link eventDedupKey}, so the per-event existence check is an in-memory
+ * lookup instead of a `findFirst` round-trip per event (collapses up to 250
+ * sequential queries into 1). `findFirst` matched on (tenantId, title,
+ * eventDate, eventType) with no date window, so the preload intentionally
+ * scopes only by tenant + type (+ not-deleted) to preserve exact dedup
+ * semantics.
+ */
+async function loadExistingEventIds(
+  database: typeof import("@repo/database")["database"],
+  tenantId: string,
+  eventType: string
+): Promise<Map<string, string>> {
+  const rows = await database.event.findMany({
+    where: { tenantId, eventType, deletedAt: null },
+    select: { id: true, title: true, eventDate: true, eventType: true },
+  });
+  const existing = new Map<string, string>();
+  for (const row of rows) {
+    existing.set(
+      eventDedupKey(row.title, row.eventDate, row.eventType),
+      row.id
+    );
+  }
+  return existing;
+}
+
+/**
  * Fetch events from Google Calendar API and import them.
  * Deduplicates by matching on tenantId + title + eventDate + eventType.
  */
@@ -259,23 +304,23 @@ async function syncGoogleCalendar(
   let errors = 0;
   const errorDetails: SyncErrorDetail[] = [];
 
+  const eventType = "external_google";
+  const existingIds = await loadExistingEventIds(
+    database,
+    _tenantId,
+    eventType
+  );
+
   for (const event of events) {
     try {
       const title = event.summary || "Untitled Event";
       const eventDate = new Date(
         event.start?.dateTime || event.start?.date || new Date()
       );
-      const eventType = "external_google";
 
-      const existing = await database.event.findFirst({
-        where: {
-          tenantId: _tenantId,
-          title,
-          eventDate,
-          eventType,
-          deletedAt: null,
-        },
-      });
+      const existingId = existingIds.get(
+        eventDedupKey(title, eventDate, eventType)
+      );
 
       const eventPayload: Record<string, unknown> = {
         tenantId: _tenantId,
@@ -299,13 +344,13 @@ async function syncGoogleCalendar(
         featuredMediaUrl: "",
       };
 
-      if (existing) {
+      if (existingId) {
         await execCommand(
           "Event",
           "update",
-          { ...eventPayload, id: existing.id },
+          { ...eventPayload, id: existingId },
           manifestUser,
-          existing.id
+          existingId
         );
       } else {
         await execCommand("Event", "create", eventPayload, manifestUser);
@@ -368,21 +413,21 @@ async function syncOutlookCalendar(
   let errors = 0;
   const errorDetails: SyncErrorDetail[] = [];
 
+  const eventType = "external_outlook";
+  const existingIds = await loadExistingEventIds(
+    database,
+    _tenantId,
+    eventType
+  );
+
   for (const event of events) {
     try {
       const title = event.subject || "Untitled Event";
       const eventDate = new Date(event.start?.dateTime || new Date());
-      const eventType = "external_outlook";
 
-      const existing = await database.event.findFirst({
-        where: {
-          tenantId: _tenantId,
-          title,
-          eventDate,
-          eventType,
-          deletedAt: null,
-        },
-      });
+      const existingId = existingIds.get(
+        eventDedupKey(title, eventDate, eventType)
+      );
 
       const eventPayload: Record<string, unknown> = {
         tenantId: _tenantId,
@@ -406,13 +451,13 @@ async function syncOutlookCalendar(
         featuredMediaUrl: "",
       };
 
-      if (existing) {
+      if (existingId) {
         await execCommand(
           "Event",
           "update",
-          { ...eventPayload, id: existing.id },
+          { ...eventPayload, id: existingId },
           manifestUser,
-          existing.id
+          existingId
         );
       } else {
         await execCommand("Event", "create", eventPayload, manifestUser);
