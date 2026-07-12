@@ -2,11 +2,24 @@ use "../_base.manifest"
 // AI Call Planner - Proposal Draft Rules
 // Manifest spec for proposal draft lifecycle
 
+// U7 (WS7): Closed-vocabulary status enum for ProposalDraft lifecycle. The enum
+// type is the constraint (replaces the prior `validStatus` check);
+// transitions/guards/computeds below stay string-based (FSM-safe per P3).
+enum ProposalDraftStatus {
+  draft
+  sent
+  viewed
+  change_requested
+  approved
+  expired
+  converted
+}
+
 entity ProposalDraft mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   indexed property draftId: uuid
   property userId: string = ""
-  indexed property status: string = "draft"
+  indexed property status: ProposalDraftStatus = draft
   property version: int = 1
   searchable property title: string = ""
   searchable property clientName: string = ""
@@ -52,7 +65,6 @@ entity ProposalDraft mixin TenantScoped, SoftDeletable {
   computed hasValidEmail: boolean = self.clientEmail != null and self.clientEmail != "" and self.clientEmail contains "@"
   computed hasDeposit: boolean = self.depositAmount > 0
 
-  constraint validStatus: self.status in ["draft", "sent", "viewed", "change_requested", "approved", "expired", "converted"] "Invalid proposal status"
   constraint positiveVersion: self.version >= 1 "Version must be positive"
 
   // State transitions — derived exactly from the command guards below (send,

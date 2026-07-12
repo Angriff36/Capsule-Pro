@@ -2,10 +2,21 @@ use "../_base.manifest"
 // AI Call Planner - Call Planning Session Rules
 // Manifest spec for call planning session lifecycle
 
+// U7 (WS7): Closed-vocabulary status enum for CallPlanningSession lifecycle.
+// The enum type is the constraint (replaces the prior `validStatus` check);
+// transitions/guards/computeds below stay string-based (FSM-safe per P3).
+enum CallPlanningSessionStatus {
+  active
+  finalizing
+  review
+  completed
+  abandoned
+}
+
 entity CallPlanningSession mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required userId: string
-  indexed property status: string = "active"
+  indexed property status: CallPlanningSessionStatus = active
   property sourceType: string = "manual"
   searchable property transcriptText: string? = ""
   // metadata: JSON-as-string payload (Manifest IR grammar has no object kind;
@@ -23,7 +34,6 @@ entity CallPlanningSession mixin TenantScoped, SoftDeletable {
   computed hasTranscript: boolean = self.transcriptText != null and self.transcriptText != ""
   computed duration: number = self.endedAt != null and self.startedAt != null ? self.endedAt - self.startedAt : 0
 
-  constraint validStatus: self.status in ["active", "finalizing", "review", "completed", "abandoned"] "Invalid session status"
   constraint validSourceType: self.sourceType in ["manual", "ringcentral", "upload"] "Invalid source type"
 
   // State transitions — derived exactly from the command guards below

@@ -3948,17 +3948,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
         "name": "source_type",
         "irName": "sourceType",
         "type": "String",
@@ -5161,17 +5150,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "name": "follow_up_completed",
         "irName": "followUpCompleted",
         "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -9172,17 +9150,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "name": "file_size_bytes",
         "irName": "fileSizeBytes",
         "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -19294,17 +19261,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
         "name": "assigned_to",
         "irName": "assignedTo",
         "type": "String",
@@ -25591,17 +25547,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "user_id",
         "irName": "userId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
         "type": "String",
         "isEnum": false,
         "isList": false,

@@ -6,7 +6,13 @@ export type AdminTaskStatus = "backlog" | "in_progress" | "review" | "done" | "c
 
 export type BudgetStatus = "draft" | "active" | "closed" | "archived";
 
+export type CallPlanningSessionStatus = "active" | "finalizing" | "review" | "completed" | "abandoned";
+
+export type ClientInteractionStatus = "open" | "scheduled" | "overdue" | "completed" | "escalated";
+
 export type DealStatus = "open" | "won" | "lost" | "abandoned";
+
+export type DocumentStatus = "uploaded" | "parsing" | "parsed" | "failed";
 
 export type DocumentVersionStatus = "draft" | "approved" | "published" | "superseded";
 
@@ -15,6 +21,8 @@ export type EquipmentStatus = "active" | "maintenance" | "out_of_service" | "ret
 export type KitchenTaskStatus = "pending" | "in_progress" | "done" | "cancelled";
 
 export type KnowledgeBaseEntryStatus = "draft" | "published" | "archived";
+
+export type LeadStatus = "new" | "contacted" | "qualified" | "proposal" | "won" | "lost" | "disqualified";
 
 export type MaintenanceWorkOrderStatus = "open" | "assigned" | "in_progress" | "awaiting_parts" | "completed" | "cancelled";
 
@@ -29,6 +37,8 @@ export type PrepListStatus = "draft" | "finalized" | "completed" | "cancelled";
 export type PrepTaskPlanWorkflowStatus = "created" | "generating" | "awaiting_review" | "reviewing" | "awaiting_approval" | "approving" | "instantiating" | "scheduling" | "completed" | "failed" | "cancelled";
 
 export type PrepTaskStatus = "open" | "pending" | "in_progress" | "done" | "canceled";
+
+export type ProposalDraftStatus = "draft" | "sent" | "viewed" | "change_requested" | "approved" | "expired" | "converted";
 
 export type ProposalStatus = "draft" | "sent" | "viewed" | "accepted" | "rejected" | "withdrawn" | "expired";
 
@@ -452,7 +462,7 @@ export interface CallPlanningSession {
   tenantId: string;
   deletedAt?: string | null;
   userId: string;
-  status?: string;
+  status?: CallPlanningSessionStatus;
   sourceType?: string;
   transcriptText?: string | null;
   metadata?: unknown | null;
@@ -572,7 +582,7 @@ export interface ClientInteraction {
   description?: string | null;
   followUpDate?: string | null;
   followUpCompleted?: boolean;
-  status?: string | null;
+  status?: ClientInteractionStatus | null;
   priority?: string | null;
   escalatedAt?: string | null;
   escalatedTo?: string | null;
@@ -974,7 +984,7 @@ export interface Document {
   documentType?: string;
   fileUrl?: string;
   fileSizeBytes?: number;
-  status?: string;
+  status?: DocumentStatus;
   entityType?: string;
   entityId?: string;
   uploadedBy?: string;
@@ -1999,7 +2009,7 @@ export interface Lead {
   eventDate?: string | null;
   estimatedGuests?: number | null;
   estimatedValue?: number | null;
-  status?: string;
+  status?: LeadStatus;
   assignedTo?: string | null;
   notes?: string | null;
   convertedToClientId?: string | null;
@@ -2642,7 +2652,7 @@ export interface ProposalDraft {
   deletedAt?: string | null;
   draftId: string;
   userId?: string;
-  status?: string;
+  status?: ProposalDraftStatus;
   version?: number;
   title?: string;
   clientName?: string;

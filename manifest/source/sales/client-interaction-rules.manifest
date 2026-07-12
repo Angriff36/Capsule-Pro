@@ -2,6 +2,17 @@ use "../_base.manifest"
 // CRM & Sales - Client Interaction Rules
 // Manifest spec for tracking client interactions, follow-ups, and communication history
 
+// U7 (WS7): Closed-vocabulary status enum for ClientInteraction lifecycle. The
+// enum type is the constraint (replaces the prior `validStatus` check);
+// transitions/guards/computeds below stay string-based (FSM-safe per P3).
+enum ClientInteractionStatus {
+  open
+  scheduled
+  overdue
+  completed
+  escalated
+}
+
 entity ClientInteraction mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property clientId: uuid?
@@ -13,7 +24,7 @@ entity ClientInteraction mixin TenantScoped, SoftDeletable {
   searchable property description: string? = ""
   property followUpDate: datetime?
   property followUpCompleted: boolean = false
-  indexed property status: string? = "open"
+  indexed property status: ClientInteractionStatus? = open
   property priority: string? = "normal"
   property escalatedAt: datetime?
   property escalatedTo: string? = ""
@@ -43,7 +54,6 @@ entity ClientInteraction mixin TenantScoped, SoftDeletable {
     }
   }
 
-  constraint validStatus: self.status in ["open", "scheduled", "overdue", "completed", "escalated"] "Invalid interaction status"
   constraint validPriority: self.priority in ["low", "normal", "high", "urgent"] "Invalid priority level"
 
   transition status from "open" to ["scheduled", "overdue", "completed", "escalated"]

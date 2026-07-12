@@ -336,13 +336,23 @@ entity Report mixin TenantScoped, SoftDeletable {
 // Document — generic uploaded/parsed document
 // ---------------------------------------------------------------------------
 
+// U7 (WS7): Closed-vocabulary status enum for the Document parse lifecycle. The
+// enum type is the constraint (replaces the prior `validStatus` check);
+// transitions/guards/computeds below stay string-based (FSM-safe per P3).
+enum DocumentStatus {
+  uploaded
+  parsing
+  parsed
+  failed
+}
+
 entity Document mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property name: string = ""
   property documentType: string = ""
   property fileUrl: string = ""
   property fileSizeBytes: int = 0
-  indexed property status: string = "uploaded"
+  indexed property status: DocumentStatus = uploaded
   property entityType: string = ""
   property entityId: string = ""
   property uploadedBy: string = ""
@@ -355,7 +365,6 @@ entity Document mixin TenantScoped, SoftDeletable {
 
   constraint requireName: self.name != null and self.name != "" "Document name is required"
   constraint requireFileUrl: self.fileUrl != null and self.fileUrl != "" "File URL is required"
-  constraint validStatus: self.status in ["uploaded", "parsing", "parsed", "failed"] "Invalid document status"
   constraint positiveFileSize: self.fileSizeBytes >= 0 "File size must be non-negative"
 
   constraint warnUnlinkedDocument:warn self.entityType == "" or self.entityId == "" {

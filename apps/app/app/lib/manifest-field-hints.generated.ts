@@ -615,14 +615,6 @@ export const MANIFEST_FIELD_HINTS: Record<string, EntityFieldHints> = {
         overrideable: false,
       },
     ],
-    "status": [
-      {
-        message: "Invalid session status",
-        severity: "block",
-        constraintName: "validStatus",
-        overrideable: false,
-      },
-    ],
   },
   "CateringOrder": {
     "depositPaid": [
@@ -932,14 +924,6 @@ export const MANIFEST_FIELD_HINTS: Record<string, EntityFieldHints> = {
         message: "Invalid priority level",
         severity: "block",
         constraintName: "validPriority",
-        overrideable: false,
-      },
-    ],
-    "status": [
-      {
-        message: "Invalid interaction status",
-        severity: "block",
-        constraintName: "validStatus",
         overrideable: false,
       },
     ],
@@ -1708,14 +1692,6 @@ export const MANIFEST_FIELD_HINTS: Record<string, EntityFieldHints> = {
         message: "Document name is required",
         severity: "block",
         constraintName: "requireName",
-        overrideable: false,
-      },
-    ],
-    "status": [
-      {
-        message: "Invalid document status",
-        severity: "block",
-        constraintName: "validStatus",
         overrideable: false,
       },
     ],
@@ -3463,12 +3439,6 @@ export const MANIFEST_FIELD_HINTS: Record<string, EntityFieldHints> = {
         overrideable: false,
       },
       {
-        message: "Invalid lead status",
-        severity: "block",
-        constraintName: "validStatus",
-        overrideable: false,
-      },
-      {
         message: "Archiving open lead 'contact name' with status 'status'",
         severity: "warn",
         constraintName: "warnArchiveOpenLead",
@@ -4672,12 +4642,6 @@ export const MANIFEST_FIELD_HINTS: Record<string, EntityFieldHints> = {
       },
     ],
     "status": [
-      {
-        message: "Invalid proposal status",
-        severity: "block",
-        constraintName: "validStatus",
-        overrideable: false,
-      },
       {
         message: "Proposal 'title' sent without valid client email",
         severity: "warn",

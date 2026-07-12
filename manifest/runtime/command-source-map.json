@@ -15,11 +15,11 @@
     },
     "command:AdminChatMessage.create": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 482
+      "line": 491
     },
     "command:AdminChatMessage.remove": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 495
+      "line": 504
     },
     "command:AdminChatParticipant.archive": {
       "file": "administrative/admin-chat-participant-rules.manifest",
@@ -39,11 +39,11 @@
     },
     "command:AdminChatThread.create": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 434
+      "line": 443
     },
     "command:AdminChatThread.recordLastMessage": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 452
+      "line": 461
     },
     "command:AdminTask.cancel": {
       "file": "administrative/admin-task-rules.manifest",
@@ -451,27 +451,27 @@
     },
     "command:CallPlanningSession.abandon": {
       "file": "sales/call-planning-session-rules.manifest",
-      "line": 89
+      "line": 99
     },
     "command:CallPlanningSession.complete": {
       "file": "sales/call-planning-session-rules.manifest",
-      "line": 80
+      "line": 90
     },
     "command:CallPlanningSession.create": {
       "file": "sales/call-planning-session-rules.manifest",
-      "line": 44
+      "line": 54
     },
     "command:CallPlanningSession.finalize": {
       "file": "sales/call-planning-session-rules.manifest",
-      "line": 71
+      "line": 81
     },
     "command:CallPlanningSession.start": {
       "file": "sales/call-planning-session-rules.manifest",
-      "line": 57
+      "line": 67
     },
     "command:CallPlanningSession.updateTranscript": {
       "file": "sales/call-planning-session-rules.manifest",
-      "line": 98
+      "line": 108
     },
     "command:CateringOrder.cancel": {
       "file": "events/catering-order-rules.manifest",
@@ -559,31 +559,31 @@
     },
     "command:ClientInteraction.complete": {
       "file": "sales/client-interaction-rules.manifest",
-      "line": 113
+      "line": 123
     },
     "command:ClientInteraction.create": {
       "file": "sales/client-interaction-rules.manifest",
-      "line": 65
+      "line": 75
     },
     "command:ClientInteraction.escalate": {
       "file": "sales/client-interaction-rules.manifest",
-      "line": 156
+      "line": 166
     },
     "command:ClientInteraction.markOverdue": {
       "file": "sales/client-interaction-rules.manifest",
-      "line": 145
+      "line": 155
     },
     "command:ClientInteraction.schedule": {
       "file": "sales/client-interaction-rules.manifest",
-      "line": 131
+      "line": 141
     },
     "command:ClientInteraction.softDelete": {
       "file": "sales/client-interaction-rules.manifest",
-      "line": 170
+      "line": 180
     },
     "command:ClientInteraction.update": {
       "file": "sales/client-interaction-rules.manifest",
-      "line": 91
+      "line": 101
     },
     "command:ClientPreference.create": {
       "file": "sales/client-rules.manifest",
@@ -1015,19 +1015,19 @@
     },
     "command:Document.create": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 375
+      "line": 384
     },
     "command:Document.markFailed": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 400
+      "line": 409
     },
     "command:Document.markParsed": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 391
+      "line": 400
     },
     "command:Document.remove": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 409
+      "line": 418
     },
     "command:DocumentVersion.approve": {
       "file": "platform/document-version-rules.manifest",
@@ -2211,23 +2211,23 @@
     },
     "command:Lead.archive": {
       "file": "sales/lead-rules.manifest",
-      "line": 172
+      "line": 184
     },
     "command:Lead.convertToClient": {
       "file": "sales/lead-rules.manifest",
-      "line": 125
+      "line": 137
     },
     "command:Lead.create": {
       "file": "sales/lead-rules.manifest",
-      "line": 66
+      "line": 78
     },
     "command:Lead.disqualify": {
       "file": "sales/lead-rules.manifest",
-      "line": 153
+      "line": 165
     },
     "command:Lead.update": {
       "file": "sales/lead-rules.manifest",
-      "line": 92
+      "line": 104
     },
     "command:LogisticsDispatch.assign": {
       "file": "operations/logistics/logistics-all-rules.manifest",
@@ -2943,43 +2943,43 @@
     },
     "command:ProposalDraft.approve": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 186
+      "line": 198
     },
     "command:ProposalDraft.create": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 93
+      "line": 105
     },
     "command:ProposalDraft.generateHtml": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 147
+      "line": 159
     },
     "command:ProposalDraft.markConverted": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 213
+      "line": 225
     },
     "command:ProposalDraft.markExpired": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 205
+      "line": 217
     },
     "command:ProposalDraft.recordView": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 177
+      "line": 189
     },
     "command:ProposalDraft.refreshToken": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 221
+      "line": 233
     },
     "command:ProposalDraft.requestChanges": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 195
+      "line": 207
     },
     "command:ProposalDraft.send": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 155
+      "line": 167
     },
     "command:ProposalDraft.update": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 125
+      "line": 137
     },
     "command:ProposalLineItem.create": {
       "file": "sales/proposal-rules.manifest",
@@ -4291,15 +4291,15 @@
     },
     "constraint:AdminChatMessage.requireAuthor": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 478
+      "line": 487
     },
     "constraint:AdminChatMessage.requireText": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 479
+      "line": 488
     },
     "constraint:AdminChatMessage.requireThreadId": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 477
+      "line": 486
     },
     "constraint:AdminTask.requireTitle": {
       "file": "administrative/admin-task-rules.manifest",
@@ -4543,11 +4543,7 @@
     },
     "constraint:CallPlanningSession.validSourceType": {
       "file": "sales/call-planning-session-rules.manifest",
-      "line": 27
-    },
-    "constraint:CallPlanningSession.validStatus": {
-      "file": "sales/call-planning-session-rules.manifest",
-      "line": 26
+      "line": 37
     },
     "constraint:CateringOrder.positiveGuestCount": {
       "file": "events/catering-order-rules.manifest",
@@ -4643,39 +4639,35 @@
     },
     "constraint:ClientInteraction.validEmployeeId": {
       "file": "sales/client-interaction-rules.manifest",
-      "line": 31
+      "line": 42
     },
     "constraint:ClientInteraction.validInteractionType": {
       "file": "sales/client-interaction-rules.manifest",
-      "line": 29
+      "line": 40
     },
     "constraint:ClientInteraction.validPriority": {
       "file": "sales/client-interaction-rules.manifest",
-      "line": 47
-    },
-    "constraint:ClientInteraction.validStatus": {
-      "file": "sales/client-interaction-rules.manifest",
-      "line": 46
+      "line": 57
     },
     "constraint:ClientInteraction.validSubject": {
       "file": "sales/client-interaction-rules.manifest",
-      "line": 30
+      "line": 41
     },
     "constraint:ClientInteraction.warnNoClientOrLead": {
       "file": "sales/client-interaction-rules.manifest",
-      "line": 37
+      "line": 48
     },
     "constraint:ClientInteraction.warnNoFollowUp": {
       "file": "sales/client-interaction-rules.manifest",
-      "line": 117
+      "line": 127
     },
     "constraint:ClientInteraction.warnOverdueFollowUp": {
       "file": "sales/client-interaction-rules.manifest",
-      "line": 54
+      "line": 64
     },
     "constraint:ClientInteraction.warnPastFollowUp": {
       "file": "sales/client-interaction-rules.manifest",
-      "line": 70
+      "line": 80
     },
     "constraint:ClientPreference.validClientId": {
       "file": "sales/client-rules.manifest",
@@ -4995,23 +4987,19 @@
     },
     "constraint:Document.positiveFileSize": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 359
+      "line": 368
     },
     "constraint:Document.requireFileUrl": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 357
+      "line": 367
     },
     "constraint:Document.requireName": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 356
-    },
-    "constraint:Document.validStatus": {
-      "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 358
+      "line": 366
     },
     "constraint:Document.warnUnlinkedDocument": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 361
+      "line": 370
     },
     "constraint:DocumentVersion.positiveVersion": {
       "file": "platform/document-version-rules.manifest",
@@ -5783,51 +5771,47 @@
     },
     "constraint:Lead.blockAlreadyConverted": {
       "file": "sales/lead-rules.manifest",
-      "line": 129
+      "line": 141
     },
     "constraint:Lead.blockDisqualified": {
       "file": "sales/lead-rules.manifest",
-      "line": 138
+      "line": 150
     },
     "constraint:Lead.positiveEstimatedValue": {
       "file": "sales/lead-rules.manifest",
-      "line": 33
+      "line": 45
     },
     "constraint:Lead.validContactName": {
       "file": "sales/lead-rules.manifest",
-      "line": 32
+      "line": 44
     },
     "constraint:Lead.validSource": {
       "file": "sales/lead-rules.manifest",
-      "line": 31
-    },
-    "constraint:Lead.validStatus": {
-      "file": "sales/lead-rules.manifest",
-      "line": 30
+      "line": 43
     },
     "constraint:Lead.warnArchiveOpenLead": {
       "file": "sales/lead-rules.manifest",
-      "line": 175
+      "line": 187
     },
     "constraint:Lead.warnHighValueDisqualify": {
       "file": "sales/lead-rules.manifest",
-      "line": 157
+      "line": 169
     },
     "constraint:Lead.warnHighValueUnassigned": {
       "file": "sales/lead-rules.manifest",
-      "line": 40
+      "line": 52
     },
     "constraint:Lead.warnNoContactInfo": {
       "file": "sales/lead-rules.manifest",
-      "line": 70
+      "line": 82
     },
     "constraint:Lead.warnStaleNewLead": {
       "file": "sales/lead-rules.manifest",
-      "line": 49
+      "line": 61
     },
     "constraint:Lead.warnStatusRegression": {
       "file": "sales/lead-rules.manifest",
-      "line": 102
+      "line": 114
     },
     "constraint:LogisticsDispatch.validPriority": {
       "file": "operations/logistics/logistics-all-rules.manifest",
@@ -6367,35 +6351,31 @@
     },
     "constraint:ProposalDraft.positiveDepositAmount": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 71
+      "line": 83
     },
     "constraint:ProposalDraft.positiveVersion": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 56
+      "line": 68
     },
     "constraint:ProposalDraft.validClientName": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 70
-    },
-    "constraint:ProposalDraft.validStatus": {
-      "file": "sales/proposal-draft-rules.manifest",
-      "line": 55
+      "line": 82
     },
     "constraint:ProposalDraft.validTitle": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 69
+      "line": 81
     },
     "constraint:ProposalDraft.warnNoClientEmail": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 73
+      "line": 85
     },
     "constraint:ProposalDraft.warnNoClientEmailOnSend": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 160
+      "line": 172
     },
     "constraint:ProposalDraft.warnTokenExpired": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 82
+      "line": 94
     },
     "constraint:ProposalLineItem.positiveQuantity": {
       "file": "sales/proposal-rules.manifest",
@@ -7187,7 +7167,7 @@
     },
     "entity:AdminChatMessage": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 467
+      "line": 476
     },
     "entity:AdminChatParticipant": {
       "file": "administrative/admin-chat-participant-rules.manifest",
@@ -7195,7 +7175,7 @@
     },
     "entity:AdminChatThread": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 424
+      "line": 433
     },
     "entity:AdminTask": {
       "file": "administrative/admin-task-rules.manifest",
@@ -7283,7 +7263,7 @@
     },
     "entity:CallPlanningSession": {
       "file": "sales/call-planning-session-rules.manifest",
-      "line": 5
+      "line": 16
     },
     "entity:CateringOrder": {
       "file": "events/catering-order-rules.manifest",
@@ -7303,7 +7283,7 @@
     },
     "entity:ClientInteraction": {
       "file": "sales/client-interaction-rules.manifest",
-      "line": 5
+      "line": 16
     },
     "entity:ClientPreference": {
       "file": "sales/client-rules.manifest",
@@ -7383,7 +7363,7 @@
     },
     "entity:Document": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 339
+      "line": 349
     },
     "entity:DocumentVersion": {
       "file": "platform/document-version-rules.manifest",
@@ -7587,7 +7567,7 @@
     },
     "entity:Lead": {
       "file": "sales/lead-rules.manifest",
-      "line": 5
+      "line": 18
     },
     "entity:LogisticsDispatch": {
       "file": "operations/logistics/logistics-all-rules.manifest",
@@ -7723,7 +7703,7 @@
     },
     "entity:ProposalDraft": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 5
+      "line": 18
     },
     "entity:ProposalLineItem": {
       "file": "sales/proposal-rules.manifest",
@@ -8063,7 +8043,7 @@
     },
     "transition:CallPlanningSession.status": {
       "file": "sales/call-planning-session-rules.manifest",
-      "line": 35
+      "line": 45
     },
     "transition:CateringOrder.orderStatus": {
       "file": "events/catering-order-rules.manifest",
@@ -8071,7 +8051,7 @@
     },
     "transition:ClientInteraction.status": {
       "file": "sales/client-interaction-rules.manifest",
-      "line": 49
+      "line": 59
     },
     "transition:CollectionAction.status": {
       "file": "accounting/collections-rules.manifest",
@@ -8111,7 +8091,7 @@
     },
     "transition:Document.status": {
       "file": "sales/crm-admin-extended-rules.manifest",
-      "line": 371
+      "line": 380
     },
     "transition:DocumentVersion.status": {
       "file": "platform/document-version-rules.manifest",
@@ -8235,7 +8215,7 @@
     },
     "transition:Lead.status": {
       "file": "sales/lead-rules.manifest",
-      "line": 35
+      "line": 47
     },
     "transition:LogisticsDispatch.status": {
       "file": "operations/logistics/logistics-all-rules.manifest",
@@ -8303,7 +8283,7 @@
     },
     "transition:ProposalDraft.status": {
       "file": "sales/proposal-draft-rules.manifest",
-      "line": 64
+      "line": 76
     },
     "transition:PurchaseOrder.status": {
       "file": "operations/procurement/purchase-order-rules.manifest",

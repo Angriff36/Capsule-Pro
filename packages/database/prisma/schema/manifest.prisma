@@ -701,7 +701,7 @@ model CallPlanningSession {
   tenantId String @map("tenant_id") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   userId String @map("user_id")
-  status String @default("active")
+  status CallPlanningSessionStatus @default(active)
   sourceType String @map("source_type") @default("manual")
   transcriptText String? @map("transcript_text") @db.Text @default("")
   metadata Json? @default("{}")
@@ -892,7 +892,7 @@ model ClientInteraction {
   description String? @default("")
   followUpDate DateTime? @map("follow_up_date") @db.Date
   followUpCompleted Boolean @map("follow_up_completed") @default(false)
-  status String? @default("open")
+  status ClientInteractionStatus? @default(open)
   priority String? @default("normal")
   escalatedAt DateTime? @map("escalated_at") @db.Timestamptz(6)
   escalatedTo String? @map("escalated_to") @default("")
@@ -1584,7 +1584,7 @@ model Document {
   documentType String @map("document_type") @default("")
   fileUrl String @map("file_url") @default("")
   fileSizeBytes Int @map("file_size_bytes") @default(0)
-  status String @default("uploaded")
+  status DocumentStatus @default(uploaded)
   entityType String @map("entity_type") @default("")
   entityId String @map("entity_id") @default("")
   uploadedBy String @map("uploaded_by") @default("")
@@ -3351,7 +3351,7 @@ model Lead {
   eventDate DateTime? @map("event_date") @db.Date
   estimatedGuests Int? @map("estimated_guests") @default(0)
   estimatedValue Decimal? @map("estimated_value") @db.Decimal(12, 2) @default(0)
-  status String @default("new")
+  status LeadStatus @default(new)
   assignedTo String? @map("assigned_to") @db.Uuid
   notes String? @default("")
   convertedToClientId String? @map("converted_to_client_id") @db.Uuid
@@ -4454,7 +4454,7 @@ model ProposalDraft {
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   draftId String @map("draft_id") @db.Uuid
   userId String @map("user_id") @default("")
-  status String @default("draft")
+  status ProposalDraftStatus @default(draft)
   version Int @default(1)
   title String @default("")
   clientName String @map("client_name") @default("")
@@ -6955,11 +6955,40 @@ enum BudgetStatus {
   @@schema("public")
 }
 
+enum CallPlanningSessionStatus {
+  active
+  finalizing
+  review
+  completed
+  abandoned
+
+  @@schema("public")
+}
+
+enum ClientInteractionStatus {
+  open
+  scheduled
+  overdue
+  completed
+  escalated
+
+  @@schema("public")
+}
+
 enum DealStatus {
   open
   won
   lost
   abandoned
+
+  @@schema("public")
+}
+
+enum DocumentStatus {
+  uploaded
+  parsing
+  parsed
+  failed
 
   @@schema("public")
 }
@@ -6995,6 +7024,18 @@ enum KnowledgeBaseEntryStatus {
   draft
   published
   archived
+
+  @@schema("public")
+}
+
+enum LeadStatus {
+  new
+  contacted
+  qualified
+  proposal
+  won
+  lost
+  disqualified
 
   @@schema("public")
 }
@@ -7067,6 +7108,18 @@ enum PrepTaskStatus {
   in_progress
   done
   canceled
+
+  @@schema("public")
+}
+
+enum ProposalDraftStatus {
+  draft
+  sent
+  viewed
+  change_requested
+  approved
+  expired
+  converted
 
   @@schema("public")
 }

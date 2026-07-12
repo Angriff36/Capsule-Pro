@@ -2,6 +2,19 @@ use "../_base.manifest"
 // CRM & Sales - Lead Rules
 // Manifest spec for lead tracking, qualification, and conversion
 
+// U7 (WS7): Closed-vocabulary status enum for Lead lifecycle. The enum type is
+// the constraint (replaces the prior `validStatus` string-membership check);
+// transitions/guards/computeds below stay string-based (FSM-safe per P3).
+enum LeadStatus {
+  new
+  contacted
+  qualified
+  proposal
+  won
+  lost
+  disqualified
+}
+
 entity Lead mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property score: int = 0
@@ -14,7 +27,7 @@ entity Lead mixin TenantScoped, SoftDeletable {
   property eventDate: datetime?
   property estimatedGuests: int? = 0
   property estimatedValue: decimal? = 0
-  indexed property status: string = "new"
+  indexed property status: LeadStatus = new
   property assignedTo: uuid?
   searchable property notes: string? = ""
   property convertedToClientId: uuid?
@@ -27,7 +40,6 @@ entity Lead mixin TenantScoped, SoftDeletable {
   computed isOpen: boolean = self.status in ["new", "contacted", "qualified", "proposal"]
   computed isArchived: boolean = self.deletedAt != null
 
-  constraint validStatus: self.status in ["new", "contacted", "qualified", "proposal", "won", "lost", "disqualified"] "Invalid lead status"
   constraint validSource: self.source in ["website", "manual", "import"] "Lead source must be one of: website, manual, import"
   constraint validContactName: self.contactName != null and self.contactName != "" "Contact name is required"
   constraint positiveEstimatedValue: self.estimatedValue >= 0 "Estimated value must be non-negative"
