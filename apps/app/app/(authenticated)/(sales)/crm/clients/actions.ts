@@ -308,45 +308,43 @@ export async function getClientById(id: string) {
 
   invariant(client, "Client not found");
 
-  // Get contacts
-  const contacts = await database.clientContact.findMany({
-    where: {
-      AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
-    },
-    orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
-  });
-
-  // Get preferences
-  const preferences = await database.clientPreference.findMany({
-    where: {
-      AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
-    },
-    orderBy: [{ preferenceType: "asc" }, { preferenceKey: "asc" }],
-  });
-
-  // Get interaction count
-  const interactionCount = await database.clientInteraction.count({
-    where: {
-      AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
-    },
-  });
-
-  // Get event count
-  const eventCount = await database.cateringOrder.count({
-    where: {
-      AND: [{ tenantId }, { customer_id: id }, { deletedAt: null }],
-    },
-  });
-
-  // Get total revenue
-  const revenueResult = await database.cateringOrder.aggregate({
-    where: {
-      AND: [{ tenantId }, { customer_id: id }, { deletedAt: null }],
-    },
-    _sum: {
-      totalAmount: true,
-    },
-  });
+  // The five detail reads below are independent — each is keyed solely on
+  // (tenantId, id) and none depends on another's result — so they collapse into
+  // a single concurrent batch instead of five serial round-trips. Array order
+  // matches the prior serial sequence (db-performance plan item #7).
+  const [contacts, preferences, interactionCount, eventCount, revenueResult] =
+    await Promise.all([
+      database.clientContact.findMany({
+        where: {
+          AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
+        },
+        orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+      }),
+      database.clientPreference.findMany({
+        where: {
+          AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
+        },
+        orderBy: [{ preferenceType: "asc" }, { preferenceKey: "asc" }],
+      }),
+      database.clientInteraction.count({
+        where: {
+          AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
+        },
+      }),
+      database.cateringOrder.count({
+        where: {
+          AND: [{ tenantId }, { customer_id: id }, { deletedAt: null }],
+        },
+      }),
+      database.cateringOrder.aggregate({
+        where: {
+          AND: [{ tenantId }, { customer_id: id }, { deletedAt: null }],
+        },
+        _sum: {
+          totalAmount: true,
+        },
+      }),
+    ]);
 
   // Transform Decimal to match component's expected type
   const totalRevenue =
