@@ -2954,7 +2954,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "PerformanceReview.acknowledge": z.object({}),
   "PerformanceReview.create": z.object({
   employeeId: z.string(),
-  reviewerId: z.string(),
+  reviewerId: z.string().optional(),
   reviewType: z.string(),
   scheduledDate: z.coerce.date(),
 }),
@@ -4099,7 +4099,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "StaffPerformance.create": z.object({
   employeeId: z.string(),
   reviewType: z.string(),
-  reviewerId: z.string(),
+  reviewerId: z.string().optional(),
   periodStart: z.number(),
   periodEnd: z.number(),
   strengths: z.string(),
@@ -4115,7 +4115,7 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "StaffPerformance.update": z.object({
   employeeId: z.string(),
   reviewType: z.string(),
-  reviewerId: z.string(),
+  reviewerId: z.string().optional(),
   periodStart: z.number(),
   periodEnd: z.number(),
   strengths: z.string(),

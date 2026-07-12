@@ -43,7 +43,7 @@ entity StaffPerformance mixin TenantScoped {
   relationship belongsTo reviewer: User with reviewerId
 
   default policy StaffPerformanceDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff performance"
-  command create(employeeId: string, reviewType: string, reviewerId: string, periodStart: number, periodEnd: number, strengths: string, improvements: string, goals: string, notes: string) {
+  command create(employeeId: string, reviewType: string, reviewerId: string from context.user.id, periodStart: number, periodEnd: number, strengths: string, improvements: string, goals: string, notes: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard reviewType in ["quarterly", "annual", "probation", "promotion", "self"] "Invalid review type"
 
@@ -61,7 +61,7 @@ entity StaffPerformance mixin TenantScoped {
     emit PerformanceReviewCreated
   }
 
-  command update(employeeId: string, reviewType: string, reviewerId: string, periodStart: number, periodEnd: number, strengths: string, improvements: string, goals: string, notes: string) {
+  command update(employeeId: string, reviewType: string, reviewerId: string from context.user.id, periodStart: number, periodEnd: number, strengths: string, improvements: string, goals: string, notes: string) {
     guard self.status in ["draft", "in_review"] "Cannot update a completed review"
     guard reviewType in ["quarterly", "annual", "probation", "promotion", "self"] "Invalid review type"
 

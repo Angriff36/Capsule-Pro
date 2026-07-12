@@ -412,7 +412,7 @@ entity PerformanceReview mixin TenantScoped, SoftDeletable {
   relationship belongsTo reviewer: User with reviewerId
 
   default policy PerformanceReviewDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(employeeId: string, reviewerId: string, reviewType: string, scheduledDate: datetime) {
+  command create(employeeId: string, reviewerId: string from context.user.id, reviewType: string, scheduledDate: datetime) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard reviewerId != null and reviewerId != "" "Reviewer ID is required"
     guard reviewType != null and reviewType != "" "Review type is required"

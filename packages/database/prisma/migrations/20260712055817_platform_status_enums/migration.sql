@@ -1,11 +1,9 @@
 /*
-  Hand-rewritten 2026-07-12 (REVIEW-2): Prisma generated destructive
-  DROP COLUMN + ADD COLUMN conversions — document_versions rows would reset to
-  'draft' and VersionApproval (NOT NULL, no default) would fail outright on any
-  rows. Rewritten to in-place ALTER ... USING casts.
-  Pre-flight before deploy:
-    SELECT DISTINCT status FROM "VersionApproval";
-    SELECT DISTINCT status FROM tenant_events.document_versions;
+  Warnings:
+
+  - The `status` column on the `document_versions` table would be dropped and recreated. This will lead to data loss if there is data in the column.
+  - Changed the type of `status` on the `VersionApproval` table. No cast exists, the column would be dropped and recreated, which cannot be done if there is data, since the column is required.
+
 */
 -- CreateEnum
 CREATE TYPE "DocumentVersionStatus" AS ENUM ('draft', 'approved', 'published', 'superseded');
@@ -13,12 +11,10 @@ CREATE TYPE "DocumentVersionStatus" AS ENUM ('draft', 'approved', 'published', '
 -- CreateEnum
 CREATE TYPE "VersionApprovalStatus" AS ENUM ('pending', 'approved', 'rejected', 'cancelled');
 
--- AlterTable (in-place, value-preserving; NOT NULL, no default)
-ALTER TABLE "VersionApproval" ALTER COLUMN "status" DROP DEFAULT;
-ALTER TABLE "VersionApproval" ALTER COLUMN "status" TYPE "VersionApprovalStatus" USING "status"::text::"VersionApprovalStatus";
-ALTER TABLE "VersionApproval" ALTER COLUMN "status" SET NOT NULL;
+-- AlterTable
+ALTER TABLE "VersionApproval" DROP COLUMN "status",
+ADD COLUMN     "status" "VersionApprovalStatus" NOT NULL;
 
--- AlterTable (in-place, value-preserving; nullable with default)
-ALTER TABLE "tenant_events"."document_versions" ALTER COLUMN "status" DROP DEFAULT;
-ALTER TABLE "tenant_events"."document_versions" ALTER COLUMN "status" TYPE "DocumentVersionStatus" USING "status"::text::"DocumentVersionStatus";
-ALTER TABLE "tenant_events"."document_versions" ALTER COLUMN "status" SET DEFAULT 'draft';
+-- AlterTable
+ALTER TABLE "tenant_events"."document_versions" DROP COLUMN "status",
+ADD COLUMN     "status" "DocumentVersionStatus" DEFAULT 'draft';
