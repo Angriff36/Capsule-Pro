@@ -11,7 +11,7 @@ Authoritative plan: `manifest/NATIVE-REWRITE-PLAN.md` (WS0–WS16, Phase 0 P1–
 
 | Workstream | Metric | Plan-time | Verified 2026-07-11 |
 | --- | --- | --- | --- |
-| WS0 | `uuid … = ""` defaults | 188 / 69 files | **140 / 49 files** (post-facilities batch; was 143/50 post-equipment) |
+| WS0 | `uuid … = ""` defaults | 188 / 69 files | **139 / 48 files** (post-maintenance batch; was 140/49 post-facilities) |
 | WS1 | `user.role in [...]` literals | 464 | **461** |
 | WS7 | `status: string` (raw, incl. command params) | 82 fields | **140 raw** / 92 `validStatus` constraints |
 | WS5 | native `schedule` decls | 0 | **0** (10 crons in `apps/api/vercel.json`) |
@@ -33,7 +33,7 @@ Authoritative plan: `manifest/NATIVE-REWRITE-PLAN.md` (WS0–WS16, Phase 0 P1–
 | sales | 0 ✓ | 44 | 10 |
 | tenant-team | 19 | 64 | 17 |
 
-`operations/` is too large for one commit — sub-batch by subdirectory: kitchen (uuid 30 / role 90), inventory (18 / 48), procurement (11 / 23), logistics (7 / 9), equipment (0 ✓ / 5 — DONE 2026-07-11), facilities (0 ✓ / 7 — DONE 2026-07-11), maintenance (1 / 3).
+`operations/` is too large for one commit — sub-batch by subdirectory: kitchen (uuid 30 / role 90), inventory (18 / 48), procurement (11 / 23), logistics (7 / 9), equipment (0 ✓ / 5 — DONE 2026-07-11), facilities (0 ✓ / 7 — DONE 2026-07-11), maintenance (0 ✓ / 3 — DONE 2026-07-11).
 
 **Cadence (from the plan):** one domain-batch = one task = one commit (`[refactor(manifest)] <domain>: <workstream> — <what>`), staged by explicit pathspec, `pnpm manifest:ci` green at every commit. Phase 2 batches also end `pnpm db:check` clean and record migrations as awaiting human deploy. WS0/WS1/WS2/WS3 are pausable mid-stream; WS7 batches must complete per-domain (half-migrated vocab is worse than none). Never hand-edit generated artifacts; never run the bare `manifest` CLI.
 
@@ -75,7 +75,7 @@ Not a blind `s/= ""//`: per field, classify **nullable-vs-required** and **mutat
 - [ ] WS0 · operations/logistics (7 fields)
 - [x] WS0 · operations/equipment (4 fields) — DONE 2026-07-11: dropped `= ""` from 4 nullable `MaintenanceWorkOrder` uuid fields (areaId, equipmentId, reportedBy, assignedTo). All IR-only (`manifest:ci` green, exit 0; `manifest.prisma` byte-identical — no migration, no `db:dev`). No in-file sentinel `""` checks on these fields (the only `!= ""` guards are on command-input params like `assignedTo`, not on `self.<field>`), so no `"" → null` check migration needed. Read types unchanged (nullable stays `string | null`) → no app-consumer type impact, `pnpm check` not required. `equipmentId` is the only field with live bug-fix value (optional create param → omitted case went from failing `""` insert to valid `null`); the other 3 were dead-default cleanup that completes the per-field sweep. AC-002 covered by the deductive IR-only proof: nullable `@db.Uuid` + `null` default is a Postgres invariant (pilot-proven 2026-07-07); column byte-identical. Count: 147/51 → 143/50.
 - [x] WS0 · operations/facilities (3 fields) — DONE 2026-07-11: dropped `= ""` from 3 nullable uuid fields (FacilityArea.venueId, FacilityAsset.facilityId, FacilityAsset.areaId). All IR-only (`manifest:ci` green; `manifest.prisma` byte-identical — no migration). Each has a required same-name create param that seeds the INSERT, so the `= ""` was dead default — pure cleanup, no runtime change, no persist-before-mutate risk. No in-file sentinel `""` checks on these fields; read types unchanged (nullable stays `string | null`). Count: 143/50 → 140/49.
-- [ ] WS0 · operations/maintenance (1 field)
+- [x] WS0 · operations/maintenance (1 field) — DONE 2026-07-11: dropped `= ""` from `WorkOrder.assignedTo` (nullable uuid). IR-only (`manifest:ci` green; `manifest.prisma` byte-identical — no migration). **Real bug fix, not just cleanup**: `WorkOrder.create` does NOT set `assignedTo`, so the bootstrap INSERT previously wrote `""` to a nullable `@db.Uuid` (Postgres reject); now inserts `null` (valid). Load-bearing sentinel migration in the same commit: `computed isAssigned = self.assignedTo != ""` → `!= null` (without it, an unassigned `null` work order would compute `isAssigned = true`). Read type unchanged (`string | null`). Count: 140/49 → 139/48. This completes all fully-nullable zero-required operations subdomains (equipment/facilities/maintenance all WS0-clean).
 - [ ] WS0 · verify `rg 'uuid.*= ""' manifest/source -g '*.manifest'` → 0 (AC-001) and every touched entity has a green Postgres create smoke-test (AC-002)
 
 ---

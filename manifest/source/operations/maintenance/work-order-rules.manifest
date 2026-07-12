@@ -23,14 +23,14 @@ entity WorkOrder mixin TenantScoped, SoftDeletable {
   searchable property description: string? = ""
   // scheduledDate: nullable — no default; set when known
   property scheduledDate: datetime?
-  property assignedTo: uuid? = ""
+  property assignedTo: uuid?
   // completedDate: nullable — only set when work finishes
   property completedDate: datetime?
   timestamps
 
   computed isCompleted: boolean = self.status == "completed"
   computed isCancelled: boolean = self.status == "cancelled"
-  computed isAssigned: boolean = self.assignedTo != ""
+  computed isAssigned: boolean = self.assignedTo != null
   // null-safe datetime checks (fixes original != 0 bug on datetime)
   computed isScheduled: boolean = self.scheduledDate != null
   computed isOverdue: boolean = self.scheduledDate != null and now() > self.scheduledDate and not (self.status in ["completed", "cancelled"]) cache request
