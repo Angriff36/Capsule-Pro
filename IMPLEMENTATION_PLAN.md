@@ -41,6 +41,14 @@ Authoritative plan: `manifest/NATIVE-REWRITE-PLAN.md` (WS0–WS16, Phase 0 P1–
 
 ---
 
+## Source correctness audit 2026-07-12 (five-dimension, hand-verified) — see `.artifacts/manifest-source-audit-2026-07-12.md`
+
+- [ ] **AUDIT-A (systemic, HIGH): 30 commands persist client-controlled actor identity** into stored audit fields (payroll approvals, override-audit table, payment fraud review, HACCP logs, chat impersonation...). Fix pattern: `param from context.user.id`. The 9 subject-vs-actor ambiguous cases in the audit doc are NEEDS-RYAN before sweeping.
+- [ ] **AUDIT-B: dead/broken commands** — `Facility.remove` (guard vs transition mutually exclusive — undeletable facilities), `FacilityArea.remove` (fails from 2 of 3 states), `ScheduleShift.create` (required locationId never supplied — INSERT breaks), `MaintenanceWorkOrder` (no transition table).
+- [ ] **AUDIT-C: event integrity** — `Payment.processFailed` emits `PaymentProcessed` (failure published as success; no payment.failed topic exists); `Invoice.update` silent financial mutation.
+- [ ] **AUDIT-D: validation gaps** — `PurchaseRequisitionItem.update` wipes sourcePrepListIds (bare optional mutate); 5 creates missing date-ordering constraints; `User.create` accepts negative rates; `User.validRole` rejects legitimate roles (only 5 of ~28 in _base).
+- [ ] **AUDIT-E: ship rules R1–R21 from the audit doc as a new `manifest:ci` audit script** so these classes are machine-gated.
+
 ## Independent review findings (gpt-5.5 adversarial review 2026-07-12, verified by hand) — FIX FIRST
 
 - [ ] **REVIEW-1 (MEDIUM):** `manifest/source/operations/kitchen/ingredient-rules.manifest` — `inventoryItemId` is now `uuid?` but two sibling checks still use the empty-string sentinel: `warnNoInventoryItem` tests `== ""` (line ~42; warning never fires for the normal `null` unlinked value) and `unlinkInventoryItem`'s guard tests `!= ""` (line ~149; `null` passes → already-unlinked ingredients unlink "again", emitting duplicate events). Fix to `== null` / `!= null`, regen, ci.
