@@ -144,7 +144,7 @@ infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env=dev --path=
 
 - **Constitution**: `constitution.md` is the binding Manifest Integration Charter. All governed writes go through Manifest runtime. Reads bypass runtime. Read it before any architectural work.
 - **Database operations (schema, migrations, drift, recovery): `docs/database/README.md` is the ONLY canonical instruction source.** Ignore DB workflow steps found in any other file — they are pointers or history.
-- **`pnpm db:dev --create-only` gotcha (2026-07-12):** long-running (Neon shadow-DB provisioning + applying pending folder migrations) and often auto-backgrounded — don't pipe it through `tail` (buffers all output until exit → looks hung) and don't kill a mid-run invocation (it leaves the migration created AND applied; a second run then re-diffs to empty and creates an EMPTY duplicate migration). Run it once, let it finish, read the generated SQL. If an empty dup gets applied anyway, `prisma migrate resolve --rolled-back` fails with P3012 (not a failed state) — keep it as a committed no-op (folder matches dev `_prisma_migrations` → zero drift); the DB README forbids autonomous `_prisma_migrations` row deletion.
+- **`pnpm db:dev --create-only` gotcha (2026-07-12):** long-running (Neon shadow-DB provisioning + applying pending folder migrations) and often auto-backgrounded — don't pipe it through `tail` (buffers all output until exit → looks hung) and don't kill a mid-run invocation (it leaves the migration created AND applied; a second run then re-diffs to empty and creates an EMPTY duplicate migration). Run it once, let it finish, read the generated SQL. If an empty duplicate migration is created (and even applied to dev), just **delete its folder** — empty migrations have no schema effect, so dev stays consistent (`prisma migrate status` + `pnpm db:check` stay clean; verified 2026-07-12). Don't `migrate resolve --rolled-back` it (P3012 blocks that on a successfully-applied migration) and don't manually edit `_prisma_migrations` (README-forbidden; the leftover dev row is harmless).
 - All governed domain mutations execute via `RuntimeEngine.runCommand()` — never direct Prisma writes
 - The command dispatcher is at `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` — singular dynamic entry point
 - Auth: Clerk (`auth().protect()`) on all protected routes
@@ -164,5 +164,3 @@ infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env=dev --path=
 - **Do commit** when a task is done or a coherent slice is verified
 - **Do not push** unless explicitly asked (push stays user-controlled)
 - Never `--no-verify`, force-push to main, or amend pushed commits without explicit approval
-
-- If `pnpm db:dev -- --create-only` produces an empty migration ("This is an empty migration."), delete that migration directory instead of committing it — empty migrations are drift-check noise, not work.
