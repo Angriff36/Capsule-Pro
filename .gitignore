@@ -295,6 +295,7 @@ docs/
 !/docs/
 /docs/*
 # docs/database holds the CANONICAL database-operations doc (CONTRIBUTING.md) — must be versioned
+!/docs/script-index.md
 !/docs/database/
 !/docs/implementation-history/
 !/docs/audits/

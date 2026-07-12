@@ -12,7 +12,7 @@
  * manifest:sync-artifacts / manifest:client / manifest:generate-metadata /
  * manifest:openapi / manifest:ir:embed / ... script entries (consolidated
  * 2026-07-11). Individual steps remain runnable directly — see
- * manifest/scripts/script-index.md Part 3 for the per-step node commands.
+ * docs/script-index.md Part 3 for the per-step node commands.
  *
  * NOT included: `manifest fmt` — upstream CLI parses files standalone and
  * fails on cross-file mixins from _base.manifest (101/104 files), so it

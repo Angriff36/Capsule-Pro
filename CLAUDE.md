@@ -236,11 +236,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 87% context — saved before compacting]
-Files (3):
-  manifest/source/accounting/collections-rules.manifest (edit)
-  manifest/source/accounting/payment-rules.manifest (edit)
-  manifest/source/accounting/invoice-rules.manifest (edit)
+[auto-bridge snapshot @ 10 changes]
+Files: manifest/source/sales/crm-admin-extended-rules.manifest (edit), manifest/source/sales/call-planning-session-rules.manifest (edit), manifest/source/sales/proposal-draft-rules.manifest (edit), manifest/source/sales/client-interaction-rules.manifest (edit)
 
 # === END COGNILAYER ===
 

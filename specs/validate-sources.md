@@ -1,7 +1,7 @@
 # Spec: `manifest:validate` source-level validation
 
 > Status: PLANNED (not yet implemented). Pairs with `IMPLEMENTATION_PLAN.md` P1a.
-> Implements Part 1 of `manifest/scripts/script-index.md` (owner's handwritten contract) for `pnpm manifest:validate`.
+> Implements Part 1 of `docs/script-index.md` (owner's handwritten contract) for `pnpm manifest:validate`.
 
 ## Purpose
 
