@@ -41,6 +41,11 @@ Authoritative plan: `manifest/NATIVE-REWRITE-PLAN.md` (WS0–WS16, Phase 0 P1–
 
 ---
 
+## Independent review findings (gpt-5.5 adversarial review 2026-07-12, verified by hand) — FIX FIRST
+
+- [ ] **REVIEW-1 (MEDIUM):** `manifest/source/operations/kitchen/ingredient-rules.manifest` — `inventoryItemId` is now `uuid?` but two sibling checks still use the empty-string sentinel: `warnNoInventoryItem` tests `== ""` (line ~42; warning never fires for the normal `null` unlinked value) and `unlinkInventoryItem`'s guard tests `!= ""` (line ~149; `null` passes → already-unlinked ingredients unlink "again", emitting duplicate events). Fix to `== null` / `!= null`, regen, ci.
+- [ ] **REVIEW-2 (HIGH, deploy-blocking):** ALL three enum migrations (`20260712035457_kb_entry_status_enum`, `20260712055817_platform_status_enums`, `20260712084329_equipment_status_enums`) use Prisma's destructive `DROP COLUMN` + `ADD COLUMN` conversion. On any table WITH ROWS: kb entries and document versions silently reset to `draft`; `version_approvals.status` (NOT NULL, no default) fails the migration outright. Before ANY deploy to a DB with data, rewrite each to `ALTER COLUMN "status" TYPE <Enum> USING "status"::text::<Enum>` after a `SELECT DISTINCT status` pre-flight. Applies-as-is is safe ONLY on an empty DB. Every future WS7 batch migration must be hand-rewritten the same way before it counts as reviewed.
+
 ## Phase 0 — Preflight verifications (cheap; gate the workstreams; record answers in `manifest/NATIVE-REWRITE-PLAN.md`)
 
 None are recorded as answered in the plan document's Phase-0 table. WS0 needs no preflight and can start in parallel.
