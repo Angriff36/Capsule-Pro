@@ -27,9 +27,9 @@ Authoritative plan: `manifest/NATIVE-REWRITE-PLAN.md` (WS0–WS16, Phase 0 P1–
 | accounting | 7 DEFER | 26 | 21 |
 | administrative | 1 (userId deferred) | 14 | 5 |
 | events | 1 DEFER | 72 | 31 |
-| knowledge-base | 1 | 3 | 1 |
+| knowledge-base | 0 ✓ | 3 | 1 |
 | operations | 5 | 185 | 53 |
-| platform | 10 | 51 | 2 |
+| platform | 1 (api-key createdByUserId DEFER) | 51 | 2 |
 | sales | 0 ✓ | 44 | 10 |
 | tenant-team | 0 ✓ | 64 | 17 |
 
