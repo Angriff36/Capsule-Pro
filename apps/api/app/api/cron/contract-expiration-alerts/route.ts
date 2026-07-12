@@ -22,6 +22,7 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { getSystemUserId } from "@/lib/system-user";
 
 // Force dynamic rendering — reads Authorization headers and queries DB at runtime
 export const dynamic = "force-dynamic";
@@ -91,29 +92,6 @@ async function parseConfig(request: NextRequest): Promise<AlertConfig> {
   } catch {
     return DEFAULT_CONFIG;
   }
-}
-
-/**
- * Get a system user for automated operations (admin/owner fallback).
- */
-async function getSystemUserId(tenantId: string): Promise<string> {
-  const adminUser = await database.user.findFirst({
-    where: { tenantId, role: { in: ["owner", "admin"] }, deletedAt: null },
-    select: { id: true },
-  });
-  if (adminUser) {
-    return adminUser.id;
-  }
-
-  const anyUser = await database.user.findFirst({
-    where: { tenantId, deletedAt: null },
-    select: { id: true },
-  });
-  if (anyUser) {
-    return anyUser.id;
-  }
-
-  throw new Error(`No active users found for tenant ${tenantId}`);
 }
 
 /**

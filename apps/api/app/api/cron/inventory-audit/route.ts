@@ -22,6 +22,7 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { getSystemUserId } from "@/lib/system-user";
 
 // Force dynamic rendering; runs on Node.js (needs createManifestRuntime)
 export const dynamic = "force-dynamic";
@@ -92,40 +93,6 @@ async function getFirstActiveLocation(
     },
   });
   return location;
-}
-
-/**
- * Get or create a system user for automated session creation
- */
-async function getSystemUserId(tenantId: string): Promise<string> {
-  // Try to find an admin user for this tenant
-  const adminUser = await database.user.findFirst({
-    where: {
-      tenantId,
-      role: { in: ["owner", "admin"] },
-      deletedAt: null,
-    },
-    select: { id: true },
-  });
-
-  if (adminUser) {
-    return adminUser.id;
-  }
-
-  // Fallback to any active user
-  const anyUser = await database.user.findFirst({
-    where: {
-      tenantId,
-      deletedAt: null,
-    },
-    select: { id: true },
-  });
-
-  if (anyUser) {
-    return anyUser.id;
-  }
-
-  throw new Error(`No active users found for tenant ${tenantId}`);
 }
 
 /**
