@@ -2027,8 +2027,8 @@ export interface LogisticsRoute {
   tenantId: string;
   name: string;
   status?: string;
-  vehicleId?: string;
-  driverId?: string;
+  vehicleId?: string | null;
+  driverId?: string | null;
   totalDistance?: number;
   totalDuration?: number;
   scheduledDate: string;
@@ -2477,7 +2477,7 @@ export interface PrepTask {
   recipeVersionId?: string | null;
   methodId?: string | null;
   containerId?: string | null;
-  locationId?: string;
+  locationId?: string | null;
   estimatedMinutes?: number | null;
   dueByTime?: string | null;
   notes?: string | null;
@@ -2827,13 +2827,13 @@ export interface QACheck {
 export interface QACorrectiveAction {
   id: string;
   tenantId: string;
-  relatedCheckId?: string;
+  relatedCheckId?: string | null;
   description: string;
   assignedTo: string;
   severity?: string;
   status?: string;
   resolutionNotes?: string;
-  escalatedTo?: string;
+  escalatedTo?: string | null;
   escalationReason?: string;
   dueDate: string;
   resolvedAt?: string | null;

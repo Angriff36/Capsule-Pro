@@ -284,8 +284,8 @@ entity LogisticsRoute mixin TenantScoped {
   key [tenantId, id]
   searchable property required name: string
   indexed property status: string = "planned"
-  property vehicleId: uuid = ""
-  property driverId: uuid = ""
+  property vehicleId: uuid?
+  property driverId: uuid?
   property totalDistance: decimal = 0
   property totalDuration: int = 0
   // scheduledDate/endTime and actualStartTime/actualEndTime: lifecycle times — no = now() default

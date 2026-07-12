@@ -3412,8 +3412,8 @@ model LogisticsRoute {
   tenantId String @map("tenant_id") @db.Uuid
   name String
   status String @default("planned")
-  vehicleId String @map("vehicle_id") @db.Uuid
-  driverId String @map("driver_id") @db.Uuid
+  vehicleId String? @map("vehicle_id") @db.Uuid
+  driverId String? @map("driver_id") @db.Uuid
   totalDistance Decimal @map("total_distance") @db.Decimal(10, 2) @default(0)
   totalDuration Int @map("total_duration") @default(0)
   scheduledDate DateTime @map("scheduled_date") @db.Date
@@ -3426,8 +3426,8 @@ model LogisticsRoute {
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
-  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
-  driver Driver @relation(fields: [driverId], references: [id])
+  vehicle Vehicle? @relation(fields: [vehicleId], references: [id])
+  driver Driver? @relation(fields: [driverId], references: [id])
   dispatches LogisticsDispatch[]
 
   @@map("logistics_routes")
@@ -4193,7 +4193,7 @@ model PrepTask {
   recipeVersionId String? @map("recipe_version_id") @db.Uuid
   methodId String? @map("method_id") @db.Uuid
   containerId String? @map("container_id") @db.Uuid
-  locationId String @map("location_id") @db.Uuid
+  locationId String? @map("location_id") @db.Uuid
   estimatedMinutes Int? @map("estimated_minutes") @default(0)
   dueByTime DateTime? @map("due_by_time") @db.Time(6)
   notes String? @default("")
@@ -4206,7 +4206,7 @@ model PrepTask {
   prepList PrepList? @relation(fields: [tenantId, prepListId], references: [tenantId, id])
   event Event @relation(fields: [tenantId, eventId], references: [tenantId, id])
   dish Dish? @relation(fields: [tenantId, dishId], references: [tenantId, id])
-  location Facility @relation(fields: [tenantId, locationId], references: [tenantId, id])
+  location Facility? @relation(fields: [tenantId, locationId], references: [tenantId, id])
   comments PrepComment[]
 
   @@map("prep_tasks")
@@ -4747,13 +4747,13 @@ model QACheck {
 model QACorrectiveAction {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
-  relatedCheckId String @map("related_check_id") @db.Uuid
+  relatedCheckId String? @map("related_check_id") @db.Uuid
   description String @db.Text
   assignedTo String @map("assigned_to") @db.Uuid
   severity String @default("medium")
   status String @default("open")
   resolutionNotes String @map("resolution_notes") @db.Text @default("")
-  escalatedTo String @map("escalated_to") @db.Uuid
+  escalatedTo String? @map("escalated_to") @db.Uuid
   escalationReason String @map("escalation_reason") @db.Text @default("")
   dueDate DateTime @map("due_date") @db.Timestamptz(6)
   resolvedAt DateTime? @map("resolved_at") @db.Timestamptz(6)
@@ -4761,7 +4761,7 @@ model QACorrectiveAction {
   createdAt DateTime @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6) @updatedAt
 
-  check QACheck @relation(fields: [relatedCheckId], references: [id])
+  check QACheck? @relation(fields: [relatedCheckId], references: [id])
 
   @@map("qa_corrective_actions")
   @@id([tenantId, id])

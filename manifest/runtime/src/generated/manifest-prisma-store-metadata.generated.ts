@@ -19623,7 +19623,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -19634,7 +19634,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -24019,7 +24019,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -27536,7 +27536,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -27602,7 +27602,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
