@@ -11,7 +11,7 @@ Authoritative plan: `manifest/NATIVE-REWRITE-PLAN.md` (WS0–WS16, Phase 0 P1–
 
 | Workstream | Metric | Plan-time | Verified 2026-07-11 |
 | --- | --- | --- | --- |
-| WS0 | `uuid … = ""` defaults | 188 / 69 files | **104 / 38 files** (post-tenant-team batch; was 123/44 post-procurement) |
+| WS0 | `uuid … = ""` defaults | 188 / 69 files | **88 / 34 files** (post-inventory batch; was 104/38 post-tenant-team) |
 | WS1 | `user.role in [...]` literals | 464 | **461** |
 | WS7 | `status: string` (raw, incl. command params) | 82 fields | **140 raw** / 92 `validStatus` constraints |
 | WS5 | native `schedule` decls | 0 | **0** (10 crons in `apps/api/vercel.json`) |
@@ -28,12 +28,12 @@ Authoritative plan: `manifest/NATIVE-REWRITE-PLAN.md` (WS0–WS16, Phase 0 P1–
 | administrative | 1 (userId deferred) | 14 | 5 |
 | events | 24 | 72 | 31 |
 | knowledge-base | 1 | 3 | 1 |
-| operations | 74 | 185 | 53 |
+| operations | 58 | 185 | 53 |
 | platform | 10 | 51 | 2 |
 | sales | 0 ✓ | 44 | 10 |
 | tenant-team | 0 ✓ | 64 | 17 |
 
-`operations/` is too large for one commit — sub-batch by subdirectory: kitchen (uuid 30 / role 90), inventory (18 / 48), procurement (0 ✓ / 23 — DONE 2026-07-11), logistics (2 / 9 — 5 nullable DONE 2026-07-11, 2 required deferred), equipment (0 ✓ / 5 — DONE 2026-07-11), facilities (0 ✓ / 7 — DONE 2026-07-11), maintenance (0 ✓ / 3 — DONE 2026-07-11).
+`operations/` is too large for one commit — sub-batch by subdirectory: kitchen (uuid 30 / role 90), inventory (2 DEFER / 48 — 16 DONE 2026-07-11), procurement (0 ✓ / 23 — DONE 2026-07-11), logistics (2 / 9 — 5 nullable DONE 2026-07-11, 2 required deferred), equipment (0 ✓ / 5 — DONE 2026-07-11), facilities (0 ✓ / 7 — DONE 2026-07-11), maintenance (0 ✓ / 3 — DONE 2026-07-11).
 
 **Cadence (from the plan):** one domain-batch = one task = one commit (`[refactor(manifest)] <domain>: <workstream> — <what>`), staged by explicit pathspec, `pnpm manifest:ci` green at every commit. Phase 2 batches also end `pnpm db:check` clean and record migrations as awaiting human deploy. WS0/WS1/WS2/WS3 are pausable mid-stream; WS7 batches must complete per-domain (half-migrated vocab is worse than none). Never hand-edit generated artifacts; never run the bare `manifest` CLI.
 
@@ -70,7 +70,8 @@ Not a blind `s/= ""//`: per field, classify **nullable-vs-required** and **mutat
 - [ ] WS0 · events (24 fields)
 - [ ] WS0 · accounting (28 fields)
 - [ ] WS0 · operations/kitchen (30 fields)
-- [ ] WS0 · operations/inventory (18 fields)
+- [x] WS0 · operations/inventory (16/18 IR-only) — DONE 2026-07-11: dropped `= ""` from 16 uuid fields across 5 files (14 nullable + 2 required-but-param-seeded: `InventoryTransfer.fromLocationId`/`toLocationId`, each has a same-name create param @ line 52 that seeds the bootstrap INSERT). All IR-only (`manifest:ci` green; `manifest.prisma` byte-identical — no migration). Load-bearing sentinel fix in same commit: `InventoryTransaction.hasReference` computed `self.referenceId != ""` → `!= null` (after the drop, `null != ""` would have wrongly flagged a no-reference transaction as having one). `pnpm check` green (26/27; the 1 failure is the pre-existing unrelated `@repo/manifest-runtime` ai-suggestions.ts TS2589/TS7006). Count: 104/38 → 88/34.
+- [ ] WS0 · operations/inventory `CycleCountSession.createdById` + `CycleCountRecord.countedById` (2 DEFER) — both required `uuid`, NO create param, filled only by context-mutate `mutate <field> = user.id` (persist-before-mutate trap: the bootstrap INSERT writes the default before the mutate runs). NOT a clean IR-only drop. Preferred IR-only resolution: add a trusted create param `<field>: string from context.user.id` (the proven wiring-inspect pattern for actor/audit params — engine injects at bootstrap, also closes the spoofing hole) and drop the now-redundant mutate; fallback: make columns nullable → migration. Same class as platform/api-key `createdByUserId`. Awaiting a focused sub-batch (trusted-param port or nullable migration).
 - [x] WS0 · operations/procurement (11 fields) — DONE 2026-07-11: dropped `= ""` from all 11 uuid fields (10 nullable + 1 required-but-param-seeded). The 1 required field `PurchaseRequisition.requestedBy` has a same-name create param (line 79) + guard (81) + mutate (87) that seeds the bootstrap INSERT, so dropping the bogus default keeps the column NOT NULL with zero schema change. Two load-bearing fixes in the same commit: (1) `approveManager` mutate `approvedBy = self.estimatedTotal >= 5000 ? "" : userId` → `: null` (the ternary wrote a bad `""` into `@db.Uuid` on the finance-escalation path — same WS0 bug class); (2) `PurchaseRequisitionItem.hasSuggestedVendor` computed `self.suggestedVendorId != ""` → `!= null` (after the drop, `null != ""` would have wrongly computed `true`, signalling a vendor that isn't there — load-bearing). All IR-only (`manifest:ci` green; `manifest.prisma` byte-identical — no migration). Side effect: `requestedBy` generated read type `string?` → `string` (required-field tightening); `pnpm check` green except the pre-existing `@repo/manifest-runtime` `ai-suggestions.ts` TS2589/TS7006 (unrelated, documented below). Count: 134/47 → 123/44. **procurement now WS0-clean (0 remaining).**
 - [x] WS0 · operations/logistics nullable (5 fields) — DONE 2026-07-11: dropped `= ""` from 5 nullable uuid fields (Driver.vehicleId; Shipment.{eventId, supplierId, locationId, deliveredBy}). Also fixed Shipment.create mutate fallbacks `supplierId/eventId = … : ""` → `: null` — same WS0 bug class (the fallback was writing a bad `""` into `@db.Uuid` when the optional param was null; exactly the admin-task `sourceId` pattern). All IR-only (`manifest:ci` green; `manifest.prisma` byte-identical — no migration, no `db:dev`). No in-file sentinel `""` checks on these fields (verified by full read of both logistics files) → no `"" → null` check migration needed. Read types unchanged (nullable stays `string | null`) → `pnpm check` not required. Count: 139/48 → 134/47.
 - [ ] WS0 · operations/logistics `LogisticsRoute.{vehicleId, driverId}` (2 required, DEFERRED) — required `uuid`, but the create params are `optional vehicleId/driverId` and the route-create UI (`apps/app/.../logistics/routes/routes-view.tsx:120-164`) sends only `name` + `scheduledDate` at create (assignments happen later via update/dispatch). So the columns are genuinely optional at creation and MUST become nullable (`uuid → uuid?`) → migration. NOT a clean IR-only drop. Same class as platform/api-key `createdByUserId`. Awaiting a nullable-migration sub-batch (`pnpm db:dev --create-only` + human deploy); watch for `string → string | null` consumer widening + a `db:check`.

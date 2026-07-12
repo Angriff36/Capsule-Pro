@@ -516,7 +516,7 @@ entity VendorRating mixin TenantScoped, SoftDeletable {
   property required rating: int = 0
   property comment: string? = ""
   property ratedAt: datetime?
-  property ratedBy: uuid? = ""
+  property ratedBy: uuid?
   timestamps
 
   computed isHighScore: boolean = self.rating >= 4
@@ -740,7 +740,7 @@ entity ProcurementBudgetAlert mixin TenantScoped, SoftDeletable {
   property required message: string
   property triggeredAt: datetime?
   property acknowledgedAt: datetime?
-  property acknowledgedBy: uuid? = ""
+  property acknowledgedBy: uuid?
   property isAcknowledged: boolean = false
   timestamps
 

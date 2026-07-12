@@ -6,13 +6,13 @@ entity InventoryTransfer mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property requestedAt: datetime = now()
   property transferNumber: string = ""
-  property fromLocationId: uuid = ""
-  property toLocationId: uuid = ""
+  property fromLocationId: uuid
+  property toLocationId: uuid
   indexed property status: string = "draft"
-  property requestedBy: uuid? = ""
-  property approvedBy: uuid? = ""
-  property shippedBy: uuid? = ""
-  property receivedBy: uuid? = ""
+  property requestedBy: uuid?
+  property approvedBy: uuid?
+  property shippedBy: uuid?
+  property receivedBy: uuid?
   property shippedAt: datetime?
   property receivedAt: datetime?
   property discrepancyNotes: string? = ""

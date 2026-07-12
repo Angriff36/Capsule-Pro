@@ -11,15 +11,15 @@ entity InventoryTransaction mixin TenantScoped, SoftDeletable {
   property totalCost: money? = 0
   property reference: string? = ""
   property referenceType: string? = ""
-  property referenceId: uuid? = ""
+  property referenceId: uuid?
   searchable property notes: string? = ""
   property reason: string = ""
-  property employeeId: uuid? = ""
-  property storageLocationId: uuid? = ""
+  property employeeId: uuid?
+  property storageLocationId: uuid?
   property transactionDate: datetime
   property reversedAt: datetime?
   property reversedBy: string? = ""
-  property reverseOfTransactionId: uuid? = ""
+  property reverseOfTransactionId: uuid?
   property isReversed: boolean? = false
   // Append-only ledger: the table has createdAt but deliberately NO updated_at column,
   // so the `timestamps` macro (which emits both) is replaced by an explicit createdAt.
@@ -31,7 +31,7 @@ entity InventoryTransaction mixin TenantScoped, SoftDeletable {
   computed isTransfer: boolean = self.transactionType == "transfer"
   computed isWaste: boolean = self.transactionType == "waste"
   computed isReturn: boolean = self.transactionType == "return"
-  computed hasReference: boolean = self.referenceId != ""
+  computed hasReference: boolean = self.referenceId != null
   computed isReversible: boolean = self.isReversed == false
 
   relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]

@@ -14,7 +14,7 @@ entity InventoryItem mixin TenantScoped, SoftDeletable {
   property quantityReserved: int? = 0
   property parLevel: decimal = 0
   property reorder_level: decimal = 0
-  property supplierId: uuid? = ""
+  property supplierId: uuid?
   property tags: array<string>? = []
   property fsa_status: string? = "unknown"
   property fsa_temp_logged: boolean? = false

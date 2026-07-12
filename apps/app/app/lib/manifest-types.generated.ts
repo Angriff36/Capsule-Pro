@@ -1777,8 +1777,8 @@ export interface InventoryTransfer {
   deletedAt?: string | null;
   requestedAt: string;
   transferNumber?: string;
-  fromLocationId?: string;
-  toLocationId?: string;
+  fromLocationId: string;
+  toLocationId: string;
   status?: string;
   requestedBy?: string | null;
   approvedBy?: string | null;

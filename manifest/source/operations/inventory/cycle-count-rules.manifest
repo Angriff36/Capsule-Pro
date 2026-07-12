@@ -19,7 +19,7 @@ entity CycleCountSession mixin TenantScoped, SoftDeletable {
   property variancePercentage: decimal = 0
   searchable property notes: string? = ""
   property createdById: uuid = ""
-  property approvedById: uuid? = ""
+  property approvedById: uuid?
   timestamps
 
   computed isDraft: boolean = self.status == "draft"
@@ -173,7 +173,7 @@ entity CycleCountRecord mixin TenantScoped, SoftDeletable {
   property barcode: string? = ""
   searchable property notes: string? = ""
   property isVerified: boolean = false
-  property verifiedById: uuid? = ""
+  property verifiedById: uuid?
   property verifiedAt: datetime?
   property syncStatus: string = "synced"
   property offlineId: string? = ""
@@ -284,7 +284,7 @@ entity VarianceReport mixin TenantScoped, SoftDeletable {
   searchable property notes: string? = ""
   property rootCause: string? = ""
   property resolutionNotes: string? = ""
-  property resolvedById: uuid? = ""
+  property resolvedById: uuid?
   property resolvedAt: datetime?
   property generatedAt: datetime
   timestamps
