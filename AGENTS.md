@@ -163,3 +163,5 @@ infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env=dev --path=
 - **Do commit** when a task is done or a coherent slice is verified
 - **Do not push** unless explicitly asked (push stays user-controlled)
 - Never `--no-verify`, force-push to main, or amend pushed commits without explicit approval
+
+- If `pnpm db:dev -- --create-only` produces an empty migration ("This is an empty migration."), delete that migration directory instead of committing it — empty migrations are drift-check noise, not work.
