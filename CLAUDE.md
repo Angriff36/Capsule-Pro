@@ -2,76 +2,27 @@
 
 This file defines how agents work in this repo. It is enforceable behavior, not suggestions.
 
-If you are unsure what to do next, default to: reproduce → isolate → fix root cause → add/strengthen tests → verify → document.
-# CLAUDE.md — 12-rule template
-
-These rules apply to every task in this project unless explicitly overridden.
-Bias: caution over speed on non-trivial work. Use judgment on trivial tasks.
-
-## Rule 1 — Think Before Coding
-State assumptions explicitly. If uncertain, ask rather than guess.
-Present multiple interpretations when ambiguity exists.
-Push back when a simpler approach exists.
-Stop when confused. Name what's unclear.
-
-## Rule 2 — Simplicity First
-Minimum code that solves the problem. Nothing speculative.
-No features beyond what was asked. No abstractions for single-use code.
-Test: would a senior engineer say this is overcomplicated? If yes, simplify.
-
-## Rule 3 — Surgical Changes
-Touch only what you must. Clean up only your own mess.
-Don't "improve" adjacent code, comments, or formatting.
-Don't refactor what isn't broken. Match existing style.
-
-## Rule 4 — Goal-Driven Execution
-Define success criteria. Loop until verified.
-Don't follow steps. Define success and iterate.
-Strong success criteria let you loop independently.
-
-## Rule 5 — Use the model only for judgment calls
-Use me for: classification, drafting, summarization, extraction.
-Do NOT use me for: routing, retries, deterministic transforms.
-If code can answer, code answers.
-
-## Rule 6 — Token budgets are not advisory
-Per-task: 4,000 tokens. Per-session: 30,000 tokens.
-If approaching budget, summarize and start fresh.
-Surface the breach. Do not silently overrun.
-
-## Rule 7 — Surface conflicts, don't average them
-If two patterns contradict, pick one (more recent / more tested).
-Explain why. Flag the other for cleanup.
-Don't blend conflicting patterns.
-
-## Rule 8 — Read before you write
-Before adding code, read exports, immediate callers, shared utilities.
-"Looks orthogonal" is dangerous. If unsure why code is structured a way, ask.
-
-## Rule 9 — Tests verify intent, not just behavior
-Tests must encode WHY behavior matters, not just WHAT it does.
-A test that can't fail when business logic changes is wrong.
-
-## Rule 10 — Checkpoint after every significant step
-Summarize what was done, what's verified, what's left.
-Don't continue from a state you can't describe back.
-If you lose track, stop and restate.
-
-## Rule 11 — Match the codebase's conventions, even if you disagree
-Conformance > taste inside the codebase.
-If you genuinely think a convention is harmful, surface it. Don't fork silently.
-
-## Rule 12 — Fail loud
-"Completed" is wrong if anything was skipped silently.
-"Tests pass" is wrong if any were skipped.
-Default to surfacing uncertainty, not hiding it.
-
-## Rule 13 — Document where you learned it
-Every discovery, verification, fix, or contradiction updates the authoritative file in the same session — not chat alone. Internal truth → `canonical/`; feature/public truth → `docs/`. Use the live-amendment pattern from `manifest/NATIVE-REWRITE-PLAN.md` (dated blockquote + amend the section touched). Encounter unknown infra or features → create the canonical entry (and `docs/features/` stub if user-facing) before continuing. Stale doc → fix the file. Task incomplete until docs reflect reality or N/A is recorded. See `canonical/knowledge-maintenance/README.md`.
+@<RYANSIGNED✅
+Any time documentation is encountered that is proven beyond a doubt to be false, you MUST NOT leave it there. You must strikethrough the outdated or incorrect information and insert the new information in a block under it. If all information is wrong in a doc, delete the documentation. All documentation must be dated when it was created and edits must be dated. All source of truths MUST HAVE frontmatter stating they are the source of truth. If a source of truth file is established for something, all other documentation on that must be reconciled with the source of truth and transferred to it, with outdated and incorrect information removed completely. If new information is found after a source of truth is established or something changes with it that negates previous information, then the old information must endure a strikethrough with the new information being put in after it. These will be periodically cleaned by human intervention only. This entire statement has been human authored and is not to be modified or deleted. It is absolute law regarding the documentation. All documentation that does not have @RYANSIGNED>✅ is AI generated and should be viewed with extreme scrutiny. 
 
 ## Operational Rules
 
 Operational rules (build commands, validation, manifest persistence, planning file discipline, known gotchas) are owned by `AGENTS.md`. Read it as part of session start.
+
+Read the following filesh before making changes to any manifest source file or writing any new manifest source file.
+
+- C:\Projects\capsule-pro\manifest\source\manifest-native-capabilities-showcase.md
+- C:\Projects\capsule-pro\manifest\source\manifest-example-native-fixed.manifest.example
+
+ Treat the existing manifest source files as works in progress. Add new manifest source files or change existing ones whenever doing so will:
+
+-  reduce code complexity or negate the need for typed code somewhere
+-  reduce the amount of custom glue required for ANY system in capsule-pro
+-  render an external dependency obsolete
+-  reduce overall amount of code required whilst maintaining or improving app capabilities and functionality 
+-  consolidate definitions of ANYTHING that results in less confusion about runtime behavior, file structure, architecture, domain ownership, state, routing, server and client separation, types, database information, or hooks. 
+-  improve performance in any way. 
+-  
 
 @AGENTS.md
 

@@ -1,11 +1,11 @@
 # CLAUDE.md
 
-Refer to the following files:
+Read the following filesh before making changes to any manifest source file or writing any new manifest source file.
 
 - C:\Projects\capsule-pro\manifest\source\manifest-native-capabilities-showcase.md
 - C:\Projects\capsule-pro\manifest\source\manifest-example-native-fixed.manifest.example
 
-Read them both before making changes to any manifest source file or writing any new manifest source file. Treat the existing manifest source files as works in progress. Add new manifest source files or change existing ones whenever doing so will:
+ Treat the existing manifest source files as works in progress. Add new manifest source files or change existing ones whenever doing so will:
 
 -  reduce code complexity or negate the need for typed code somewhere
 -  reduce the amount of custom glue required for ANY system in capsule-pro
