@@ -249,7 +249,7 @@ entity CollectionCase mixin TenantScoped, SoftDeletable {
 
 entity CollectionAction mixin TenantScoped {
   key [tenantId, id]
-  property required collectionCaseId: uuid = ""
+  property required collectionCaseId: uuid
 
   // Action details
   property required actionType: string = ""
@@ -324,7 +324,7 @@ entity CollectionAction mixin TenantScoped {
 // Payment plan entity for installment arrangements
 entity CollectionPaymentPlan mixin TenantScoped {
   key [tenantId, id]
-  property required collectionCaseId: uuid = ""
+  property required collectionCaseId: uuid
 
   // Plan details
   property required totalAmount: money = 0

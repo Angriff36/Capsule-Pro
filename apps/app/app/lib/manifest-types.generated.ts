@@ -589,7 +589,7 @@ export interface ClientPreference {
 export interface CollectionAction {
   id: string;
   tenantId: string;
-  collectionCaseId?: string;
+  collectionCaseId: string;
   actionType?: string;
   direction?: string | null;
   status?: string | null;
@@ -644,7 +644,7 @@ export interface CollectionCase {
 export interface CollectionPaymentPlan {
   id: string;
   tenantId: string;
-  collectionCaseId?: string;
+  collectionCaseId: string;
   totalAmount?: number;
   installmentAmount?: number | null;
   installments?: number;
