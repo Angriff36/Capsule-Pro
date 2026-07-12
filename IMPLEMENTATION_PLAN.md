@@ -13,7 +13,7 @@ Authoritative plan: `manifest/NATIVE-REWRITE-PLAN.md` (WS0–WS16, Phase 0 P1–
 | --- | --- | --- | --- |
 | WS0 | `uuid … = ""` defaults | 188 / 69 files | **8 / 6 files** (2026-07-12 kitchen+logistics nullable-migration batch, commit ca25e2aac: PrepTask.locationId, QACorrectiveAction.{relatedCheckId,escalatedTo}, LogisticsRoute.{vehicleId,driverId} → uuid?, migration 20260712074235 DROP-NOT-NULL ×5 awaiting human deploy; was 13/9 post-inventory trusted-param port. IR-only sweep of nullable/param-seeded fields COMPLETE; all 8 remaining are fork/defer/body-seed-blocked — see per-domain table.) |
 | WS1 | `user.role in [...]` literals | 464 | **461** |
-| WS7 | `status: string` (raw, incl. command params) | 82 fields | **140 raw** / 92 `validStatus` constraints |
+| WS7 | entity `property (required )?status: string` | 82 plan-time | **78 remain** (70 enum-candidate + 8 free-form); **19 retyped** to enum; 90 `validStatus` (14 redundant on retyped enums). ✓ opus-reconciled 2026-07-12 — see WS7 section |
 | WS5 | native `schedule` decls | 0 | **0** (10 crons in `apps/api/vercel.json`) |
 | WS3 | `fanOut` in source | 0 | **0** |
 | — | `roleAllows` sites | 12 | **12** (`_base` + accounting/payroll + accounting/time-entry) |
@@ -22,16 +22,18 @@ Authoritative plan: `manifest/NATIVE-REWRITE-PLAN.md` (WS0–WS16, Phase 0 P1–
 
 **Per-domain distribution (WS0 uuid / WS1 role / WS7 status):**
 
-| Domain | uuid="" | role-in | status:string |
+| Domain | uuid="" | role-in | status:string (enum-candidate / free-form) |
 | --- | --- | --- | --- |
-| accounting | 7 DEFER | 26 | 21 |
-| administrative | 1 (userId deferred) | 14 | 5 |
-| events | 1 DEFER | 72 | 31 |
-| knowledge-base | 0 ✓ | 3 | 1 |
-| operations | 0 | 185 | 53 |
-| platform | 1 (api-key createdByUserId DEFER) | 51 | 2 |
-| sales | 0 ✓ | 44 | 10 |
-| tenant-team | 0 ✓ | 64 | 17 |
+| accounting | 7 DEFER | 26 | **11** (5 enum / 6 free) |
+| administrative | 1 (userId deferred) | 14 | **0** ✓ (AdminTask retyped + clean) |
+| events | 1 DEFER | 72 | **16** (16 enum / 0 free) |
+| knowledge-base | 0 ✓ | 3 | **0** ✓ (retyped; migration awaiting deploy) |
+| operations | 0 | 185 | **30** (29 enum / 1 free) — kitchen 8/0, inventory 6/1, procurement 4/0, logistics 4/0, facilities 5/0, equipment 2/0, maintenance 0 ✓ |
+| platform | 1 (api-key createdByUserId DEFER) | 51 | **0** ✓ (retyped; migration awaiting deploy) |
+| sales | 0 ✓ | 44 | **5** (5 enum / 0 free) |
+| tenant-team | 0 ✓ | 64 | **16** (15 enum / 1 free) |
+
+**WS7 totals (reconciled 2026-07-12):** 78 entity `property (required )?status: string` remain (70 enum-candidate + 8 free-form); 19 already retyped to enum; 8 free-form = `PreventiveMaintenanceSchedule`, `CollectionCase`/`CollectionAction`/`CollectionPaymentPlan`, `Invoice`, `PaymentMethod`, `Payment`, `InventoryForecast`.
 
 `operations/` is too large for one commit — sub-batch by subdirectory: kitchen (0 DEFER ✓ / role 90 — 27 IR-only DONE 2026-07-11 + 3 nullable-migrated 2026-07-12 awaiting deploy), inventory (0 DEFER ✓ / 48 — 16 DONE 2026-07-11 + 2 trusted-param port 2026-07-12), procurement (0 ✓ / 23 — DONE 2026-07-11), logistics (0 ✓ / 9 — 5 nullable DONE 2026-07-11 + 2 nullable-migrated 2026-07-12 awaiting deploy), equipment (0 ✓ / 5 — DONE 2026-07-11), facilities (0 ✓ / 7 — DONE 2026-07-11), maintenance (0 ✓ / 3 — DONE 2026-07-11).
 
@@ -147,18 +149,48 @@ Gated on P9. Inventory `manifest-runtime-factory.ts` (69 `create*Middleware(` si
 
 ### WS7 — Enum migration (flagship) → AC-004, AC-007
 
-> **⚠ 2026-07-12 — WS7 docs are STALE; opus reconciliation in progress.** Bare `rg 'enum ' manifest/source` shows ~17 `// U7:` status enums already authored far beyond the documented pilot: BudgetStatus, AdminTaskStatus, PayrollPeriodStatus, PayrollRunStatus, WorkOrderStatus, ShipmentStatus, ProposalStatus, DealStatus, ScheduleStatus, PrepListStatus, MenuStatus, KitchenTaskStatus, PrepTaskStatus, QACheckStatus, PrepTaskPlanWorkflowStatus, RecipeVersionStatus, RecipeStepPhase (+ the KbEntryStatus pilot). The per-domain table, the WS7 checkboxes, and the AC-004 counts below do NOT reflect this — many `[ ]` items are already done in source (most still need their migration deployed). Treat all WS7 counts/checkboxes here as UNVERIFIED until the opus audit lands. The platform batch (next item) was verified done this iteration.
+> **✓ 2026-07-12 — opus reconciliation DONE.** Verified via bare `rg 'property (required )?status: ' manifest/source/**/*.manifest`. **Root cause of prior staleness:** every WS7 count used the narrow pattern `property status: string`, which silently misses `property required status: …` declarations (23 string + 3 enum). Corrected figures:
+>
+> - **Retyped to enum: 19** (not 16). The 3 missed: `VersionApprovalStatus`, `PrepTaskStatus`, `KitchenTaskStatus` (all `property required status: <Enum>`).
+> - **Remaining `property (required )?status: string`: 78** (not 55) — 70 ENUM-CANDIDATE (has `validStatus` → closed set) + 8 FREE-FORM (no `validStatus`). The 8 free-form: `PreventiveMaintenanceSchedule`, `CollectionCase`, `CollectionAction`, `CollectionPaymentPlan`, `Invoice`, `PaymentMethod`, `Payment`, `InventoryForecast`.
+> - **90 `validStatus` constraints** remain; **14 are redundant** (still on already-retyped enums — cleanup TODO). Only 5 retyped enums are clean (validStatus already deleted): KB, AdminTask, DocumentVersion, VersionApproval, RecipeVersion.
+> - **DB state (NOT drift):** original ~17 status enums DB-aligned by `20260705063000_enum_column_alignment` + `20260705120000_enum_namespace_and_insert_unblock`. Only **3 enums awaiting human deploy**: kb pilot (`20260712035457`) + platform (`20260712055817`: DocumentVersionStatus + VersionApprovalStatus).
+>
+> | Domain | status:string remain | enum-candidate | free-form | retyped (enum) |
+> | --- | --- | --- | --- | --- |
+> | events | 16 | 16 | 0 | — |
+> | tenant-team | 16 | 15 | 1 (PreventiveMaintenanceSchedule) | Schedule |
+> | accounting | 11 | 5 | 6 (collections ×3, Invoice, PaymentMethod, Payment) | Budget, PayrollPeriod, PayrollRun |
+> | operations/kitchen | 8 | 8 | 0 | Recipe, QA, PrepTask, Menu, PrepList, PrepTaskPlanWorkflow, KitchenTask |
+> | operations/inventory | 7 | 6 | 1 (InventoryForecast) | — |
+> | operations/facilities | 5 | 5 | 0 | — |
+> | sales | 5 | 5 | 0 | Deal, Proposal |
+> | operations/procurement | 4 | 4 | 0 | — |
+> | operations/logistics | 4 | 4 | 0 | Shipment |
+> | operations/equipment | 2 | 2 | 0 | — |
+> | knowledge-base | 0 ✓ | — | — | KB (deploy pending) |
+> | platform | 0 ✓ | — | — | DocumentVersion, VersionApproval (deploy pending) |
+> | administrative | 0 ✓ | — | — | AdminTask |
+> | operations/maintenance | 0 ✓ | — | — | WorkOrder |
+>
+> **Recommended NEXT batch → operations/equipment (2 fields, both `required`):** `Equipment.status` → `EquipmentStatus { active maintenance out_of_service retired }` (validStatus :57); second entity at :242 → `{ open assigned in_progress awaiting_parts completed cancelled }` (validStatus :265). Low-write-volume, stable closed vocab, both have `validStatus`. **CAN PROCEED (dev)** — also proves the `required`-status retype path end-to-end (newly relevant: 23 of 78 remaining use `required`). Pre-flight `SELECT DISTINCT status` per table; prod deploy needs the DROP/ADD→USING-cast caveat (dev DB is empty → applies clean).
+>
+> **NEEDS-RYAN flags (recorded, not implemented):** (1) `Invoice.status`/`Payment.status` — free-form yet clear de-facto lifecycle; enumerate vs leave is a product call; (2) UPPERCASE-vocab convention — 7 entities store UPPER status today (time-off-request, revenue-recognition ×2, collections ×3, invoice, payment, payment-method); enum members must match DB casing or a lowercase data-migration runs first; (3) 14 redundant `validStatus` on retyped enums — schedule the cleanup batch (deleting them is safe post-retype per P3).
 
-Gated on P2/P3 pilot. Per field: extract vocabulary from its `validStatus` constraint + transition table (they already agree), declare `enum XStatus { }` top-level, retype the property, **delete the now-redundant `validStatus` constraint**, keep transitions (string-based unless P3 shows enum-awareness). Pre-flight per table: `SELECT DISTINCT status` and reconcile stragglers before the enum alter. Low-write-volume domains first. Fix app-side consumer type errors per batch. (140 raw `status: string` incl. params; ~92 `validStatus` constraints scope the true closed sets — classify per field.)
+Gated on P2/P3 pilot. Per field: extract vocabulary from its `validStatus` constraint + transition table (they already agree), declare `enum XStatus { }` top-level, retype the property, **delete the now-redundant `validStatus` constraint**, keep transitions (string-based unless P3 shows enum-awareness). Pre-flight per table: `SELECT DISTINCT status` and reconcile stragglers before the enum alter. Low-write-volume domains first. Fix app-side consumer type errors per batch. (**Reconciled 2026-07-12:** 78 entity `property (required )?status: string` remain = 70 enum-candidate + 8 free-form; 90 `validStatus` constraints of which 14 are redundant on already-retyped enums. Use `rg 'property (required )?status: string'` — the old `'status: string'` both over-counts command params and misses `required` variants.)
 
 - [x] WS7 · pilot one entity end-to-end (one migration) — records P2/P3
   - 2026-07-12: pilot EXECUTED on `knowledge-base` (`KnowledgeBaseEntryStatus` enum → IR → manifest.prisma enum → full regen green). Migration `20260712035457_kb_entry_status_enum` created via `--create-only` — **awaiting human deploy** (`pnpm db:deploy && pnpm db:check`). P2/P3 RECORDED 2026-07-12: P2 = enum end-to-end green; P3 = transitions stay string-based, runtime-proven by the new deploy-free `knowledge-base-entry-status-fsm.test.ts` (5/5 green — drives the enum-typed status through the real engine; valid edges accept+persist, invalid rejected). `status: string → enum` is FSM-safe → WS7 domain batches unblocked. Committed by the babysitter after iteration 10 left it uncommitted; FSM-conformance test added this iteration.
 - [x] WS7 · knowledge-base + platform (low volume: 1 + 2) — DONE 2026-07-12 (platform). `DocumentVersion.status` → `DocumentVersionStatus { draft approved published superseded }`; `VersionApproval.status` → `VersionApprovalStatus { pending approved rejected cancelled }` — **"cancelled" intentionally added**: the source `validStatus` constraint had wrongly omitted it, but the transition `pending → [approved,rejected,cancelled]` + the `cancel` command require it; the enum corrects the vocabulary. Both `validStatus` constraints deleted; transitions/guards/computeds stay string-based (P3-proven FSM-safe → no per-domain FSM test needed; consumer search confirmed zero hand-written write sites, LOW risk). `manifest:ci` green (zero drift); `manifest.prisma` diff = exactly 2 enums + 2 column type swaps, nullability preserved. Migration `20260712055817_platform_status_enums` (CREATE TYPE ×2 + ALTER) created via `--create-only` — **awaiting human deploy**. ⚠ **Deploy caveat**: Prisma generated DROP-COLUMN+ADD-COLUMN (can't cast text→enum); before applying to a NON-EMPTY DB, edit the migration to `ALTER COLUMN "status" TYPE "<Enum>" USING "status"::"<Enum>"` (`VersionApproval.status` is required NOT NULL → DROP/ADD fails on existing rows; `document_versions.status` loses data). Applies as-is on the empty dev DB. Side effects: the `--create-only` `migrate dev` run synced+applied the already-committed pilot migration `20260712035457_kb_entry_status_enum` to dev Neon (inherent migrate-dev behavior, not a `db:deploy`). Op note: `pnpm db:dev -- --create-only` (with `--`) hangs — use `pnpm db:dev --create-only --name <n>` (reported by build subagent; verify before relying). AC-004 stays PENDING until deploy + remaining domains migrated.
-- [ ] WS7 · administrative (5) + sales (10)
-- [ ] WS7 · tenant-team (17) + accounting (21)
-- [ ] WS7 · events (31)
-- [ ] WS7 · operations by subdirectory (53 total; kitchen/inventory largest)
-- [ ] WS7 · verify closed-set `status: string` → 0 with each batch's `validStatus` deleted (AC-004)
+- [x] WS7 · administrative — DONE (source + DB-aligned via 0705; `AdminTaskStatus`, validStatus already clean)
+- [ ] WS7 · sales (5 enum-candidates: lead, proposal-draft, client-interaction, call-planning-session, crm-admin CrmDocument) + operations/equipment (2, recommended next batch)
+- [ ] WS7 · operations/facilities (5) + operations/procurement (4) + operations/logistics (4) — all enum-candidate, stable vocab
+- [ ] WS7 · operations/inventory (6 enum + 1 free: InventoryForecast) + operations/kitchen (8 enum — completes the kitchen domain)
+- [ ] WS7 · tenant-team (15 enum + 1 free: PreventiveMaintenanceSchedule)
+- [ ] WS7 · accounting (5 enum + 6 free) — BLOCKED on NEEDS-RYAN Invoice/Payment decision + UPPERCASE-vocab convention
+- [ ] WS7 · events (16 enum, incl. flagship Event) — highest write volume, last
+- [ ] WS7 · delete the 14 redundant `validStatus` on already-retyped enums (cleanup batch)
+- [ ] WS7 · verify `rg 'property (required )?status: string' manifest/source -g '*.manifest'` → 0 with each batch's `validStatus` deleted (AC-004)
 
 ### WS8 — Composite unique keys → AC-007
 `unique [tenantId, eventNumber]`-style (0 today). Candidates: eventNumber, invoiceNumber, sku, email-per-tenant. Verify no dup rows (`GROUP BY … HAVING count(*)>1`) then declare + migrate per entity.
