@@ -198,7 +198,7 @@ export interface AllergenWarning {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  eventId?: string;
+  eventId: string;
   dishId?: string | null;
   warningType?: string;
   allergens?: string[] | null;
@@ -2486,7 +2486,7 @@ export interface PrepTaskPlanWorkflow {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  eventId?: string;
+  eventId: string;
   idempotencyKey?: string;
   status?: PrepTaskPlanWorkflowStatus;
   currentStep?: number;
@@ -2823,7 +2823,7 @@ export interface QACorrectiveAction {
   tenantId: string;
   relatedCheckId?: string;
   description: string;
-  assignedTo?: string;
+  assignedTo: string;
   severity?: string;
   status?: string;
   resolutionNotes?: string;
@@ -2842,8 +2842,8 @@ export interface QATemperatureLog {
   logType: string;
   temperature: number;
   unit?: string;
-  equipmentId?: string;
-  loggedBy?: string;
+  equipmentId: string;
+  loggedBy: string;
   notes?: string;
   loggedAt: string;
   createdAt: string;
@@ -4051,13 +4051,13 @@ export interface WasteEntry {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  inventoryItemId?: string;
+  inventoryItemId: string;
   reasonId?: number;
   quantity?: number;
   unitId?: number | null;
   locationId?: string | null;
   eventId?: string | null;
-  loggedBy?: string;
+  loggedBy: string;
   loggedAt: string;
   approvedBy?: string | null;
   approvedAt?: string | null;

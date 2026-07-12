@@ -11,7 +11,7 @@ entity Dish mixin TenantScoped, SoftDeletable {
   searchable property description: string? = ""
   property category: string? = ""
   property serviceStyle: string? = ""
-  property defaultContainerId: uuid? = ""
+  property defaultContainerId: uuid?
   property presentationImageUrl: string? = ""
   property minPrepLeadDays: int = 0
   property maxPrepLeadDays: int? = 0
@@ -297,9 +297,9 @@ entity Dish mixin TenantScoped, SoftDeletable {
   // (an inactive/86'd dish can still hold a dangling container reference); the
   // idempotency guard skips dishes that already have no default container.
   command clearDefaultContainer(userId: string from context.user.id) {
-    guard self.defaultContainerId != "" "Dish has no default container to clear"
+    guard self.defaultContainerId != null "Dish has no default container to clear"
 
-    mutate defaultContainerId = ""
+    mutate defaultContainerId = null
 
     emit DishDefaultContainerCleared
   }

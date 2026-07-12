@@ -111,7 +111,7 @@ entity QACorrectiveAction mixin TenantScoped {
   // relatedCheckId: nullable Uuid column (related_check_id) — standalone actions have no check; "" maps to null
   property relatedCheckId: uuid = ""
   searchable property required description: string
-  property assignedTo: uuid = ""
+  property assignedTo: uuid
   property severity: string = "medium"
   indexed property status: string = "open"
   property resolutionNotes: string = ""
@@ -209,9 +209,9 @@ entity QATemperatureLog mixin TenantScoped {
   property required temperature: decimal
   property unit: string = "fahrenheit"
   // equipmentId: nullable Uuid column (equipment_id) — "" maps to null
-  property equipmentId: uuid = ""
+  property equipmentId: uuid
   // loggedBy: nullable Uuid column (logged_by) — "" maps to null
-  property loggedBy: uuid = ""
+  property loggedBy: uuid
   searchable property notes: string = ""
   // Bug fix: lifecycle datetime must be nullable
   property loggedAt: datetime

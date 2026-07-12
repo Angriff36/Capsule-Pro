@@ -233,13 +233,13 @@ entity PrepListItem mixin TenantScoped, SoftDeletable {
   property preparationNotes: string? = ""
   property allergens: array<string>? = []
   property dietarySubstitutions: array<string>? = []
-  property dishId: uuid? = ""
+  property dishId: uuid?
   property dishName: string? = ""
-  property recipeVersionId: uuid? = ""
+  property recipeVersionId: uuid?
   property sortOrder: int = 0
   property isCompleted: boolean = false
   property completedAt: datetime?
-  property completedBy: uuid? = ""
+  property completedBy: uuid?
 
   timestamps
   computed hasAllergens: boolean = self.allergens != null and length(self.allergens) > 0
@@ -341,7 +341,7 @@ entity PrepListItem mixin TenantScoped, SoftDeletable {
 
     mutate isCompleted = false
     mutate completedAt = null
-    mutate completedBy = ""
+    mutate completedBy = null
 
     emit PrepListItemUncompleted
   }
@@ -371,7 +371,7 @@ entity PrepListItem mixin TenantScoped, SoftDeletable {
     mutate sortOrder = sortOrder
     mutate isCompleted = false
     mutate completedAt = null
-    mutate completedBy = ""
+    mutate completedBy = null
 
     emit PrepListItemCreated
   }

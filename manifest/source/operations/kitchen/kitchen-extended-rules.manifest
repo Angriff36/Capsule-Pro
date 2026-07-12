@@ -10,7 +10,7 @@ entity TemperatureProbe mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   searchable property required name: string
   property required probeId: string
-  property locationId: uuid? = ""
+  property locationId: uuid?
   property required minTemp: decimal
   property required maxTemp: decimal
   property isActive: boolean = true
@@ -254,7 +254,7 @@ entity IoTAlert mixin TenantScoped {
   property resolutionNotes: string?
   property resolvedAt: datetime?
   property required probeId: uuid?
-  property ruleId: uuid? = ""
+  property ruleId: uuid?
   property required severity: string
   property required message: string?
   property required value: decimal?
@@ -264,8 +264,8 @@ entity IoTAlert mixin TenantScoped {
   property alertType: string = ""
   searchable property title: string = ""
   property temperature: decimal? = 0
-  property acknowledgedBy: uuid? = ""
-  property resolvedBy: uuid? = ""
+  property acknowledgedBy: uuid?
+  property resolvedBy: uuid?
   timestamps
 
   computed isActive: boolean = self.status == "active"
@@ -345,7 +345,7 @@ entity CorrectiveAction mixin TenantScoped, SoftDeletable {
   property required sourceType: string
   property required sourceId: string
   searchable property required description: string? = ""
-  property assignedTo: uuid? = ""
+  property assignedTo: uuid?
   indexed property required status: string = "open"
   property dueDate: datetime?
   property resolvedAt: datetime?
@@ -643,7 +643,7 @@ entity KitchenTaskProgress mixin TenantScoped {
 entity TaskBundle mixin TenantScoped {
   key [tenantId, id]
   searchable property required name: string
-  property eventId: uuid? = ""
+  property eventId: uuid?
   searchable property description: string? = ""
   indexed property required status: string = "active"
   timestamps

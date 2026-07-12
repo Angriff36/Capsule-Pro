@@ -14,7 +14,7 @@ entity PrepComment mixin TenantScoped, SoftDeletable {
   property isResolved: boolean = false
   // BUG FIX: lifecycle timestamp — no default (nullable until resolved)
   property resolvedAt: datetime?
-  property resolvedBy: uuid? = ""
+  property resolvedBy: uuid?
   timestamps
 
   computed isActive: boolean = self.deletedAt == null
@@ -78,7 +78,7 @@ entity PrepComment mixin TenantScoped, SoftDeletable {
     // BUG FIX: was `mutate resolvedAt = 0` — datetime cannot be set to 0; use null
     mutate isResolved = false
     mutate resolvedAt = null
-    mutate resolvedBy = ""
+    mutate resolvedBy = null
 
     emit PrepCommentUnresolved
   }

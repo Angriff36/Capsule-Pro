@@ -14,7 +14,7 @@ entity Ingredient mixin TenantScoped, SoftDeletable {
   property storageInstructions: string? = ""
   property allergens: array<string>? = []
   property isActive: boolean = true
-  property inventoryItemId: uuid? = ""
+  property inventoryItemId: uuid?
   // Lot/recall tracking: last received lot number and expiry for kitchen food-safety audits.
   property currentLotNumber: string? = ""
   property currentLotReceivedAt: datetime?
@@ -29,7 +29,7 @@ entity Ingredient mixin TenantScoped, SoftDeletable {
   computed isDeactivated: boolean = self.isActive == false
   computed hasLot: boolean = self.currentLotNumber != ""
   computed isLotExpired: boolean = self.currentLotExpiresAt != null
-  computed hasInventoryItem: boolean = self.inventoryItemId != ""
+  computed hasInventoryItem: boolean = self.inventoryItemId != null
 
   relationship belongsTo inventoryItem: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
 
@@ -150,7 +150,7 @@ entity Ingredient mixin TenantScoped, SoftDeletable {
     guard self.inventoryItemId != "" "Ingredient is not linked to an inventory item"
     guard reason != null and reason != "" "Reason is required"
 
-    mutate inventoryItemId = ""
+    mutate inventoryItemId = null
 
     emit IngredientInventoryItemUnlinked
   }
