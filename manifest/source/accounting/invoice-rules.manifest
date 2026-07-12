@@ -10,7 +10,7 @@ entity Invoice mixin TenantScoped, SoftDeletable {
   property required invoiceType: string = "FINAL_PAYMENT"
   indexed property required status: string = "DRAFT"
   property required clientId: uuid = ""
-  property required eventId: uuid = ""
+  property required eventId: uuid
 
   // Amounts
   property required subtotal: money = 0

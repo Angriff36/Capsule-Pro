@@ -7,13 +7,13 @@ entity ChartOfAccount mixin TenantScoped {
   property accountNumber: string = ""
   property accountName: string = ""
   property accountType: string = ""
-  property parentId: uuid? = ""
+  property parentId: uuid?
   searchable property description: string? = ""
   property isActive: boolean = true
   timestamps
 
-  computed hasParent: boolean = self.parentId != ""
-  computed isRoot: boolean = self.parentId == ""
+  computed hasParent: boolean = self.parentId != null
+  computed isRoot: boolean = self.parentId == null
 
   constraint requireAccountNumber: self.accountNumber != "" "Account number is required"
   constraint requireAccountName: self.accountName != "" "Account name is required"

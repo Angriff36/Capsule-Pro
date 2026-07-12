@@ -6,7 +6,7 @@ entity CollectionCase mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
 
   // Reference information
-  property required invoiceId: uuid = ""
+  property required invoiceId: uuid
   unique property required invoiceNumber: string = ""
   property required eventId: uuid = ""
   property required clientId: uuid = ""
@@ -27,12 +27,12 @@ entity CollectionCase mixin TenantScoped, SoftDeletable {
   property agingBucket: string? = ""
 
   // Assignment
-  property assignedTo: uuid? = ""
+  property assignedTo: uuid?
   property assignedAt: datetime?
 
   // Payment plan
   property hasPaymentPlan: boolean = false
-  property paymentPlanId: uuid? = ""
+  property paymentPlanId: uuid?
   property nextPaymentDue: datetime?
 
   // Dispute handling

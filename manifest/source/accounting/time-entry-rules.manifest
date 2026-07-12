@@ -5,13 +5,13 @@ use "../_base.manifest"
 entity TimeEntry mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required employeeId: uuid
-  property locationId: uuid? = ""
-  property shiftId: uuid? = ""
+  property locationId: uuid?
+  property shiftId: uuid?
   property clockIn: datetime
   property clockOut: datetime?
   property breakMinutes: int = 0
   searchable property notes: string? = ""
-  property approvedBy: uuid? = ""
+  property approvedBy: uuid?
   property approvedAt: datetime?
   timestamps
 
@@ -19,7 +19,7 @@ entity TimeEntry mixin TenantScoped, SoftDeletable {
   computed isCompleted: boolean = self.clockIn != null and self.clockOut != null
   computed totalMinutes: number = self.clockOut > self.clockIn ? (self.clockOut - self.clockIn) / 60000 : 0
   computed totalHours: number = self.totalMinutes > 0 ? (self.totalMinutes - self.breakMinutes) / 60 : 0
-  computed isApproved: boolean = self.approvedBy != ""
+  computed isApproved: boolean = self.approvedBy != null
 
   relationship belongsTo shift: ScheduleShift fields [tenantId, shiftId] references [tenantId, id]
   relationship belongsTo employee: User with employeeId

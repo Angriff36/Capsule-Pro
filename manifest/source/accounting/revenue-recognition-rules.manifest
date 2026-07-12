@@ -222,7 +222,7 @@ entity RevenueRecognitionLine mixin TenantScoped, SoftDeletable {
   property recognizedAt: datetime?
 
   // Milestone info (for milestone-based recognition)
-  property milestoneId: uuid? = ""
+  property milestoneId: uuid?
   property milestoneName: string? = ""
   property milestoneDescription: string? = ""
 

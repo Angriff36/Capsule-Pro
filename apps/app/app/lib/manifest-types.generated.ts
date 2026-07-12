@@ -376,7 +376,7 @@ export interface BudgetAlert {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  budgetId?: string;
+  budgetId: string;
   alertType?: string;
   utilization?: number;
   message?: string;
@@ -606,7 +606,7 @@ export interface CollectionCase {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  invoiceId?: string;
+  invoiceId: string;
   invoiceNumber?: string;
   eventId?: string;
   clientId?: string;
@@ -1077,7 +1077,7 @@ export interface EmployeeDeduction {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  employeeId?: string;
+  employeeId: string;
   type?: string;
   name?: string;
   amount?: number | null;
@@ -1815,7 +1815,7 @@ export interface Invoice {
   invoiceType?: string;
   status?: string;
   clientId?: string;
-  eventId?: string;
+  eventId: string;
   subtotal?: number;
   taxAmount?: number;
   discountAmount?: number;
@@ -2206,7 +2206,7 @@ export interface Payment {
   currency?: string;
   status?: string;
   methodType?: string;
-  invoiceId?: string;
+  invoiceId: string;
   eventId?: string;
   clientId?: string;
   gatewayTransactionId?: string | null;
@@ -2229,7 +2229,7 @@ export interface PaymentMethod {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  clientId?: string;
+  clientId: string;
   externalMethodId?: string | null;
   type?: string;
   cardLastFour?: string | null;
@@ -2271,11 +2271,11 @@ export interface PayrollApprovalHistory {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  payrollRunId?: string;
+  payrollRunId: string;
   action?: string;
   previousStatus?: string;
   newStatus?: string;
-  performedBy?: string;
+  performedBy: string;
   performedAt: string;
   reason?: string | null;
   createdAt: string;
@@ -2315,7 +2315,7 @@ export interface PayrollRun {
   id: string;
   tenantId: string;
   deletedAt?: string | null;
-  payrollPeriodId?: string;
+  payrollPeriodId: string;
   runDate: string;
   status?: PayrollRunStatus;
   totalGross?: number;
