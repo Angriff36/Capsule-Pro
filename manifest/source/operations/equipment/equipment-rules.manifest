@@ -234,15 +234,15 @@ entity MaintenanceWorkOrder mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property startedAt: datetime?
   property workOrderNumber: string = ""
-  property areaId: uuid? = ""
-  property equipmentId: uuid? = ""
+  property areaId: uuid?
+  property equipmentId: uuid?
   searchable property required title: string
   property required workOrderType: string = "corrective"
   property required priority: string = "medium"
   indexed property required status: string = "open"
   searchable property description: string? = ""
-  property reportedBy: uuid? = ""
-  property assignedTo: uuid? = ""
+  property reportedBy: uuid?
+  property assignedTo: uuid?
   property scheduledDate: datetime?
   property completedAt: datetime?
   property estimatedCost: money? = 0
