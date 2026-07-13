@@ -38,6 +38,21 @@ export async function GET(request: NextRequest) {
 
     const reviews = await database.performanceReview.findMany({
       where,
+      // #26: project only the fields the response ships — drops the unused
+      // per-row columns (tenantId, deletedAt, employeeAcknowledgedAt, updatedAt)
+      // the shape map never reads.
+      select: {
+        id: true,
+        employeeId: true,
+        reviewerId: true,
+        reviewType: true,
+        scheduledDate: true,
+        completedDate: true,
+        status: true,
+        rating: true,
+        strengths: true,
+        createdAt: true,
+      },
       orderBy: { scheduledDate: "desc" },
     });
 

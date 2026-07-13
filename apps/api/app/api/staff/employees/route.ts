@@ -27,6 +27,24 @@ export async function GET(req: NextRequest) {
         ...(isActive === "true" ? { isActive: true } : {}),
         ...(role ? { role } : {}),
       },
+      // #26: project only the fields the response ships — stops fetching the
+      // unused per-row columns (salaryAnnual, authUserId, payoutMethod, roleId,
+      // terminationDate, employeeNumber, …) the map never reads.
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true,
+        phone: true,
+        avatarUrl: true,
+        employmentType: true,
+        hourlyRate: true,
+        hireDate: true,
+        createdAt: true,
+        updatedAt: true,
+      },
       orderBy: { createdAt: "desc" },
     });
     const employees = employeeRecords.map((employee) => ({
