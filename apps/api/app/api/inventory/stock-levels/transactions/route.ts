@@ -130,16 +130,18 @@ export async function GET(request: Request) {
       }
     }
 
-    // Get total count for pagination
-    const total = await database.inventoryTransaction.count({ where });
-
-    // Get transactions with pagination
-    const transactions = await database.inventoryTransaction.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: [{ transactionDate: "desc" }, { createdAt: "desc" }],
-    });
+    // Fetch count + page in parallel (independent reads, same where) —
+    // collapses 2 serial round-trips into 1 batch (#23). Downstream
+    // item/location/user hydrations depend on `transactions`, stay serial.
+    const [total, transactions] = await Promise.all([
+      database.inventoryTransaction.count({ where }),
+      database.inventoryTransaction.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: [{ transactionDate: "desc" }, { createdAt: "desc" }],
+      }),
+    ]);
 
     // Get related item details
     const itemIds = [...new Set(transactions.map((t) => t.itemId))];

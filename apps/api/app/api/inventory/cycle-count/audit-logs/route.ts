@@ -92,16 +92,17 @@ export async function GET(request: Request) {
       where.entityType = entityType;
     }
 
-    // Get total count for pagination
-    const total = await database.cycleCountAuditLog.count({ where });
-
-    // Get audit logs with pagination
-    const logs = await database.cycleCountAuditLog.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { createdAt: "desc" },
-    });
+    // Fetch count + page in parallel (independent reads, same where) —
+    // collapses 2 serial round-trips into 1 batch (#23).
+    const [total, logs] = await Promise.all([
+      database.cycleCountAuditLog.count({ where }),
+      database.cycleCountAuditLog.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
 
     const mappedLogs = logs.map((log) => ({
       id: log.id,

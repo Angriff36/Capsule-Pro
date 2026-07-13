@@ -52,22 +52,20 @@ export async function GET(
       );
     }
 
-    // Get interactions (joined with employee data for display)
-    const interactions = await database.clientInteraction.findMany({
-      where: {
-        AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
-      },
-      orderBy: [{ interactionDate: "desc" }],
-      take: limit,
-      skip: offset,
-    });
-
-    // Get total count
-    const totalCount = await database.clientInteraction.count({
-      where: {
-        AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
-      },
-    });
+    // Fetch page + total count in parallel (independent reads, identical
+    // where) — collapses 2 serial round-trips into 1 batch (#23).
+    const interactionsWhere = {
+      AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
+    };
+    const [interactions, totalCount] = await Promise.all([
+      database.clientInteraction.findMany({
+        where: interactionsWhere,
+        orderBy: [{ interactionDate: "desc" }],
+        take: limit,
+        skip: offset,
+      }),
+      database.clientInteraction.count({ where: interactionsWhere }),
+    ]);
 
     return NextResponse.json({
       data: interactions,

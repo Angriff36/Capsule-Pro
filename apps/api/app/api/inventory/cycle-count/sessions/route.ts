@@ -89,16 +89,17 @@ export async function GET(request: Request) {
       where.locationId = locationId;
     }
 
-    // Get total count for pagination
-    const total = await database.cycleCountSession.count({ where });
-
-    // Get sessions with pagination
-    const sessions = await database.cycleCountSession.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { createdAt: "desc" },
-    });
+    // Fetch count + page in parallel (independent reads, same where) —
+    // collapses 2 serial round-trips into 1 batch (#23).
+    const [total, sessions] = await Promise.all([
+      database.cycleCountSession.count({ where }),
+      database.cycleCountSession.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
 
     const mappedSessions = sessions.map((session) => ({
       id: session.id,

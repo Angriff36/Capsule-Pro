@@ -150,16 +150,17 @@ export async function GET(request: Request, context: RouteContext) {
       where.syncStatus = syncStatus;
     }
 
-    // Get total count for pagination
-    const total = await database.cycleCountRecord.count({ where });
-
-    // Get records with pagination
-    const records = await database.cycleCountRecord.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { createdAt: "desc" },
-    });
+    // Fetch count + page in parallel (independent reads, same where) —
+    // collapses 2 serial round-trips into 1 batch (#23).
+    const [total, records] = await Promise.all([
+      database.cycleCountRecord.count({ where }),
+      database.cycleCountRecord.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
 
     const mappedRecords = records.map(mapRecord);
 

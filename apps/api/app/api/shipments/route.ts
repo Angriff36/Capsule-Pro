@@ -106,13 +106,17 @@ export async function GET(request: Request) {
         where.scheduledDate.lte = new Date(filters.date_to);
       }
     }
-    const total = await database.shipment.count({ where });
-    const shipments = await database.shipment.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: [{ createdAt: "desc" }],
-    });
+    // Fetch count + page in parallel (independent reads, same where) —
+    // collapses 2 serial round-trips into 1 batch (#23).
+    const [total, shipments] = await Promise.all([
+      database.shipment.count({ where }),
+      database.shipment.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: [{ createdAt: "desc" }],
+      }),
+    ]);
     const mappedShipments = shipments.map((s) => ({
       id: s.id,
       tenant_id: s.tenantId,

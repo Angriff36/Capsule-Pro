@@ -80,33 +80,34 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Get total count
-    const total = await database.rateLimitEvent.count({ where });
-
-    // Get events
-    const events = await database.rateLimitEvent.findMany({
-      where,
-      orderBy: {
-        timestamp: "desc",
-      },
-      skip: (page - 1) * limit,
-      take: limit,
-      select: {
-        id: true,
-        endpoint: true,
-        method: true,
-        allowed: true,
-        windowStart: true,
-        windowEnd: true,
-        requestsInWindow: true,
-        limit: true,
-        userId: true,
-        userAgent: true,
-        ipHash: true,
-        responseTime: true,
-        timestamp: true,
-      },
-    });
+    // Fetch count + page in parallel (independent reads, same where) —
+    // collapses 2 serial round-trips into 1 batch (#23).
+    const [total, events] = await Promise.all([
+      database.rateLimitEvent.count({ where }),
+      database.rateLimitEvent.findMany({
+        where,
+        orderBy: {
+          timestamp: "desc",
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        select: {
+          id: true,
+          endpoint: true,
+          method: true,
+          allowed: true,
+          windowStart: true,
+          windowEnd: true,
+          requestsInWindow: true,
+          limit: true,
+          userId: true,
+          userAgent: true,
+          ipHash: true,
+          responseTime: true,
+          timestamp: true,
+        },
+      }),
+    ]);
 
     return manifestSuccessResponse({
       events,

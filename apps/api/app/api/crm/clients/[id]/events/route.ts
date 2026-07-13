@@ -50,32 +50,30 @@ export async function GET(
       );
     }
 
-    // Get events for this client (Event model has clientId field)
-    const events = await database.event.findMany({
-      where: {
-        AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
-      },
-      select: {
-        id: true,
-        title: true,
-        eventDate: true,
-        status: true,
-        guestCount: true,
-        eventType: true,
-        venueName: true,
-        createdAt: true,
-      },
-      orderBy: [{ eventDate: "desc" }],
-      take: limit,
-      skip: offset,
-    });
-
-    // Get total count
-    const totalCount = await database.event.count({
-      where: {
-        AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
-      },
-    });
+    // Fetch page + total count in parallel (independent reads, identical
+    // where) — collapses 2 serial round-trips into 1 batch (#23).
+    const eventsWhere = {
+      AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
+    };
+    const [events, totalCount] = await Promise.all([
+      database.event.findMany({
+        where: eventsWhere,
+        select: {
+          id: true,
+          title: true,
+          eventDate: true,
+          status: true,
+          guestCount: true,
+          eventType: true,
+          venueName: true,
+          createdAt: true,
+        },
+        orderBy: [{ eventDate: "desc" }],
+        take: limit,
+        skip: offset,
+      }),
+      database.event.count({ where: eventsWhere }),
+    ]);
 
     return NextResponse.json({
       data: events,

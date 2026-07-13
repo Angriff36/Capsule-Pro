@@ -74,23 +74,26 @@ export async function GET(request: Request) {
       ...(status === "discarded" && { status: "archived" }),
     };
 
-    const total = await database.commandBoard.count({ where });
-
-    const boards = await database.commandBoard.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { createdAt: "desc" },
-      include: {
-        _count: {
-          select: {
-            boardProjections: true,
-            commandBoardGroups: true,
-            boardAnnotations: true,
+    // Fetch count + page in parallel (independent reads, same where) —
+    // collapses 2 serial round-trips into 1 batch (#23).
+    const [total, boards] = await Promise.all([
+      database.commandBoard.count({ where }),
+      database.commandBoard.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        include: {
+          _count: {
+            select: {
+              boardProjections: true,
+              commandBoardGroups: true,
+              boardAnnotations: true,
+            },
           },
         },
-      },
-    });
+      }),
+    ]);
 
     // Map to simulation list items
     const simulations: SimulationListItem[] = boards.map((board) => {
@@ -230,49 +233,43 @@ export async function POST(request: NextRequest) {
     };
 
     // Deep copy projections with new IDs
-    const projectionCopies = sourceBoard.boardProjections.map((proj) => {
-      return {
-        id: crypto.randomUUID(),
-        tenantId,
-        boardId: simulationId,
-        entityType: proj.entityType,
-        entityId: proj.entityId,
-        positionX: proj.positionX,
-        positionY: proj.positionY,
-        width: proj.width,
-        height: proj.height,
-      };
-    });
+    const projectionCopies = sourceBoard.boardProjections.map((proj) => ({
+      id: crypto.randomUUID(),
+      tenantId,
+      boardId: simulationId,
+      entityType: proj.entityType,
+      entityId: proj.entityId,
+      positionX: proj.positionX,
+      positionY: proj.positionY,
+      width: proj.width,
+      height: proj.height,
+    }));
 
     // Deep copy groups with new IDs
-    const groupCopies = sourceBoard.commandBoardGroups.map((group) => {
-      return {
-        id: crypto.randomUUID(),
-        tenantId,
-        boardId: simulationId,
-        name: group.name,
-        color: group.color,
-        collapsed: group.collapsed,
-        positionX: group.positionX,
-        positionY: group.positionY,
-        width: group.width,
-        height: group.height,
-        zIndex: group.zIndex,
-      };
-    });
+    const groupCopies = sourceBoard.commandBoardGroups.map((group) => ({
+      id: crypto.randomUUID(),
+      tenantId,
+      boardId: simulationId,
+      name: group.name,
+      color: group.color,
+      collapsed: group.collapsed,
+      positionX: group.positionX,
+      positionY: group.positionY,
+      width: group.width,
+      height: group.height,
+      zIndex: group.zIndex,
+    }));
 
     // Deep copy annotations
-    const annotationCopies = sourceBoard.boardAnnotations.map((ann) => {
-      return {
-        id: crypto.randomUUID(),
-        tenantId,
-        boardId: simulationId,
-        label: ann.label,
-        positionX: ann.positionX,
-        positionY: ann.positionY,
-        color: ann.color,
-      };
-    });
+    const annotationCopies = sourceBoard.boardAnnotations.map((ann) => ({
+      id: crypto.randomUUID(),
+      tenantId,
+      boardId: simulationId,
+      label: ann.label,
+      positionX: ann.positionX,
+      positionY: ann.positionY,
+      color: ann.color,
+    }));
 
     // Batch insert projections
     if (projectionCopies.length > 0) {
