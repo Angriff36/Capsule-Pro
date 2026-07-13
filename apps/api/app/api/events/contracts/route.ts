@@ -143,13 +143,18 @@ export async function GET(request: Request) {
       ];
     }
 
-    // Fetch contracts
-    const contracts = await database.eventContract.findMany({
-      where: whereClause,
-      orderBy: [{ createdAt: "desc" }],
-      take: limit,
-      skip: offset,
-    });
+    // Fetch the contracts page AND the total count in parallel — both are
+    // keyed solely on `whereClause` (the count has no data dependency on the
+    // page rows), so they collapse from 2 serial round-trips into 1 batch.
+    const [contracts, totalCount] = await Promise.all([
+      database.eventContract.findMany({
+        where: whereClause,
+        orderBy: [{ createdAt: "desc" }],
+        take: limit,
+        skip: offset,
+      }),
+      database.eventContract.count({ where: whereClause }),
+    ]);
 
     // Collect all event and client IDs for batch query
     const eventIds = contracts
@@ -159,29 +164,31 @@ export async function GET(request: Request) {
       .map((c) => c.clientId)
       .filter((id): id is string => id !== null);
 
-    // Batch fetch events and clients
-    const events = await database.event.findMany({
-      where: {
-        AND: [{ tenantId }, { id: { in: eventIds } }, { deletedAt: null }],
-      },
-      select: {
-        id: true,
-        title: true,
-        eventDate: true,
-      },
-    });
-
-    const clients = await database.client.findMany({
-      where: {
-        AND: [{ tenantId }, { id: { in: clientIds } }, { deletedAt: null }],
-      },
-      select: {
-        id: true,
-        companyName: true,
-        firstName: true,
-        lastName: true,
-      },
-    });
+    // Batch fetch events and clients in parallel — both depend only on the
+    // contract page above, not on each other (2 serial round-trips → 1 batch).
+    const [events, clients] = await Promise.all([
+      database.event.findMany({
+        where: {
+          AND: [{ tenantId }, { id: { in: eventIds } }, { deletedAt: null }],
+        },
+        select: {
+          id: true,
+          title: true,
+          eventDate: true,
+        },
+      }),
+      database.client.findMany({
+        where: {
+          AND: [{ tenantId }, { id: { in: clientIds } }, { deletedAt: null }],
+        },
+        select: {
+          id: true,
+          companyName: true,
+          firstName: true,
+          lastName: true,
+        },
+      }),
+    ]);
 
     // Create lookup maps
     const eventMap = new Map(events.map((e) => [e.id, e]));
@@ -205,11 +212,6 @@ export async function GET(request: Request) {
         ? clientMap.get(contract.clientId) || null
         : null,
     }));
-
-    // Get total count for pagination
-    const totalCount = await database.eventContract.count({
-      where: whereClause,
-    });
 
     const totalPages = Math.ceil(totalCount / limit);
 
