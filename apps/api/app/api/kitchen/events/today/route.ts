@@ -22,46 +22,72 @@ export async function GET() {
   const todayStart = startOfDay(now);
   const tomorrowEnd = endOfDay(addDays(now, 1));
 
-  // Get events for today and tomorrow
-  const events = await database.event.findMany({
-    where: {
-      AND: [
-        { tenantId },
-        { deletedAt: null },
-        { eventDate: { gte: todayStart, lte: tomorrowEnd } },
-        { status: { notIn: ["canceled", "cancelled"] } },
-      ],
-    },
-    orderBy: [{ eventDate: "asc" }],
-    select: {
-      id: true,
-      title: true,
-      eventDate: true,
-      guestCount: true,
-    },
-  });
+  // Tier 0 — events (tenant + date window) and kitchenTasks (tenant + status)
+  // both depend only on (tenantId, now); neither needs the other's result, so
+  // run them concurrently. Old serial layout ran these 1st and 4th.
+  const [events, kitchenTasks] = await Promise.all([
+    database.event.findMany({
+      where: {
+        AND: [
+          { tenantId },
+          { deletedAt: null },
+          { eventDate: { gte: todayStart, lte: tomorrowEnd } },
+          { status: { notIn: ["canceled", "cancelled"] } },
+        ],
+      },
+      orderBy: [{ eventDate: "asc" }],
+      select: {
+        id: true,
+        title: true,
+        eventDate: true,
+        guestCount: true,
+      },
+    }),
+    database.kitchenTask.findMany({
+      where: {
+        AND: [{ tenantId }, { status: { notIn: ["done", "cancelled"] } }],
+      },
+      select: {
+        id: true,
+        tags: true,
+      },
+    }),
+  ]);
 
-  // Get prep lists for these events
+  // Tier 1 — prepLists (needs eventIds) and claims (needs taskIds) are
+  // independent of each other, so run concurrently. Old serial layout ran
+  // these 2nd/3rd and 5th.
   const eventIds = events.map((e) => e.id);
+  const taskIds = kitchenTasks.map((t) => t.id);
 
-  const prepLists = await database.prepList.findMany({
-    where: {
-      AND: [
-        { tenantId },
-        { deletedAt: null },
-        { eventId: { in: eventIds } },
-        { status: { notIn: ["cancelled"] } },
-      ],
-    },
-    select: {
-      id: true,
-      eventId: true,
-      status: true,
-      totalItems: true,
-    },
-  });
+  const [prepLists, claims] = await Promise.all([
+    database.prepList.findMany({
+      where: {
+        AND: [
+          { tenantId },
+          { deletedAt: null },
+          { eventId: { in: eventIds } },
+          { status: { notIn: ["cancelled"] } },
+        ],
+      },
+      select: {
+        id: true,
+        eventId: true,
+        status: true,
+        totalItems: true,
+      },
+    }),
+    database.kitchenTaskClaim.findMany({
+      where: {
+        AND: [{ tenantId }, { taskId: { in: taskIds } }, { releasedAt: null }],
+      },
+      select: {
+        taskId: true,
+      },
+    }),
+  ]);
 
-  // Get prep list items to count completed/incomplete
+  // Tier 2 — prepListItems needs prepListIds from Tier 1 (genuine dependency).
   const prepListIds = prepLists.map((p) => p.id);
 
   const prepListItems = await database.prepListItem.findMany({
@@ -75,31 +101,6 @@ export async function GET() {
     select: {
       prepListId: true,
       isCompleted: true,
-    },
-  });
-
-  // Get unassigned kitchen tasks (using tags to identify event association if possible)
-  const kitchenTasks = await database.kitchenTask.findMany({
-    where: {
-      AND: [
-        { tenantId },
-        { status: { notIn: ["done", "cancelled"] } },
-      ],
-    },
-    select: {
-      id: true,
-      tags: true,
-    },
-  });
-
-  // Get claimed task IDs
-  const taskIds = kitchenTasks.map((t) => t.id);
-  const claims = await database.kitchenTaskClaim.findMany({
-    where: {
-      AND: [{ tenantId }, { taskId: { in: taskIds } }, { releasedAt: null }],
-    },
-    select: {
-      taskId: true,
     },
   });
 

@@ -21,28 +21,30 @@ export async function GET(request: Request) {
   );
   const minPriority = searchParams.get("minPriority"); // number 1-10
 
-  const tasks = await database.kitchenTask.findMany({
-    where: {
-      AND: [
-        { tenantId },
-        ...(status ? [{ status }] : []),
-        ...(minPriority
-          ? [{ priority: { lte: Number.parseInt(minPriority, 10) } }]
-          : []),
+  // tasks and claims both depend only on tenantId (claims is NOT scoped to the
+  // returned tasks), so run them concurrently instead of serially.
+  const [tasks, claims] = await Promise.all([
+    database.kitchenTask.findMany({
+      where: {
+        AND: [
+          { tenantId },
+          ...(status ? [{ status }] : []),
+          ...(minPriority
+            ? [{ priority: { lte: Number.parseInt(minPriority, 10) } }]
+            : []),
+        ],
+      },
+      orderBy: [
+        { priority: "asc" }, // priority 1-10, ascending = highest first
+        { dueDate: "asc" }, // earliest due date first
       ],
-    },
-    orderBy: [
-      { priority: "asc" }, // priority 1-10, ascending = highest first
-      { dueDate: "asc" }, // earliest due date first
-    ],
-  });
-
-  // Fetch claims separately
-  const claims = await database.kitchenTaskClaim.findMany({
-    where: {
-      AND: [{ tenantId }, { releasedAt: null }],
-    },
-  });
+    }),
+    database.kitchenTaskClaim.findMany({
+      where: {
+        AND: [{ tenantId }, { releasedAt: null }],
+      },
+    }),
+  ]);
 
   // Fetch users for claims
   const claimEmployeeIds = new Set(claims.map((c) => c.employeeId));
