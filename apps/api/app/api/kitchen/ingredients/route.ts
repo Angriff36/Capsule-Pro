@@ -128,31 +128,30 @@ export async function GET(request: Request) {
       ];
     }
 
-    // Fetch ingredients
-    const ingredients = await database.ingredient.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        name: true,
-        category: true,
-        defaultUnitId: true,
-        densityGPerMl: true,
-        shelfLifeDays: true,
-        storageInstructions: true,
-        allergens: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: [{ name: "asc" }],
-      take: limit,
-      skip: offset,
-    });
-
-    // Get total count for pagination
-    const totalCount = await database.ingredient.count({
-      where: whereClause,
-    });
+    // Fetch ingredients + total count in parallel (independent reads, same
+    // whereClause) — collapses 2 serial round-trips into 1 batch (#23).
+    const [ingredients, totalCount] = await Promise.all([
+      database.ingredient.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          name: true,
+          category: true,
+          defaultUnitId: true,
+          densityGPerMl: true,
+          shelfLifeDays: true,
+          storageInstructions: true,
+          allergens: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: [{ name: "asc" }],
+        take: limit,
+        skip: offset,
+      }),
+      database.ingredient.count({ where: whereClause }),
+    ]);
 
     const totalPages = Math.ceil(totalCount / limit);
 

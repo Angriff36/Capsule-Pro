@@ -87,18 +87,17 @@ export async function GET(request: Request) {
       ];
     }
 
-    // Fetch clients
-    const clients = await database.client.findMany({
-      where: whereClause,
-      orderBy: [{ createdAt: "desc" }],
-      take: limit,
-      skip: offset,
-    });
-
-    // Get total count for pagination
-    const totalCount = await database.client.count({
-      where: whereClause,
-    });
+    // Fetch clients + total count in parallel (independent reads, same
+    // whereClause) — collapses 2 serial round-trips into 1 batch (#23).
+    const [clients, totalCount] = await Promise.all([
+      database.client.findMany({
+        where: whereClause,
+        orderBy: [{ createdAt: "desc" }],
+        take: limit,
+        skip: offset,
+      }),
+      database.client.count({ where: whereClause }),
+    ]);
 
     const totalPages = Math.ceil(totalCount / limit);
 

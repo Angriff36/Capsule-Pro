@@ -153,21 +153,24 @@ export async function GET(request: Request) {
       where.locationId = filters.location_id;
     }
 
-    // Get total count for pagination
-    const total = await database.purchaseOrder.count({ where });
-
-    // Get purchase orders with pagination
-    const orders = await database.purchaseOrder.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: [{ orderDate: "desc" }, { createdAt: "desc" }],
-      include: {
-        items: {
-          where: { deletedAt: null },
+    // Get purchase orders + total count in parallel (count is
+    // data-independent, same where) — collapses 2 serial round-trips into 1
+    // batch (#23). The downstream inventoryItem lookup depends on the orders
+    // page and stays serial after.
+    const [total, orders] = await Promise.all([
+      database.purchaseOrder.count({ where }),
+      database.purchaseOrder.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: [{ orderDate: "desc" }, { createdAt: "desc" }],
+        include: {
+          items: {
+            where: { deletedAt: null },
+          },
         },
-      },
-    });
+      }),
+    ]);
 
     // Get all inventory items for details
     const itemIds = orders

@@ -144,41 +144,40 @@ export async function GET(request: Request) {
       ];
     }
 
-    // Fetch menus with their dishes
-    const menus = await database.menu.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        category: true,
-        isActive: true,
-        basePrice: true,
-        pricePerPerson: true,
-        minGuests: true,
-        maxGuests: true,
-        createdAt: true,
-        updatedAt: true,
-        menuDishes: {
-          select: {
-            id: true,
-            dishId: true,
-            course: true,
-            sortOrder: true,
-            isOptional: true,
+    // Fetch menus + total count in parallel (independent reads, same
+    // whereClause) — collapses 2 serial round-trips into 1 batch (#23).
+    const [menus, totalCount] = await Promise.all([
+      database.menu.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          category: true,
+          isActive: true,
+          basePrice: true,
+          pricePerPerson: true,
+          minGuests: true,
+          maxGuests: true,
+          createdAt: true,
+          updatedAt: true,
+          menuDishes: {
+            select: {
+              id: true,
+              dishId: true,
+              course: true,
+              sortOrder: true,
+              isOptional: true,
+            },
+            orderBy: [{ sortOrder: "asc" }],
           },
-          orderBy: [{ sortOrder: "asc" }],
         },
-      },
-      orderBy: [{ name: "asc" }],
-      take: limit,
-      skip: offset,
-    });
-
-    // Get total count for pagination
-    const totalCount = await database.menu.count({
-      where: whereClause,
-    });
+        orderBy: [{ name: "asc" }],
+        take: limit,
+        skip: offset,
+      }),
+      database.menu.count({ where: whereClause }),
+    ]);
 
     const totalPages = Math.ceil(totalCount / limit);
 
