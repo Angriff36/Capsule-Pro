@@ -21,11 +21,11 @@ import { FileText, LayoutGrid, Plus, Shield, Users } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
+import { Header } from "../../../components/header";
 import {
   OperationalPageShell,
   OperationalSection,
 } from "../../../components/operational-page-shell";
-import { Header } from "../../../components/header";
 
 const statusVariantMap = {
   draft: "secondary",
@@ -64,6 +64,14 @@ const BattleBoardsPage = async ({ searchParams }: BattleBoardsPageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
+  // Select only the fields the list + stats consume (id, boardName, status,
+  // isTemplate, boardData). The card date comes from boardData.meta.eventDate,
+  // NOT the eventDate column. Dropping ~16 unused columns (description, notes,
+  // inheritedContext, documentUrl, tags, venue*, …) per row, scaled by N boards.
+  // db-performance plan #7 (the "WORST" over-fetch). `take` is deliberately
+  // omitted: draft/ready/published/totalStaff stats are computed from this array,
+  // so bounding it would silently truncate the counts (needs a SQL aggregate to
+  // bound safely — deferred).
   const boards = await database.battleBoard.findMany({
     where: {
       tenantId,
@@ -71,6 +79,13 @@ const BattleBoardsPage = async ({ searchParams }: BattleBoardsPageProps) => {
       ...(filterEventId ? { eventId: filterEventId } : {}),
     },
     orderBy: [{ createdAt: "desc" }],
+    select: {
+      id: true,
+      boardName: true,
+      status: true,
+      isTemplate: true,
+      boardData: true,
+    },
   });
 
   // Calculate stats
