@@ -20,6 +20,7 @@ vi.mock("@repo/database", () => ({
   database: {
     driver: {
       count: vi.fn(),
+      groupBy: vi.fn(),
       findMany: vi.fn(),
       findFirst: vi.fn(),
       findUnique: vi.fn(),
@@ -649,8 +650,11 @@ describe("Logistics API", () => {
       vi.mocked(database.vehicle.findMany).mockResolvedValue(
         mockVehicles as never
       );
-      vi.mocked(database.driver.count).mockResolvedValue(0);
-      vi.mocked(database.driver.count).mockResolvedValue(2);
+      // Driver counts are now batch-fetched in one groupBy (v-002 → 2 drivers;
+      // v-001 absent → defaults to 0) instead of one driver.count per vehicle.
+      vi.mocked(database.driver.groupBy).mockResolvedValue([
+        { vehicleId: "v-002", _count: { vehicleId: 2 } },
+      ] as never);
 
       const request = new NextRequest(
         "http://localhost/api/logistics/vehicles/list"

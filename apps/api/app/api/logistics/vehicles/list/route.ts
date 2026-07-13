@@ -35,19 +35,29 @@ export async function GET(request: NextRequest) {
       take: limit,
       skip: offset,
     });
-    const assignedDriverCounts = await Promise.all(
-      vehicleRecords.map((vehicle) =>
-        database.driver.count({
-          where: {
-            tenantId,
-            vehicleId: vehicle.id,
-            deletedAt: null,
-            status: { not: "inactive" },
-          },
-        })
-      )
-    );
-    const vehicles = vehicleRecords.map((vehicle, index) => ({
+    // One grouped count for the whole page instead of one `count` per vehicle
+    // (the prior `Promise.all` of N `driver.count` calls was an N+1 that scaled
+    // with page size). `Driver.vehicleId` is nullable, so null keys (unassigned
+    // drivers) are already excluded by the `in` filter and skipped defensively.
+    const driverCountByVehicle = new Map<string, number>();
+    if (vehicleRecords.length > 0) {
+      const driverCountRows = await database.driver.groupBy({
+        by: ["vehicleId"],
+        where: {
+          tenantId,
+          deletedAt: null,
+          status: { not: "inactive" },
+          vehicleId: { in: vehicleRecords.map((vehicle) => vehicle.id) },
+        },
+        _count: { vehicleId: true },
+      });
+      for (const row of driverCountRows) {
+        if (row.vehicleId !== null) {
+          driverCountByVehicle.set(row.vehicleId, row._count.vehicleId);
+        }
+      }
+    }
+    const vehicles = vehicleRecords.map((vehicle) => ({
       id: vehicle.id,
       make: vehicle.make,
       model: vehicle.model,
@@ -61,7 +71,7 @@ export async function GET(request: NextRequest) {
       status: vehicle.status,
       notes: vehicle.notes,
       created_at: vehicle.createdAt,
-      assigned_drivers: assignedDriverCounts[index] ?? 0,
+      assigned_drivers: driverCountByVehicle.get(vehicle.id) ?? 0,
     }));
 
     return manifestSuccessResponse({ vehicles, limit, offset });
