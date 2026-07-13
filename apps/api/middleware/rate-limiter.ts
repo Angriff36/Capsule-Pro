@@ -21,7 +21,7 @@
 
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
-import { createRateLimiter, slidingWindow } from "@repo/rate-limit"
+import { createRateLimiter, slidingWindow } from "@repo/rate-limit";
 import { NextResponse } from "next/server";
 
 // ============================================================================
@@ -87,6 +87,9 @@ const WINDOW_PARSERS: Record<string, (value: number) => number> = {
   d: (v) => v * 24 * 60 * 60 * 1000,
 };
 
+// Hoisted to module scope — parseWindow is called on every rate-limited request.
+const WINDOW_PATTERN = /^(\d+)([smhd])$/;
+
 /**
  * Duration type from @upstash/ratelimit
  * Format: "${number} ${unit}" or "${number}${unit}"
@@ -122,7 +125,7 @@ function msToDuration(windowMs: number): Duration {
  * Parses a window string (e.g., "1m", "1h", "1d") to milliseconds.
  */
 function parseWindow(window: string): number {
-  const match = window.match(/^(\d+)([smhd])$/);
+  const match = window.match(WINDOW_PATTERN);
   if (!match) {
     throw new Error(
       `Invalid window format: ${window}. Use format like "1m", "1h", "1d"`
@@ -231,6 +234,34 @@ export function addRateLimitHeaders(
 // Rate Limit Functions
 // ============================================================================
 
+// In-memory cache of each tenant's active RateLimitConfig rows.
+// getRateLimitConfig fires on every request through a DB-config-dependent
+// withRateLimit route (none of the call sites pass both `limit`+`window`, so
+// all of them hit the DB), and the config set is read-heavy / mutated only by
+// rare admin changes. Keyed by tenantId so there is no cross-tenant leakage;
+// the endpoint regex match runs in-memory over the cached array. Mirrors the
+// tenantCache pattern in apps/api/app/lib/tenant.ts.
+interface CachedRateLimitConfigs {
+  configs: Awaited<ReturnType<typeof database.rateLimitConfig.findMany>>;
+  expiresAt: number;
+}
+const rateLimitConfigCache = new Map<string, CachedRateLimitConfigs>();
+const RATE_LIMIT_CONFIG_CACHE_TTL_MS = 30_000; // 30 seconds
+
+/**
+ * Invalidates the cached rate-limit config for a tenant (or every tenant when
+ * `tenantId` is omitted). Call after any RateLimitConfig mutation so the next
+ * request re-fetches instead of serving up-to-30s-stale limits. Also used by
+ * tests to reset the module-level cache between cases.
+ */
+export function clearRateLimitCache(tenantId?: string): void {
+  if (tenantId) {
+    rateLimitConfigCache.delete(tenantId);
+  } else {
+    rateLimitConfigCache.clear();
+  }
+}
+
 /**
  * Looks up rate limit configuration for an endpoint.
  * Returns tenant-specific config or falls back to defaults.
@@ -240,18 +271,30 @@ async function getRateLimitConfig(
   endpoint: string
 ): Promise<{ limit: number; windowMs: number } | null> {
   try {
-    const configs = await database.rateLimitConfig.findMany({
-      where: {
-        tenantId,
-        isActive: true,
-        deletedAt: null,
-      },
-      orderBy: {
-        priority: "desc",
-      },
-    });
+    const cached = rateLimitConfigCache.get(tenantId);
+    let configs: CachedRateLimitConfigs["configs"];
+    if (cached && cached.expiresAt > Date.now()) {
+      configs = cached.configs;
+    } else {
+      configs = await database.rateLimitConfig.findMany({
+        where: {
+          tenantId,
+          isActive: true,
+          deletedAt: null,
+        },
+        orderBy: {
+          priority: "desc",
+        },
+      });
+      // Cache only on a successful fetch — a thrown findMany skips this line,
+      // so a transient DB failure cannot pin an empty/stale config set for the TTL.
+      rateLimitConfigCache.set(tenantId, {
+        configs,
+        expiresAt: Date.now() + RATE_LIMIT_CONFIG_CACHE_TTL_MS,
+      });
+    }
 
-    // Find first matching config
+    // Find first matching config (priority-desc order preserved from the query)
     for (const config of configs) {
       const regex = new RegExp(config.endpointPattern, "i");
       if (regex.test(endpoint)) {

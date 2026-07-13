@@ -117,6 +117,7 @@ vi.mock("@/lib/manifest/issue-log", () => ({
   logManifestIssue: vi.fn(),
 }));
 vi.mock("@/middleware/rate-limiter", () => ({
+  clearRateLimitCache: vi.fn(),
   withRateLimit: (_handler: Function, _opts?: unknown) => _handler,
 }));
 vi.mock("@/middleware/dual-auth", () => ({

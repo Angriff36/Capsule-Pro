@@ -16,6 +16,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { clearRateLimitCache } from "@/middleware/rate-limiter";
 
 /**
  * GET /api/settings/rate-limits
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
     string,
     unknown
   >;
-  return runManifestCommand({
+  const result = await runManifestCommand({
     entity: "RateLimitConfig",
     command: "create",
     body: {
@@ -70,4 +71,7 @@ export async function POST(request: NextRequest) {
     },
     user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+  // Config set changed — drop the cached rows so the next request re-fetches.
+  clearRateLimitCache(user.tenantId);
+  return result;
 }

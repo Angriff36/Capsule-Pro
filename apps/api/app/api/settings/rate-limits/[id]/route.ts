@@ -17,6 +17,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { clearRateLimitCache } from "@/middleware/rate-limiter";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -72,7 +73,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     unknown
   >;
 
-  return runManifestCommand({
+  const result = await runManifestCommand({
     entity: "RateLimitConfig",
     command: "update",
     body: {
@@ -87,6 +88,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     },
     user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+  // Config set changed — drop the cached rows so the next request re-fetches.
+  clearRateLimitCache(user.tenantId);
+  return result;
 }
 
 /**
@@ -97,10 +101,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
   const user = await resolveCurrentUser(request);
 
-  return runManifestCommand({
+  const result = await runManifestCommand({
     entity: "RateLimitConfig",
     command: "softDelete",
     body: { id },
     user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+  // Config set changed — drop the cached rows so the next request re-fetches.
+  clearRateLimitCache(user.tenantId);
+  return result;
 }

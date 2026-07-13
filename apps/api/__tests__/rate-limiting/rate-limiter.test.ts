@@ -10,6 +10,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   addRateLimitHeaders,
   checkRateLimit,
+  clearRateLimitCache,
   withRateLimit,
 } from "@/middleware/rate-limiter";
 
@@ -72,6 +73,9 @@ describe("Rate Limiting Middleware", () => {
 
     // Default mock for database config lookup - no custom config
     vi.mocked(database.rateLimitConfig.findMany).mockResolvedValue([]);
+
+    // Reset the module-level config cache between tests.
+    clearRateLimitCache();
   });
 
   afterEach(() => {
@@ -533,6 +537,80 @@ describe("Rate Limiting Middleware", () => {
         const result = await checkRateLimit(request, TEST_TENANT_ID);
 
         expect(result.limit).toBe(100); // default
+      });
+    });
+
+    describe("config cache (getRateLimitConfig)", () => {
+      it("dedupes findMany within the TTL window", async () => {
+        const request = createMockRequest({
+          headers: { "x-tenant-id": TEST_TENANT_ID },
+        });
+        vi.mocked(database.rateLimitConfig.findMany).mockResolvedValue([]);
+
+        await checkRateLimit(request, TEST_TENANT_ID);
+        await checkRateLimit(request, TEST_TENANT_ID);
+
+        expect(database.rateLimitConfig.findMany).toHaveBeenCalledTimes(1);
+      });
+
+      it("re-fetches after the TTL expires", async () => {
+        const request = createMockRequest({
+          headers: { "x-tenant-id": TEST_TENANT_ID },
+        });
+        vi.mocked(database.rateLimitConfig.findMany).mockResolvedValue([]);
+
+        await checkRateLimit(request, TEST_TENANT_ID);
+        vi.advanceTimersByTime(30_001);
+        await checkRateLimit(request, TEST_TENANT_ID);
+
+        expect(database.rateLimitConfig.findMany).toHaveBeenCalledTimes(2);
+      });
+
+      it("caches per tenant (no cross-tenant sharing)", async () => {
+        const requestA = createMockRequest({
+          headers: { "x-tenant-id": "tenant-a" },
+        });
+        const requestB = createMockRequest({
+          headers: { "x-tenant-id": "tenant-b" },
+        });
+        vi.mocked(database.rateLimitConfig.findMany).mockResolvedValue([]);
+
+        await checkRateLimit(requestA, "tenant-a");
+        await checkRateLimit(requestB, "tenant-b");
+        await checkRateLimit(requestA, "tenant-a");
+
+        expect(database.rateLimitConfig.findMany).toHaveBeenCalledTimes(2);
+      });
+
+      it("does not cache a thrown findMany (retries next request)", async () => {
+        const request = createMockRequest({
+          headers: { "x-tenant-id": TEST_TENANT_ID },
+        });
+        vi.mocked(database.rateLimitConfig.findMany)
+          .mockRejectedValueOnce(new Error("DB down"))
+          .mockResolvedValue([]);
+
+        // First call throws inside getRateLimitConfig (caught → null → default)
+        const first = await checkRateLimit(request, TEST_TENANT_ID);
+        expect(first.limit).toBe(100);
+        // The failure must not be cached — second call re-fetches
+        const second = await checkRateLimit(request, TEST_TENANT_ID);
+        expect(second.limit).toBe(100);
+
+        expect(database.rateLimitConfig.findMany).toHaveBeenCalledTimes(2);
+      });
+
+      it("clearRateLimitCache forces a re-fetch on next request", async () => {
+        const request = createMockRequest({
+          headers: { "x-tenant-id": TEST_TENANT_ID },
+        });
+        vi.mocked(database.rateLimitConfig.findMany).mockResolvedValue([]);
+
+        await checkRateLimit(request, TEST_TENANT_ID);
+        clearRateLimitCache(TEST_TENANT_ID);
+        await checkRateLimit(request, TEST_TENANT_ID);
+
+        expect(database.rateLimitConfig.findMany).toHaveBeenCalledTimes(2);
       });
     });
 
