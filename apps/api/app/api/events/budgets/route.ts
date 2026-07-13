@@ -49,24 +49,23 @@ export async function GET(request: Request) {
       (whereClause.AND as Record<string, unknown>[]).push({ status });
     }
 
-    // Fetch budgets
-    const budgets = await database.eventBudget.findMany({
-      where: whereClause,
-      orderBy: [{ createdAt: "desc" }],
-      take: limit,
-      skip: offset,
-      include: {
-        lineItems: {
-          where: { deletedAt: null },
-          orderBy: { sortOrder: "asc" },
+    // Fetch budgets + total count in parallel (independent reads, same where) —
+    // collapses 2 serial round-trips into 1 concurrent batch (#23).
+    const [budgets, total] = await Promise.all([
+      database.eventBudget.findMany({
+        where: whereClause,
+        orderBy: [{ createdAt: "desc" }],
+        take: limit,
+        skip: offset,
+        include: {
+          lineItems: {
+            where: { deletedAt: null },
+            orderBy: { sortOrder: "asc" },
+          },
         },
-      },
-    });
-
-    // Get total count for pagination
-    const total = await database.eventBudget.count({
-      where: whereClause,
-    });
+      }),
+      database.eventBudget.count({ where: whereClause }),
+    ]);
 
     // Calculate total pages
     const totalPages = Math.ceil(total / limit);

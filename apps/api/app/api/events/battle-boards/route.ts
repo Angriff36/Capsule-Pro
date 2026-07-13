@@ -53,18 +53,17 @@ export async function GET(request: Request) {
       whereClause.status = status;
     }
 
-    // Fetch battle boards
-    const boards = await database.battleBoard.findMany({
-      where: whereClause,
-      orderBy: [{ createdAt: "desc" }],
-      take: limit,
-      skip: offset,
-    });
-
-    // Get total count
-    const totalCount = await database.battleBoard.count({
-      where: whereClause,
-    });
+    // Fetch battle boards + total count in parallel (independent reads, same
+    // where) — collapses 2 serial round-trips into 1 concurrent batch (#23).
+    const [boards, totalCount] = await Promise.all([
+      database.battleBoard.findMany({
+        where: whereClause,
+        orderBy: [{ createdAt: "desc" }],
+        take: limit,
+        skip: offset,
+      }),
+      database.battleBoard.count({ where: whereClause }),
+    ]);
 
     return NextResponse.json({
       data: boards,

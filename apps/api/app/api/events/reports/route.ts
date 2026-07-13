@@ -53,28 +53,27 @@ export async function GET(request: Request) {
       whereClause.status = status;
     }
 
-    // Fetch reports
-    const reports = await database.eventReport.findMany({
-      where: whereClause,
-      include: {
-        event: {
-          select: {
-            id: true,
-            eventNumber: true,
-            title: true,
-            eventDate: true,
+    // Fetch reports + total count in parallel (independent reads, same where) —
+    // collapses 2 serial round-trips into 1 concurrent batch (#23).
+    const [reports, totalCount] = await Promise.all([
+      database.eventReport.findMany({
+        where: whereClause,
+        include: {
+          event: {
+            select: {
+              id: true,
+              eventNumber: true,
+              title: true,
+              eventDate: true,
+            },
           },
         },
-      },
-      orderBy: [{ createdAt: "desc" }],
-      take: limit,
-      skip: offset,
-    });
-
-    // Get total count
-    const totalCount = await database.eventReport.count({
-      where: whereClause,
-    });
+        orderBy: [{ createdAt: "desc" }],
+        take: limit,
+        skip: offset,
+      }),
+      database.eventReport.count({ where: whereClause }),
+    ]);
 
     return NextResponse.json({
       data: reports,
