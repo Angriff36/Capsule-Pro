@@ -123,6 +123,9 @@ async function runPublishLoop(limit: number): Promise<PublishOutcome> {
   let published = 0;
   let failed = 0;
   let skipped = 0;
+  // Successfully-fanned-out event ids; marked `published` in ONE batched
+  // updateMany after the loop instead of N per-event updates (#14).
+  const publishedIds: string[] = [];
 
   for (const event of pendingEvents) {
     // Double-check status (another publisher may have processed it)
@@ -172,14 +175,9 @@ async function runPublishLoop(limit: number): Promise<PublishOutcome> {
         name: event.event_type,
         data: envelope,
       });
-      await database.outboxEvent.update({
-        where: { id: event.id },
-        data: {
-          status: "published",
-          publishedAt: new Date(),
-          error: null,
-        },
-      });
+      // Fanout already happened (in-process SSE). Defer the status write —
+      // batch the id and mark all fanned-out events `published` after the loop.
+      publishedIds.push(event.id);
       published += 1;
     } catch (error) {
       const message =
@@ -196,6 +194,29 @@ async function runPublishLoop(limit: number): Promise<PublishOutcome> {
         // Event may have been deleted, ignore update error
       }
       failed += 1;
+    }
+  }
+
+  // Batched status write: ONE updateMany for all fanned-out events (#14) —
+  // collapses N per-event `published` updates into a single round-trip. One
+  // publishedAt timestamp for the whole batch (monitoring field, not
+  // correctness). On a status-write failure leave them `pending`: they were
+  // fanned out but we couldn't persist it, so the next tick re-fetches +
+  // re-fans-out (at-least-once; SSE consumers dedupe by event id). This is
+  // more correct than the old per-event path, whose status-write blip was
+  // caught by the loop's catch and FALSELY marked a fanned-out event `failed`.
+  if (publishedIds.length > 0) {
+    try {
+      await database.outboxEvent.updateMany({
+        where: { id: { in: publishedIds } },
+        data: {
+          status: "published",
+          publishedAt: new Date(),
+          error: null,
+        },
+      });
+    } catch {
+      // Status write failed — leave pending for the next tick (at-least-once).
     }
   }
 
