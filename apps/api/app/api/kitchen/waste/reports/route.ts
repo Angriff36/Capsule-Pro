@@ -39,28 +39,32 @@ export async function GET(request: Request) {
     dateFilter.lte = new Date(endDate);
   }
 
-  // Get all waste entries matching filters
-  const entries = await database.wasteEntry.findMany({
-    where: {
-      AND: [
-        { tenantId },
-        { deletedAt: null },
-        ...(startDate || endDate ? [{ loggedAt: dateFilter }] : []),
-        ...(locationId ? [{ locationId }] : []),
-        ...(reasonId ? [{ reasonId: Number.parseInt(reasonId, 10) }] : []),
-      ],
-    },
-    include: {
-      item: {
-        select: {
-          id: true,
-          name: true,
-          item_number: true,
+  // Fetch waste entries (filtered) + active waste reasons in one batch — the two
+  // reads are fully data-independent (reasons feed only the label map + response).
+  const [entries, wasteReasons] = await Promise.all([
+    database.wasteEntry.findMany({
+      where: {
+        AND: [
+          { tenantId },
+          { deletedAt: null },
+          ...(startDate || endDate ? [{ loggedAt: dateFilter }] : []),
+          ...(locationId ? [{ locationId }] : []),
+          ...(reasonId ? [{ reasonId: Number.parseInt(reasonId, 10) }] : []),
+        ],
+      },
+      include: {
+        item: {
+          select: {
+            id: true,
+            name: true,
+            item_number: true,
+          },
         },
       },
-    },
-    orderBy: { loggedAt: "desc" },
-  });
+      orderBy: { loggedAt: "desc" },
+    }),
+    database.wasteReason.findMany({ where: { isActive: true } }),
+  ]);
 
   // Calculate totals
   const totalCost = entries.reduce(
@@ -123,11 +127,6 @@ export async function GET(request: Request) {
   const reportData = Object.values(groupedData).sort(
     (a, b) => b.totalCost - a.totalCost
   );
-
-  // Fetch waste reasons for labeling
-  const wasteReasons = await database.wasteReason.findMany({
-    where: { isActive: true },
-  });
 
   const reasonMap = new Map(wasteReasons.map((r) => [String(r.id), r]));
 
