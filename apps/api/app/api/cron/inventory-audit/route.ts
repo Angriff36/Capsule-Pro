@@ -73,26 +73,42 @@ function shouldRunToday(schedule: {
 }
 
 /**
- * Get the first active location for a tenant
+ * Preload the first active location for every tenant in ONE query.
+ *
+ * Replaces a per-tenant `location.findFirst` that previously fired once per
+ * distinct tenant on every cron tick (N tenants → N round-trips). The global
+ * `orderBy: { isPrimary: "desc" }` puts each tenant's primary location first,
+ * and first-seen-wins-per-tenant preserves the exact prior `findFirst`
+ * semantics ("most-primary active, non-deleted location").
  */
-async function getFirstActiveLocation(
-  tenantId: string
-): Promise<{ id: string; name: string } | null> {
-  const location = await database.location.findFirst({
+async function getFirstActiveLocationsForTenants(
+  tenantIds: string[]
+): Promise<Map<string, { id: string; name: string }>> {
+  if (tenantIds.length === 0) {
+    return new Map();
+  }
+  const locations = await database.location.findMany({
     where: {
-      tenantId,
+      tenantId: { in: tenantIds },
       isActive: true,
       deletedAt: null,
     },
     select: {
       id: true,
       name: true,
+      tenantId: true,
     },
     orderBy: {
       isPrimary: "desc",
     },
   });
-  return location;
+  const locationByTenant = new Map<string, { id: string; name: string }>();
+  for (const loc of locations) {
+    if (!locationByTenant.has(loc.tenantId)) {
+      locationByTenant.set(loc.tenantId, { id: loc.id, name: loc.name });
+    }
+  }
+  return locationByTenant;
 }
 
 /**
@@ -190,6 +206,10 @@ export async function GET(request: Request): Promise<NextResponse> {
       new Set(schedulesToRun.map((s) => s.tenantId))
     );
 
+    // Preload each tenant's first active location in ONE query (a per-tenant
+    // findFirst previously fired once per distinct tenant every tick).
+    const locationByTenant = await getFirstActiveLocationsForTenants(tenantIds);
+
     let sessionsCreated = 0;
     const tenantsProcessed: string[] = [];
     const errors: { tenantId: string; error: string }[] = [];
@@ -201,8 +221,8 @@ export async function GET(request: Request): Promise<NextResponse> {
           (s) => s.tenantId === tenantId
         );
 
-        // Get first active location
-        const location = await getFirstActiveLocation(tenantId);
+        // Get first active location (preloaded above the loop)
+        const location = locationByTenant.get(tenantId);
         if (!location) {
           log.info(
             `[inventory-audit] No active locations for tenant ${tenantId}, skipping`
@@ -318,6 +338,12 @@ async function createDefaultDailySessions(): Promise<NextResponse> {
     let sessionsCreated = 0;
     const tenantsProcessed: string[] = [];
 
+    // Preload each tenant's first active location in ONE query (a per-tenant
+    // findFirst previously fired once per distinct tenant every tick).
+    const locationByTenant = await getFirstActiveLocationsForTenants(
+      tenantsWithLocations.map((t) => t.tenantId)
+    );
+
     for (const { tenantId } of tenantsWithLocations) {
       try {
         // Check if tenant already has a pending session for today
@@ -337,8 +363,8 @@ async function createDefaultDailySessions(): Promise<NextResponse> {
           continue; // Skip if already has pending session
         }
 
-        // Get first active location
-        const location = await getFirstActiveLocation(tenantId);
+        // Get first active location (preloaded above the loop)
+        const location = locationByTenant.get(tenantId);
         if (!location) {
           continue;
         }
