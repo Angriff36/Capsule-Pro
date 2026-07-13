@@ -53,16 +53,17 @@ export async function GET(request: NextRequest) {
       where.warningType = warningType;
     }
 
-    // Fetch warnings
-    const warnings = await database.allergenWarning.findMany({
-      where,
-      orderBy: [{ severity: "desc" }, { createdAt: "desc" }],
-      take: limit ? Number.parseInt(limit, 10) : undefined,
-      skip: offset ? Number.parseInt(offset, 10) : undefined,
-    });
-
-    // Get total count for pagination
-    const totalCount = await database.allergenWarning.count({ where });
+    // Fetch warnings + total count in parallel (independent reads, same where)
+    // — collapses 2 serial round-trips into 1 concurrent batch (#23).
+    const [warnings, totalCount] = await Promise.all([
+      database.allergenWarning.findMany({
+        where,
+        orderBy: [{ severity: "desc" }, { createdAt: "desc" }],
+        take: limit ? Number.parseInt(limit, 10) : undefined,
+        skip: offset ? Number.parseInt(offset, 10) : undefined,
+      }),
+      database.allergenWarning.count({ where }),
+    ]);
 
     return NextResponse.json({
       warnings,

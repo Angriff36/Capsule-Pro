@@ -415,6 +415,38 @@ describe("GET /api/knowledge-base/entries/list", () => {
     expect(body.totalCount).toBe(0);
     expect(body.hasMore).toBe(false);
   });
+
+  // ----- Parallelization (#23) -----
+
+  describe("parallelization (#23)", () => {
+    it("runs count + findMany concurrently in Promise.all, not serially", async () => {
+      makeAuthedUser();
+
+      // count stays pending (we control its resolution); findMany resolves at once.
+      // In the Promise.all, count is FIRST in the array (preserving original order).
+      let resolveCount!: (v: unknown) => void;
+      const pending = new Promise((r) => {
+        resolveCount = r;
+      });
+      mockKbCount.mockImplementation(() => pending as never);
+      mockKbFindMany.mockResolvedValue([]);
+
+      const req = makeGetRequest();
+      const p = GET(req);
+
+      // Wait until execution reaches the query layer.
+      await vi.waitFor(() => {
+        expect(mockKbCount).toHaveBeenCalledTimes(1);
+      });
+
+      // CONCURRENCY: findMany fires while count is still pending.
+      expect(mockKbFindMany).toHaveBeenCalledTimes(1);
+
+      resolveCount(0);
+      const res = await p;
+      expect(res.status).toBe(200);
+    });
+  });
 });
 
 // ===========================================================================

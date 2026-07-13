@@ -490,6 +490,37 @@ describe("Activity Feed API", () => {
         expect(response.status).toBe(500);
       });
     });
+
+    describe("parallelization (#23)", () => {
+      it("runs count + findMany concurrently in Promise.all, not serially", async () => {
+        mockAuth();
+
+        // count stays pending (we control its resolution); findMany resolves at once.
+        // In the Promise.all, count is FIRST in the array (preserving original order).
+        let resolveCount!: (v: unknown) => void;
+        const pending = new Promise((r) => {
+          resolveCount = r;
+        });
+        vi.mocked(database.activityFeed.count).mockReturnValue(
+          pending as never
+        );
+        vi.mocked(database.activityFeed.findMany).mockResolvedValue([]);
+
+        const p = getList(makeListRequest());
+
+        // Wait until execution reaches the query layer.
+        await vi.waitFor(() => {
+          expect(database.activityFeed.count).toHaveBeenCalledTimes(1);
+        });
+
+        // CONCURRENCY: findMany fires while count is still pending.
+        expect(database.activityFeed.findMany).toHaveBeenCalledTimes(1);
+
+        resolveCount(0);
+        const response = await p;
+        expect(response.status).toBe(200);
+      });
+    });
   });
 
   // -------------------------------------------------------------------------

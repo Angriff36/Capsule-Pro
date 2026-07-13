@@ -95,13 +95,19 @@ export async function GET(request: Request) {
     // Build where clause for expiring contracts
     const whereClause = buildExpiringContractsWhereClause(tenantId, dateRange);
 
-    // Fetch contracts
-    const contracts = await database.eventContract.findMany({
-      where: whereClause,
-      orderBy: [{ expiresAt: "asc" }],
-      take: limit,
-      skip: offset,
-    });
+    // Fetch contracts + total count in parallel (count is data-independent, same
+    // where) — collapses 2 serial round-trips into 1 concurrent batch (#23).
+    // The downstream groupBy/event/client queries still depend on findMany results
+    // and remain serial after.
+    const [contracts, totalCount] = await Promise.all([
+      database.eventContract.findMany({
+        where: whereClause,
+        orderBy: [{ expiresAt: "asc" }],
+        take: limit,
+        skip: offset,
+      }),
+      database.eventContract.count({ where: whereClause }),
+    ]);
 
     // Get signature counts for each contract
     const contractIds = contracts.map((c) => c.id);
@@ -183,11 +189,6 @@ export async function GET(request: Request) {
         updatedAt: contract.updatedAt,
         signatureCount: signatureCountMap.get(contract.id) || 0,
       };
-    });
-
-    // Get total count for pagination
-    const totalCount = await database.eventContract.count({
-      where: whereClause,
     });
 
     const totalPages = Math.ceil(totalCount / limit);

@@ -165,12 +165,17 @@ export async function GET(
     const { page, limit } = parsePaginationParams(searchParams);
     const offset = (page - 1) * limit;
 
-    // Verify contract exists and belongs to the tenant
+    // Verify contract exists and belongs to the tenant (fetch title too so we
+    // don't need a second findFirst for the response contractTitle).
     const contract = await database.eventContract.findFirst({
       where: {
         tenantId,
         id: contractId,
         deletedAt: null,
+      },
+      select: {
+        id: true,
+        title: true,
       },
     });
 
@@ -188,24 +193,19 @@ export async function GET(
       filters
     );
 
-    // Fetch signatures with pagination
-    const signatures = await database.contractSignature.findMany({
-      where: whereClause,
-      orderBy: [{ signedAt: "desc" }],
-      take: limit,
-      skip: offset,
-    });
-
-    // Fetch contract title for response
-    const contractDetails = await database.eventContract.findFirst({
-      where: {
-        tenantId,
-        id: contractId,
-      },
-      select: {
-        title: true,
-      },
-    });
+    // Fetch signatures + total count in parallel (count is data-independent,
+    // same where) — collapses 2 serial round-trips into 1 concurrent batch
+    // (#23). Also removes redundant findFirst for title (already fetched in
+    // the existence guard above).
+    const [signatures, totalCount] = await Promise.all([
+      database.contractSignature.findMany({
+        where: whereClause,
+        orderBy: [{ signedAt: "desc" }],
+        take: limit,
+        skip: offset,
+      }),
+      database.contractSignature.count({ where: whereClause }),
+    ]);
 
     // Format response data
     const responseData = signatures.map((signature) => ({
@@ -216,13 +216,8 @@ export async function GET(
       signerName: signature.signerName,
       signerEmail: signature.signerEmail,
       ipAddress: signature.ipAddress,
-      contractTitle: contractDetails?.title || "Contract",
+      contractTitle: contract?.title || "Contract",
     }));
-
-    // Get total count for pagination
-    const totalCount = await database.contractSignature.count({
-      where: whereClause,
-    });
 
     const totalPages = Math.ceil(totalCount / limit);
 

@@ -6,9 +6,9 @@ import type { Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
+import { getReactionLogActivities } from "@/app/lib/activity-feed-service";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { getReactionLogActivities } from "@/app/lib/activity-feed-service";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
@@ -103,18 +103,21 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    // Get total count for pagination
-    const totalCount = await database.activityFeed.count({ where });
-
-    // Fetch activities with pagination
-    let activities = await database.activityFeed.findMany({
-      where,
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: limit,
-      skip: offset,
-    });
+    // Fetch activities + total count in parallel (independent reads, same
+    // where) — collapses 2 serial round-trips into 1 concurrent batch (#23).
+    // Order preserved (count first) to match existing test assertions that
+    // inspect count call index.
+    let [totalCount, activities] = await Promise.all([
+      database.activityFeed.count({ where }),
+      database.activityFeed.findMany({
+        where,
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: limit,
+        skip: offset,
+      }),
+    ]);
 
     let effectiveTotal = totalCount;
 

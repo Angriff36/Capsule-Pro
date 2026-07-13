@@ -73,18 +73,20 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // Get total count for pagination
-    const totalCount = await database.knowledgeBaseEntry.count({ where });
-
-    // Fetch entries with pagination
-    const entries = await database.knowledgeBaseEntry.findMany({
-      where,
-      orderBy: {
-        updatedAt: "desc",
-      },
-      take: limit,
-      skip: offset,
-    });
+    // Fetch entries + total count in parallel (independent reads, same where)
+    // — collapses 2 serial round-trips into 1 concurrent batch (#23).
+    // Order preserved (count first) to match existing test expectations.
+    const [totalCount, entries] = await Promise.all([
+      database.knowledgeBaseEntry.count({ where }),
+      database.knowledgeBaseEntry.findMany({
+        where,
+        orderBy: {
+          updatedAt: "desc",
+        },
+        take: limit,
+        skip: offset,
+      }),
+    ]);
 
     const hasMore = offset + entries.length < totalCount;
 

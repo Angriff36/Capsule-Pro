@@ -83,14 +83,17 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    const totalCount = await analyticsDatabase.reactionLog.count({ where });
-
-    const logs = await analyticsDatabase.reactionLog.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      take: limit,
-      skip: offset,
-    });
+    // Fetch logs + total count in parallel (independent reads, same where)
+    // — collapses 2 serial round-trips into 1 concurrent batch (#23).
+    const [logs, totalCount] = await Promise.all([
+      analyticsDatabase.reactionLog.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+      analyticsDatabase.reactionLog.count({ where }),
+    ]);
 
     const hasMore = offset + logs.length < totalCount;
 

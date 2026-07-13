@@ -105,25 +105,27 @@ export async function GET(request: Request) {
       };
     }
 
-    // Get total count for pagination
-    const total = await database.purchaseOrder.count({ where });
-
-    // Fetch POs with items for completion calculation
-    const orders = await database.purchaseOrder.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: [{ receivedAt: "desc" }, { createdAt: "desc" }],
-      include: {
-        items: {
-          where: { deletedAt: null },
-          select: {
-            quantityOrdered: true,
-            quantityReceived: true,
+    // Fetch POs + total count in parallel (count is data-independent, same
+    // where) — collapses 2 serial round-trips into 1 concurrent batch (#23).
+    // Vendor-name lookup depends on findMany results and stays serial after.
+    const [orders, total] = await Promise.all([
+      database.purchaseOrder.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: [{ receivedAt: "desc" }, { createdAt: "desc" }],
+        include: {
+          items: {
+            where: { deletedAt: null },
+            select: {
+              quantityOrdered: true,
+              quantityReceived: true,
+            },
           },
         },
-      },
-    });
+      }),
+      database.purchaseOrder.count({ where }),
+    ]);
 
     // Batch-fetch vendor names for the returned POs
     const vendorIds = orders

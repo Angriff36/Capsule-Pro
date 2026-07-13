@@ -45,31 +45,33 @@ export async function GET(
     // Filter by guest name if provided
     const guestName = searchParams.get("guestName");
 
-    const guests = await database.eventGuest.findMany({
-      where: {
-        AND: [
-          { tenantId },
-          { eventId },
-          { deletedAt: null },
-          ...(guestName ? [{ guestName: { contains: guestName } }] : []),
-        ],
-      },
-      orderBy: { guestName: "asc" },
-      take: limit,
-      skip: offset,
-    });
-
-    // Get total count for pagination
-    const totalCount = await database.eventGuest.count({
-      where: {
-        AND: [
-          { tenantId },
-          { eventId },
-          { deletedAt: null },
-          ...(guestName ? [{ guestName: { contains: guestName } }] : []),
-        ],
-      },
-    });
+    // Fetch guests + total count in parallel (independent reads, same where)
+    // — collapses 2 serial round-trips into 1 concurrent batch (#23).
+    const [guests, totalCount] = await Promise.all([
+      database.eventGuest.findMany({
+        where: {
+          AND: [
+            { tenantId },
+            { eventId },
+            { deletedAt: null },
+            ...(guestName ? [{ guestName: { contains: guestName } }] : []),
+          ],
+        },
+        orderBy: { guestName: "asc" },
+        take: limit,
+        skip: offset,
+      }),
+      database.eventGuest.count({
+        where: {
+          AND: [
+            { tenantId },
+            { eventId },
+            { deletedAt: null },
+            ...(guestName ? [{ guestName: { contains: guestName } }] : []),
+          ],
+        },
+      }),
+    ]);
 
     return NextResponse.json({
       guests,

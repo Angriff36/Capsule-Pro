@@ -133,21 +133,22 @@ export async function GET(request: Request) {
       };
     }
 
-    // Get total count for pagination
-    const total = await database.commandBoard.count({ where });
-
-    // Get boards with pagination and cards count
-    const boards = await database.commandBoard.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
-      include: {
-        _count: {
-          select: { commandBoardCards: true },
+    // Fetch boards + total count in parallel (independent reads, same where)
+    // — collapses 2 serial round-trips into 1 concurrent batch (#23).
+    const [boards, total] = await Promise.all([
+      database.commandBoard.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+        include: {
+          _count: {
+            select: { commandBoardCards: true },
+          },
         },
-      },
-    });
+      }),
+      database.commandBoard.count({ where }),
+    ]);
 
     // Map to response format
     const mappedBoards: CommandBoardWithCardsCount[] = boards.map((board) => ({
