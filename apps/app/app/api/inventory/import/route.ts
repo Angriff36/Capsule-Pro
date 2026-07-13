@@ -154,18 +154,30 @@ export async function POST(request: NextRequest) {
 
     const user = await requireCurrentUser();
 
+    // Preload every existing item id for this import's item_numbers in ONE
+    // query (was one $queryRaw PER item — N round-trips on an N-row sheet).
+    // All rows share the resolved tenantId; only `id` (keyed by item_number)
+    // is needed to decide update-vs-create.
+    const itemNumbers = [...new Set(items.map((item) => item.item_number))];
+    const existingRows = await database.$queryRaw<
+      { item_number: string; id: string }[]
+    >`
+      SELECT item_number, id FROM tenant_inventory.inventory_items
+      WHERE tenant_id = ${tenantId}
+        AND item_number IN (${Prisma.join(itemNumbers)})
+        AND deleted_at IS NULL
+    `;
+    const existingByItemNumber = new Map<string, string>();
+    for (const row of existingRows) {
+      // First row per item_number wins — mirrors the prior per-item LIMIT 1.
+      if (!existingByItemNumber.has(row.item_number)) {
+        existingByItemNumber.set(row.item_number, row.id);
+      }
+    }
+
     for (const item of items) {
       try {
-        // Check if item with this item_number exists
-        const existing = await database.$queryRaw<{ id: string }[]>`
-          SELECT id FROM tenant_inventory.inventory_items
-          WHERE tenant_id = ${item.tenantId}
-            AND item_number = ${item.item_number}
-            AND deleted_at IS NULL
-          LIMIT 1
-        `;
-
-        const existingItem = existing[0];
+        const existingId = existingByItemNumber.get(item.item_number);
 
         const userCtx = {
           id: user.id,
@@ -173,11 +185,11 @@ export async function POST(request: NextRequest) {
           role: user.role,
         };
 
-        if (existingItem) {
+        if (existingId) {
           const result = await runManifestCommand({
             entity: "InventoryItem",
             command: "update",
-            instanceId: existingItem.id,
+            instanceId: existingId,
             body: {
               name: item.name,
               category: item.category,
@@ -211,6 +223,17 @@ export async function POST(request: NextRequest) {
           });
           if (result.ok) {
             created++;
+            // Feed the new id back so a later row with the SAME item_number
+            // UPDATEs it instead of creating a duplicate. InventoryItem has no
+            // unique constraint on item_number, so without this a repeated SKU
+            // in one sheet would create a 2nd row (the prior serial code found
+            // the just-created row via its per-item re-query and updated it).
+            const createdId = (
+              result.result as { id?: string } | null | undefined
+            )?.id;
+            if (typeof createdId === "string") {
+              existingByItemNumber.set(item.item_number, createdId);
+            }
           } else {
             errors++;
           }
