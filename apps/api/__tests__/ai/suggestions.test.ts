@@ -265,6 +265,76 @@ describe("AI Suggestions API", () => {
         })
       );
     });
+
+    it("should gather independent context reads in parallel", async () => {
+      // Hold the event query pending. prepTasks + inventoryAlerts share the
+      // same Promise.all batch, so they must be invoked BEFORE the event query
+      // resolves — proving the Tier-0 reads run concurrently. A serial layout
+      // would block them behind `await event.findMany`.
+      let resolveEvents!: (value: never[]) => void;
+      mockEventFindMany.mockImplementation(
+        () =>
+          new Promise<never[]>((resolve) => {
+            resolveEvents = resolve;
+          }) as never
+      );
+      mockGenerateText.mockResolvedValue({
+        text: JSON.stringify({ suggestions: [] }),
+      } as unknown as Awaited<ReturnType<typeof generateText>>);
+
+      const getPromise = GET(
+        new Request("http://localhost/api/ai/suggestions")
+      );
+      // Drain microtasks so the route reaches the Tier-0 Promise.all.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(mockPrepTaskFindMany).toHaveBeenCalled();
+      expect(mockInventoryAlertFindMany).toHaveBeenCalled();
+
+      resolveEvents([]);
+      await getPromise;
+    });
+
+    it("should query events once (no redundant staff-events lookup)", async () => {
+      mockGenerateText.mockResolvedValue({
+        text: JSON.stringify({ suggestions: [] }),
+      } as unknown as Awaited<ReturnType<typeof generateText>>);
+
+      await GET(new Request("http://localhost/api/ai/suggestions"));
+
+      // The old code ran a 2nd event.findMany to filter staff into the window;
+      // staff is now scoped by eventId, so events are queried exactly once.
+      expect(mockEventFindMany).toHaveBeenCalledTimes(1);
+    });
+
+    it("should scope staff assignments to the upcoming-event window", async () => {
+      mockEventFindMany.mockResolvedValue([
+        {
+          id: "event-1",
+          title: "Test Event",
+          eventDate: new Date(Date.now() + 86_400_000),
+          guestCount: 100,
+          venueName: "Test Venue",
+          status: "confirmed",
+          tenantId: mockTenantId,
+          deletedAt: null,
+        },
+      ] as unknown as Awaited<ReturnType<typeof database.event.findMany>>);
+      mockGenerateText.mockResolvedValue({
+        text: JSON.stringify({ suggestions: [] }),
+      } as unknown as Awaited<ReturnType<typeof generateText>>);
+
+      await GET(new Request("http://localhost/api/ai/suggestions"));
+
+      expect(mockEventStaffFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            tenantId: mockTenantId,
+            eventId: { in: ["event-1"] },
+          }),
+        })
+      );
+    });
   });
 
   describe("AI Suggestion Generation", () => {

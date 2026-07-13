@@ -79,22 +79,48 @@ async function getContextData(
     endDate.setMonth(endDate.getMonth() + 1);
   }
 
-  // Fetch events
-  const upcomingEvents = await database.event.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-      eventDate: { gte: today, lte: endDate },
-    },
-    orderBy: { eventDate: "asc" },
-    take: 10,
-  });
+  // Tier 0 — independent reads keyed only on tenantId + the date window.
+  const [upcomingEvents, prepTasks, inventoryAlertsRaw] = await Promise.all([
+    database.event.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+        eventDate: { gte: today, lte: endDate },
+      },
+      orderBy: { eventDate: "asc" },
+      take: 10,
+    }),
+    database.prepTask.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+        status: { not: "done" },
+        dueByDate: { lte: endDate },
+      },
+      orderBy: { dueByDate: "asc" },
+      take: 20,
+    }),
+    database.inventoryAlert.findMany({
+      where: {
+        tenantId,
+        resolvedAt: null,
+        deleted_at: null,
+      },
+      orderBy: { triggeredAt: "desc" },
+      take: 15,
+    }),
+  ]);
 
-  // Fetch event dishes separately (junction table)
   const eventIds = upcomingEvents.map((e) => e.id);
-  const eventDishes =
+  const itemIds = [...new Set(inventoryAlertsRaw.map((a) => a.itemId))];
+
+  // Tier 1 — reads keyed on Tier-0 IDs. eventStaff is scoped to the
+  // date-windowed eventIds (upcomingEvents) directly, so it no longer pulls
+  // arbitrary assignments across every event and the follow-up event query
+  // the old code used to filter staff back into the window is dropped.
+  const [eventDishes, inventoryItems, staffAssignments] = await Promise.all([
     eventIds.length > 0
-      ? await database.$queryRaw<
+      ? database.$queryRaw<
           Array<{
             tenant_id: string;
             id: string;
@@ -110,9 +136,33 @@ async function getContextData(
         AND deleted_at IS NULL
         AND event_id = ANY(${eventIds}::uuid[])
       `
-      : [];
+      : Promise.resolve([]),
+    itemIds.length > 0
+      ? database.inventoryItem.findMany({
+          where: {
+            tenantId,
+            id: { in: itemIds },
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+            name: true,
+          },
+        })
+      : Promise.resolve([]),
+    eventIds.length > 0
+      ? database.eventStaff.findMany({
+          where: {
+            tenantId,
+            deletedAt: null,
+            eventId: { in: eventIds },
+          },
+          take: 50,
+        })
+      : Promise.resolve([]),
+  ]);
 
-  // Fetch dishes for the event dishes
+  // Tier 2 — dishes depend on the event-dish junction rows from Tier 1.
   const dishIds = [...new Set(eventDishes.map((ed) => ed.dish_id))];
   const dishes =
     dishIds.length > 0
@@ -132,80 +182,7 @@ async function getContextData(
       : [];
 
   const dishMap = new Map(dishes.map((d) => [d.id, d]));
-
-  // Fetch incomplete prep tasks
-  const prepTasks = await database.prepTask.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-      status: { not: "done" },
-      dueByDate: { lte: endDate },
-    },
-    orderBy: { dueByDate: "asc" },
-    take: 20,
-  });
-
-  // Fetch inventory alerts with item names
-  const inventoryAlertsRaw = await database.inventoryAlert.findMany({
-    where: {
-      tenantId,
-      resolvedAt: null,
-      deleted_at: null,
-    },
-    orderBy: { triggeredAt: "desc" },
-    take: 15,
-  });
-
-  // Get item IDs and fetch item names
-  const itemIds = [...new Set(inventoryAlertsRaw.map((a) => a.itemId))];
-  const inventoryItems =
-    itemIds.length > 0
-      ? await database.inventoryItem.findMany({
-          where: {
-            tenantId,
-            id: { in: itemIds },
-            deletedAt: null,
-          },
-          select: {
-            id: true,
-            name: true,
-          },
-        })
-      : [];
-
   const itemMap = new Map(inventoryItems.map((item) => [item.id, item.name]));
-
-  // Fetch staff assignments (need to filter by event date separately)
-  const staffAssignments = await database.eventStaff.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-    },
-    take: 50,
-  });
-
-  // Get events for staff assignments
-  const staffEventIds = [...new Set(staffAssignments.map((s) => s.eventId))];
-  const staffEvents =
-    staffEventIds.length > 0
-      ? await database.event.findMany({
-          where: {
-            id: { in: staffEventIds },
-            eventDate: { gte: today, lte: endDate },
-            deletedAt: null,
-          },
-          select: {
-            id: true,
-            title: true,
-            eventDate: true,
-          },
-        })
-      : [];
-
-  const staffEventIdsFiltered = new Set(staffEvents.map((e) => e.id));
-  const filteredStaffAssignments = staffAssignments.filter((s) =>
-    staffEventIdsFiltered.has(s.eventId)
-  );
 
   // Build events with dishes
   const eventsWithDishes = upcomingEvents.map((event) => ({
@@ -268,7 +245,7 @@ async function getContextData(
       triggeredAt: a.triggeredAt,
       notes: a.notes,
     })),
-    staffAssignments: filteredStaffAssignments.map((s) => ({
+    staffAssignments: staffAssignments.map((s) => ({
       id: s.id,
       eventId: s.eventId,
       staffMemberId: s.staffMemberId,
@@ -276,8 +253,7 @@ async function getContextData(
       shiftStart: s.shiftStart,
       shiftEnd: s.shiftEnd,
     })),
-    incompleteTaskCount: prepTasks.filter((t) => t.status !== "done")
-      .length,
+    incompleteTaskCount: prepTasks.filter((t) => t.status !== "done").length,
     highVolumeDays,
     totalEvents: eventsWithDishes.length,
     timeframe,
