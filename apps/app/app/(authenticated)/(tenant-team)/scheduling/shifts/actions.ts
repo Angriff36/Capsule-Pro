@@ -253,51 +253,72 @@ export async function getAvailableEmployees(params: {
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
   });
 
-  // For employees with conflicts, get their conflicting shifts
-  const employeesWithConflicts = await Promise.all(
-    employees.map(async (emp) => {
-      const conflictingShiftRecords = await database.scheduleShift.findMany({
-        where: {
-          tenantId,
-          employeeId: emp.id,
-          deletedAt: null,
-          shiftStart: { lt: endDate },
-          shiftEnd: { gt: startDate },
-          ...(params.excludeShiftId
-            ? { id: { not: params.excludeShiftId } }
-            : {}),
-        },
-        orderBy: { shiftStart: "asc" },
-      });
-      const locations = await database.location.findMany({
-        where: {
-          tenantId,
-          id: { in: conflictingShiftRecords.map((shift) => shift.locationId) },
-          deletedAt: null,
-        },
-        select: { id: true, name: true },
-      });
-      const locationsById = new Map(
-        locations.map((location) => [location.id, location])
-      );
+  // ponytail: collapse a 1+2N fan-out — previously one scheduleShift.findMany
+  // + one location.findMany fired PER employee. Two batched queries keyed on
+  // the whole employee set make round-trips independent of headcount (1+2N→3).
+  if (employees.length === 0) {
+    return { employees: [] };
+  }
 
-      return {
-        id: emp.id,
-        first_name: emp.firstName,
-        last_name: emp.lastName,
-        email: emp.email,
-        role: emp.role,
-        is_active: emp.isActive,
-        hasConflictingShift: conflictingShiftRecords.length > 0,
-        conflictingShifts: conflictingShiftRecords.map((shift) => ({
-          id: shift.id,
-          shiftStart: shift.shiftStart,
-          shiftEnd: shift.shiftEnd,
-          locationName: locationsById.get(shift.locationId)?.name ?? "",
-        })),
-      };
-    })
+  const conflictingShifts = await database.scheduleShift.findMany({
+    where: {
+      tenantId,
+      employeeId: { in: employees.map((emp) => emp.id) },
+      deletedAt: null,
+      shiftStart: { lt: endDate },
+      shiftEnd: { gt: startDate },
+      ...(params.excludeShiftId ? { id: { not: params.excludeShiftId } } : {}),
+    },
+    orderBy: [{ employeeId: "asc" }, { shiftStart: "asc" }],
+  });
+
+  const locationIds = conflictingShifts
+    .map((shift) => shift.locationId)
+    .filter((id): id is string => id !== null);
+  const locations =
+    locationIds.length > 0
+      ? await database.location.findMany({
+          where: { tenantId, id: { in: locationIds }, deletedAt: null },
+          select: { id: true, name: true },
+        })
+      : [];
+  const locationsById = new Map(
+    locations.map((location) => [location.id, location])
   );
+
+  // Group conflicts by employee; the batched orderBy keeps each slice
+  // shiftStart-sorted (matching the prior per-employee query's ordering).
+  type ConflictShift = (typeof conflictingShifts)[number];
+  const conflictsByEmployee = new Map<string, ConflictShift[]>();
+  for (const shift of conflictingShifts) {
+    const bucket = conflictsByEmployee.get(shift.employeeId);
+    if (bucket) {
+      bucket.push(shift);
+    } else {
+      conflictsByEmployee.set(shift.employeeId, [shift]);
+    }
+  }
+
+  const employeesWithConflicts = employees.map((emp) => {
+    const conflicts = conflictsByEmployee.get(emp.id) ?? [];
+    return {
+      id: emp.id,
+      first_name: emp.firstName,
+      last_name: emp.lastName,
+      email: emp.email,
+      role: emp.role,
+      is_active: emp.isActive,
+      hasConflictingShift: conflicts.length > 0,
+      conflictingShifts: conflicts.map((shift) => ({
+        id: shift.id,
+        shiftStart: shift.shiftStart,
+        shiftEnd: shift.shiftEnd,
+        locationName: shift.locationId
+          ? (locationsById.get(shift.locationId)?.name ?? "")
+          : "",
+      })),
+    };
+  });
 
   return { employees: employeesWithConflicts };
 }
