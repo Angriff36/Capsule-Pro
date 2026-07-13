@@ -59,7 +59,6 @@ function generateCSVRows(
     venueName: string | null;
     venueAddress: string | null;
     budget: number | null;
-    notes: string | null;
     tags: string[];
     createdAt: Date;
     updatedAt: Date;
@@ -208,11 +207,28 @@ export async function GET(request: Request) {
       ];
     }
 
-    // Fetch events with pagination via Prisma ORM
+    // Fetch events with pagination via Prisma ORM. Select only the columns
+    // emitted to the CSV (see generateCSVRows) — avoids pulling the full row
+    // (heavy Text/JSON columns like description) for every exported event.
     const rawEvents = await database.event.findMany({
       where,
       orderBy: [{ eventDate: "desc" }, { createdAt: "desc" }],
       take: limit,
+      select: {
+        id: true,
+        eventNumber: true,
+        title: true,
+        eventDate: true,
+        eventType: true,
+        status: true,
+        guestCount: true,
+        venueName: true,
+        venueAddress: true,
+        budget: true,
+        tags: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     // Map Prisma result (camelCase) to the shape expected by generateCSVRows
@@ -227,7 +243,6 @@ export async function GET(request: Request) {
       venueName: e.venueName,
       venueAddress: e.venueAddress,
       budget: e.budget ? Number(e.budget) : null,
-      notes: e.notes,
       tags: e.tags,
       createdAt: e.createdAt,
       updatedAt: e.updatedAt,
