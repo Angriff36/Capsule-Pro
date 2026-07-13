@@ -29,6 +29,17 @@ import {
   validateKey,
 } from "@/app/lib/api-key-service";
 
+/**
+ * Minimum staleness before the `lastUsedAt` timestamp is re-written.
+ * `lastUsedAt` is display-only — the security page "Last Used" column formats it
+ * with day-granularity `formatDate` (`security-client.tsx`), and no code reads it
+ * with sub-minute precision. Writing it at most once per minute per key is
+ * therefore semantically identical to writing it per request, and it collapses one
+ * fire-and-forget UPDATE per API-key-authenticated request to ≤1/min/key, easing
+ * pool/connection pressure on this foundational auth path.
+ */
+const LAST_USED_AT_THROTTLE_MS = 60_000;
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -203,23 +214,31 @@ export async function authenticateApiKey(
     };
   }
 
-  // 10. Update lastUsedAt (non-blocking, fire-and-forget)
+  // 10. Update lastUsedAt (non-blocking, fire-and-forget). Throttled: skip the
+  // write when the stored timestamp is already fresher than LAST_USED_AT_THROTTLE_MS
+  // (rationale on the constant — display-only field).
   const now = new Date();
-  database.apiKey
-    .update({
-      where: {
-        tenantId_id: {
-          tenantId: apiKeyRecord.tenantId,
-          id: apiKeyRecord.id,
+  const lastUsed = apiKeyRecord.lastUsedAt;
+  if (
+    !lastUsed ||
+    now.getTime() - lastUsed.getTime() > LAST_USED_AT_THROTTLE_MS
+  ) {
+    database.apiKey
+      .update({
+        where: {
+          tenantId_id: {
+            tenantId: apiKeyRecord.tenantId,
+            id: apiKeyRecord.id,
+          },
         },
-      },
-      data: {
-        lastUsedAt: now,
-      },
-    })
-    .catch((error) => {
-      console.error("[api-key-auth] Failed to update lastUsedAt:", error);
-    });
+        data: {
+          lastUsedAt: now,
+        },
+      })
+      .catch((error) => {
+        console.error("[api-key-auth] Failed to update lastUsedAt:", error);
+      });
+  }
 
   // 11. Return success with API key context
   const apiKeyContext: ApiKeyContext = {
