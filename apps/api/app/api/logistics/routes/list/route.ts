@@ -3,6 +3,7 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
+import { clampLimit } from "@/lib/pagination";
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,7 +12,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get("status");
     const date = searchParams.get("date");
-    const limit = Number.parseInt(searchParams.get("limit") || "50", 10);
+    const limit = clampLimit(searchParams.get("limit"));
 
     const where: any = { tenantId, deletedAt: null };
     if (status) {

@@ -13,6 +13,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { clampLimit, clampOffset } from "@/lib/pagination";
 
 export async function GET(request: NextRequest) {
   try {
@@ -59,8 +60,8 @@ export async function GET(request: NextRequest) {
       database.allergenWarning.findMany({
         where,
         orderBy: [{ severity: "desc" }, { createdAt: "desc" }],
-        take: limit ? Number.parseInt(limit, 10) : undefined,
-        skip: offset ? Number.parseInt(offset, 10) : undefined,
+        take: limit ? clampLimit(limit) : undefined,
+        skip: offset ? clampOffset(offset) : undefined,
       }),
       database.allergenWarning.count({ where }),
     ]);
@@ -69,8 +70,8 @@ export async function GET(request: NextRequest) {
       warnings,
       pagination: {
         total: totalCount,
-        limit: limit ? Number.parseInt(limit, 10) : warnings.length,
-        offset: offset ? Number.parseInt(offset, 10) : 0,
+        limit: limit ? clampLimit(limit) : warnings.length,
+        offset: offset ? clampOffset(offset) : 0,
       },
     });
   } catch (error) {

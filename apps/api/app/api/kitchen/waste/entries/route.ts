@@ -4,6 +4,7 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
+import { clampLimit, clampOffset, MAX_LIMIT } from "@/lib/pagination";
 
 interface WasteRequestBody {
   eventId?: string;
@@ -107,8 +108,8 @@ export async function GET(request: Request) {
   const eventId = searchParams.get("eventId");
   const startDate = searchParams.get("startDate");
   const endDate = searchParams.get("endDate");
-  const limit = Number.parseInt(searchParams.get("limit") || "100", 10);
-  const offset = Number.parseInt(searchParams.get("offset") || "0", 10);
+  const limit = clampLimit(searchParams.get("limit"), MAX_LIMIT, 100);
+  const offset = clampOffset(searchParams.get("offset"));
 
   const entries = await database.wasteEntry.findMany({
     where: {

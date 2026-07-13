@@ -11,6 +11,7 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { clampLimit, clampOffset } from "@/lib/pagination";
 
 /**
  * GET /api/crm/clients/[id]/events
@@ -33,8 +34,8 @@ export async function GET(
     const { searchParams } = new URL(request.url);
 
     // Pagination
-    const limit = Number.parseInt(searchParams.get("limit") || "50", 10);
-    const offset = Number.parseInt(searchParams.get("offset") || "0", 10);
+    const limit = clampLimit(searchParams.get("limit"));
+    const offset = clampOffset(searchParams.get("offset"));
 
     // Verify client exists
     const client = await database.client.findFirst({

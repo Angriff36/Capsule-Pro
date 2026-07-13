@@ -70,7 +70,7 @@ export async function GET(request: Request, context: RouteContext) {
     const sinceParam = searchParams.get("since");
     const since = sinceParam ? new Date(sinceParam) : undefined;
 
-    if (limit < 1 || limit > 5000) {
+    if (!Number.isFinite(limit) || limit < 1 || limit > 5000) {
       return NextResponse.json(
         { message: "Limit must be between 1 and 5000" },
         { status: 400 }

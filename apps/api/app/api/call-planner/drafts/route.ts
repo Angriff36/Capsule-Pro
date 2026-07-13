@@ -14,6 +14,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { clampLimit, MAX_LIMIT } from "@/lib/pagination";
 
 export const runtime = "nodejs";
 
@@ -32,16 +33,12 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
 
     const status = searchParams.get("status") || undefined;
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "20", 10);
+    const page = Number.parseInt(searchParams.get("page") || "1", 10);
+    const limit = clampLimit(searchParams.get("limit"), MAX_LIMIT, 20);
     const offset = (page - 1) * limit;
 
     const whereClause = {
-      AND: [
-        { tenantId },
-        { deletedAt: null },
-        ...(status ? [{ status }] : []),
-      ],
+      AND: [{ tenantId }, { deletedAt: null }, ...(status ? [{ status }] : [])],
     };
 
     const [drafts, totalCount] = await Promise.all([

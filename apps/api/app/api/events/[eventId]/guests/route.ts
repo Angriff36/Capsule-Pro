@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
+import { clampLimit, clampOffset, MAX_LIMIT } from "@/lib/pagination";
 
 /**
  * GET /api/events/[eventId]/guests
@@ -39,8 +40,8 @@ export async function GET(
     }
 
     // Pagination parameters
-    const limit = Number.parseInt(searchParams.get("limit") || "100", 10);
-    const offset = Number.parseInt(searchParams.get("offset") || "0", 10);
+    const limit = clampLimit(searchParams.get("limit"), MAX_LIMIT, 100);
+    const offset = clampOffset(searchParams.get("offset"));
 
     // Filter by guest name if provided
     const guestName = searchParams.get("guestName");

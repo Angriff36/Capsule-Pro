@@ -5,6 +5,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
+import { clampLimit } from "@/lib/pagination";
 
 /**
  * GET /api/staff/shifts
@@ -34,7 +35,7 @@ export async function GET(request: Request) {
   const locationId = searchParams.get("locationId");
   const role = searchParams.get("role");
   const page = Number.parseInt(searchParams.get("page") || "1", 10);
-  const limit = Number.parseInt(searchParams.get("limit") || "50", 10);
+  const limit = clampLimit(searchParams.get("limit"));
   const offset = (page - 1) * limit;
 
   const where = {

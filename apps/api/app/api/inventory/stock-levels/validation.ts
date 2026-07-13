@@ -5,6 +5,7 @@
  */
 
 import { invariant } from "@/app/lib/invariant";
+import { MAX_LIMIT } from "@/lib/pagination";
 import {
   ADJUSTMENT_REASONS,
   type AdjustmentReason,
@@ -300,6 +301,10 @@ export function validateStockLevelFilters(
   // Validate limit if provided
   if (f.limit !== undefined) {
     validatePositiveNumber(f.limit, "limit");
+    invariant(
+      f.limit <= MAX_LIMIT,
+      `limit must not exceed ${MAX_LIMIT}, received ${f.limit}`
+    );
   }
 }
 
@@ -352,5 +357,9 @@ export function validateTransactionFilters(filters: unknown): void {
   // Validate limit if provided
   if (f.limit !== undefined) {
     validatePositiveNumber(f.limit, "limit");
+    invariant(
+      f.limit <= MAX_LIMIT,
+      `limit must not exceed ${MAX_LIMIT}, received ${f.limit}`
+    );
   }
 }

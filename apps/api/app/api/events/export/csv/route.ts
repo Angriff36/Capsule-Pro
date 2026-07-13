@@ -13,6 +13,7 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { clampLimit } from "@/lib/pagination";
 
 /**
  * Helper function to escape CSV values
@@ -166,10 +167,9 @@ export async function GET(request: Request) {
     const eventType = url.searchParams.get("event_type");
     const venueId = url.searchParams.get("venue_id");
     const search = url.searchParams.get("search");
-    const limitParam = url.searchParams.get("limit") || "1000";
     const shouldDownload = url.searchParams.get("download") === "true";
 
-    const limit = Math.min(Number.parseInt(limitParam, 10), 5000);
+    const limit = clampLimit(url.searchParams.get("limit"), 5000, 1000);
 
     // Build Prisma where clause
     const where: Record<string, unknown> = {

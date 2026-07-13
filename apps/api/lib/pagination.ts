@@ -40,20 +40,34 @@ export const MAX_LIMIT = 200;
 /**
  * Parse and clamp a client-supplied `limit` query string.
  *
+ * The default policy (`max = MAX_LIMIT`, `fallback = DEFAULT_LIMIT`) covers the
+ * common list route. The two optional overrides exist for the documented
+ * "per-route override" escape hatch — a route with a non-default page size
+ * (e.g. default 100) passes its own `fallback`, and a route that legitimately
+ * needs more than `MAX_LIMIT` rows (CSV export up to 5000, IoT time-series up
+ * to 1000) passes its own `max`. Both default to the shared policy so existing
+ * callers are unaffected.
+ *
  * @example
- *   clampLimit("100")          // => 100
- *   clampLimit("9999")         // => 200  (MAX_LIMIT)
- *   clampLimit(null)           // => 50   (DEFAULT_LIMIT)
- *   clampLimit("not a number") // => 50   (DEFAULT_LIMIT)
- *   clampLimit("-1")           // => 50   (DEFAULT_LIMIT)
- *   clampLimit("0")            // => 50   (DEFAULT_LIMIT)
+ *   clampLimit("100")                         // => 100
+ *   clampLimit("9999")                        // => 200  (MAX_LIMIT)
+ *   clampLimit(null)                          // => 50   (DEFAULT_LIMIT)
+ *   clampLimit("not a number")                // => 50   (DEFAULT_LIMIT)
+ *   clampLimit("-1")                          // => 50   (DEFAULT_LIMIT)
+ *   clampLimit("0")                           // => 50   (DEFAULT_LIMIT)
+ *   clampLimit(null, MAX_LIMIT, 100)          // => 100  (custom default)
+ *   clampLimit("9999", 1000, 1000)            // => 1000 (custom ceiling + default)
  */
-export function clampLimit(raw: string | null): number {
+export function clampLimit(
+  raw: string | null,
+  max: number = MAX_LIMIT,
+  fallback: number = DEFAULT_LIMIT
+): number {
   const parsed = Number.parseInt(raw ?? "", 10);
   if (!Number.isFinite(parsed) || parsed <= 0) {
-    return DEFAULT_LIMIT;
+    return fallback;
   }
-  return Math.min(parsed, MAX_LIMIT);
+  return Math.min(parsed, max);
 }
 
 /**

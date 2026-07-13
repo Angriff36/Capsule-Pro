@@ -63,6 +63,33 @@ describe("pagination", () => {
       expect(clampLimit("100abc")).toBe(100);
       expect(clampLimit("50.7")).toBe(50);
     });
+
+    it("honors a custom fallback (per-route default page size)", () => {
+      // A route whose default page is 100 (not DEFAULT_LIMIT=50) passes its
+      // own fallback so a missing/invalid param preserves that default.
+      expect(clampLimit(null, MAX_LIMIT, 100)).toBe(100);
+      expect(clampLimit("abc", MAX_LIMIT, 100)).toBe(100);
+      expect(clampLimit("0", MAX_LIMIT, 100)).toBe(100);
+      expect(clampLimit("-5", MAX_LIMIT, 20)).toBe(20);
+    });
+
+    it("honors a custom max ceiling for routes that legitimately need more rows", () => {
+      // CSV export allows up to 5000; IoT time-series up to 1000. A hostile
+      // value above the custom ceiling still clamps down.
+      expect(clampLimit("9999", 1000, 1000)).toBe(1000);
+      expect(clampLimit("999999", 5000, 1000)).toBe(5000);
+      expect(clampLimit("5001", 5000, 1000)).toBe(5000);
+      // Values under the custom ceiling pass through unchanged.
+      expect(clampLimit("100", 5000, 1000)).toBe(100);
+    });
+
+    it("stays backwards-compatible when overrides are omitted", () => {
+      // Every existing caller passes only the raw value; the shared policy
+      // (DEFAULT_LIMIT / MAX_LIMIT) must still apply.
+      expect(clampLimit(null)).toBe(DEFAULT_LIMIT);
+      expect(clampLimit("abc")).toBe(DEFAULT_LIMIT);
+      expect(clampLimit("999999")).toBe(MAX_LIMIT);
+    });
   });
 
   describe("clampOffset", () => {

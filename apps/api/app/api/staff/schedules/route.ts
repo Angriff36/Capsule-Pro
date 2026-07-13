@@ -4,6 +4,7 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { clampLimit } from "@/lib/pagination";
 
 export async function GET(req: NextRequest) {
   try {
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
     const locationId = searchParams.get("locationId");
-    const limit = Number.parseInt(searchParams.get("limit") || "50", 10);
+    const limit = clampLimit(searchParams.get("limit"));
     const page = Number.parseInt(searchParams.get("page") || "1", 10);
 
     // Fetch schedules using SQL query

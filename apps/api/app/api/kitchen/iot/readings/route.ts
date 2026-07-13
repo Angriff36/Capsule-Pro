@@ -5,6 +5,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
+import { clampLimit } from "@/lib/pagination";
 
 /**
  * GET /api/kitchen/iot/readings
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const probeId = searchParams.get("probeId");
     const hours = Number.parseInt(searchParams.get("hours") || "24", 10);
-    const limit = Number.parseInt(searchParams.get("limit") || "1000", 10);
+    const limit = clampLimit(searchParams.get("limit"), 1000, 1000);
 
     const where: Record<string, unknown> = { tenantId };
     if (probeId) {
