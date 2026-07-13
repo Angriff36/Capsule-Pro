@@ -51,18 +51,15 @@ export async function GET(request: Request) {
 
     // Fetch budgets + total count in parallel (independent reads, same where) —
     // collapses 2 serial round-trips into 1 concurrent batch (#23).
+    // No `include: { lineItems }`: the list view consumes only scalar budget
+    // fields (#19 over-fetch); lineItems stay available via the [id] detail
+    // route + the server components that fetch their own include.
     const [budgets, total] = await Promise.all([
       database.eventBudget.findMany({
         where: whereClause,
         orderBy: [{ createdAt: "desc" }],
         take: limit,
         skip: offset,
-        include: {
-          lineItems: {
-            where: { deletedAt: null },
-            orderBy: { sortOrder: "asc" },
-          },
-        },
       }),
       database.eventBudget.count({ where: whereClause }),
     ]);

@@ -76,6 +76,26 @@ describe("GET /api/events/budgets (list)", () => {
     expect(res.status).toBe(200);
   });
 
+  it("does NOT include lineItems in the list payload (#19 over-fetch)", async () => {
+    // The list view consumes only scalar budget fields; lineItems are fetched
+    // by the [id] detail route + server components with their own include.
+    // Exact-shape assertion: re-adding `include: { lineItems }` makes the
+    // actual arg a 5-key object → this exact-match fails.
+    vi.mocked(database.eventBudget.findMany).mockResolvedValue([
+      { id: "bg1" },
+    ] as never);
+    vi.mocked(database.eventBudget.count).mockResolvedValue(1);
+
+    await GET(new Request("http://x/api/events/budgets?page=1&limit=10"));
+
+    expect(database.eventBudget.findMany).toHaveBeenCalledWith({
+      where: expect.any(Object),
+      orderBy: [{ createdAt: "desc" }],
+      take: 10,
+      skip: 0,
+    });
+  });
+
   it("returns the budget-list shape with correct totalPages math", async () => {
     vi.mocked(database.eventBudget.findMany).mockResolvedValue([
       { id: "bg1" },
