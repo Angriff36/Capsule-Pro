@@ -46,6 +46,7 @@ import { notFound } from "next/navigation";
 import { DietaryBadges } from "@/components/dietary-badges";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 import { Header } from "../../../components/header";
+import { getCatalogTotals } from "./catalog-totals";
 import { SingleDeleteButton } from "./components/bulk-actions-bar";
 import {
   InlineDishName,
@@ -195,41 +196,8 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const [recipeTotals] = await database.$queryRaw<{ count: number }[]>(
-    Prisma.sql`
-      SELECT COUNT(*)::int AS count
-      FROM tenant_kitchen.recipes
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-    `
-  );
-
-  const [dishTotals] = await database.$queryRaw<{ count: number }[]>(
-    Prisma.sql`
-      SELECT COUNT(*)::int AS count
-      FROM tenant_kitchen.dishes
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-    `
-  );
-
-  const [ingredientTotals] = await database.$queryRaw<{ count: number }[]>(
-    Prisma.sql`
-      SELECT COUNT(*)::int AS count
-      FROM tenant_kitchen.ingredients
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-    `
-  );
-
-  const [menuTotals] = await database.$queryRaw<{ count: number }[]>(
-    Prisma.sql`
-      SELECT COUNT(*)::int AS count
-      FROM tenant_kitchen.menus
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-    `
-  );
+  const { recipeCount, dishCount, ingredientCount, menuCount } =
+    await getCatalogTotals(tenantId);
 
   const recipeConditions = buildConditions(
     [Prisma.sql`r.tenant_id = ${tenantId}`, Prisma.sql`r.deleted_at IS NULL`],
@@ -406,13 +374,13 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
   const costingSummary = costingSummaryResult?.data ?? [];
 
   const tabs = [
-    { value: "recipes", label: "Recipes", count: recipeTotals?.count ?? 0 },
-    { value: "dishes", label: "Dishes", count: dishTotals?.count ?? 0 },
-    { value: "menus", label: "Menus", count: menuTotals?.count ?? 0 },
+    { value: "recipes", label: "Recipes", count: recipeCount },
+    { value: "dishes", label: "Dishes", count: dishCount },
+    { value: "menus", label: "Menus", count: menuCount },
     {
       value: "ingredients",
       label: "Ingredients",
-      count: ingredientTotals?.count ?? 0,
+      count: ingredientCount,
     },
     { value: "costing", label: "Costing Analysis" },
   ];
@@ -439,22 +407,22 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
   const hubStats = [
     {
       label: "Recipes",
-      value: String(recipeTotals?.count ?? 0),
+      value: String(recipeCount),
       note: "Production builds",
     },
     {
       label: "Dishes",
-      value: String(dishTotals?.count ?? 0),
+      value: String(dishCount),
       note: "Client-facing",
     },
     {
       label: "Menus",
-      value: String(menuTotals?.count ?? 0),
+      value: String(menuCount),
       note: "Composed sets",
     },
     {
       label: "Ingredients",
-      value: String(ingredientTotals?.count ?? 0),
+      value: String(ingredientCount),
       note: "Raw inventory",
     },
   ];
@@ -463,7 +431,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
     eyebrow: "Recipes",
     title: "Recipe collection",
     description: "Ingredients, yields, and timing for every production build.",
-    count: `${recipeTotals?.count ?? 0} recipes`,
+    count: `${recipeCount} recipes`,
   };
   const catalogHead: Record<
     string,
@@ -474,19 +442,19 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
       eyebrow: "Dishes",
       title: "Dish library",
       description: "Pricing, dietary tags, and plating for sellable plates.",
-      count: `${dishTotals?.count ?? 0} dishes`,
+      count: `${dishCount} dishes`,
     },
     ingredients: {
       eyebrow: "Ingredients",
       title: "Ingredient library",
       description: "Allergens, units, and categories for raw items.",
-      count: `${ingredientTotals?.count ?? 0} ingredients`,
+      count: `${ingredientCount} ingredients`,
     },
     menus: {
       eyebrow: "Menus",
       title: "Menu collection",
       description: "Bundles of dishes for events and tastings.",
-      count: `${menuTotals?.count ?? 0} menus`,
+      count: `${menuCount} menus`,
     },
     costing: {
       eyebrow: "Costing",
