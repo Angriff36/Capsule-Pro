@@ -376,6 +376,25 @@ describe("POST /api/public/contracts/[token]/sign", () => {
         }),
       })
     );
+
+    // #20 over-fetch regression guard: the unauthenticated sign path must keep
+    // focused selects so it does not pull the heavy `signatureData` blob (nor
+    // every EventContract column) only to discard them. A revert that drops
+    // either select fails here.
+    expect(vi.mocked(database.eventContract.findFirst)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { signingToken: TOKEN, deletedAt: null },
+        select: { id: true, tenantId: true, status: true, expiresAt: true },
+      })
+    );
+    expect(
+      vi.mocked(database.contractSignature.findFirst)
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: { createdAt: "desc" },
+        select: { id: true, signerName: true, signedAt: true },
+      })
+    );
   });
 
   it("returns 400 when signatureData is missing", async () => {

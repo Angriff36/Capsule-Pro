@@ -71,9 +71,14 @@ export async function POST(
       );
     }
 
-    // Find contract by signing token (read path, constitution §10)
+    // Find contract by signing token (read path, constitution §10).
+    // ponytail: focused select — the unauthenticated sign path only needs the
+    // fields below (expiry/status pre-validation + tenant/id for the governed
+    // writes + read-back); no Text/JSON column lives on EventContract, but this
+    // still narrows the row to what the path renders (#20 over-fetch).
     const contract = await database.eventContract.findFirst({
       where: { signingToken: token, deletedAt: null },
+      select: { id: true, tenantId: true, status: true, expiresAt: true },
     });
 
     if (!contract) {
@@ -165,10 +170,14 @@ export async function POST(
       );
     }
 
-    // Read back the signature for response (read path)
+    // Read back the signature for response (read path).
+    // #20: focused select — only id/signerName/signedAt are rendered in the
+    // response, so this drops `signatureData` (a base64/SVG blob, tens-of-KB→MB)
+    // that the prior unbounded read pulled only to discard on every public sign.
     const signature = await database.contractSignature.findFirst({
       where: { tenantId: contract.tenantId, contractId: contract.id },
       orderBy: { createdAt: "desc" },
+      select: { id: true, signerName: true, signedAt: true },
     });
 
     return NextResponse.json({
