@@ -392,71 +392,71 @@ export const addDishToMenu = async (
     throw new Error("Dish ID is required.");
   }
 
-  // Verify menu exists and belongs to tenant
-  const [menu] = await database.$queryRaw<
-    { id: string; tenant_id: string; name: string }[]
-  >(
-    Prisma.sql`
-      SELECT id, tenant_id, name
-      FROM tenant_kitchen.menus
-      WHERE id = ${menuId}
-        AND tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-      LIMIT 1
-    `
-  );
+  // Verify the menu + dish exist, the dish isn't already on the menu, and
+  // compute the next sort order. All four reads are keyed only on
+  // (menuId, dishId, tenantId) and are independent of each other's results,
+  // so they collapse into one concurrent batch (4 round-trips → 1). Error
+  // checks keep the original serial priority (menu → dish → already-in-menu).
+  const [menuRows, dishRows, existingRows, maxSortOrderRows] =
+    await Promise.all([
+      database.$queryRaw<{ id: string; tenant_id: string; name: string }[]>(
+        Prisma.sql`
+        SELECT id, tenant_id, name
+        FROM tenant_kitchen.menus
+        WHERE id = ${menuId}
+          AND tenant_id = ${tenantId}
+          AND deleted_at IS NULL
+        LIMIT 1
+      `
+      ),
+      database.$queryRaw<{ id: string; tenant_id: string; name: string }[]>(
+        Prisma.sql`
+        SELECT id, tenant_id, name
+        FROM tenant_kitchen.dishes
+        WHERE id = ${dishId}
+          AND tenant_id = ${tenantId}
+          AND deleted_at IS NULL
+        LIMIT 1
+      `
+      ),
+      database.$queryRaw<{ id: string }[]>(
+        Prisma.sql`
+        SELECT id
+        FROM tenant_kitchen.menu_dishes
+        WHERE menu_id = ${menuId}
+          AND dish_id = ${dishId}
+          AND tenant_id = ${tenantId}
+          AND deleted_at IS NULL
+        LIMIT 1
+      `
+      ),
+      database.$queryRaw<{ max_sort_order: number | null }[]>(
+        Prisma.sql`
+        SELECT MAX(sort_order) as max_sort_order
+        FROM tenant_kitchen.menu_dishes
+        WHERE menu_id = ${menuId}
+          AND tenant_id = ${tenantId}
+          AND deleted_at IS NULL
+      `
+      ),
+    ]);
+
+  const [menu] = menuRows;
+  const [dish] = dishRows;
+  const [existingMenuDish] = existingRows;
+  const [maxSortOrder] = maxSortOrderRows;
 
   if (!menu) {
     throw new Error("Menu not found or access denied.");
   }
 
-  // Verify dish exists and belongs to tenant
-  const [dish] = await database.$queryRaw<
-    { id: string; tenant_id: string; name: string }[]
-  >(
-    Prisma.sql`
-      SELECT id, tenant_id, name
-      FROM tenant_kitchen.dishes
-      WHERE id = ${dishId}
-        AND tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-      LIMIT 1
-    `
-  );
-
   if (!dish) {
     throw new Error("Dish not found or access denied.");
   }
 
-  // Check if dish is already in menu
-  const [existingMenuDish] = await database.$queryRaw<{ id: string }[]>(
-    Prisma.sql`
-      SELECT id
-      FROM tenant_kitchen.menu_dishes
-      WHERE menu_id = ${menuId}
-        AND dish_id = ${dishId}
-        AND tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-      LIMIT 1
-    `
-  );
-
   if (existingMenuDish) {
     throw new Error("Dish is already in the menu.");
   }
-
-  // Get the next sort order for this menu
-  const [maxSortOrder] = await database.$queryRaw<
-    { max_sort_order: number | null }[]
-  >(
-    Prisma.sql`
-      SELECT MAX(sort_order) as max_sort_order
-      FROM tenant_kitchen.menu_dishes
-      WHERE menu_id = ${menuId}
-        AND tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-    `
-  );
 
   const nextSortOrder = (maxSortOrder?.max_sort_order ?? 0) + 1;
 
@@ -548,41 +548,46 @@ export const reorderMenuDishes = async (menuId: string, dishIds: string[]) => {
     throw new Error("Dish IDs array is required.");
   }
 
-  // Verify menu exists and belongs to tenant
-  const [menu] = await database.$queryRaw<{ id: string; tenant_id: string }[]>(
-    Prisma.sql`
-      SELECT id, tenant_id
-      FROM tenant_kitchen.menus
-      WHERE id = ${menuId}
-        AND tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-      LIMIT 1
-    `
-  );
+  // Verify the menu exists and load the dishes being reordered. Both reads
+  // are keyed only on (menuId, tenantId, dishIds) and are independent, so they
+  // collapse into one concurrent batch (2 round-trips → 1). The existence
+  // check stays before the count check (original error priority).
+  const [menuRows, menuDishes] = await Promise.all([
+    database.$queryRaw<{ id: string; tenant_id: string }[]>(
+      Prisma.sql`
+        SELECT id, tenant_id
+        FROM tenant_kitchen.menus
+        WHERE id = ${menuId}
+          AND tenant_id = ${tenantId}
+          AND deleted_at IS NULL
+        LIMIT 1
+      `
+    ),
+    database.$queryRaw<
+      {
+        id: string;
+        dish_id: string;
+        course: string | null;
+        sort_order: number;
+        is_optional: boolean;
+      }[]
+    >(
+      Prisma.sql`
+        SELECT id, dish_id, course, sort_order, is_optional
+        FROM tenant_kitchen.menu_dishes
+        WHERE menu_id = ${menuId}
+          AND tenant_id = ${tenantId}
+          AND dish_id = ANY(${dishIds})
+          AND deleted_at IS NULL
+      `
+    ),
+  ]);
+
+  const [menu] = menuRows;
 
   if (!menu) {
     throw new Error("Menu not found or access denied.");
   }
-
-  // Verify all dishes are in the menu and belong to tenant
-  const menuDishes = await database.$queryRaw<
-    {
-      id: string;
-      dish_id: string;
-      course: string | null;
-      sort_order: number;
-      is_optional: boolean;
-    }[]
-  >(
-    Prisma.sql`
-      SELECT id, dish_id, course, sort_order, is_optional
-      FROM tenant_kitchen.menu_dishes
-      WHERE menu_id = ${menuId}
-        AND tenant_id = ${tenantId}
-        AND dish_id = ANY(${dishIds})
-        AND deleted_at IS NULL
-    `
-  );
 
   if (menuDishes.length !== dishIds.length) {
     throw new Error("One or more dishes not found in menu or access denied.");
@@ -880,47 +885,50 @@ export const getMenuTemplates = async (): Promise<MenuTemplate[]> => {
 export const saveAsTemplate = async (menuId: string): Promise<string> => {
   const tenantId = await requireTenantId();
 
-  // Get the original menu
-  const [originalMenu] = await database.$queryRaw<
-    {
-      id: string;
-      name: string;
-      description: string | null;
-      category: string | null;
-    }[]
-  >(
-    Prisma.sql`
-      SELECT id, name, description, category
-      FROM tenant_kitchen.menus
-      WHERE id = ${menuId}
-        AND tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-      LIMIT 1
-    `
-  );
+  // Load the original menu and its dishes in one concurrent batch — both
+  // reads are keyed only on (menuId, tenantId) and are independent (2 → 1).
+  const [originalMenuRows, menuDishes] = await Promise.all([
+    database.$queryRaw<
+      {
+        id: string;
+        name: string;
+        description: string | null;
+        category: string | null;
+      }[]
+    >(
+      Prisma.sql`
+        SELECT id, name, description, category
+        FROM tenant_kitchen.menus
+        WHERE id = ${menuId}
+          AND tenant_id = ${tenantId}
+          AND deleted_at IS NULL
+        LIMIT 1
+      `
+    ),
+    database.$queryRaw<
+      {
+        dish_id: string;
+        course: string | null;
+        sort_order: number;
+        is_optional: boolean;
+      }[]
+    >(
+      Prisma.sql`
+        SELECT dish_id, course, sort_order, is_optional
+        FROM tenant_kitchen.menu_dishes
+        WHERE menu_id = ${menuId}
+          AND tenant_id = ${tenantId}
+          AND deleted_at IS NULL
+        ORDER BY sort_order ASC
+      `
+    ),
+  ]);
+
+  const [originalMenu] = originalMenuRows;
 
   if (!originalMenu) {
     throw new Error("Menu not found.");
   }
-
-  // Get all menu dishes
-  const menuDishes = await database.$queryRaw<
-    {
-      dish_id: string;
-      course: string | null;
-      sort_order: number;
-      is_optional: boolean;
-    }[]
-  >(
-    Prisma.sql`
-      SELECT dish_id, course, sort_order, is_optional
-      FROM tenant_kitchen.menu_dishes
-      WHERE menu_id = ${menuId}
-        AND tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-      ORDER BY sort_order ASC
-    `
-  );
 
   const user = await requireCurrentUser();
 
@@ -983,48 +991,51 @@ export const createFromTemplate = async (
 ): Promise<string> => {
   const tenantId = await requireTenantId();
 
-  // Get the template
-  const [template] = await database.$queryRaw<
-    {
-      id: string;
-      name: string;
-      description: string | null;
-      category: string | null;
-    }[]
-  >(
-    Prisma.sql`
-      SELECT id, name, description, category
-      FROM tenant_kitchen.menus
-      WHERE id = ${templateId}
-        AND tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-        AND is_template = true
-      LIMIT 1
-    `
-  );
+  // Load the template and its dishes in one concurrent batch — both reads
+  // are keyed only on (templateId, tenantId) and are independent (2 → 1).
+  const [templateRows, templateDishes] = await Promise.all([
+    database.$queryRaw<
+      {
+        id: string;
+        name: string;
+        description: string | null;
+        category: string | null;
+      }[]
+    >(
+      Prisma.sql`
+        SELECT id, name, description, category
+        FROM tenant_kitchen.menus
+        WHERE id = ${templateId}
+          AND tenant_id = ${tenantId}
+          AND deleted_at IS NULL
+          AND is_template = true
+        LIMIT 1
+      `
+    ),
+    database.$queryRaw<
+      {
+        dish_id: string;
+        course: string | null;
+        sort_order: number;
+        is_optional: boolean;
+      }[]
+    >(
+      Prisma.sql`
+        SELECT dish_id, course, sort_order, is_optional
+        FROM tenant_kitchen.menu_dishes
+        WHERE menu_id = ${templateId}
+          AND tenant_id = ${tenantId}
+          AND deleted_at IS NULL
+        ORDER BY sort_order ASC
+      `
+    ),
+  ]);
+
+  const [template] = templateRows;
 
   if (!template) {
     throw new Error("Template not found.");
   }
-
-  // Get template dishes
-  const templateDishes = await database.$queryRaw<
-    {
-      dish_id: string;
-      course: string | null;
-      sort_order: number;
-      is_optional: boolean;
-    }[]
-  >(
-    Prisma.sql`
-      SELECT dish_id, course, sort_order, is_optional
-      FROM tenant_kitchen.menu_dishes
-      WHERE menu_id = ${templateId}
-        AND tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-      ORDER BY sort_order ASC
-    `
-  );
 
   const user = await requireCurrentUser();
 
@@ -1096,34 +1107,39 @@ export const updateMenuDishes = async (
 ): Promise<void> => {
   const tenantId = await requireTenantId();
 
-  // Verify menu exists
-  const [menu] = await database.$queryRaw<{ id: string }[]>(
-    Prisma.sql`
-      SELECT id
-      FROM tenant_kitchen.menus
-      WHERE id = ${menuId}
-        AND tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-      LIMIT 1
-    `
-  );
+  // Verify the menu exists and load its existing dish IDs in one concurrent
+  // batch — both reads are keyed only on (menuId, tenantId) and are
+  // independent (2 → 1). requireCurrentUser resolves after the batch (it has
+  // no side effect the reads depend on).
+  const [menuRows, existingMenuDishes] = await Promise.all([
+    database.$queryRaw<{ id: string }[]>(
+      Prisma.sql`
+        SELECT id
+        FROM tenant_kitchen.menus
+        WHERE id = ${menuId}
+          AND tenant_id = ${tenantId}
+          AND deleted_at IS NULL
+        LIMIT 1
+      `
+    ),
+    database.$queryRaw<{ id: string }[]>(
+      Prisma.sql`
+        SELECT id
+        FROM tenant_kitchen.menu_dishes
+        WHERE menu_id = ${menuId}
+          AND tenant_id = ${tenantId}
+          AND deleted_at IS NULL
+      `
+    ),
+  ]);
+
+  const [menu] = menuRows;
 
   if (!menu) {
     throw new Error("Menu not found.");
   }
 
   const user = await requireCurrentUser();
-
-  // D1: Fetch existing menu dish IDs for governed removal.
-  const existingMenuDishes = await database.$queryRaw<{ id: string }[]>(
-    Prisma.sql`
-      SELECT id
-      FROM tenant_kitchen.menu_dishes
-      WHERE menu_id = ${menuId}
-        AND tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-    `
-  );
 
   // D1: Remove existing dishes via governed MenuDish.remove commands.
   for (const md of existingMenuDishes) {
