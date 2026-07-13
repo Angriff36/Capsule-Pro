@@ -12,6 +12,7 @@
  * map. Also pins the response shape: yield Number conversion, null yield,
  * missing-version → 0 ingredients, and version-with-zero-ingredients → 0.
  */
+import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
@@ -56,7 +57,7 @@ describe("GET /api/kitchen/nutrition-labels/list", () => {
     ] as never);
 
     const res = await GET(
-      new Request("http://x/api/kitchen/nutrition-labels/list")
+      new NextRequest("http://x/api/kitchen/nutrition-labels/list")
     );
     const body = await res.json();
 
@@ -100,7 +101,7 @@ describe("GET /api/kitchen/nutrition-labels/list", () => {
     vi.mocked(database.recipeIngredient.groupBy).mockResolvedValue([] as never);
 
     const res = await GET(
-      new Request("http://x/api/kitchen/nutrition-labels/list")
+      new NextRequest("http://x/api/kitchen/nutrition-labels/list")
     );
     const body = await res.json();
 
@@ -124,7 +125,7 @@ describe("GET /api/kitchen/nutrition-labels/list", () => {
   it("rejects unauthenticated requests with 401 before any DB read", async () => {
     vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
     const res = await GET(
-      new Request("http://x/api/kitchen/nutrition-labels/list")
+      new NextRequest("http://x/api/kitchen/nutrition-labels/list")
     );
     expect(res.status).toBe(401);
     expect(database.recipe.findMany).not.toHaveBeenCalled();
