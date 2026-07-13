@@ -240,33 +240,54 @@ export async function GET(request: Request) {
       total: recipeByLocation.reduce((sum, l) => sum + l.totalRecipes, 0),
     };
 
-    // Waste entries by location
+    // Waste entries by location — one GROUP BY location_id instead of N
+    // per-location aggregates (the prior loop fired one wasteEntry.aggregate
+    // per location). `waste_entries.location_id` is nullable; null-location
+    // rows form their own group and never match a real location in the Map
+    // lookup below, so they are correctly excluded (same as the prior
+    // `locationId: location.id` equality predicate).
+    const wasteByLocationId = new Map<
+      string,
+      { totalWasteEntries: number; totalWasteCost: number }
+    >();
+    if (locations.length > 0) {
+      const wasteRows = await database.$queryRaw<
+        Array<{
+          location_id: string;
+          entry_count: bigint;
+          total_cost: string;
+        }>
+      >`
+        SELECT
+          location_id,
+          COUNT(*)::bigint AS entry_count,
+          COALESCE(SUM("totalCost"), 0)::text AS total_cost
+        FROM tenant_kitchen.waste_entries
+        WHERE tenant_id = ${tenantId}
+          AND deleted_at IS NULL
+          AND location_id IS NOT NULL
+          AND created_at BETWEEN ${startDate} AND ${endDate}
+        GROUP BY location_id
+      `;
+      for (const row of wasteRows) {
+        wasteByLocationId.set(row.location_id, {
+          totalWasteEntries: Number(row.entry_count),
+          totalWasteCost: Number(row.total_cost),
+        });
+      }
+    }
     const wasteByLocation: Array<{
       locationId: string;
       locationName: string;
       totalWasteEntries: number;
       totalWasteCost: number;
-    }> = [];
-
-    for (const location of locations) {
-      const wasteData = await database.wasteEntry.aggregate({
-        where: {
-          tenantId,
-          deletedAt: null,
-          locationId: location.id,
-          createdAt: { gte: startDate, lte: endDate },
-        },
-        _count: { id: true },
-        _sum: { totalCost: true },
-      });
-
-      wasteByLocation.push({
-        locationId: location.id,
-        locationName: location.name,
-        totalWasteEntries: wasteData._count?.id ?? 0,
-        totalWasteCost: Number(wasteData._sum?.totalCost ?? 0),
-      });
-    }
+    }> = locations.map((location) => ({
+      locationId: location.id,
+      locationName: location.name,
+      totalWasteEntries:
+        wasteByLocationId.get(location.id)?.totalWasteEntries ?? 0,
+      totalWasteCost: wasteByLocationId.get(location.id)?.totalWasteCost ?? 0,
+    }));
 
     metrics.waste = {
       byLocation: wasteByLocation,
@@ -274,28 +295,37 @@ export async function GET(request: Request) {
       totalCost: wasteByLocation.reduce((sum, l) => sum + l.totalWasteCost, 0),
     };
 
-    // Staffing metrics by location
+    // Staffing metrics by location — one GROUP BY location_id instead of N
+    // per-location counts (the prior loop fired one employeeLocation.count
+    // per location). `employee_locations.location_id` is non-nullable, so
+    // every active assignment appears in exactly one group.
+    const activeEmployeesByLocationId = new Map<string, number>();
+    if (locations.length > 0) {
+      const staffRows = await database.$queryRaw<
+        Array<{ location_id: string; employee_count: bigint }>
+      >`
+        SELECT location_id, COUNT(*)::bigint AS employee_count
+        FROM tenant_staff.employee_locations
+        WHERE tenant_id = ${tenantId}
+          AND deleted_at IS NULL
+        GROUP BY location_id
+      `;
+      for (const row of staffRows) {
+        activeEmployeesByLocationId.set(
+          row.location_id,
+          Number(row.employee_count)
+        );
+      }
+    }
     const staffByLocation: Array<{
       locationId: string;
       locationName: string;
       activeEmployees: number;
-    }> = [];
-
-    for (const location of locations) {
-      const employeeCount = await database.employeeLocation.count({
-        where: {
-          tenantId,
-          locationId: location.id,
-          deleted_at: null,
-        },
-      });
-
-      staffByLocation.push({
-        locationId: location.id,
-        locationName: location.name,
-        activeEmployees: employeeCount,
-      });
-    }
+    }> = locations.map((location) => ({
+      locationId: location.id,
+      locationName: location.name,
+      activeEmployees: activeEmployeesByLocationId.get(location.id) ?? 0,
+    }));
 
     metrics.staffing = {
       byLocation: staffByLocation,
