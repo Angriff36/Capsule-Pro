@@ -147,32 +147,31 @@ export async function GET(request: Request) {
       ];
     }
 
-    // Fetch events
-    const events = await database.event.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        eventNumber: true,
-        title: true,
-        eventType: true,
-        eventDate: true,
-        guestCount: true,
-        status: true,
-        venueName: true,
-        venueAddress: true,
-        locationId: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: [{ eventDate: "desc" }, { createdAt: "desc" }],
-      take: limit,
-      skip: offset,
-    });
-
-    // Get total count for pagination
-    const totalCount = await database.event.count({
-      where: whereClause,
-    });
+    // Fetch events + total count in parallel (independent reads, same where) —
+    // collapses 2 serial round-trips into 1 concurrent batch (#23).
+    const [events, totalCount] = await Promise.all([
+      database.event.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          eventNumber: true,
+          title: true,
+          eventType: true,
+          eventDate: true,
+          guestCount: true,
+          status: true,
+          venueName: true,
+          venueAddress: true,
+          locationId: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: [{ eventDate: "desc" }, { createdAt: "desc" }],
+        take: limit,
+        skip: offset,
+      }),
+      database.event.count({ where: whereClause }),
+    ]);
 
     const totalPages = Math.ceil(totalCount / limit);
 
