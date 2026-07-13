@@ -378,40 +378,98 @@ async function preparePdfData(
     garnish: "bg-purple-500",
   };
 
-  // For each dish, get its recipe and ingredients
-  for (const eventDish of eventDishes) {
-    // Get dish
-    const dish = await database.dish.findFirst({
-      where: { id: eventDish.dishId, tenantId },
-    });
+  // Batch-load dishes → latest recipe version → ingredients → ingredient
+  // details in four reads total, instead of a 4×N waterfall inside the dish
+  // loop. Each eventDish previously paid dish.findFirst + recipeVersion.findFirst
+  // (pulling the heavy `instructions` @db.Text blob) + recipeIngredient.findMany
+  // + ingredient.findMany; a 20-dish event fired ~80 round-trips per PDF. The
+  // per-eventDish iteration order + per-version ingredient order are preserved
+  // (no ORDER BY on the batched recipeIngredient read → same physical row order).
+  const dishIds = eventDishes.map((d) => d.dishId);
+  const dishes =
+    dishIds.length > 0
+      ? await database.dish.findMany({
+          where: { id: { in: dishIds }, tenantId },
+          select: { id: true, recipeId: true },
+        })
+      : [];
+  const dishById = new Map(dishes.map((d) => [d.id, d]));
 
+  const recipeIds = [...new Set(dishes.map((d) => d.recipeId).filter(Boolean))];
+  const latestVersionByRecipe =
+    recipeIds.length > 0
+      ? new Map(
+          (
+            await database.recipeVersion.findMany({
+              where: { recipeId: { in: recipeIds }, tenantId },
+              distinct: ["recipeId"],
+              orderBy: { versionNumber: "desc" },
+              select: { id: true, recipeId: true, yieldQuantity: true },
+            })
+          ).map((v) => [v.recipeId, v] as const)
+        )
+      : new Map<
+          string,
+          { id: string; recipeId: string; yieldQuantity: unknown }
+        >();
+
+  const versionIds = [
+    ...new Set([...latestVersionByRecipe.values()].map((v) => v.id)),
+  ];
+  const recipeIngredientsByVersion = new Map<string, unknown[]>();
+  if (versionIds.length > 0) {
+    const allRecipeIngredients = await database.recipeIngredient.findMany({
+      where: { recipeVersionId: { in: versionIds }, tenantId },
+      select: { ingredientId: true, quantity: true, recipeVersionId: true },
+    });
+    for (const ri of allRecipeIngredients) {
+      const existing = recipeIngredientsByVersion.get(ri.recipeVersionId);
+      if (existing) {
+        existing.push(ri);
+      } else {
+        recipeIngredientsByVersion.set(ri.recipeVersionId, [ri]);
+      }
+    }
+  }
+
+  const ingredientIds = [
+    ...new Set(
+      [...recipeIngredientsByVersion.values()]
+        .flat()
+        .map((ri) => (ri as { ingredientId: string }).ingredientId)
+    ),
+  ];
+  const ingredientMap =
+    ingredientIds.length > 0
+      ? new Map(
+          (
+            await database.ingredient.findMany({
+              where: { id: { in: ingredientIds }, tenantId },
+              select: { id: true, name: true, category: true },
+            })
+          ).map((i) => [i.id, i] as const)
+        )
+      : new Map<
+          string,
+          { id: string; name: string; category: string | null }
+        >();
+
+  for (const eventDish of eventDishes) {
+    const dish = dishById.get(eventDish.dishId);
     if (!dish?.recipeId) {
       continue;
     }
 
-    // Get latest recipe version for this recipe
-    const latestVersion = await database.recipeVersion.findFirst({
-      where: { recipeId: dish.recipeId, tenantId },
-      orderBy: { versionNumber: "desc" },
-    });
-
+    const latestVersion = latestVersionByRecipe.get(dish.recipeId);
     if (!latestVersion) {
       continue;
     }
 
-    // Get ingredients for this version
-    const recipeIngredients = await database.recipeIngredient.findMany({
-      where: { recipeVersionId: latestVersion.id, tenantId },
-    });
-
-    // Fetch ingredient details
-    const ingredientIds = [
-      ...new Set(recipeIngredients.map((ri) => ri.ingredientId)),
-    ];
-    const ingredientDetails = await database.ingredient.findMany({
-      where: { id: { in: ingredientIds }, tenantId },
-    });
-    const ingredientMap = new Map(ingredientDetails.map((i) => [i.id, i]));
+    const recipeIngredients =
+      (recipeIngredientsByVersion.get(latestVersion.id) as {
+        ingredientId: string;
+        quantity: unknown;
+      }[]) ?? [];
 
     for (const ing of recipeIngredients) {
       const ingredient = ingredientMap.get(ing.ingredientId);

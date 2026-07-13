@@ -398,13 +398,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
     }
 
-    // Fetch latest recipe version
+    // Fetch latest recipe version — select only the fields used (`id` for the
+    // ingredient lookup + `yieldQuantity` for per-serving scaling) and drop the
+    // heavy `instructions` @db.Text blob (tens-of-KB→MB per version).
     const latestVersion = await database.recipeVersion.findFirst({
       where: {
         recipeId,
         tenantId,
       },
       orderBy: { versionNumber: "desc" },
+      select: { id: true, yieldQuantity: true },
     });
 
     if (!latestVersion) {
