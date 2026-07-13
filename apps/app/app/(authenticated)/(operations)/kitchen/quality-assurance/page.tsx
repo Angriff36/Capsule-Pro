@@ -26,23 +26,26 @@ const QualityAssurancePage = async () => {
 
   // Checks tab is Manifest-first: list the same QACheck rows that New Check creates.
   // Temperature / Corrective tabs still read legacy tables until those tabs are migrated.
-  const qaChecksRaw = await database.qACheck.findMany({
-    where: { tenantId, deletedAt: null },
-    orderBy: { createdAt: "desc" },
-    take: 20,
-  });
-
-  const temperatureLogsRaw = await database.temperatureLog.findMany({
-    where: { tenantId, deletedAt: null },
-    orderBy: { loggedAt: "desc" },
-    take: 10,
-  });
-
-  const correctiveActionsRaw = await database.correctiveAction.findMany({
-    where: { tenantId, deletedAt: null },
-    orderBy: { createdAt: "desc" },
-    take: 10,
-  });
+  // All three reads are keyed only on (tenantId, deletedAt: null) and are independent
+  // of each other → one Promise.all batch (3 serial round-trips → 1).
+  const [qaChecksRaw, temperatureLogsRaw, correctiveActionsRaw] =
+    await Promise.all([
+      database.qACheck.findMany({
+        where: { tenantId, deletedAt: null },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      }),
+      database.temperatureLog.findMany({
+        where: { tenantId, deletedAt: null },
+        orderBy: { loggedAt: "desc" },
+        take: 10,
+      }),
+      database.correctiveAction.findMany({
+        where: { tenantId, deletedAt: null },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      }),
+    ]);
 
   const qualityChecks = qaChecksRaw.map((qc) => ({
     id: qc.id,
