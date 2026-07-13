@@ -79,20 +79,34 @@ export async function GET(request: Request): Promise<NextResponse> {
       });
     }
 
+    // Preload the distinct webhooks for this batch in ONE query instead of one
+    // findFirst per delivery (up to MAX_RETRIES_PER_RUN). Multiple deliveries
+    // frequently target the same webhook, so this dedupes re-fetches too.
+    // Keyed by `${tenantId}|${id}` to preserve the original (tenantId, id)
+    // scoping at lookup time — a hypothetical cross-tenant id collision (uuids
+    // never collide) would miss the map and be treated as "not found", exactly
+    // matching the prior findFirst semantics.
+    const webhookIds = [...new Set(deliveries.map((d) => d.webhookId))];
+    const webhooks =
+      webhookIds.length > 0
+        ? await database.outboundWebhook.findMany({
+            where: { id: { in: webhookIds }, deletedAt: null },
+          })
+        : [];
+    const webhookByKey = new Map(
+      webhooks.map((w) => [`${w.tenantId}|${w.id}`, w])
+    );
+
     let successCount = 0;
     let failedCount = 0;
 
     // Process each delivery
     for (const delivery of deliveries) {
       try {
-        // Get the webhook
-        const webhook = await database.outboundWebhook.findFirst({
-          where: {
-            tenantId: delivery.tenantId,
-            id: delivery.webhookId,
-            deletedAt: null,
-          },
-        });
+        // Look up the preloaded webhook (was one findFirst per delivery).
+        const webhook = webhookByKey.get(
+          `${delivery.tenantId}|${delivery.webhookId}`
+        );
 
         if (!webhook) {
           // Webhook was deleted, mark delivery as failed
