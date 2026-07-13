@@ -1,28 +1,9 @@
 import { auth } from "@repo/auth/server";
-// OLAP reads route to the read replica; the account provisioning write below
-// stays on the primary `database` (a read replica rejects writes).
-import { analyticsDatabase, database } from "@repo/database";
+import { analyticsDatabase } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-
-async function getTenantIdForOrg(orgId: string): Promise<string> {
-  const account = await database.account.findFirst({
-    where: { slug: orgId, deletedAt: null },
-  });
-
-  if (!account) {
-    const newAccount = await database.account.create({
-      data: {
-        name: orgId,
-        slug: orgId,
-      },
-    });
-    return newAccount.id;
-  }
-
-  return account.id;
-}
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export async function GET(request: Request) {
   try {
