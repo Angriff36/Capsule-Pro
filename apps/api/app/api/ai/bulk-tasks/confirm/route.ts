@@ -115,58 +115,18 @@ export async function POST(request: Request) {
     }
 
     // Create PrepTask records via governed Manifest runtime
-    // (same pattern as saveTaskBreakdown in task-breakdown.ts)
-    const createdIds: string[] = [];
-
-    for (const task of nonDuplicateTasks) {
-      const result = await runManifestCommandCore(
-        {
-          createRuntime: ({ user: u, entityName }) =>
-            createManifestRuntime({
-              user: { id: u.id, tenantId: u.tenantId, role: u.role },
-              entityName,
-            }),
-        },
-        {
-          entity: "PrepTask",
-          command: "create",
-          body: {
-            name: task.name,
-            eventId,
-            prepListId: "",
-            taskType: task.taskType || "prep",
-            priority: task.priority || 5,
-            quantityTotal: task.quantityTotal || 1,
-            quantityUnitId: 0,
-            servingsTotal: task.quantityTotal || 1,
-            startByDate: new Date(task.startByDate).getTime(),
-            dueByDate: new Date(task.dueByDate).getTime(),
-            notes: task.notes ?? "",
-          },
-          user: { id: user.id, tenantId, role: user.role },
-        }
-      );
-
-      if (!result.ok) {
-        // Log individual failure but continue creating remaining tasks
-        captureException(
-          new Error(
-            `Bulk-task PrepTask.create failed for "${task.name}": ${result.message}`
-          )
-        );
-        continue;
-      }
-
-      const createdId =
-        typeof result.result === "object" && result.result !== null
-          ? (result.result as { id?: string }).id
-          : undefined;
-
-      if (createdId) {
-        createdIds.push(createdId);
-
-        // Governed write: set supplementary details via PrepTask.updateDetails
-        const detailResult = await runManifestCommandCore(
+    // (same pattern as saveTaskBreakdown in task-breakdown.ts).
+    //
+    // Tasks are mutually independent — each PrepTask.create + updateDetails is
+    // keyed only on its own inputs plus the (already-loaded) event.locationId —
+    // so the per-task work runs concurrently via Promise.all. Within a task the
+    // updateDetails write stays serial behind create (it needs the created id);
+    // across tasks the governed round-trips race, collapsing N×2 serial writes
+    // to ~2 waves. Task order is preserved (Promise.all yields results in array
+    // order → createdIds stays in input order).
+    const perTaskResults = await Promise.all(
+      nonDuplicateTasks.map(async (task) => {
+        const result = await runManifestCommandCore(
           {
             createRuntime: ({ user: u, entityName }) =>
               createManifestRuntime({
@@ -176,29 +136,81 @@ export async function POST(request: Request) {
           },
           {
             entity: "PrepTask",
-            command: "updateDetails",
+            command: "create",
             body: {
-              id: createdId,
-              dishId: task.dishId ?? "",
-              locationId: event.locationId!,
-              estimatedMinutes: task.estimatedMinutes ?? 0,
-              dueByTime: task.dueByTime
-                ? new Date(`1970-01-01T${task.dueByTime}:00`)
-                : "",
+              name: task.name,
+              eventId,
+              prepListId: "",
+              taskType: task.taskType || "prep",
+              priority: task.priority || 5,
+              quantityTotal: task.quantityTotal || 1,
+              quantityUnitId: 0,
+              servingsTotal: task.quantityTotal || 1,
+              startByDate: new Date(task.startByDate).getTime(),
+              dueByDate: new Date(task.dueByDate).getTime(),
+              notes: task.notes ?? "",
             },
             user: { id: user.id, tenantId, role: user.role },
           }
         );
 
-        if (!detailResult.ok) {
+        // Log individual failure but continue creating remaining tasks
+        if (!result.ok) {
           captureException(
             new Error(
-              `Bulk-task PrepTask.updateDetails failed for "${task.name}": ${detailResult.message}`
+              `Bulk-task PrepTask.create failed for "${task.name}": ${result.message}`
             )
           );
+          return { createdId: undefined };
         }
-      }
-    }
+
+        const createdId =
+          typeof result.result === "object" && result.result !== null
+            ? (result.result as { id?: string }).id
+            : undefined;
+
+        if (createdId) {
+          // Governed write: set supplementary details via PrepTask.updateDetails
+          const detailResult = await runManifestCommandCore(
+            {
+              createRuntime: ({ user: u, entityName }) =>
+                createManifestRuntime({
+                  user: { id: u.id, tenantId: u.tenantId, role: u.role },
+                  entityName,
+                }),
+            },
+            {
+              entity: "PrepTask",
+              command: "updateDetails",
+              body: {
+                id: createdId,
+                dishId: task.dishId ?? "",
+                locationId: event.locationId!,
+                estimatedMinutes: task.estimatedMinutes ?? 0,
+                dueByTime: task.dueByTime
+                  ? new Date(`1970-01-01T${task.dueByTime}:00`)
+                  : "",
+              },
+              user: { id: user.id, tenantId, role: user.role },
+            }
+          );
+
+          if (!detailResult.ok) {
+            captureException(
+              new Error(
+                `Bulk-task PrepTask.updateDetails failed for "${task.name}": ${detailResult.message}`
+              )
+            );
+          }
+        }
+
+        return { createdId };
+      })
+    );
+
+    const createdIds = perTaskResults
+      .map((r) => r.createdId)
+      .filter((id): id is string => id !== undefined);
 
     return NextResponse.json({
       createdCount: createdIds.length,
