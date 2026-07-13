@@ -33,7 +33,7 @@ export const runtime = "nodejs";
  */
 function generateSessionId(): string {
   const timestamp = Date.now().toString(36);
-  const random = Math.random().toString(36).substring(2, 8);
+  const random = Math.random().toString(36).slice(2, 8);
   return `CC-${timestamp}-${random}`.toUpperCase();
 }
 
@@ -344,23 +344,36 @@ async function createDefaultDailySessions(): Promise<NextResponse> {
       tenantsWithLocations.map((t) => t.tenantId)
     );
 
+    // "Today" is shared by the pending-session preload below and every session
+    // body in the loop; hoist it once (the per-iteration value was identical
+    // except across the midnight boundary).
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Preload every tenant that already has a pending session scheduled for
+    // today in ONE query (a per-tenant findFirst previously fired once per
+    // tenant inside the loop). The Set lookup is byte-identical to the prior
+    // findFirst existence check — both reduce to "does this tenant have ≥1
+    // pending session for today?".
+    const pendingSessions = await database.cycleCountSession.findMany({
+      where: {
+        tenantId: { in: tenantsWithLocations.map((t) => t.tenantId) },
+        status: "pending",
+        scheduledDate: today,
+        deletedAt: null,
+      },
+      select: { tenantId: true },
+    });
+    const tenantsWithPendingSession = new Set(
+      pendingSessions.map((s) => s.tenantId)
+    );
+
     for (const { tenantId } of tenantsWithLocations) {
       try {
-        // Check if tenant already has a pending session for today
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const existingPending = await database.cycleCountSession.findFirst({
-          where: {
-            tenantId,
-            status: "pending",
-            scheduledDate: today,
-            deletedAt: null,
-          },
-        });
-
-        if (existingPending) {
-          continue; // Skip if already has pending session
+        // Skip tenants that already have a pending session for today (preloaded
+        // above the loop — N findFirst → 1 findMany).
+        if (tenantsWithPendingSession.has(tenantId)) {
+          continue;
         }
 
         // Get first active location (preloaded above the loop)

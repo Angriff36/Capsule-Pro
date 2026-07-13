@@ -22,7 +22,8 @@ const mockAuditScheduleFindMany = vi.fn();
 const mockLocationFindMany = vi.fn();
 const mockLocationFindFirst = vi.fn(); // regression guard — must NEVER fire
 const mockLocationGroupBy = vi.fn();
-const mockCycleCountSessionFindFirst = vi.fn();
+const mockCycleCountSessionFindFirst = vi.fn(); // regression guard — must NEVER fire
+const mockCycleCountSessionFindMany = vi.fn();
 
 vi.mock("@repo/database", () => ({
   database: {
@@ -37,6 +38,7 @@ vi.mock("@repo/database", () => ({
     cycleCountSession: {
       findFirst: (...args: unknown[]) =>
         mockCycleCountSessionFindFirst(...args),
+      findMany: (...args: unknown[]) => mockCycleCountSessionFindMany(...args),
     },
   },
 }));
@@ -201,16 +203,15 @@ describe("GET /api/cron/inventory-audit — per-tenant location preload", () => 
     expect(json).toMatchObject({ sessionsCreated: 1, tenantsProcessed: 1 });
   });
 
-  it("fallback (default-daily) path also batches the location lookup into one findMany", async () => {
+  it("fallback (default-daily) path batches BOTH the location and pending-session lookups into one findMany each", async () => {
     // No active schedules → createDefaultDailySessions runs. It must preload
-    // locations once, not per-tenant. (The pending-session check stays
-    // per-tenant — out of this increment's scope.)
+    // locations AND pending-session existence once each, not per-tenant.
     mockAuditScheduleFindMany.mockResolvedValue([]);
     mockLocationGroupBy.mockResolvedValue([
       { tenantId: TENANT_A },
       { tenantId: TENANT_B },
     ]);
-    mockCycleCountSessionFindFirst.mockResolvedValue(null); // no pending sessions
+    mockCycleCountSessionFindMany.mockResolvedValue([]); // no pending sessions
     mockLocationFindMany.mockResolvedValue([
       location({ id: "loc-a", tenantId: TENANT_A }),
       location({ id: "loc-b", tenantId: TENANT_B }),
@@ -221,12 +222,56 @@ describe("GET /api/cron/inventory-audit — per-tenant location preload", () => 
 
     expect(mockLocationFindMany).toHaveBeenCalledTimes(1);
     expect(mockLocationFindFirst).not.toHaveBeenCalled();
+    // Regression guard: the per-tenant cycleCountSession.findFirst is gone —
+    // a reverted-to-serial impl would fire N findFirst; the preload fires 1
+    // findMany scoped to the distinct tenant ids.
+    expect(mockCycleCountSessionFindMany).toHaveBeenCalledTimes(1);
+    expect(mockCycleCountSessionFindFirst).not.toHaveBeenCalled();
+    expect(mockCycleCountSessionFindMany).toHaveBeenCalledWith({
+      where: {
+        tenantId: { in: [TENANT_A, TENANT_B] },
+        status: "pending",
+        scheduledDate: expect.any(Date),
+        deletedAt: null,
+      },
+      select: { tenantId: true },
+    });
     expect(runManifestCommandCore).toHaveBeenCalledTimes(2);
     expect(json).toMatchObject({
       sessionsCreated: 2,
       tenantsProcessed: 2,
       mode: "default_daily",
     });
+  });
+
+  it("fallback path skips tenants that already have a pending session for today (preloaded Set)", async () => {
+    // Tenant A already has a pending session for today → skipped via the
+    // preloaded Set; Tenant B has none → gets one. Behavior is byte-identical
+    // to the prior per-tenant findFirst existence check (both reduce to "does
+    // this tenant have ≥1 pending session for today?").
+    mockAuditScheduleFindMany.mockResolvedValue([]);
+    mockLocationGroupBy.mockResolvedValue([
+      { tenantId: TENANT_A },
+      { tenantId: TENANT_B },
+    ]);
+    mockCycleCountSessionFindMany.mockResolvedValue([{ tenantId: TENANT_A }]);
+    mockLocationFindMany.mockResolvedValue([
+      location({ id: "loc-a", tenantId: TENANT_A }),
+      location({ id: "loc-b", tenantId: TENANT_B }),
+    ]);
+
+    const res = await GET(authedRequest());
+    const json = await res.json();
+
+    // Only Tenant B gets a session; Tenant A was skipped via the Set lookup.
+    expect(runManifestCommandCore).toHaveBeenCalledTimes(1);
+    expect(runManifestCommandCore).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        user: expect.objectContaining({ tenantId: TENANT_B }),
+      })
+    );
+    expect(json).toMatchObject({ sessionsCreated: 1, tenantsProcessed: 1 });
   });
 
   it("rejects with 401 when the bearer secret is wrong", async () => {
