@@ -286,78 +286,82 @@ const RecipeDetailPage = async ({
     ),
   };
 
-  // Dish presentation data (hero image, allergens, portion) — a recipe may back
-  // a plated dish; take the first one for display defaults.
-  const dishRows = await database.$queryRaw<DishSummaryRow[]>(
-    Prisma.sql`
-      SELECT
-        d.id AS dish_id,
-        d.presentation_image_url,
-        d.allergens,
-        d.portion_size_description,
-        d.default_container_id,
-        c.name AS container_name,
-        c.container_type
-      FROM tenant_kitchen.dishes d
-      LEFT JOIN tenant_kitchen.containers c
-        ON c.tenant_id = d.tenant_id
-        AND c.id = d.default_container_id
-        AND c.deleted_at IS NULL
-      WHERE d.tenant_id = ${tenantId}
-        AND d.recipe_id = ${recipeId}
-        AND d.deleted_at IS NULL
-      ORDER BY d.created_at ASC
-      LIMIT 1
-    `
-  );
+  // Dish presentation, ingredients, and the latest version id are all keyed
+  // only on (tenantId, recipeId) — independent of each other and of the recipe
+  // row beyond the existence guard — so fetch them in one concurrent batch
+  // instead of three serial round-trips. (Steps still depend on the version id
+  // and linked-recipe names still depend on steps, so those stay serial below.)
+  const [dishRows, ingredientRows, recipeVersion] = await Promise.all([
+    database.$queryRaw<DishSummaryRow[]>(
+      Prisma.sql`
+        SELECT
+          d.id AS dish_id,
+          d.presentation_image_url,
+          d.allergens,
+          d.portion_size_description,
+          d.default_container_id,
+          c.name AS container_name,
+          c.container_type
+        FROM tenant_kitchen.dishes d
+        LEFT JOIN tenant_kitchen.containers c
+          ON c.tenant_id = d.tenant_id
+          AND c.id = d.default_container_id
+          AND c.deleted_at IS NULL
+        WHERE d.tenant_id = ${tenantId}
+          AND d.recipe_id = ${recipeId}
+          AND d.deleted_at IS NULL
+        ORDER BY d.created_at ASC
+        LIMIT 1
+      `
+    ),
+    database.$queryRaw<IngredientRow[]>(
+      Prisma.sql`
+        SELECT
+          i.id,
+          i.name,
+          ri.quantity,
+          u.code AS unit_code,
+          ri.preparation_notes AS notes,
+          ri.sort_order AS order_index
+        FROM tenant_kitchen.recipe_ingredients ri
+        JOIN tenant_kitchen.ingredients i
+          ON i.tenant_id = ri.tenant_id
+          AND i.id = ri.ingredient_id
+        LEFT JOIN core.units u ON u.id = ri.unit_id
+        WHERE ri.tenant_id = ${tenantId}
+          AND ri.recipe_version_id = (
+            SELECT rv.id
+            FROM tenant_kitchen.recipe_versions rv
+            WHERE rv.tenant_id = ${tenantId}
+              AND rv.recipe_id = ${recipeId}
+              AND rv.deleted_at IS NULL
+            ORDER BY rv.version_number DESC
+            LIMIT 1
+          )
+          AND ri.deleted_at IS NULL
+        ORDER BY ri.sort_order ASC
+      `
+    ),
+    database.$queryRaw<{ version_id: string }[]>(
+      Prisma.sql`
+        SELECT rv.id AS version_id
+        FROM tenant_kitchen.recipe_versions rv
+        WHERE rv.tenant_id = ${tenantId}
+          AND rv.recipe_id = ${recipeId}
+          AND rv.deleted_at IS NULL
+        ORDER BY rv.version_number DESC
+        LIMIT 1
+      `
+    ),
+  ]);
+  // A recipe may back a plated dish; take the first one for display defaults.
   const dish = dishRows[0] ?? null;
 
-  // Fetch ingredients
-  const ingredientRows = await database.$queryRaw<IngredientRow[]>(
-    Prisma.sql`
-      SELECT
-        i.id,
-        i.name,
-        ri.quantity,
-        u.code AS unit_code,
-        ri.preparation_notes AS notes,
-        ri.sort_order AS order_index
-      FROM tenant_kitchen.recipe_ingredients ri
-      JOIN tenant_kitchen.ingredients i
-        ON i.tenant_id = ri.tenant_id
-        AND i.id = ri.ingredient_id
-      LEFT JOIN core.units u ON u.id = ri.unit_id
-      WHERE ri.tenant_id = ${tenantId}
-        AND ri.recipe_version_id = (
-          SELECT rv.id
-          FROM tenant_kitchen.recipe_versions rv
-          WHERE rv.tenant_id = ${tenantId}
-            AND rv.recipe_id = ${recipeId}
-            AND rv.deleted_at IS NULL
-          ORDER BY rv.version_number DESC
-          LIMIT 1
-        )
-        AND ri.deleted_at IS NULL
-      ORDER BY ri.sort_order ASC
-    `
-  );
   const ingredients = ingredientRows.map((ingredient) => ({
     ...ingredient,
     quantity: toDecimalNumber(ingredient.quantity, "ingredient.quantity"),
   }));
 
-  // Get the latest recipe version ID (used by the costing/history tabs)
-  const recipeVersion = await database.$queryRaw<{ version_id: string }[]>(
-    Prisma.sql`
-      SELECT rv.id AS version_id
-      FROM tenant_kitchen.recipe_versions rv
-      WHERE rv.tenant_id = ${tenantId}
-        AND rv.recipe_id = ${recipeId}
-        AND rv.deleted_at IS NULL
-      ORDER BY rv.version_number DESC
-      LIMIT 1
-    `
-  );
   const latestVersion = recipeVersion[0];
   const recipeVersionId = latestVersion ? latestVersion.version_id : null;
 
