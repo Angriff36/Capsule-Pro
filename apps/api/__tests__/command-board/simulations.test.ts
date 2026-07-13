@@ -19,8 +19,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Some handlers use findUnique (composite-PK lookup) and others use findFirst
 // (multi-tenant lookup with where clauses). We share a single mock fn between
 // both so existing tests written against findUnique work for either pattern.
-const { sharedCommandBoardLookup } = vi.hoisted(() => ({
+const { sharedCommandBoardLookup, txBoardProjectionUpdate } = vi.hoisted(() => ({
   sharedCommandBoardLookup: vi.fn(),
+  // Stable reference to the transaction-scoped boardProjection.update so tests
+  // can assert on the modifications loop (a fresh vi.fn() per $transaction call
+  // is not reachable from test code).
+  txBoardProjectionUpdate: vi.fn(),
 }));
 vi.mock("@repo/database", () => ({
   database: {
@@ -51,7 +55,7 @@ vi.mock("@repo/database", () => ({
           update: vi.fn(),
         },
         boardProjection: {
-          update: vi.fn(),
+          update: txBoardProjectionUpdate,
           createMany: vi.fn(),
           updateMany: vi.fn(),
         },
@@ -576,6 +580,82 @@ describe("Command Board Simulations API", () => {
       const data = await response.json();
       expect(data.success).toBe(true);
       expect(data.delta).toBeDefined();
+    });
+
+    it("should apply projection modifications concurrently (not serially)", async () => {
+      // Two projections share an entity_id between source and simulation boards
+      // but each differs in one DB-backed field (position_x / position_y), so
+      // computeBoardDelta emits exactly 2 modifications targeting 2 distinct
+      // source rows. The z_index/color_override/collapsed/group_id/pinned fields
+      // are hardcoded equal by the route's API mapping, so they never produce mods.
+      const simBoard = {
+        id: TEST_SIMULATION_ID,
+        tenantId: TEST_TENANT_ID,
+        tags: ["simulation", `source:${TEST_BOARD_ID}`],
+        boardProjections: [
+          { id: "sim-A", tenantId: TEST_TENANT_ID, boardId: TEST_SIMULATION_ID, entityType: "EVENT", entityId: "ent-A", positionX: 100, positionY: 5, width: 10, height: 10 },
+          { id: "sim-B", tenantId: TEST_TENANT_ID, boardId: TEST_SIMULATION_ID, entityType: "EVENT", entityId: "ent-B", positionX: 1, positionY: 200, width: 10, height: 10 },
+        ],
+        commandBoardGroups: [],
+        boardAnnotations: [],
+      };
+      const sourceBoard = {
+        id: TEST_BOARD_ID,
+        tenantId: TEST_TENANT_ID,
+        boardProjections: [
+          { id: "src-A", tenantId: TEST_TENANT_ID, boardId: TEST_BOARD_ID, entityType: "EVENT", entityId: "ent-A", positionX: 10, positionY: 5, width: 10, height: 10 },
+          { id: "src-B", tenantId: TEST_TENANT_ID, boardId: TEST_BOARD_ID, entityType: "EVENT", entityId: "ent-B", positionX: 1, positionY: 20, width: 10, height: 10 },
+        ],
+        commandBoardGroups: [],
+        boardAnnotations: [],
+      };
+      mockCommandBoard.findUnique.mockResolvedValueOnce(simBoard as any);
+      mockCommandBoard.findUnique.mockResolvedValueOnce(sourceBoard as any);
+
+      // Concurrency probe: track the max number of updates in flight at once.
+      // The parallel Promise.all launches both updates together (maxInFlight === 2);
+      // a reverted serial for-of loop keeps only one in flight (maxInFlight === 1).
+      let inFlight = 0;
+      let maxInFlight = 0;
+      const updateCalls: Array<{ where?: unknown; data?: Record<string, unknown> }> = [];
+      txBoardProjectionUpdate.mockImplementation(async (args: { where?: unknown; data?: Record<string, unknown> }) => {
+        inFlight += 1;
+        if (inFlight > maxInFlight) maxInFlight = inFlight;
+        updateCalls.push(args);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        inFlight -= 1;
+        return {};
+      });
+
+      const response = await ApplySimulation(
+        createRequest(
+          `http://localhost/api/command-board/simulations/${TEST_SIMULATION_ID}/apply`,
+          {
+            method: "POST",
+            body: JSON.stringify({}),
+          }
+        ) as any,
+        { params: Promise.resolve({ id: TEST_SIMULATION_ID }) }
+      );
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data.delta.modifications).toBe(2);
+
+      // Concurrency: both updates were in flight simultaneously.
+      expect(maxInFlight).toBe(2);
+      expect(txBoardProjectionUpdate).toHaveBeenCalledTimes(2);
+
+      // Correctness: each mod maps to its source row + mapped field + simulated
+      // value, in the order computeBoardDelta emitted them (sim-A then sim-B).
+      expect(updateCalls[0]).toMatchObject({
+        where: { tenantId_id: { tenantId: TEST_TENANT_ID, id: "src-A" } },
+        data: { positionX: 100 },
+      });
+      expect(updateCalls[1]).toMatchObject({
+        where: { tenantId_id: { tenantId: TEST_TENANT_ID, id: "src-B" } },
+        data: { positionY: 200 },
+      });
     });
   });
 });

@@ -434,41 +434,47 @@ export async function POST(request: NextRequest, context: RouteContext) {
         });
       }
 
-      // 7. Apply modifications to projections
-      for (const mod of delta.modified_projections) {
-        // Find the source projection by entity_id
-        const simProj = simulatedProjections.find((p) => p.id === mod.id);
-        if (!simProj) {
-          continue;
-        }
+      // 7. Apply modifications to projections. Each mod targets a distinct
+      // composite-PK row and reads only pre-loaded in-memory arrays, so the
+      // updates are mutually independent — safe to issue as one concurrent
+      // batch inside this transaction (same tx + Promise.all pattern as
+      // inventory/purchase-orders/[id]/complete).
+      await Promise.all(
+        delta.modified_projections.map(async (mod) => {
+          // Find the source projection by entity_id
+          const simProj = simulatedProjections.find((p) => p.id === mod.id);
+          if (!simProj) {
+            return;
+          }
 
-        const sourceProj = originalProjections.find(
-          (p) => p.entity_id === simProj.entity_id
-        );
-        if (!sourceProj) {
-          continue;
-        }
+          const sourceProj = originalProjections.find(
+            (p) => p.entity_id === simProj.entity_id
+          );
+          if (!sourceProj) {
+            return;
+          }
 
-        // Map field names
-        const fieldMapping: Record<string, string> = {
-          position_x: "positionX",
-          position_y: "positionY",
-          z_index: "zIndex",
-          color_override: "colorOverride",
-          group_id: "groupId",
-        };
+          // Map field names
+          const fieldMapping: Record<string, string> = {
+            position_x: "positionX",
+            position_y: "positionY",
+            z_index: "zIndex",
+            color_override: "colorOverride",
+            group_id: "groupId",
+          };
 
-        const dbField = fieldMapping[mod.field] || mod.field;
-        await tx.boardProjection.update({
-          where: {
-            tenantId_id: {
-              tenantId,
-              id: sourceProj.id,
+          const dbField = fieldMapping[mod.field] || mod.field;
+          await tx.boardProjection.update({
+            where: {
+              tenantId_id: {
+                tenantId,
+                id: sourceProj.id,
+              },
             },
-          },
-          data: { [dbField]: mod.simulated },
-        });
-      }
+            data: { [dbField]: mod.simulated },
+          });
+        })
+      );
 
       // 8. Mark simulation as applied
       await tx.commandBoard.update({
