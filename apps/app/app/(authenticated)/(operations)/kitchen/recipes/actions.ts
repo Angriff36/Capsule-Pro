@@ -830,17 +830,21 @@ export const deleteDish = async (
 
 export const bulkDeleteRecipes = async (recipeIds: string[]) => {
   const user = await requireCurrentUser();
-  for (const id of recipeIds) {
-    const result = await runManifestCommand({
+  if (recipeIds.length === 0) {
+    revalidatePath("/kitchen/recipes");
+    return;
+  }
+  // N serial governed round-trips → one atomic governed batch (all-or-nothing is
+  // the safer bulk-delete semantics; matches the governedDeleteDish batch at L768).
+  const batchResult = await runManifestBatch({
+    operations: recipeIds.map((id) => ({
       entity: "Recipe",
       command: "softDelete",
-      instanceId: id,
-      body: { reason: DELETE_REASON, userId: user.id },
-      user: { id: user.id, tenantId: user.tenantId, role: user.role },
-    });
-    if (!result.ok) {
-      throw new Error(result.message || `Failed to delete recipe ${id}`);
-    }
+      params: { id, reason: DELETE_REASON, userId: user.id },
+    })),
+  });
+  if (!batchResult.ok) {
+    throw new Error(batchResult.message || "Failed to delete recipes");
   }
   revalidatePath("/kitchen/recipes");
 };
@@ -849,8 +853,31 @@ export const bulkDeleteDishes = async (
   dishIds: string[],
   mode: DishDeleteMode = "preserve"
 ) => {
-  for (const id of dishIds) {
-    await governedDeleteDish(id, mode);
+  if (mode === "removeDrafts") {
+    // ponytail: removeDrafts is never passed to bulk by a UI caller (both call
+    // sites use the default "preserve"); batching it would need a multi-dish
+    // draft-event load + cross-dish atomicity. Keep the proven per-dish governed
+    // loop for this cold path — preserve (the hot path) is batched below.
+    for (const id of dishIds) {
+      await governedDeleteDish(id, mode);
+    }
+    revalidatePath("/kitchen/recipes");
+    return;
+  }
+  const user = await requireCurrentUser();
+  if (dishIds.length === 0) {
+    revalidatePath("/kitchen/recipes");
+    return;
+  }
+  const batchResult = await runManifestBatch({
+    operations: dishIds.map((id) => ({
+      entity: "Dish",
+      command: "softDelete",
+      params: { id, reason: DELETE_REASON, userId: user.id },
+    })),
+  });
+  if (!batchResult.ok) {
+    throw new Error(batchResult.message || "Failed to delete dishes");
   }
   revalidatePath("/kitchen/recipes");
 };
