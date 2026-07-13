@@ -56,23 +56,60 @@ export async function GET(
         null
       : null;
 
-    // Check for finalized battle board
-    const battleBoard = await database.battleBoard.findFirst({
-      where: { eventId, tenantId, status: "finalized", deletedAt: null },
-      select: { id: true, boardName: true },
-    });
+    // Tier 0 — four independent reads, all keyed only on (eventId, tenantId).
+    // Batching collapses what used to be 4 serial round-trips (with the dish +
+    // staff chains waiting behind them) into one concurrent batch. In the prior
+    // serial layout these ran battleBoard → eventDishLinks → …dish chain… →
+    // eventStaff → staffMember → eventTimeline (10 deep); eventStaff/timeline
+    // now race alongside battleBoard/eventDishLinks instead of trailing it.
+    const [battleBoard, eventDishLinks, staffAssignments, timelineItems] =
+      await Promise.all([
+        // Check for finalized battle board
+        database.battleBoard.findFirst({
+          where: { eventId, tenantId, status: "finalized", deletedAt: null },
+          select: { id: true, boardName: true },
+        }),
+        // Fetch event-dish links (starts the dish/recipe chain)
+        database.eventDish.findMany({
+          where: { eventId, tenantId, deletedAt: null },
+          orderBy: { course: "asc" },
+        }),
+        // Fetch staff assignments (starts the staff chain)
+        database.eventStaff.findMany({
+          where: { eventId, tenantId, deletedAt: null },
+          select: {
+            id: true,
+            staffMemberId: true,
+            role: true,
+            shiftStart: true,
+            shiftEnd: true,
+            notes: true,
+          },
+        }),
+        // Fetch timeline items (terminal — no further reads depend on it)
+        database.eventTimeline.findMany({
+          where: { eventId, tenantId, deletedAt: null },
+          orderBy: [{ sortOrder: "asc" }, { timelineTime: "asc" }],
+          select: {
+            id: true,
+            timelineTime: true,
+            description: true,
+            responsibleRole: true,
+            isCompleted: true,
+            notes: true,
+          },
+        }),
+      ]);
 
-    // Fetch event-dish links
-    const eventDishLinks = await database.eventDish.findMany({
-      where: { eventId, tenantId, deletedAt: null },
-      orderBy: { course: "asc" },
-    });
-
-    // Fetch dish details
+    // Tier 1 — dish (depends on eventDishLinks) ‖ staffMember (depends on
+    // staffAssignments). The two chains are independent of each other; batching
+    // runs the staff fetch in parallel with the dish fetch instead of after the
+    // entire dish/recipe chain.
     const dishIds = eventDishLinks.map((ed) => ed.dishId);
-    const dishes =
+    const staffMemberIds = staffAssignments.map((sa) => sa.staffMemberId);
+    const [dishes, staffMembers] = await Promise.all([
       dishIds.length > 0
-        ? await database.dish.findMany({
+        ? database.dish.findMany({
             where: { id: { in: dishIds }, tenantId, deletedAt: null },
             select: {
               id: true,
@@ -83,10 +120,28 @@ export async function GET(
               recipeId: true,
             },
           })
-        : [];
+        : Promise.resolve([]),
+      staffMemberIds.length > 0
+        ? database.staffMember.findMany({
+            where: { id: { in: staffMemberIds }, tenantId, deletedAt: null },
+            select: { id: true, displayName: true, role: true },
+          })
+        : Promise.resolve([]),
+    ]);
     const dishById = new Map(dishes.map((d) => [d.id, d]));
+    const staffMemberById = new Map(
+      staffMembers.map(
+        (e: { id: string; displayName: string; role: string | null }) => [
+          e.id,
+          e,
+        ]
+      )
+    );
 
-    // Fetch latest recipe version for each recipe (for ingredient aggregation)
+    // Fetch latest recipe version for each recipe (for ingredient aggregation).
+    // distinct:["recipeId"] + orderBy versionNumber desc bounds the read to one
+    // row per recipe (the latest) instead of every version; the dedup map below
+    // remains the correctness floor.
     const recipeIds = dishes.map((d) => d.recipeId).filter(Boolean);
     const recipeVersions =
       recipeIds.length > 0
@@ -101,6 +156,7 @@ export async function GET(
               instructions: true,
             },
             orderBy: { versionNumber: "desc" },
+            distinct: ["recipeId"],
           })
         : [];
 
@@ -195,37 +251,6 @@ export async function GET(
       };
     });
 
-    // Fetch staff assignments
-    const staffAssignments = await database.eventStaff.findMany({
-      where: { eventId, tenantId, deletedAt: null },
-      select: {
-        id: true,
-        staffMemberId: true,
-        role: true,
-        shiftStart: true,
-        shiftEnd: true,
-        notes: true,
-      },
-    });
-
-    // Fetch staff member details
-    const staffMemberIds = staffAssignments.map((sa) => sa.staffMemberId);
-    const staffMembers =
-      staffMemberIds.length > 0
-        ? await database.staffMember.findMany({
-            where: { id: { in: staffMemberIds }, tenantId, deletedAt: null },
-            select: { id: true, displayName: true, role: true },
-          })
-        : [];
-    const staffMemberById = new Map(
-      staffMembers.map(
-        (e: { id: string; displayName: string; role: string | null }) => [
-          e.id,
-          e,
-        ]
-      )
-    );
-
     const staff = staffAssignments.map((sa) => {
       const member = staffMemberById.get(sa.staffMemberId);
       return {
@@ -234,20 +259,6 @@ export async function GET(
         role: member?.role ?? null,
         assignmentRole: sa.role,
       };
-    });
-
-    // Fetch timeline items
-    const timelineItems = await database.eventTimeline.findMany({
-      where: { eventId, tenantId, deletedAt: null },
-      orderBy: [{ sortOrder: "asc" }, { timelineTime: "asc" }],
-      select: {
-        id: true,
-        timelineTime: true,
-        description: true,
-        responsibleRole: true,
-        isCompleted: true,
-        notes: true,
-      },
     });
 
     const timeline = timelineItems.map((item) => ({
