@@ -187,50 +187,48 @@ export async function GET(request: Request) {
       ];
     }
 
-    // Fetch prep tasks
-    const prepTasks = await database.prepTask.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        tenantId: true,
-        eventId: true,
-        dishId: true,
-        recipeVersionId: true,
-        methodId: true,
-        containerId: true,
-        locationId: true,
-        taskType: true,
-        name: true,
-        quantityTotal: true,
-        quantityUnitId: true,
-        quantityCompleted: true,
-        servingsTotal: true,
-        startByDate: true,
-        dueByDate: true,
-        dueByTime: true,
-        isEventFinish: true,
-        status: true,
-        priority: true,
-        estimatedMinutes: true,
-        actualMinutes: true,
-        notes: true,
-        createdAt: true,
-        updatedAt: true,
-        doNotCompleteUntil: true,
-      },
-      orderBy: [
-        { priority: "desc" },
-        { dueByDate: "asc" },
-        { startByDate: "asc" },
-      ],
-      take: limit,
-      skip: offset,
-    });
-
-    // Get total count for pagination
-    const totalCount = await database.prepTask.count({
-      where: whereClause,
-    });
+    // Fetch prep tasks + total count concurrently (both keyed on the same whereClause).
+    const [prepTasks, totalCount] = await Promise.all([
+      database.prepTask.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          tenantId: true,
+          eventId: true,
+          dishId: true,
+          recipeVersionId: true,
+          methodId: true,
+          containerId: true,
+          locationId: true,
+          taskType: true,
+          name: true,
+          quantityTotal: true,
+          quantityUnitId: true,
+          quantityCompleted: true,
+          servingsTotal: true,
+          startByDate: true,
+          dueByDate: true,
+          dueByTime: true,
+          isEventFinish: true,
+          status: true,
+          priority: true,
+          estimatedMinutes: true,
+          actualMinutes: true,
+          notes: true,
+          createdAt: true,
+          updatedAt: true,
+          doNotCompleteUntil: true,
+        },
+        orderBy: [
+          { priority: "desc" },
+          { dueByDate: "asc" },
+          { startByDate: "asc" },
+        ],
+        take: limit,
+        skip: offset,
+      }),
+      database.prepTask.count({ where: whereClause }),
+    ]);
 
     const totalPages = Math.ceil(totalCount / limit);
 

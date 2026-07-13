@@ -289,6 +289,25 @@ describe("GET /api/crm/proposals (list)", () => {
     expect(body.data).toHaveLength(0);
     expect(body.pagination.total).toBe(0);
   });
+
+  it("runs findMany and count concurrently (Promise.all), not serially", async () => {
+    setupListMocks([]);
+    let releaseFindMany!: () => void;
+    mockProposalFindMany.mockReturnValue(
+      new Promise<unknown[]>((resolve) => {
+        releaseFindMany = () => resolve([]);
+      })
+    );
+
+    const { GET } = await import("@/app/api/crm/proposals/route");
+    const pending = GET(getRequest("/api/crm/proposals"));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    // count was hoisted into the front batch — it fires while findMany is pending,
+    // which is impossible in the old layout (count ran last, after hydration).
+    expect(mockProposalCount).toHaveBeenCalledTimes(1);
+    releaseFindMany();
+    await pending;
+  });
 });
 
 // ===========================================================================

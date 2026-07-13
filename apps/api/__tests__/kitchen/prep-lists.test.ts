@@ -354,6 +354,27 @@ describe("Prep Lists API", () => {
       const res = await GET(makeGET("/api/kitchen/prep-lists"));
       expect(res.status).toBe(500);
     });
+
+    it("runs findMany and count concurrently (Promise.all), not serially", async () => {
+      // findMany stays pending until released; if count ran serially AFTER findMany
+      // resolved it would never be called while findMany is still pending.
+      let releaseFindMany!: () => void;
+      mocks.prepListFindMany.mockReturnValue(
+        new Promise<unknown[]>((resolve) => {
+          releaseFindMany = () => resolve([]);
+        })
+      );
+      mocks.prepListCount.mockResolvedValue(0);
+      mocks.eventFindMany.mockResolvedValue([]);
+
+      const { GET } = await import("@/app/api/kitchen/prep-lists/route");
+      const pending = GET(makeGET("/api/kitchen/prep-lists"));
+      // Flush auth/tenant awaits so the route reaches the Promise.all batch.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(mocks.prepListCount).toHaveBeenCalledTimes(1);
+      releaseFindMany();
+      await pending;
+    });
   });
 
   // ========================================================== POST CREATE (root)
@@ -657,10 +678,7 @@ describe("Prep Lists API", () => {
     },
   ];
 
-  describe.each(COMMANDS)("POST PrepList.$name", ({
-    name,
-    sampleBody,
-  }) => {
+  describe.each(COMMANDS)("POST PrepList.$name", ({ name, sampleBody }) => {
     it(`returns 401 when unauthenticated [${name}]`, async () => {
       const { InvariantError } = await import("@/app/lib/invariant");
       const { requireCurrentUser } = await import("@/app/lib/tenant");

@@ -93,12 +93,18 @@ export async function GET(request: Request) {
       ];
     }
 
-    const proposals = await database.proposal.findMany({
-      where: whereClause,
-      orderBy: [{ createdAt: "desc" }],
-      take: limit,
-      skip: offset,
-    });
+    // Hoist the total count to run concurrently with the page read (both keyed only
+    // on whereClause); the client/lead/line-item hydration below depends on the page
+    // rows and stays serial after this batch.
+    const [proposals, totalCount] = await Promise.all([
+      database.proposal.findMany({
+        where: whereClause,
+        orderBy: [{ createdAt: "desc" }],
+        take: limit,
+        skip: offset,
+      }),
+      database.proposal.count({ where: whereClause }),
+    ]);
 
     const clientIds = proposals
       .map((p) => p.clientId)
@@ -170,7 +176,6 @@ export async function GET(request: Request) {
       lineItems: lineItemsByProposal.get(proposal.id) || [],
     }));
 
-    const totalCount = await database.proposal.count({ where: whereClause });
     const totalPages = Math.ceil(totalCount / limit);
 
     return NextResponse.json({

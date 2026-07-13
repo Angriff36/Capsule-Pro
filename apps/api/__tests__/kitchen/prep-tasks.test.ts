@@ -356,6 +356,23 @@ describe("Prep Tasks API", () => {
       const res = await GET(makeGET("/api/kitchen/prep-tasks"));
       expect(res.status).toBe(500);
     });
+
+    it("runs findMany and count concurrently (Promise.all), not serially", async () => {
+      let releaseFindMany!: () => void;
+      mocks.prepTaskFindMany.mockReturnValue(
+        new Promise<unknown[]>((resolve) => {
+          releaseFindMany = () => resolve([]);
+        })
+      );
+      mocks.prepTaskCount.mockResolvedValue(0);
+
+      const { GET } = await import("@/app/api/kitchen/prep-tasks/route");
+      const pending = GET(makeGET("/api/kitchen/prep-tasks"));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(mocks.prepTaskCount).toHaveBeenCalledTimes(1);
+      releaseFindMany();
+      await pending;
+    });
   });
 
   // ========================================================== GET LIST PROJECTION
@@ -533,10 +550,7 @@ describe("Prep Tasks API", () => {
     },
   ];
 
-  describe.each(COMMANDS)("POST PrepTask.$name", ({
-    name,
-    sampleBody,
-  }) => {
+  describe.each(COMMANDS)("POST PrepTask.$name", ({ name, sampleBody }) => {
     it(`returns 401 when unauthenticated [${name}]`, async () => {
       const { InvariantError } = await import("@/app/lib/invariant");
       const { requireCurrentUser } = await import("@/app/lib/tenant");

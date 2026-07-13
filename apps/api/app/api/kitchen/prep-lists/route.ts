@@ -158,33 +158,32 @@ export async function GET(request: Request) {
       ];
     }
 
-    // Fetch prep lists
-    const prepLists = await database.prepList.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        eventId: true,
-        name: true,
-        batchMultiplier: true,
-        dietaryRestrictions: true,
-        status: true,
-        totalItems: true,
-        totalEstimatedTime: true,
-        notes: true,
-        generatedAt: true,
-        finalizedAt: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: [{ generatedAt: "desc" }],
-      take: limit,
-      skip: offset,
-    });
-
-    // Get total count for pagination
-    const totalCount = await database.prepList.count({
-      where: whereClause,
-    });
+    // Fetch prep lists + total count concurrently (both keyed on the same whereClause;
+    // event hydration below depends on the page rows and stays serial after this batch).
+    const [prepLists, totalCount] = await Promise.all([
+      database.prepList.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          eventId: true,
+          name: true,
+          batchMultiplier: true,
+          dietaryRestrictions: true,
+          status: true,
+          totalItems: true,
+          totalEstimatedTime: true,
+          notes: true,
+          generatedAt: true,
+          finalizedAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: [{ generatedAt: "desc" }],
+        take: limit,
+        skip: offset,
+      }),
+      database.prepList.count({ where: whereClause }),
+    ]);
 
     const totalPages = Math.ceil(totalCount / limit);
 

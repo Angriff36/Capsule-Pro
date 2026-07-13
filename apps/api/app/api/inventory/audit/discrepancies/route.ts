@@ -280,9 +280,12 @@ export async function GET(request: NextRequest) {
     const params = parseQueryParams(searchParams);
     const statusFilter = getStatusFilter(params.status);
     const where = buildWhereClause(tenantId, params, statusFilter);
-    const total = await database.varianceReport.count({ where });
+    // count + page read are both keyed only on `where` (data-independent) → run concurrently.
+    const [total, discrepancies] = await Promise.all([
+      database.varianceReport.count({ where }),
+      fetchDiscrepancies(where, params),
+    ]);
     const totalPages = Math.ceil(total / (params.limit ?? 50));
-    const discrepancies = await fetchDiscrepancies(where, params);
     const filteredDiscrepancies = filterBySeverity(
       discrepancies,
       params.severity
