@@ -34,45 +34,58 @@ export async function GET(request: NextRequest) {
       orderBy: { name: "asc" },
     });
 
-    // Get ingredient counts for each recipe via RecipeVersion
-    const recipesWithStats = await Promise.all(
-      recipes.map(async (recipe) => {
-        const latestVersion = await database.recipeVersion.findFirst({
-          where: {
-            recipeId: recipe.id,
-            tenantId,
-          },
-          orderBy: { versionNumber: "desc" },
-          select: {
-            id: true,
-            versionNumber: true,
-            yieldQuantity: true,
-          },
-        });
+    // Batch-fetch the latest version per recipe in one query (distinct on
+    // recipeId, newest versionNumber first) instead of one findFirst per recipe.
+    const latestVersions = await database.recipeVersion.findMany({
+      where: {
+        recipeId: { in: recipes.map((r) => r.id) },
+        tenantId,
+      },
+      distinct: ["recipeId"],
+      orderBy: { versionNumber: "desc" },
+      select: {
+        id: true,
+        recipeId: true,
+        yieldQuantity: true,
+      },
+    });
 
-        // Count ingredients for this version
-        let ingredientCount = 0;
-        if (latestVersion) {
-          ingredientCount = await database.recipeIngredient.count({
-            where: {
-              recipeVersionId: latestVersion.id,
-              tenantId,
-            },
-          });
-        }
-
-        return {
-          id: recipe.id,
-          name: recipe.name,
-          yield: latestVersion?.yieldQuantity
-            ? Number(latestVersion.yieldQuantity)
-            : null,
-          ingredientCount,
-          hasNutritionData: true, // Will be calculated on demand
-          createdAt: recipe.createdAt,
-        };
-      })
+    const versionByRecipe = new Map(
+      latestVersions.map((v) => [v.recipeId, v]),
     );
+    const versionIds = latestVersions.map((v) => v.id);
+
+    // Batch-count ingredients per version in one groupBy instead of one count
+    // per version. Versions with zero ingredients are absent from the result and
+    // default to 0. Skipped entirely when there are no versions to count.
+    const countsByVersion = new Map<string, number>();
+    if (versionIds.length > 0) {
+      const counts = await database.recipeIngredient.groupBy({
+        by: ["recipeVersionId"],
+        where: {
+          recipeVersionId: { in: versionIds },
+          tenantId,
+        },
+        _count: { recipeVersionId: true },
+      });
+      for (const c of counts) {
+        countsByVersion.set(c.recipeVersionId, c._count.recipeVersionId);
+      }
+    }
+
+    const recipesWithStats = recipes.map((recipe) => {
+      const version = versionByRecipe.get(recipe.id);
+      return {
+        id: recipe.id,
+        name: recipe.name,
+        yield: version?.yieldQuantity ? Number(version.yieldQuantity) : null,
+        ingredientCount: version
+          ? (countsByVersion.get(version.id) ?? 0)
+          : 0,
+        hasNutritionData: true, // Calculated on demand
+        createdAt: recipe.createdAt,
+      };
+    });
 
     return NextResponse.json({
       success: true,
