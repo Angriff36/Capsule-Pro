@@ -57,49 +57,80 @@ async function getEventDataForSummary(
   tenantId: string,
   eventId: string
 ): Promise<EventSummaryData> {
-  // Fetch event with client
-  const event = await database.event.findFirst({
-    where: {
-      tenantId,
-      id: eventId,
-      deletedAt: null,
-    },
-    include: {
-      client: {
-        select: {
-          companyName: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          phone: true,
+  // Tier 0 — event, event-dishes, staff-assignment, and allergen-warning reads
+  // all depend only on (tenantId, eventId). eventDishes is data-independent of
+  // the event row, so it batches with the event guard (on a rare 404 the three
+  // sibling reads fire wastefully, but the happy path drops 5 serial rounds → 2).
+  const [event, eventDishes, staffAssignments, allergenWarnings] =
+    await Promise.all([
+      database.event.findFirst({
+        where: {
+          tenantId,
+          id: eventId,
+          deletedAt: null,
         },
-      },
-    },
-  });
+        include: {
+          client: {
+            select: {
+              companyName: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              phone: true,
+            },
+          },
+        },
+      }),
+      database.$queryRaw<
+        Array<{
+          tenant_id: string;
+          id: string;
+          event_id: string;
+          dish_id: string;
+          course: string | null;
+          quantity_servings: number;
+        }>
+      >`
+    SELECT tenant_id, id, event_id, dish_id, course, quantity_servings
+    FROM tenant_events.event_dishes
+    WHERE tenant_id = ${tenantId}::uuid
+      AND deleted_at IS NULL
+      AND event_id = ${eventId}::uuid
+    `,
+      database.eventStaff.findMany({
+        where: {
+          tenantId,
+          eventId,
+          deletedAt: null,
+        },
+        select: {
+          role: true,
+          shiftStart: true,
+          shiftEnd: true,
+        },
+        orderBy: { shiftStart: "asc" },
+      }),
+      database.allergenWarning.findMany({
+        where: {
+          tenantId,
+          eventId,
+          deletedAt: null,
+          isAcknowledged: false,
+        },
+        select: {
+          severity: true,
+          allergens: true,
+          notes: true,
+        },
+      }),
+    ]);
 
   if (!event) {
     throw new Error("Event not found");
   }
 
-  // Fetch event dishes with allergens and dietary tags
-  const eventDishes = await database.$queryRaw<
-    Array<{
-      tenant_id: string;
-      id: string;
-      event_id: string;
-      dish_id: string;
-      course: string | null;
-      quantity_servings: number;
-    }>
-  >`
-  SELECT tenant_id, id, event_id, dish_id, course, quantity_servings
-  FROM tenant_events.event_dishes
-  WHERE tenant_id = ${tenantId}::uuid
-    AND deleted_at IS NULL
-    AND event_id = ${eventId}::uuid
-  `;
-
-  // Fetch dishes with allergens and dietary tags
+  // Tier 1 — dishes depend on the event_dishes junction rows (genuine data
+  // dependency on dishIds), so this read stays after the Tier-0 batch.
   const dishIds = eventDishes.map((ed) => ed.dish_id);
   const dishes =
     dishIds.length > 0
@@ -135,36 +166,6 @@ async function getEventDataForSummary(
         : null;
     })
     .filter((d): d is NonNullable<typeof d> => d !== null);
-
-  // Fetch staff assignments
-  const staffAssignments = await database.eventStaff.findMany({
-    where: {
-      tenantId,
-      eventId,
-      deletedAt: null,
-    },
-    select: {
-      role: true,
-      shiftStart: true,
-      shiftEnd: true,
-    },
-    orderBy: { shiftStart: "asc" },
-  });
-
-  // Fetch allergen warnings for this event
-  const allergenWarnings = await database.allergenWarning.findMany({
-    where: {
-      tenantId,
-      eventId,
-      deletedAt: null,
-      isAcknowledged: false,
-    },
-    select: {
-      severity: true,
-      allergens: true,
-      notes: true,
-    },
-  });
 
   return {
     id: event.id,
