@@ -26,6 +26,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
+import { batchTransactionTimeout } from "@/lib/manifest/batch-timeout";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export const runtime = "nodejs";
@@ -233,8 +234,11 @@ export async function POST(
 
         return poId;
       },
+      // Bound at the app-wide tx ceiling (30s) so one conversion can't pin a
+      // pool connection — see batch-timeout.ts (db-perf #29 / #18). opCount =
+      // N line items + 3 fixed writes (PO.create + updateTotals + convertToPo).
       {
-        timeout: Math.min(items.length * 2000 + 10_000, 120_000),
+        timeout: batchTransactionTimeout(items.length + 3),
         maxWait: 10_000,
       }
     );
