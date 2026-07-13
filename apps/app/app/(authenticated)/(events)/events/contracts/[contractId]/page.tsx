@@ -31,7 +31,7 @@ const ContractDetailPage = async ({ params }: ContractDetailPageProps) => {
   const tenantId = await getTenantIdForOrg(orgId);
 
   // Fetch contract with related event and client data
-  let contract;
+  let contract: Awaited<ReturnType<typeof database.eventContract.findFirst>>;
   try {
     contract = await database.eventContract.findFirst({
       where: {
@@ -47,79 +47,61 @@ const ContractDetailPage = async ({ params }: ContractDetailPageProps) => {
     notFound();
   }
 
-  // Fetch related event
-  let event;
-  try {
-    event = await database.event.findFirst({
-      where: {
-        tenantId,
-        id: contract.eventId,
-      },
-      select: {
-        id: true,
-        title: true,
-        eventDate: true,
-        eventNumber: true,
-        venueName: true,
-      },
-    });
-  } catch {
-    event = null;
-  }
-
-  // Fetch related client
-  let client: Array<{
-    id: string;
+  // Fetch related event, client, and signatures in parallel. Each read is keyed
+  // on independent data (event ← contract.eventId, client ← contract.clientId,
+  // signatures ← the route id) and each swallows its own errors to a default, so
+  // they have no inter-dependency and a failure in one never affects the others.
+  // Collapses the prior 3-read serial waterfall into one concurrent batch.
+  interface ContractClientRow {
     company_name: string | null;
-    first_name: string | null;
-    last_name: string | null;
     email: string | null;
+    first_name: string | null;
+    id: string;
+    last_name: string | null;
     phone: string | null;
-  }>;
-  try {
-    client = await database.$queryRaw<
-      Array<{
-        id: string;
-        company_name: string | null;
-        first_name: string | null;
-        last_name: string | null;
-        email: string | null;
-        phone: string | null;
-      }>
-    >`
-    SELECT c.id,
-           c.company_name,
-           c.first_name,
-           c.last_name,
-           c.email,
-           c.phone
-    FROM tenant_crm.clients AS c
-    WHERE c.tenant_id = ${tenantId}
-      AND c.id = ${contract.clientId}
-      AND c.deleted_at IS NULL
-  `;
-  } catch {
-    client = [];
   }
 
-  // Fetch signatures for this contract
-  let signatures: Awaited<
-    ReturnType<typeof database.contractSignature.findMany>
-  >;
-  try {
-    signatures = await database.contractSignature.findMany({
-      where: {
-        tenantId,
-        contractId: id,
-        deletedAt: null,
-      },
-      orderBy: {
-        signedAt: "desc",
-      },
-    });
-  } catch {
-    signatures = [];
-  }
+  const [event, client, signatures] = await Promise.all([
+    database.event
+      .findFirst({
+        where: {
+          tenantId,
+          id: contract.eventId,
+        },
+        select: {
+          id: true,
+          title: true,
+          eventDate: true,
+          eventNumber: true,
+          venueName: true,
+        },
+      })
+      .catch(() => null),
+    database.$queryRaw<ContractClientRow[]>`
+      SELECT c.id,
+             c.company_name,
+             c.first_name,
+             c.last_name,
+             c.email,
+             c.phone
+      FROM tenant_crm.clients AS c
+      WHERE c.tenant_id = ${tenantId}
+        AND c.id = ${contract.clientId}
+        AND c.deleted_at IS NULL
+    `.catch(() => [] as ContractClientRow[]),
+    database.contractSignature
+      .findMany({
+        where: {
+          tenantId,
+          contractId: id,
+          deletedAt: null,
+        },
+        orderBy: {
+          signedAt: "desc",
+        },
+      })
+      .catch(() => []),
+  ]);
 
   return (
     <>
