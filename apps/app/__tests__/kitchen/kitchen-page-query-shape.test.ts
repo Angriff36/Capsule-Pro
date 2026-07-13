@@ -27,20 +27,29 @@ vi.mock("@repo/database", () => ({
   },
 }));
 
-vi.mock("@/app/(authenticated)/(operations)/kitchen/components/kitchen-navigation", () => ({
-  KitchenNavigation: () => null,
-}));
+vi.mock(
+  "@/app/(authenticated)/(operations)/kitchen/components/kitchen-navigation",
+  () => ({
+    KitchenNavigation: () => null,
+  })
+);
 
-vi.mock("@/app/(authenticated)/(operations)/kitchen/production-board-client", () => ({
-  ProductionBoardClient: () => null,
-}));
+vi.mock(
+  "@/app/(authenticated)/(operations)/kitchen/production-board-client",
+  () => ({
+    ProductionBoardClient: () => null,
+  })
+);
 
-vi.mock("@/app/(authenticated)/(operations)/kitchen/production-board-realtime", () => ({
-  ProductionBoardRealtime: () => null,
-}));
+vi.mock(
+  "@/app/(authenticated)/(operations)/kitchen/production-board-realtime",
+  () => ({
+    ProductionBoardRealtime: () => null,
+  })
+);
 
 describe("KitchenPage KitchenTask query shape", () => {
-  it("does not filter KitchenTask reads by deletedAt", async () => {
+  it("filters KitchenTask reads by deletedAt: null (soft-delete)", async () => {
     vi.mocked(auth).mockResolvedValue({
       orgId: "org_test",
       userId: "user_test",
@@ -54,6 +63,8 @@ describe("KitchenPage KitchenTask query shape", () => {
     await KitchenPage();
 
     const args = vi.mocked(database.kitchenTask.findMany).mock.calls[0]?.[0];
-    expect(JSON.stringify(args)).not.toContain("deletedAt");
+    // KitchenTask carries a deleted_at column; the production board must exclude
+    // soft-deleted tasks. (Stale guard from 2619fd70a's schema-alignment fix.)
+    expect(JSON.stringify(args)).toContain('"deletedAt":null');
   });
 });
