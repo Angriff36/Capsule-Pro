@@ -253,6 +253,30 @@ describe("Supplier Catalog Webhook", () => {
       expect(body.error).toBe("Validation failed");
     });
 
+    it("rejects an oversized products payload at validation (DoS cap), before any DB work", async () => {
+      // Default MAX_PRODUCTS_PER_WEBHOOK is 1000; send one over the cap.
+      const oversized = createValidPayload({
+        products: Array.from({ length: 1001 }, (_, i) => ({
+          externalId: `ext-${i}`,
+          sku: `SKU-${i}`,
+          name: `Product ${i}`,
+          unitCost: 1,
+          currency: "USD",
+          unitOfMeasure: "each",
+          available: true,
+        })),
+      });
+      const request = createPostRequest(oversized);
+      const response = await POST(request);
+
+      // The cap fires at zod validation → no supplier lookup, no governed writes.
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body.error).toBe("Validation failed");
+      expect(mockSupplierFindFirst).not.toHaveBeenCalled();
+      expect(runManifestCommand).not.toHaveBeenCalled();
+    });
+
     it("returns 400 for unknown connectorId", async () => {
       vi.mocked(connectorRegistry.get).mockReturnValue(undefined);
       mockEnvSecret("unknown-connector", undefined);

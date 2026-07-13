@@ -51,6 +51,13 @@ import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
+// Bound the per-push product count so a hostile/buggy supplier cannot drive an
+// unbounded-payload DoS (each product fans out into a governed write). Generous
+// default covers typical catalog pushes; overridable for large-catalog suppliers.
+// Mirrors the MANIFEST_BATCH_MAX_SIZE env-cap pattern.
+const MAX_PRODUCTS_PER_WEBHOOK =
+  Number(process.env.SUPPLIER_CATALOG_MAX_PRODUCTS) || 1000;
+
 // ============================================================================
 // Validation Schemas
 // ============================================================================
@@ -79,7 +86,7 @@ const WebhookPayloadSchema = z.object({
   supplierId: z.uuid(),
   event: z.enum(["catalog.updated", "pricing.changed", "availability.changed"]),
   timestamp: z.iso.datetime(),
-  products: z.array(WebhookProductSchema).min(1),
+  products: z.array(WebhookProductSchema).min(1).max(MAX_PRODUCTS_PER_WEBHOOK),
 });
 
 // ============================================================================
