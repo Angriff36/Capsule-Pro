@@ -176,307 +176,250 @@ export async function GET(request: Request) {
       });
     }
 
-    // Fetch all metrics in parallel for better performance
+    // Fetch all metrics in parallel. Each metric is ONE `GROUP BY location_id`
+    // query — previously each was a per-location `locations.map` that fired one
+    // query PER location (1 + 12×N round-trips); now 1 + 11, independent of the
+    // location count. Every metric keys only on (tenantId, the fetched
+    // locationIds, date bounds) — zero inter-query dependencies — so all 11 run
+    // concurrently. (`_previousLaborRows` was fetched but never read, so it is
+    // dropped.) Locations absent from a result set zero-fill below.
+    const locationIds = locations.map((location) => location.id);
+
     const [
-      // Revenue metrics
-      currentRevenueRows,
-      previousRevenueRows,
-      // Labor metrics
-      currentLaborRows,
-      _previousLaborRows,
-      // Waste metrics
-      currentWasteRows,
-      previousWasteRows,
-      // Margin metrics
-      currentMarginRows,
-      previousMarginRows,
-      // Event counts
-      currentEventRows,
-      previousEventRows,
-      // Inventory value
-      currentInventoryRows,
-      // Staffing counts
-      staffingRows,
+      currentRevenueRaw,
+      previousRevenueRaw,
+      currentLaborRaw,
+      currentWasteRaw,
+      previousWasteRaw,
+      currentMarginRaw,
+      previousMarginRaw,
+      currentEventRaw,
+      previousEventRaw,
+      currentInventoryRaw,
+      staffingRaw,
     ] = await Promise.all([
       // Current period revenue by location
-      Promise.all(
-        locations.map(async (location) => {
-          const result = await database.$queryRaw<
-            Array<{ total_revenue: string | null }>
-          >(
-            Prisma.sql`
-            SELECT COALESCE(SUM(total_amount), 0)::numeric AS total_revenue
-            FROM tenant_events.catering_orders
-            WHERE tenant_id = ${tenantId}::uuid
-              AND deleted_at IS NULL
-              AND location_id = ${location.id}::uuid
-              AND order_date >= ${startDate}
-              AND order_date < ${endDate}
-          `
-          );
-          return {
-            locationId: location.id,
-            locationName: location.name,
-            revenue: Number(result[0]?.total_revenue ?? 0),
-          };
-        })
-      ),
+      database.$queryRaw<
+        Array<{ location_id: string; total_revenue: string | null }>
+      >(Prisma.sql`
+        SELECT location_id, COALESCE(SUM(total_amount), 0)::numeric AS total_revenue
+        FROM tenant_events.catering_orders
+        WHERE tenant_id = ${tenantId}::uuid
+          AND deleted_at IS NULL
+          AND location_id IN (${Prisma.join(locationIds)})
+          AND order_date >= ${startDate}
+          AND order_date < ${endDate}
+        GROUP BY location_id
+      `),
       // Previous period revenue by location
-      Promise.all(
-        locations.map(async (location) => {
-          const result = await database.$queryRaw<
-            Array<{ total_revenue: string | null }>
-          >(
-            Prisma.sql`
-            SELECT COALESCE(SUM(total_amount), 0)::numeric AS total_revenue
-            FROM tenant_events.catering_orders
-            WHERE tenant_id = ${tenantId}::uuid
-              AND deleted_at IS NULL
-              AND location_id = ${location.id}::uuid
-              AND order_date >= ${previousStartDate}
-              AND order_date < ${previousEndDate}
-          `
-          );
-          return {
-            locationId: location.id,
-            revenue: Number(result[0]?.total_revenue ?? 0),
-          };
-        })
-      ),
-      // Current period labor metrics
-      Promise.all(
-        locations.map(async (location) => {
-          const result = await database.$queryRaw<
-            Array<{
-              budgeted_labor: string | null;
-              actual_labor: string | null;
-            }>
-          >(
-            Prisma.sql`
-            SELECT
-              COALESCE(SUM(budgeted_labor_cost), 0)::numeric AS budgeted_labor,
-              COALESCE(SUM(actual_labor_cost), 0)::numeric AS actual_labor
-            FROM tenant_events.event_profitability
-            WHERE tenant_id = ${tenantId}::uuid
-              AND deleted_at IS NULL
-              AND location_id = ${location.id}::uuid
-              AND calculated_at >= ${startDate}
-              AND calculated_at < ${endDate}
-          `
-          );
-          return {
-            locationId: location.id,
-            budgetedLabor: Number(result[0]?.budgeted_labor ?? 0),
-            actualLabor: Number(result[0]?.actual_labor ?? 0),
-          };
-        })
-      ),
-      // Previous period labor metrics
-      Promise.all(
-        locations.map(async (location) => {
-          const result = await database.$queryRaw<
-            Array<{
-              budgeted_labor: string | null;
-              actual_labor: string | null;
-            }>
-          >(
-            Prisma.sql`
-            SELECT
-              COALESCE(SUM(budgeted_labor_cost), 0)::numeric AS budgeted_labor,
-              COALESCE(SUM(actual_labor_cost), 0)::numeric AS actual_labor
-            FROM tenant_events.event_profitability
-            WHERE tenant_id = ${tenantId}::uuid
-              AND deleted_at IS NULL
-              AND location_id = ${location.id}::uuid
-              AND calculated_at >= ${previousStartDate}
-              AND calculated_at < ${previousEndDate}
-          `
-          );
-          return {
-            locationId: location.id,
-            budgetedLabor: Number(result[0]?.budgeted_labor ?? 0),
-            actualLabor: Number(result[0]?.actual_labor ?? 0),
-          };
-        })
-      ),
-      // Current period waste metrics
-      Promise.all(
-        locations.map(async (location) => {
-          const result = await database.$queryRaw<
-            Array<{ waste_cost: string | null }>
-          >(
-            Prisma.sql`
-            SELECT COALESCE(SUM("totalCost"), 0)::numeric AS waste_cost
-            FROM tenant_kitchen.waste_entries
-            WHERE tenant_id = ${tenantId}::uuid
-              AND deleted_at IS NULL
-              AND location_id = ${location.id}::uuid
-              AND logged_at >= ${startDate}
-              AND logged_at < ${endDate}
-          `
-          );
-          return {
-            locationId: location.id,
-            wasteCost: Number(result[0]?.waste_cost ?? 0),
-          };
-        })
-      ),
-      // Previous period waste metrics
-      Promise.all(
-        locations.map(async (location) => {
-          const result = await database.$queryRaw<
-            Array<{ waste_cost: string | null }>
-          >(
-            Prisma.sql`
-            SELECT COALESCE(SUM("totalCost"), 0)::numeric AS waste_cost
-            FROM tenant_kitchen.waste_entries
-            WHERE tenant_id = ${tenantId}::uuid
-              AND deleted_at IS NULL
-              AND location_id = ${location.id}::uuid
-              AND logged_at >= ${previousStartDate}
-              AND logged_at < ${previousEndDate}
-          `
-          );
-          return {
-            locationId: location.id,
-            wasteCost: Number(result[0]?.waste_cost ?? 0),
-          };
-        })
-      ),
-      // Current period margin metrics
-      Promise.all(
-        locations.map(async (location) => {
-          const result = await database.$queryRaw<
-            Array<{ avg_margin: string | null; total_revenue: string | null }>
-          >(
-            Prisma.sql`
-            SELECT
-              COALESCE(AVG(CASE WHEN actual_revenue <> 0 THEN actual_gross_margin / actual_revenue * 100 ELSE 0 END), 0)::numeric AS avg_margin,
-              COALESCE(SUM(actual_revenue), 0)::numeric AS total_revenue
-            FROM tenant_events.event_profitability
-            WHERE tenant_id = ${tenantId}::uuid
-              AND deleted_at IS NULL
-              AND location_id = ${location.id}::uuid
-              AND calculated_at >= ${startDate}
-              AND calculated_at < ${endDate}
-          `
-          );
-          return {
-            locationId: location.id,
-            avgMargin: Number(result[0]?.avg_margin ?? 0),
-            totalRevenue: Number(result[0]?.total_revenue ?? 0),
-          };
-        })
-      ),
-      // Previous period margin metrics
-      Promise.all(
-        locations.map(async (location) => {
-          const result = await database.$queryRaw<
-            Array<{ avg_margin: string | null }>
-          >(
-            Prisma.sql`
-            SELECT COALESCE(AVG(CASE WHEN actual_revenue <> 0 THEN actual_gross_margin / actual_revenue * 100 ELSE 0 END), 0)::numeric AS avg_margin
-            FROM tenant_events.event_profitability
-            WHERE tenant_id = ${tenantId}::uuid
-              AND deleted_at IS NULL
-              AND location_id = ${location.id}::uuid
-              AND calculated_at >= ${previousStartDate}
-              AND calculated_at < ${previousEndDate}
-          `
-          );
-          return {
-            locationId: location.id,
-            avgMargin: Number(result[0]?.avg_margin ?? 0),
-          };
-        })
-      ),
-      // Current period event counts
-      Promise.all(
-        locations.map(async (location) => {
-          const result = await database.$queryRaw<
-            Array<{ event_count: bigint; completed_count: bigint }>
-          >(
-            Prisma.sql`
-            SELECT
-              COUNT(*)::bigint AS event_count,
-              SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END)::bigint AS completed_count
-            FROM tenant_events.events
-            WHERE tenant_id = ${tenantId}::uuid
-              AND deleted_at IS NULL
-              AND location_id = ${location.id}::uuid
-              AND event_date >= ${startDate}
-              AND event_date <= ${endDate}
-          `
-          );
-          return {
-            locationId: location.id,
-            eventCount: Number(result[0]?.event_count ?? 0),
-            completedCount: Number(result[0]?.completed_count ?? 0),
-          };
-        })
-      ),
-      // Previous period event counts
-      Promise.all(
-        locations.map(async (location) => {
-          const result = await database.$queryRaw<
-            Array<{ event_count: bigint }>
-          >(
-            Prisma.sql`
-            SELECT COUNT(*)::bigint AS event_count
-            FROM tenant_events.events
-            WHERE tenant_id = ${tenantId}::uuid
-              AND deleted_at IS NULL
-              AND location_id = ${location.id}::uuid
-              AND event_date >= ${previousStartDate}
-              AND event_date <= ${previousEndDate}
-          `
-          );
-          return {
-            locationId: location.id,
-            eventCount: Number(result[0]?.event_count ?? 0),
-          };
-        })
-      ),
+      database.$queryRaw<
+        Array<{ location_id: string; total_revenue: string | null }>
+      >(Prisma.sql`
+        SELECT location_id, COALESCE(SUM(total_amount), 0)::numeric AS total_revenue
+        FROM tenant_events.catering_orders
+        WHERE tenant_id = ${tenantId}::uuid
+          AND deleted_at IS NULL
+          AND location_id IN (${Prisma.join(locationIds)})
+          AND order_date >= ${previousStartDate}
+          AND order_date < ${previousEndDate}
+        GROUP BY location_id
+      `),
+      // Current period labor metrics by location
+      database.$queryRaw<
+        Array<{
+          location_id: string;
+          budgeted_labor: string | null;
+          actual_labor: string | null;
+        }>
+      >(Prisma.sql`
+        SELECT
+          location_id,
+          COALESCE(SUM(budgeted_labor_cost), 0)::numeric AS budgeted_labor,
+          COALESCE(SUM(actual_labor_cost), 0)::numeric AS actual_labor
+        FROM tenant_events.event_profitability
+        WHERE tenant_id = ${tenantId}::uuid
+          AND deleted_at IS NULL
+          AND location_id IN (${Prisma.join(locationIds)})
+          AND calculated_at >= ${startDate}
+          AND calculated_at < ${endDate}
+        GROUP BY location_id
+      `),
+      // Current period waste metrics by location
+      database.$queryRaw<
+        Array<{ location_id: string; waste_cost: string | null }>
+      >(Prisma.sql`
+        SELECT location_id, COALESCE(SUM("totalCost"), 0)::numeric AS waste_cost
+        FROM tenant_kitchen.waste_entries
+        WHERE tenant_id = ${tenantId}::uuid
+          AND deleted_at IS NULL
+          AND location_id IN (${Prisma.join(locationIds)})
+          AND logged_at >= ${startDate}
+          AND logged_at < ${endDate}
+        GROUP BY location_id
+      `),
+      // Previous period waste metrics by location
+      database.$queryRaw<
+        Array<{ location_id: string; waste_cost: string | null }>
+      >(Prisma.sql`
+        SELECT location_id, COALESCE(SUM("totalCost"), 0)::numeric AS waste_cost
+        FROM tenant_kitchen.waste_entries
+        WHERE tenant_id = ${tenantId}::uuid
+          AND deleted_at IS NULL
+          AND location_id IN (${Prisma.join(locationIds)})
+          AND logged_at >= ${previousStartDate}
+          AND logged_at < ${previousEndDate}
+        GROUP BY location_id
+      `),
+      // Current period margin metrics by location (avg_margin + total_revenue
+      // drive the revenue-weighted average margin computed below)
+      database.$queryRaw<
+        Array<{
+          location_id: string;
+          avg_margin: string | null;
+          total_revenue: string | null;
+        }>
+      >(Prisma.sql`
+        SELECT
+          location_id,
+          COALESCE(AVG(CASE WHEN actual_revenue <> 0 THEN actual_gross_margin / actual_revenue * 100 ELSE 0 END), 0)::numeric AS avg_margin,
+          COALESCE(SUM(actual_revenue), 0)::numeric AS total_revenue
+        FROM tenant_events.event_profitability
+        WHERE tenant_id = ${tenantId}::uuid
+          AND deleted_at IS NULL
+          AND location_id IN (${Prisma.join(locationIds)})
+          AND calculated_at >= ${startDate}
+          AND calculated_at < ${endDate}
+        GROUP BY location_id
+      `),
+      // Previous period margin metrics by location
+      database.$queryRaw<
+        Array<{ location_id: string; avg_margin: string | null }>
+      >(Prisma.sql`
+        SELECT location_id, COALESCE(AVG(CASE WHEN actual_revenue <> 0 THEN actual_gross_margin / actual_revenue * 100 ELSE 0 END), 0)::numeric AS avg_margin
+        FROM tenant_events.event_profitability
+        WHERE tenant_id = ${tenantId}::uuid
+          AND deleted_at IS NULL
+          AND location_id IN (${Prisma.join(locationIds)})
+          AND calculated_at >= ${previousStartDate}
+          AND calculated_at < ${previousEndDate}
+        GROUP BY location_id
+      `),
+      // Current period event counts by location
+      database.$queryRaw<
+        Array<{
+          location_id: string;
+          event_count: bigint;
+          completed_count: bigint;
+        }>
+      >(Prisma.sql`
+        SELECT
+          location_id,
+          COUNT(*)::bigint AS event_count,
+          SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END)::bigint AS completed_count
+        FROM tenant_events.events
+        WHERE tenant_id = ${tenantId}::uuid
+          AND deleted_at IS NULL
+          AND location_id IN (${Prisma.join(locationIds)})
+          AND event_date >= ${startDate}
+          AND event_date <= ${endDate}
+        GROUP BY location_id
+      `),
+      // Previous period event counts by location
+      database.$queryRaw<
+        Array<{ location_id: string; event_count: bigint }>
+      >(Prisma.sql`
+        SELECT location_id, COUNT(*)::bigint AS event_count
+        FROM tenant_events.events
+        WHERE tenant_id = ${tenantId}::uuid
+          AND deleted_at IS NULL
+          AND location_id IN (${Prisma.join(locationIds)})
+          AND event_date >= ${previousStartDate}
+          AND event_date <= ${previousEndDate}
+        GROUP BY location_id
+      `),
       // Current inventory value by location
-      Promise.all(
-        locations.map(async (location) => {
-          const result = await database.$queryRaw<
-            Array<{ inventory_value: string | null; item_count: bigint }>
-          >(
-            Prisma.sql`
-            SELECT
-              COALESCE(SUM(quantity_on_hand * unit_cost), 0)::numeric AS inventory_value,
-              COUNT(DISTINCT id)::bigint AS item_count
-            FROM tenant_inventory.inventory_items
-            WHERE tenant_id = ${tenantId}::uuid
-              AND deleted_at IS NULL
-              AND location_id = ${location.id}::uuid
-          `
-          );
-          return {
-            locationId: location.id,
-            inventoryValue: Number(result[0]?.inventory_value ?? 0),
-            itemCount: Number(result[0]?.item_count ?? 0),
-          };
-        })
-      ),
-      // Staffing counts by location
-      Promise.all(
-        locations.map(async (location) => {
-          const count = await database.employeeLocation.count({
-            where: {
-              tenantId,
-              locationId: location.id,
-              deleted_at: null,
-            },
-          });
-          return {
-            locationId: location.id,
-            staffCount: count,
-          };
-        })
-      ),
+      database.$queryRaw<
+        Array<{
+          location_id: string;
+          inventory_value: string | null;
+          item_count: bigint;
+        }>
+      >(Prisma.sql`
+        SELECT
+          location_id,
+          COALESCE(SUM(quantity_on_hand * unit_cost), 0)::numeric AS inventory_value,
+          COUNT(DISTINCT id)::bigint AS item_count
+        FROM tenant_inventory.inventory_items
+        WHERE tenant_id = ${tenantId}::uuid
+          AND deleted_at IS NULL
+          AND location_id IN (${Prisma.join(locationIds)})
+        GROUP BY location_id
+      `),
+      // Staffing counts by location (was a per-location employeeLocation.count;
+      // now one GROUP BY location_id)
+      database.$queryRaw<
+        Array<{ location_id: string; staff_count: bigint }>
+      >(Prisma.sql`
+        SELECT location_id, COUNT(*)::bigint AS staff_count
+        FROM tenant_staff.employee_locations
+        WHERE tenant_id = ${tenantId}::uuid
+          AND deleted_at IS NULL
+          AND location_id IN (${Prisma.join(locationIds)})
+        GROUP BY location_id
+      `),
     ]);
+
+    // Map the raw GROUP BY rows to the per-location shapes the population
+    // loops below consume. Locations absent from a result set keep the zero
+    // default assigned in `locationMetrics` below.
+    const currentRevenueRows = currentRevenueRaw.map((row) => ({
+      locationId: row.location_id,
+      revenue: Number(row.total_revenue ?? 0),
+    }));
+    const previousRevenueRows = previousRevenueRaw.map((row) => ({
+      locationId: row.location_id,
+      revenue: Number(row.total_revenue ?? 0),
+    }));
+    const currentLaborRows = currentLaborRaw.map((row) => ({
+      locationId: row.location_id,
+      budgetedLabor: Number(row.budgeted_labor ?? 0),
+      actualLabor: Number(row.actual_labor ?? 0),
+    }));
+    const currentWasteRows = currentWasteRaw.map((row) => ({
+      locationId: row.location_id,
+      wasteCost: Number(row.waste_cost ?? 0),
+    }));
+    const previousWasteRows = previousWasteRaw.map((row) => ({
+      locationId: row.location_id,
+      wasteCost: Number(row.waste_cost ?? 0),
+    }));
+    const currentMarginRows = currentMarginRaw.map((row) => ({
+      locationId: row.location_id,
+      avgMargin: Number(row.avg_margin ?? 0),
+      totalRevenue: Number(row.total_revenue ?? 0),
+    }));
+    const previousMarginRows = previousMarginRaw.map((row) => ({
+      locationId: row.location_id,
+      avgMargin: Number(row.avg_margin ?? 0),
+    }));
+    const currentEventRows = currentEventRaw.map((row) => ({
+      locationId: row.location_id,
+      eventCount: Number(row.event_count),
+      completedCount: Number(row.completed_count),
+    }));
+    const previousEventRows = previousEventRaw.map((row) => ({
+      locationId: row.location_id,
+      eventCount: Number(row.event_count),
+    }));
+    const currentInventoryRows = currentInventoryRaw.map((row) => ({
+      locationId: row.location_id,
+      inventoryValue: Number(row.inventory_value ?? 0),
+      itemCount: Number(row.item_count),
+    }));
+    const staffingRows = staffingRaw.map((row) => ({
+      locationId: row.location_id,
+      staffCount: Number(row.staff_count),
+    }));
 
     // Build location metrics map
     const locationMetrics = new Map<
