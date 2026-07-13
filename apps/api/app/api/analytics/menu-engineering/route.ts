@@ -54,10 +54,10 @@ async function fetchMenuItemAnalysis(
   startDate: Date,
   locationId: string | null
 ) {
-  const locationFilter = locationId ? "AND e.location_id = $3::uuid" : "";
-
-  return await database.$queryRawUnsafe<MenuItemAnalysis[]>(
-    `
+  // Tagged-template $queryRaw: every value is a bound parameter. The optional
+  // location filter is a static `IS NULL OR` clause, so no SQL fragment is ever
+  // string-interpolated into the query text (DB-perf #26).
+  return await database.$queryRaw<MenuItemAnalysis[]>`
     SELECT
       d.id as dish_id,
       d.name as dish_name,
@@ -77,18 +77,16 @@ async function fetchMenuItemAnalysis(
     FROM tenant_kitchen.dishes d
     INNER JOIN tenant_events.event_dishes ed ON d.tenant_id = ed.tenant_id AND d.id = ed.dish_id
     INNER JOIN tenant_events.events e ON ed.tenant_id = e.tenant_id AND ed.event_id = e.id
-    WHERE d.tenant_id = $1
+    WHERE d.tenant_id = ${tenantId}
       AND d.deleted_at IS NULL
       AND e.deleted_at IS NULL
       AND ed.deleted_at IS NULL
-      AND e.event_date >= $2
-      ${locationFilter}
+      AND e.event_date >= ${startDate}
+      AND (${locationId}::uuid IS NULL OR e.location_id = ${locationId}::uuid)
     GROUP BY d.id, d.name, d.category, d.price_per_person, d.cost_per_person
     HAVING COALESCE(SUM(ed.quantity_servings), 0) > 0
     ORDER BY contribution_margin DESC
-    `,
-    ...(locationId ? [tenantId, startDate, locationId] : [tenantId, startDate])
-  );
+  `;
 }
 
 interface MenuPerformanceSummary {

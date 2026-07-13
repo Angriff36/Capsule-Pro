@@ -98,10 +98,7 @@ export async function GET(request: NextRequest) {
 
     const { start, end } = getPeriodRange(period);
 
-    const locIdx = locationId ? 4 : 0;
-    const locParam = locationId ? `AND ss.location_id = $${locIdx}::uuid` : "";
-
-    const dailyRows = await database.$queryRawUnsafe<DailyRow[]>(`
+    const dailyRows = await database.$queryRaw<DailyRow[]>`
       SELECT
         DATE(ss.shift_start) AS date,
         COUNT(*) AS total_shifts,
@@ -110,16 +107,16 @@ export async function GET(request: NextRequest) {
         COUNT(DISTINCT ss.employee_id) AS unique_employees,
         COALESCE(SUM(EXTRACT(EPOCH FROM (ss.shift_end - ss.shift_start)) / 3600), 0) AS total_hours
       FROM tenant_staff.schedule_shifts ss
-      WHERE ss.tenant_id = $1::uuid
+      WHERE ss.tenant_id = ${tenantId}::uuid
         AND ss.deleted_at IS NULL
-        AND ss.shift_start >= $2::timestamptz
-        AND ss.shift_end <= $3::timestamptz
-        ${locParam}
+        AND ss.shift_start >= ${start}::timestamptz
+        AND ss.shift_end <= ${end}::timestamptz
+        AND (${locationId}::uuid IS NULL OR ss.location_id = ${locationId}::uuid)
       GROUP BY DATE(ss.shift_start)
       ORDER BY date ASC
-    `, tenantId, start, end, ...(locationId ? [locationId] : []));
+    `;
 
-    const locationRows = await database.$queryRawUnsafe<LocationRow[]>(`
+    const locationRows = await database.$queryRaw<LocationRow[]>`
       SELECT
         l.id AS location_id,
         l.name AS location_name,
@@ -128,14 +125,14 @@ export async function GET(request: NextRequest) {
         COUNT(CASE WHEN ss.employee_id IS NULL THEN 1 END) AS unfilled_shifts
       FROM tenant_staff.schedule_shifts ss
       JOIN tenant.locations l ON l.tenant_id = ss.tenant_id AND l.id = ss.location_id
-      WHERE ss.tenant_id = $1::uuid
+      WHERE ss.tenant_id = ${tenantId}::uuid
         AND ss.deleted_at IS NULL
-        AND ss.shift_start >= $2::timestamptz
-        AND ss.shift_end <= $3::timestamptz
-        ${locParam}
+        AND ss.shift_start >= ${start}::timestamptz
+        AND ss.shift_end <= ${end}::timestamptz
+        AND (${locationId}::uuid IS NULL OR ss.location_id = ${locationId}::uuid)
       GROUP BY l.id, l.name
       ORDER BY l.name ASC
-    `, tenantId, start, end, ...(locationId ? [locationId] : []));
+    `;
 
     // Get today-specific data for overview
     const todayStart = new Date();
@@ -143,7 +140,7 @@ export async function GET(request: NextRequest) {
     const todayEnd = new Date();
     todayEnd.setHours(23, 59, 59, 999);
 
-    const todayRows = await database.$queryRawUnsafe<TodayRow[]>(`
+    const todayRows = await database.$queryRaw<TodayRow[]>`
       SELECT
         COUNT(*) AS total_shifts,
         COUNT(CASE WHEN ss.employee_id IS NOT NULL THEN 1 END) AS filled_shifts,
@@ -151,15 +148,15 @@ export async function GET(request: NextRequest) {
         COUNT(DISTINCT ss.employee_id) AS active_employees,
         COALESCE(SUM(EXTRACT(EPOCH FROM (ss.shift_end - ss.shift_start)) / 3600), 0) AS total_hours
       FROM tenant_staff.schedule_shifts ss
-      WHERE ss.tenant_id = $1::uuid
+      WHERE ss.tenant_id = ${tenantId}::uuid
         AND ss.deleted_at IS NULL
-        AND ss.shift_start >= $2::timestamptz
-        AND ss.shift_end <= $3::timestamptz
-        ${locParam}
-    `, tenantId, todayStart, todayEnd, ...(locationId ? [locationId] : []));
+        AND ss.shift_start >= ${todayStart}::timestamptz
+        AND ss.shift_end <= ${todayEnd}::timestamptz
+        AND (${locationId}::uuid IS NULL OR ss.location_id = ${locationId}::uuid)
+    `;
 
     // Today by location
-    const todayLocations = await database.$queryRawUnsafe<LocationRow[]>(`
+    const todayLocations = await database.$queryRaw<LocationRow[]>`
       SELECT
         l.id AS location_id,
         l.name AS location_name,
@@ -168,17 +165,18 @@ export async function GET(request: NextRequest) {
         COUNT(CASE WHEN ss.employee_id IS NULL THEN 1 END) AS unfilled_shifts
       FROM tenant_staff.schedule_shifts ss
       JOIN tenant.locations l ON l.tenant_id = ss.tenant_id AND l.id = ss.location_id
-      WHERE ss.tenant_id = $1::uuid
+      WHERE ss.tenant_id = ${tenantId}::uuid
         AND ss.deleted_at IS NULL
-        AND ss.shift_start >= $2::timestamptz
-        AND ss.shift_end <= $3::timestamptz
-        ${locParam}
+        AND ss.shift_start >= ${todayStart}::timestamptz
+        AND ss.shift_end <= ${todayEnd}::timestamptz
+        AND (${locationId}::uuid IS NULL OR ss.location_id = ${locationId}::uuid)
       GROUP BY l.id, l.name
       ORDER BY l.name ASC
-    `, tenantId, todayStart, todayEnd, ...(locationId ? [locationId] : []));
+    `;
 
     // Get weekly summaries for overview trend
-    const weeklyRows = await database.$queryRawUnsafe<WeeklyRow[]>(`
+    const weeklyStart = new Date(Date.now() - 56 * 24 * 60 * 60 * 1000);
+    const weeklyRows = await database.$queryRaw<WeeklyRow[]>`
       SELECT
         DATE_TRUNC('week', ss.shift_start)::date AS week_start,
         (DATE_TRUNC('week', ss.shift_start)::date + 6)::date AS week_end,
@@ -188,14 +186,14 @@ export async function GET(request: NextRequest) {
         COUNT(DISTINCT ss.employee_id) AS unique_employees,
         COALESCE(SUM(EXTRACT(EPOCH FROM (ss.shift_end - ss.shift_start)) / 3600), 0) AS total_hours
       FROM tenant_staff.schedule_shifts ss
-      WHERE ss.tenant_id = $1::uuid
+      WHERE ss.tenant_id = ${tenantId}::uuid
         AND ss.deleted_at IS NULL
-        AND ss.shift_start >= $2::timestamptz
-        ${locParam}
+        AND ss.shift_start >= ${weeklyStart}::timestamptz
+        AND (${locationId}::uuid IS NULL OR ss.location_id = ${locationId}::uuid)
       GROUP BY DATE_TRUNC('week', ss.shift_start)
       ORDER BY week_start DESC
       LIMIT 8
-    `, tenantId, new Date(Date.now() - 56 * 24 * 60 * 60 * 1000), ...(locationId ? [locationId] : []));
+    `;
 
     // Build daily array
     const daily = dailyRows.map((row) => ({
