@@ -37,6 +37,7 @@ export async function GET(
         tenantId,
         deletedAt: null,
       },
+      select: { id: true },
     });
 
     if (!event) {

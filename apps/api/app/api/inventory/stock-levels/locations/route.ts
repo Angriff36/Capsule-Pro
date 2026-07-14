@@ -33,33 +33,23 @@ export async function GET(_request: Request) {
     // Get active storage locations for this tenant
     const locations = await database.$queryRaw<
       Array<{
-        tenant_id: string;
         id: string;
-        location_id: string;
+        tenant_id: string;
         name: string;
         storage_type: string;
-        temperature_min: number | null;
-        temperature_max: number | null;
-        temperature_unit: string | null;
         is_active: boolean;
         created_at: Date;
         updated_at: Date;
-        deleted_at: Date | null;
       }>
     >`
       SELECT
-        tenant_id,
         id,
-        location_id,
+        tenant_id,
         name,
         storage_type,
-        temperature_min,
-        temperature_max,
-        temperature_unit,
         is_active,
         created_at,
-        updated_at,
-        deleted_at
+        updated_at
       FROM tenant_inventory.storage_locations
       WHERE tenant_id = ${tenantId}
         AND deleted_at IS NULL

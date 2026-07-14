@@ -83,15 +83,12 @@ async function getEventDataForSummary(
       }),
       database.$queryRaw<
         Array<{
-          tenant_id: string;
-          id: string;
-          event_id: string;
           dish_id: string;
           course: string | null;
           quantity_servings: number;
         }>
       >`
-    SELECT tenant_id, id, event_id, dish_id, course, quantity_servings
+    SELECT dish_id, course, quantity_servings
     FROM tenant_events.event_dishes
     WHERE tenant_id = ${tenantId}::uuid
       AND deleted_at IS NULL

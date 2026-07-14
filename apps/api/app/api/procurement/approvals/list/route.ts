@@ -38,7 +38,15 @@ export async function GET(request: NextRequest) {
     // Fetch POs with item count
     const orders = await database.purchaseOrder.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        poNumber: true,
+        vendorId: true,
+        status: true,
+        total: true,
+        submittedBy: true,
+        submittedAt: true,
+        createdAt: true,
         items: {
           where: { deletedAt: null },
           select: { id: true },
