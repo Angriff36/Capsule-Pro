@@ -253,10 +253,20 @@ export async function POST(request: NextRequest) {
       where.status = status;
     }
 
-    // Fetch events with client and budget data via Prisma ORM
+    // Fetch events with client and budget data via Prisma ORM.
+    // ponytail: top-level select narrows to exactly the consumed fields —
+    // select is a column projection, so the strict-subset map below is byte-identical;
+    // Prisma narrows the return type so a dropped consumed field is a compile error.
     const rawEvents = await database.event.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        eventNumber: true,
+        title: true,
+        eventDate: true,
+        guestCount: true,
+        budget: true,
+        status: true,
         client: {
           select: {
             id: true,
@@ -269,8 +279,15 @@ export async function POST(request: NextRequest) {
         },
         budgets: {
           where: { deletedAt: null },
-          include: {
-            lineItems: true,
+          select: {
+            lineItems: {
+              select: {
+                category: true,
+                description: true,
+                budgetedAmount: true,
+                actualAmount: true,
+              },
+            },
           },
         },
       },

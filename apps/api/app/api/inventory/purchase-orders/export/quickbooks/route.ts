@@ -10,7 +10,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
-import { uploadFile } from "@repo/storage"
+import { uploadFile } from "@repo/storage";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -245,12 +245,33 @@ export async function POST(request: NextRequest) {
       where.vendorId = vendorId;
     }
 
-    // Fetch purchase orders with items via Prisma ORM
+    // Fetch purchase orders with items via Prisma ORM.
+    // ponytail: top-level select narrows to exactly the consumed fields —
+    // select is a column projection, so the strict-subset map below is byte-identical;
+    // Prisma narrows the return type so a dropped consumed field is a compile error.
     const rawPOs = await database.purchaseOrder.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        poNumber: true,
+        orderDate: true,
+        expectedDeliveryDate: true,
+        subtotal: true,
+        taxAmount: true,
+        shippingAmount: true,
+        total: true,
+        notes: true,
+        status: true,
+        vendorId: true,
         items: {
           where: { deletedAt: null },
+          select: {
+            itemId: true,
+            quantityOrdered: true,
+            unitCost: true,
+            totalCost: true,
+            notes: true,
+          },
         },
       },
       orderBy: { orderDate: "desc" },
