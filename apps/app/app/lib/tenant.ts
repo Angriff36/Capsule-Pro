@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { auth, currentUser } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { captureException, captureMessage } from "@sentry/nextjs";
@@ -72,13 +73,18 @@ export const getTenantIdForOrg = async (orgId: string): Promise<string> => {
   }
 };
 
-export const requireTenantId = async (): Promise<string> => {
+// `cache()` (react) memoizes per request: a Server Component that fans out to
+// N server actions each calling requireCurrentUser (e.g. the event board tab →
+// getEventBoardData/getStaffPalette/getDishPalette) resolves the Clerk session +
+// user.findFirst once instead of N×. Identity is immutable within a request, so
+// this is zero-staleness; the memo is discarded at request end.
+export const requireTenantId = cache(async (): Promise<string> => {
   const { orgId } = await auth();
 
   invariant(orgId, "auth.orgId must exist");
 
   return getTenantIdForOrg(orgId);
-};
+});
 
 // Alias for backward compatibility with existing code using getTenantId
 export const getTenantId = requireTenantId;
@@ -110,7 +116,7 @@ export interface CurrentUser {
  *   - Employee at multiple orgs (e.g. your own org + Mangia)
  *   - Soft-deleted records that should be restored
  */
-export const requireCurrentUser = async (): Promise<CurrentUser> => {
+export const requireCurrentUser = cache(async (): Promise<CurrentUser> => {
   const { orgId, userId: clerkId } = await auth();
   invariant(orgId, "auth.orgId must exist");
   invariant(clerkId, "auth.userId must exist");
@@ -278,4 +284,4 @@ export const requireCurrentUser = async (): Promise<CurrentUser> => {
       `Unable to provision your account in this organization. Please contact support. (org: ${orgId})`
     );
   }
-};
+});

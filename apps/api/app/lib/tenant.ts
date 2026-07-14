@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { auth, currentUser } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
@@ -52,13 +53,19 @@ export const getTenantIdForOrg = async (orgId: string): Promise<string> => {
   return account.id;
 };
 
-export const requireTenantId = async (): Promise<string> => {
+// `cache()` (react) memoizes per request: a handler that calls these resolvers
+// more than once — or fans out to N server actions that each call
+// requireCurrentUser — resolves the Clerk session + user.findFirst exactly once
+// instead of N×. Identity (orgId/clerkId/user row) is immutable within a single
+// request, so this is zero-staleness; the request scope (and thus the memo) is
+// discarded at request end. Complements the cross-request `tenantCache` above.
+export const requireTenantId = cache(async (): Promise<string> => {
   const { orgId } = await auth();
 
   invariant(orgId, "auth.orgId must exist");
 
   return getTenantIdForOrg(orgId);
-};
+});
 
 // ============================================================================
 // User Resolution — auto-provisions User record in current tenant
@@ -90,7 +97,7 @@ export interface CurrentUser {
  *   - Employee at multiple orgs (e.g. your own org + Mangia)
  *   - Soft-deleted records that should be restored
  */
-export const requireCurrentUser = async (): Promise<CurrentUser> => {
+export const requireCurrentUser = cache(async (): Promise<CurrentUser> => {
   // API key auth path — check Authorization header before Clerk session
   const headersList = await headers();
   const authHeader = headersList.get("authorization");
@@ -107,7 +114,7 @@ export const requireCurrentUser = async (): Promise<CurrentUser> => {
 
   // Clerk session path (existing logic)
   return resolveClerkUser();
-};
+});
 
 const BEARER_PREFIX = "Bearer ";
 const API_KEY_PREFIX = "cp_";
