@@ -31,7 +31,15 @@ async function calculateBudgetTotals(
 }> {
   const eventBudget = await database.eventBudget.findFirst({
     where: { tenantId, eventId, deletedAt: null },
-    include: { lineItems: { where: { deletedAt: null } } },
+    // db-perf #17: include→select fold. No parent EventBudget column is read
+    // (only lineItems), and per line item only budgetedAmount + category —
+    // drops all parent cols + ~12 lineItem cols incl. 2 Decimal money fields.
+    select: {
+      lineItems: {
+        where: { deletedAt: null },
+        select: { budgetedAmount: true, category: true },
+      },
+    },
   });
 
   const event = await database.event.findUnique({
@@ -103,6 +111,11 @@ async function calculateActualTotals(
 }> {
   const cateringOrders = await database.cateringOrder.findMany({
     where: { tenantId, eventId, deletedAt: null },
+    // db-perf #17: only subtotalAmount + orderStatus are consumed below; drops
+    // ~33 cols/row incl. 5 Decimal money fields (select = projection, row count
+    // + math byte-identical; Prisma narrows the type so a dropped consumed field
+    // is a compile error).
+    select: { subtotalAmount: true, orderStatus: true },
   });
 
   let actualRevenue = 0;
@@ -142,9 +155,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify the profitability record exists (read path, constitution §10)
+    // Verify the profitability record exists (read path, constitution §10).
+    // db-perf #17: only eventId is consumed (existence + the downstream
+    // budget/actual reads); select drops ~20 cols, almost all Decimal
+    // cost/variance fields. !profitability still gates the 404.
     const profitability = await database.eventProfitability.findFirst({
       where: { id: profitabilityId, tenantId: user.tenantId, deletedAt: null },
+      select: { eventId: true },
     });
 
     if (!profitability) {
