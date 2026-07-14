@@ -89,6 +89,18 @@ async function getContextData(
       },
       orderBy: { eventDate: "asc" },
       take: 10,
+      // Strict projection of the 6 fields consumed downstream (eventsWithDishes
+      // identity/title/date/guests/venue/status). Event is ~40+ cols incl. heavy
+      // JSON/text + budget fields — `where`/`orderBy`/`take` are independent of
+      // `select`, so this drops ~33 unused cols/row across the take:10 window.
+      select: {
+        id: true,
+        title: true,
+        eventDate: true,
+        guestCount: true,
+        venueName: true,
+        status: true,
+      },
     }),
     database.prepTask.findMany({
       where: {
@@ -99,6 +111,18 @@ async function getContextData(
       },
       orderBy: { dueByDate: "asc" },
       take: 20,
+      // Strict projection of the 7 fields consumed downstream (prepTasks map +
+      // fallback's name/status/dueByDate). PrepTask is ~28 cols incl. Decimal +
+      // FK columns — drops ~21 unused cols/row across the take:20 window.
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        dueByDate: true,
+        priority: true,
+        estimatedMinutes: true,
+        taskType: true,
+      },
     }),
     database.inventoryAlert.findMany({
       where: {
@@ -108,6 +132,18 @@ async function getContextData(
       },
       orderBy: { triggeredAt: "desc" },
       take: 15,
+      // Strict projection of the 6 fields consumed downstream (inventoryAlerts
+      // map: identity/type/item/threshold/triggered/notes; itemId also feeds the
+      // Tier-1 inventoryItem lookup). Drops severity/status/ack/resolve + audit
+      // cols/row across the take:15 window.
+      select: {
+        id: true,
+        alertType: true,
+        itemId: true,
+        thresholdValue: true,
+        triggeredAt: true,
+        notes: true,
+      },
     }),
   ]);
 
@@ -158,6 +194,17 @@ async function getContextData(
             eventId: { in: eventIds },
           },
           take: 50,
+          // Strict projection of the 6 fields consumed downstream (staff
+          // assignment identity + role + shift window). EventStaff is ~16 cols
+          // — drops notes/status/check-in/confirm cols/row across take:50.
+          select: {
+            id: true,
+            eventId: true,
+            staffMemberId: true,
+            role: true,
+            shiftStart: true,
+            shiftEnd: true,
+          },
         })
       : Promise.resolve([]),
   ]);

@@ -335,6 +335,74 @@ describe("AI Suggestions API", () => {
         })
       );
     });
+
+    it("projects only the consumed columns on the 4 context reads", async () => {
+      // Regression guard: each previously-unscoped findMany in getContextData
+      // must project exactly the fields consumed downstream — no more (a
+      // re-added column), no fewer (a reverted select). Exact key-set check.
+      mockEventFindMany.mockResolvedValue([
+        {
+          id: "event-1",
+          title: "Test Event",
+          eventDate: new Date(Date.now() + 86_400_000),
+          guestCount: 100,
+          venueName: "Test Venue",
+          status: "confirmed",
+          tenantId: mockTenantId,
+          deletedAt: null,
+        },
+      ] as unknown as Awaited<ReturnType<typeof database.event.findMany>>);
+      mockGenerateText.mockResolvedValue({
+        text: JSON.stringify({ suggestions: [] }),
+      } as unknown as Awaited<ReturnType<typeof generateText>>);
+
+      await GET(new Request("http://localhost/api/ai/suggestions"));
+
+      const selectKeys = (fn: { mock: { calls: unknown[] } }) => {
+        const lastCall = fn.mock.calls.at(-1) as unknown[] | undefined;
+        const select = (lastCall?.[0] as { select?: object } | undefined)
+          ?.select;
+        return Object.keys(select ?? {}).sort();
+      };
+
+      // Event: 6 of ~40+ cols (drops JSON/text + budget cols).
+      expect(selectKeys(mockEventFindMany)).toEqual([
+        "eventDate",
+        "guestCount",
+        "id",
+        "status",
+        "title",
+        "venueName",
+      ]);
+      // PrepTask: 7 of ~28 cols.
+      expect(selectKeys(mockPrepTaskFindMany)).toEqual([
+        "dueByDate",
+        "estimatedMinutes",
+        "id",
+        "name",
+        "priority",
+        "status",
+        "taskType",
+      ]);
+      // InventoryAlert: 6 of ~14 cols.
+      expect(selectKeys(mockInventoryAlertFindMany)).toEqual([
+        "alertType",
+        "id",
+        "itemId",
+        "notes",
+        "thresholdValue",
+        "triggeredAt",
+      ]);
+      // EventStaff: 6 of ~16 cols (fires only when events exist).
+      expect(selectKeys(mockEventStaffFindMany)).toEqual([
+        "eventId",
+        "id",
+        "role",
+        "shiftEnd",
+        "shiftStart",
+        "staffMemberId",
+      ]);
+    });
   });
 
   describe("AI Suggestion Generation", () => {
