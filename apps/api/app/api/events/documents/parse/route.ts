@@ -27,7 +27,11 @@ import { createManifestRuntime } from "@/lib/manifest-runtime";
 export const runtime = "nodejs";
 
 /** User context required by Manifest runtime commands */
-type ManifestUser = { id: string; tenantId: string; role: string };
+interface ManifestUser {
+  id: string;
+  role: string;
+  tenantId: string;
+}
 
 type EventParserModule = typeof import("@repo/event-parser");
 
@@ -280,22 +284,12 @@ async function findOrCreateRecipe(
   tenantId: string,
   dishName: string,
   category: string | null,
-  user: ManifestUser
+  user: ManifestUser,
+  existingRecipeByName: Map<string, string>
 ): Promise<{ recipeId: string; created: boolean }> {
-  const existingRecipe = await database.recipe.findFirst({
-    where: {
-      tenantId,
-      deletedAt: null,
-      name: {
-        equals: dishName,
-        mode: "insensitive",
-      },
-    },
-    select: { id: true },
-  });
-
-  if (existingRecipe) {
-    return { recipeId: existingRecipe.id, created: false };
+  const existingId = existingRecipeByName.get(dishName.toLowerCase());
+  if (existingId) {
+    return { recipeId: existingId, created: false };
   }
 
   // Governed write: Recipe.create via Manifest runtime
@@ -329,32 +323,21 @@ async function findOrCreateDish(
   tenantId: string,
   entry: AggregatedMenuItem,
   serviceStyle: string | undefined,
-  user: ManifestUser
+  user: ManifestUser,
+  existingDishByName: Map<string, { id: string }>,
+  existingRecipeByName: Map<string, string>
 ): Promise<{ dishId: string; created: boolean; recipeCreated: boolean }> {
-  const existingDish = await database.dish.findFirst({
-    where: {
-      tenantId,
-      deletedAt: null,
-      name: {
-        equals: entry.name,
-        mode: "insensitive",
-      },
-    },
-    select: {
-      id: true,
-      recipeId: true,
-    },
-  });
-
-  if (existingDish) {
-    return { dishId: existingDish.id, created: false, recipeCreated: false };
+  const existing = existingDishByName.get(entry.name.toLowerCase());
+  if (existing) {
+    return { dishId: existing.id, created: false, recipeCreated: false };
   }
 
   const { recipeId, created: recipeCreated } = await findOrCreateRecipe(
     tenantId,
     entry.name,
     entry.category,
-    user
+    user,
+    existingRecipeByName
   );
 
   // Governed write: Dish.create via Manifest runtime
@@ -384,29 +367,6 @@ async function findOrCreateDish(
 
   const dishId = createdDish.id as string;
   return { dishId, created: true, recipeCreated };
-}
-
-/**
- * Check if an event-dish link already exists
- */
-async function findExistingEventDishLink(
-  tenantId: string,
-  eventId: string,
-  dishId: string
-): Promise<string | undefined> {
-  const [existingLink] = await database.$queryRaw<Array<{ id: string }>>(
-    Prisma.sql`
-      SELECT id
-      FROM tenant_events.event_dishes
-      WHERE tenant_id = ${tenantId}
-        AND event_id = ${eventId}
-        AND dish_id = ${dishId}
-        AND deleted_at IS NULL
-      LIMIT 1
-    `
-  );
-
-  return existingLink?.id;
 }
 
 /**
@@ -475,6 +435,12 @@ async function createEventDishLink(
   );
 }
 
+interface MenuImportPreloads {
+  existingDishByName: Map<string, { id: string }>;
+  existingLinkByDishId: Map<string, string>;
+  existingRecipeByName: Map<string, string>;
+}
+
 /**
  * Process a single aggregated menu item entry
  */
@@ -484,13 +450,16 @@ async function processMenuItemEntry(
   entry: AggregatedMenuItem,
   serviceStyle: string | undefined,
   summary: MenuImportSummary,
-  user: ManifestUser
+  user: ManifestUser,
+  preloads: MenuImportPreloads
 ): Promise<void> {
   const { dishId, created, recipeCreated } = await findOrCreateDish(
     tenantId,
     entry,
     serviceStyle,
-    user
+    user,
+    preloads.existingDishByName,
+    preloads.existingRecipeByName
   );
 
   if (created) {
@@ -500,11 +469,9 @@ async function processMenuItemEntry(
     summary.createdRecipes += 1;
   }
 
-  const existingLinkId = await findExistingEventDishLink(
-    tenantId,
-    eventId,
-    dishId
-  );
+  // Newly created dishes have no prior links; the preload covers every
+  // existing dish id, so this Map lookup replaces a per-entry raw query.
+  const existingLinkId = preloads.existingLinkByDishId.get(dishId);
 
   if (existingLinkId) {
     await updateEventDishLink(
@@ -543,7 +510,7 @@ function buildMissingQuantitiesSummary(
   return missing;
 }
 
-const importMenuToEvent = async (
+export const importMenuToEvent = async (
   tenantId: string,
   eventId: string,
   event: ParsedEvent,
@@ -568,6 +535,82 @@ const importMenuToEvent = async (
   // Build missing quantities summary
   summary.missingQuantities = buildMissingQuantitiesSummary(aggregated);
 
+  // Preload existence reads in O(1) batched queries instead of one
+  // findFirst/raw round-trip per menu item (a 30-dish import fired ~90 reads
+  // before). The governed writes below stay serial — the manifest runtime is
+  // not concurrent-safe (cf. the inventory-import read-preload pattern).
+  const distinctNames = [...aggregated.keys()];
+
+  const existingDishes =
+    distinctNames.length > 0
+      ? await database.dish.findMany({
+          where: {
+            tenantId,
+            deletedAt: null,
+            name: { in: distinctNames, mode: "insensitive" },
+          },
+          select: { id: true, name: true },
+        })
+      : [];
+  const existingDishByName = new Map<string, { id: string }>();
+  for (const dish of existingDishes) {
+    // aggregated keys are lowercased + unique; first match per name wins,
+    // matching the prior findFirst-without-orderBy "first row" behavior.
+    if (!existingDishByName.has(dish.name.toLowerCase())) {
+      existingDishByName.set(dish.name.toLowerCase(), { id: dish.id });
+    }
+  }
+
+  const newDishNames = distinctNames.filter(
+    (name) => !existingDishByName.has(name)
+  );
+  const existingRecipes =
+    newDishNames.length > 0
+      ? await database.recipe.findMany({
+          where: {
+            tenantId,
+            deletedAt: null,
+            name: { in: newDishNames, mode: "insensitive" },
+          },
+          select: { id: true, name: true },
+        })
+      : [];
+  const existingRecipeByName = new Map<string, string>();
+  for (const recipe of existingRecipes) {
+    if (!existingRecipeByName.has(recipe.name.toLowerCase())) {
+      existingRecipeByName.set(recipe.name.toLowerCase(), recipe.id);
+    }
+  }
+
+  // A pre-existing event-dish link can only exist for a pre-existing dish;
+  // newly created dishes have no prior links, so preload links only for the
+  // known existing dish ids in one IN-list query.
+  const existingDishIds = [...existingDishByName.values()].map((d) => d.id);
+  const existingLinkByDishId = new Map<string, string>();
+  if (existingDishIds.length > 0) {
+    const links = await database.$queryRaw<
+      Array<{ id: string; dish_id: string }>
+    >(Prisma.sql`
+      SELECT id, dish_id
+      FROM tenant_events.event_dishes
+      WHERE tenant_id = ${tenantId}
+        AND event_id = ${eventId}
+        AND dish_id IN (${Prisma.join(existingDishIds)})
+        AND deleted_at IS NULL
+    `);
+    for (const link of links) {
+      if (!existingLinkByDishId.has(link.dish_id)) {
+        existingLinkByDishId.set(link.dish_id, link.id);
+      }
+    }
+  }
+
+  const preloads: MenuImportPreloads = {
+    existingDishByName,
+    existingLinkByDishId,
+    existingRecipeByName,
+  };
+
   // Process each aggregated menu item entry
   for (const entry of aggregated.values()) {
     await processMenuItemEntry(
@@ -576,7 +619,8 @@ const importMenuToEvent = async (
       entry,
       event.serviceStyle?.trim(),
       summary,
-      user
+      user,
+      preloads
     );
   }
 
