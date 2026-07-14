@@ -69,10 +69,16 @@ export async function GET(
           where: { eventId, tenantId, status: "finalized", deletedAt: null },
           select: { id: true, boardName: true },
         }),
-        // Fetch event-dish links (starts the dish/recipe chain)
+        // Fetch event-dish links (starts the dish/recipe chain). Strict
+        // projection of the 3 fields consumed downstream (dishId → dish lookup
+        // + shopping-list scaling; course → response; quantityServings →
+        // servings + scale factor); drops 8 unused columns/row (id, tenantId,
+        // deletedAt, eventId, specialInstructions, serviceStyle, createdAt,
+        // updatedAt) — `where` filters are independent of `select`.
         database.eventDish.findMany({
           where: { eventId, tenantId, deletedAt: null },
           orderBy: { course: "asc" },
+          select: { dishId: true, course: true, quantityServings: true },
         }),
         // Fetch staff assignments (starts the staff chain)
         database.eventStaff.findMany({

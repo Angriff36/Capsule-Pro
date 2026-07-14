@@ -147,6 +147,47 @@ describe("GET /api/events/[eventId]/run-sheet", () => {
     expect(res.status).toBe(200);
   });
 
+  it("selects only the 3 consumed EventDish columns (drops 8 unused)", async () => {
+    // eventDish.findMany is the one Tier-0 read that previously had NO select
+    // (its 4 sibling reads — battleBoard/eventStaff/eventTimeline + the Tier-1
+    // dish/staffMember reads — are already narrowed). Strict projection of
+    // dishId + course + quantityServings: the only fields consumed downstream
+    // (dish lookup, response course/servings, shopping-list scale factor).
+    const { req, ctx } = buildRequest();
+    const res = await GET(req, ctx);
+    expect(res.status).toBe(200);
+
+    expect(eventDishFindMany).toHaveBeenCalledTimes(1);
+    expect(eventDishFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { eventId: EVENT_ID, tenantId: "tenant_test", deletedAt: null },
+        orderBy: { course: "asc" },
+        select: { dishId: true, course: true, quantityServings: true },
+      })
+    );
+
+    // Regression guard: the 8 dropped columns must NOT be projected —
+    // re-adding one (or reverting the select) trips this.
+    const lastCall = eventDishFindMany.mock.calls.at(-1) as
+      | [Record<string, unknown>]
+      | undefined;
+    const select = lastCall?.[0]?.select as
+      | Record<string, unknown>
+      | undefined;
+    for (const dropped of [
+      "id",
+      "tenantId",
+      "deletedAt",
+      "eventId",
+      "specialInstructions",
+      "serviceStyle",
+      "createdAt",
+      "updatedAt",
+    ]) {
+      expect(select?.[dropped]).toBeUndefined();
+    }
+  });
+
   it("runs the dish + staffMember fetches concurrently in the Tier-1 batch", async () => {
     // Give the Tier-0 batch data so both Tier-1 reads fire.
     eventDishFindMany.mockResolvedValue([
