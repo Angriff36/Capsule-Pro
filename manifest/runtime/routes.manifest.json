@@ -23820,6 +23820,33 @@
       "tenant": true
     },
     {
+      "id": "Lead.setScore",
+      "path": "/api/manifest/Lead/commands/set-score",
+      "method": "POST",
+      "params": [
+        {
+          "name": "score",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "scoreBreakdown",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Lead",
+        "command": "setScore",
+        "variant": "dispatcher"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "Lead.update",
       "path": "/api/manifest/Lead/commands/update",
       "method": "POST",

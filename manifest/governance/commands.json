@@ -1,5 +1,5 @@
 {
-  "irHash": "7bc5480706bad6074da49489ba7510bf083617de1cdfe9fe8d99e2752a6c9e5f",
+  "irHash": "e3886e470f336e6fcc1c75c1fffdc5bd678a9f2d8b859c07ec7f428abe9a3fcf",
   "compilerVersion": "3.4.25",
   "commands": [
     {
@@ -8809,6 +8809,22 @@
       "guardCount": 2,
       "emits": [
         "LeadDisqualified"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Lead",
+      "command": "setScore",
+      "commandId": "Lead.setScore",
+      "policies": [
+        "LeadDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "LeadUpdated"
       ],
       "effects": [
         "compute",

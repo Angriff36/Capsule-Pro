@@ -7,7 +7,7 @@
 // canonical command dispatcher (run-manifest-command-core) as a pre-flight gate
 // that rejects malformed requests with a 400 before the runtime is created.
 //
-// Commands: 1070
+// Commands: 1071
 
 import { z } from "zod";
 
@@ -2553,6 +2553,10 @@ export const COMMAND_PARAM_SCHEMAS: Record<string, z.ZodType> = {
   "Lead.disqualify": z.object({
   reason: z.string(),
   userId: z.string(),
+}),
+  "Lead.setScore": z.object({
+  score: z.number(),
+  scoreBreakdown: z.unknown(),
 }),
   "Lead.update": z.object({
   companyName: z.string().optional(),

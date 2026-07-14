@@ -4921,6 +4921,11 @@ export function leadDisqualifyPath(): string {
   return "/api/manifest/Lead/commands/disqualify";
 }
 
+/** POST /api/manifest/Lead/commands/setScore */
+export function leadSetScorePath(): string {
+  return "/api/manifest/Lead/commands/setScore";
+}
+
 /** POST /api/manifest/Lead/commands/update */
 export function leadUpdatePath(): string {
   return "/api/manifest/Lead/commands/update";
@@ -8487,6 +8492,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "Lead.convertToClient", path: "/api/manifest/Lead/commands/convertToClient", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Lead.create", path: "/api/manifest/Lead/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Lead.disqualify", path: "/api/manifest/Lead/commands/disqualify", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Lead.setScore", path: "/api/manifest/Lead/commands/setScore", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Lead.update", path: "/api/manifest/Lead/commands/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "LogisticsDispatch.assign", path: "/api/manifest/LogisticsDispatch/commands/assign", method: "POST", source: "command", auth: true, tenant: true },
   { id: "LogisticsDispatch.deliver", path: "/api/manifest/LogisticsDispatch/commands/deliver", method: "POST", source: "command", auth: true, tenant: true },

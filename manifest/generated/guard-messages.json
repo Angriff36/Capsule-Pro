@@ -2014,6 +2014,9 @@
     "Cannot disqualify an archived lead",
     "Cannot disqualify a converted lead"
   ],
+  "Lead.setScore": [
+    "Cannot score an archived lead"
+  ],
   "Lead.update": [
     "Cannot update an archived lead",
     "Cannot update a converted lead",

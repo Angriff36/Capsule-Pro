@@ -127,14 +127,11 @@ export async function POST(request: NextRequest) {
     );
 
     if (rules.length === 0) {
-      // Reset all lead scores to 0. The governed Lead.update emits the
-      // LeadUpdated event/audit; the separate updateMany persists
-      // score/scoreBreakdown because the Lead.update command
-      // (manifest/source/sales/lead-rules.manifest) omits those fields from its
-      // params/mutate — they ARE Lead stored properties (:20,:35) AND Prisma
-      // columns, just not writable via the update command. TODO(db-perf #13): a
-      // dedicated governed setScore command makes this atomic + governed and
-      // halves the per-lead round-trips (2N→N).
+      // Reset all lead scores to 0 via the governed Lead.setScore command
+      // (db-perf #13). Unlike the prior dual-write (a no-op Lead.update for the
+      // event + a raw lead.updateMany for the score — non-atomic, 2N
+      // round-trips, score persisted OUTSIDE governance), setScore mutates
+      // score/scoreBreakdown AND emits LeadUpdated in one governed write.
       const zeroLeads = await database.lead.findMany({
         where: { tenantId, deletedAt: null },
         select: { id: true },
@@ -142,14 +139,10 @@ export async function POST(request: NextRequest) {
       for (const lead of zeroLeads) {
         await runManifestCommand({
           entity: "Lead",
-          command: "update",
-          body: { id: lead.id, tenantId },
+          command: "setScore",
+          body: { id: lead.id, tenantId, score: 0, scoreBreakdown: {} },
           user: { id: user.id, tenantId: user.tenantId, role: user.role },
           instanceId: lead.id,
-        });
-        await database.lead.updateMany({
-          where: { tenantId, id: lead.id, deletedAt: null },
-          data: { score: 0, scoreBreakdown: {} },
         });
       }
       return NextResponse.json({
@@ -192,28 +185,16 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Governed Lead.update emits LeadUpdated; updateMany persists the
-      // per-lead score/scoreBreakdown (NOT writable via Lead.update — its
-      // command signature omits them; they ARE Lead properties + Prisma
-      // columns, see lead-rules.manifest). TODO(db-perf #13): a dedicated
-      // governed setScore command makes this atomic + halves the round-trips.
+      // Governed Lead.setScore persists score + scoreBreakdown atomically with
+      // the LeadUpdated event (db-perf #13). Replaces the prior non-atomic
+      // dual-write (no-op Lead.update + raw lead.updateMany) → 2N→N governed
+      // round-trips and a single governed score write.
       await runManifestCommand({
         entity: "Lead",
-        command: "update",
-        body: { id: lead.id, tenantId },
+        command: "setScore",
+        body: { id: lead.id, tenantId, score, scoreBreakdown },
         user: { id: user.id, tenantId: user.tenantId, role: user.role },
         instanceId: lead.id,
-      });
-      await database.lead.updateMany({
-        where: {
-          tenantId,
-          id: lead.id,
-          deletedAt: null,
-        },
-        data: {
-          score,
-          scoreBreakdown,
-        },
       });
     }
 

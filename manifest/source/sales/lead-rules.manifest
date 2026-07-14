@@ -134,6 +134,23 @@ entity Lead mixin TenantScoped, SoftDeletable {
     emit LeadUpdated
   }
 
+  // setScore (db-perf #13): governed recompute of a lead's score + scoreBreakdown.
+  // A DEDICATED command — adding score/scoreBreakdown to Lead.update would reset
+  // them to defaults on every unrelated edit, and update's signature omits them,
+  // so the CRM scoring route previously persisted score via a raw lead.updateMany
+  // (non-atomic governed-update + raw-write dual-write, 2N round-trips). setScore
+  // makes score + the LeadUpdated event land in one governed write (atomic, N).
+  // Scores converted leads too (no converted guard) — the scoring route recomputes
+  // all non-deleted leads; only the archived-lead guard mirrors update.
+  command setScore(score: number, scoreBreakdown: json) {
+    guard self.deletedAt == null "Cannot score an archived lead"
+
+    mutate score = score
+    mutate scoreBreakdown = scoreBreakdown
+
+    emit LeadUpdated
+  }
+
   command convertToClient(clientId: string, userId: string) {
     guard self.deletedAt == null "Cannot convert an archived lead"
     guard clientId != null and clientId != "" "Client ID is required"

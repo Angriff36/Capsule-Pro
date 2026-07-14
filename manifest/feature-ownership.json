@@ -2168,6 +2168,7 @@
         "convertToClient",
         "create",
         "disqualify",
+        "setScore",
         "update"
       ],
       "apiDerived": true

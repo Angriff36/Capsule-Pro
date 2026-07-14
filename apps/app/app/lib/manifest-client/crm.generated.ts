@@ -256,6 +256,11 @@ export interface LeadDisqualifyInput {
   reason?: string;
   userId?: string;
 }
+export interface LeadSetScoreInput {
+  id?: string;
+  score?: number;
+  scoreBreakdown?: unknown;
+}
 export interface LeadUpdateInput {
   id?: string;
   companyName?: string;
@@ -719,6 +724,10 @@ export async function leadCreate(input: LeadCreateInput = {}): Promise<Lead | un
 }
 export async function leadDisqualify(input: LeadDisqualifyInput = {}): Promise<Lead | undefined> {
   const r = await executeCommand<Lead>("Lead", "disqualify", input as Record<string, unknown>);
+  return r.result;
+}
+export async function leadSetScore(input: LeadSetScoreInput = {}): Promise<Lead | undefined> {
+  const r = await executeCommand<Lead>("Lead", "setScore", input as Record<string, unknown>);
   return r.result;
 }
 export async function leadUpdate(input: LeadUpdateInput = {}): Promise<Lead | undefined> {

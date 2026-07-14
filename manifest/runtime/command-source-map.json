@@ -2211,11 +2211,11 @@
     },
     "command:Lead.archive": {
       "file": "sales/lead-rules.manifest",
-      "line": 184
+      "line": 201
     },
     "command:Lead.convertToClient": {
       "file": "sales/lead-rules.manifest",
-      "line": 137
+      "line": 154
     },
     "command:Lead.create": {
       "file": "sales/lead-rules.manifest",
@@ -2223,7 +2223,11 @@
     },
     "command:Lead.disqualify": {
       "file": "sales/lead-rules.manifest",
-      "line": 165
+      "line": 182
+    },
+    "command:Lead.setScore": {
+      "file": "sales/lead-rules.manifest",
+      "line": 145
     },
     "command:Lead.update": {
       "file": "sales/lead-rules.manifest",
@@ -5771,11 +5775,11 @@
     },
     "constraint:Lead.blockAlreadyConverted": {
       "file": "sales/lead-rules.manifest",
-      "line": 141
+      "line": 158
     },
     "constraint:Lead.blockDisqualified": {
       "file": "sales/lead-rules.manifest",
-      "line": 150
+      "line": 167
     },
     "constraint:Lead.positiveEstimatedValue": {
       "file": "sales/lead-rules.manifest",
@@ -5791,11 +5795,11 @@
     },
     "constraint:Lead.warnArchiveOpenLead": {
       "file": "sales/lead-rules.manifest",
-      "line": 187
+      "line": 204
     },
     "constraint:Lead.warnHighValueDisqualify": {
       "file": "sales/lead-rules.manifest",
-      "line": 169
+      "line": 186
     },
     "constraint:Lead.warnHighValueUnassigned": {
       "file": "sales/lead-rules.manifest",

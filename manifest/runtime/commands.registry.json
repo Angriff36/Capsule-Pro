@@ -2781,6 +2781,11 @@
   },
   {
     "entity": "Lead",
+    "command": "setScore",
+    "commandId": "Lead.setScore"
+  },
+  {
+    "entity": "Lead",
     "command": "update",
     "commandId": "Lead.update"
   },
