@@ -44,7 +44,7 @@ vi.mock("@/lib/database", async () => {
 
 const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");
-const { GET } = await import("@/app/api/search/route");
+const { GET, MAX_QUERY_LENGTH } = await import("@/app/api/search/route");
 
 // ---------------------------------------------------------------------------
 // Constants & helpers
@@ -163,6 +163,58 @@ describe("Global Search API — GET /api/search", () => {
       expect(body.success).toBe(true);
       expect(body.groups).toEqual([]);
       expect(body.total).toBe(0);
+    });
+  });
+
+  // ---------------------------------------------------------------- Query length bound
+  describe("query length upper bound (MAX_QUERY_LENGTH)", () => {
+    it("returns empty groups and skips the DB when q exceeds MAX_QUERY_LENGTH", async () => {
+      const response = await GET(
+        makeRequest({ q: "a".repeat(MAX_QUERY_LENGTH + 1) })
+      );
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body.success).toBe(true);
+      expect(body.groups).toEqual([]);
+      expect(body.total).toBe(0);
+      // A pathologically long query must NOT drive the 15-group fan-out.
+      expect(database.event.findMany).not.toHaveBeenCalled();
+      expect(database.knowledgeBaseEntry.findMany).not.toHaveBeenCalled();
+      expect(database.lead.findMany).not.toHaveBeenCalled();
+    });
+
+    it("searches the DB when q is exactly MAX_QUERY_LENGTH (bound is exclusive)", async () => {
+      mockAllModelsEmpty();
+      await GET(makeRequest({ q: "a".repeat(MAX_QUERY_LENGTH) }));
+
+      expect(database.event.findMany).toHaveBeenCalled();
+    });
+  });
+
+  // ---------------------------------------------------------------- Response caching
+  describe("response cache headers", () => {
+    it("sets a private Cache-Control on a successful search (no cross-tenant CDN leak)", async () => {
+      mockAllModelsEmpty();
+      vi.mocked(database.event.findMany).mockResolvedValue([
+        {
+          id: "evt-1",
+          tenantId: TEST_TENANT_ID,
+          title: "Annual Gala",
+          eventNumber: "EVT-001",
+          eventDate: new Date("2026-06-15"),
+          venueName: "Grand Ballroom",
+          status: "confirmed",
+        },
+      ] as never);
+      vi.mocked(database.event.count).mockResolvedValue(1);
+
+      const response = await GET(makeRequest({ q: "gala" }));
+
+      const cacheControl = response.headers.get("Cache-Control");
+      expect(cacheControl).toContain("private");
+      expect(cacheControl).not.toContain("public");
+      expect(cacheControl).toContain("max-age=30");
     });
   });
 
@@ -522,8 +574,9 @@ describe("Global Search API — GET /api/search", () => {
       const tokenSubstrings = (call.where.AND ?? []).map((clause) => {
         const first = clause.OR[0] as Record<string, { contains: string }>;
         const firstField = Object.keys(first)[0];
-        if (firstField === undefined) return undefined;
-        return first[firstField]?.contains;
+        return firstField === undefined
+          ? undefined
+          : first[firstField]?.contains;
       });
       expect(tokenSubstrings).toEqual(["john", "smith", "catering"]);
       expect(call.where.OR).toBeUndefined();

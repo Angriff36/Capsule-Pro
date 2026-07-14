@@ -22,6 +22,12 @@ const searchGroup = <T>(
 // and the tokenization branch adds no cognitive complexity to GET.
 const WHITESPACE = /\s+/;
 
+// Upper bound on the query string so a pathologically long `q` can't drive the
+// full entity fan-out (up to 15 findMany + 15 count ILIKE scans). Parity with
+// the apps/app search route (MAX_QUERY_LENGTH = 200). Exported so the route
+// test can pin the boundary against the single source of truth.
+export const MAX_QUERY_LENGTH = 200;
+
 const makeBaseFilter =
   ({
     tenantId,
@@ -65,7 +71,7 @@ export async function GET(request: NextRequest) {
 
     const url = request.nextUrl.searchParams;
     const q = url.get("q")?.trim();
-    if (!q || q.length < 2) {
+    if (!q || q.length < 2 || q.length > MAX_QUERY_LENGTH) {
       return manifestSuccessResponse({ groups: [], total: 0 });
     }
 
@@ -520,7 +526,15 @@ export async function GET(request: NextRequest) {
 
     const total = Object.values(groups).reduce((sum, g) => sum + g.total, 0);
 
-    return manifestSuccessResponse({ groups, total, page, limit });
+    // `private` (not `public`): results are authenticated + tenant-scoped, so a
+    // shared CDN must not cache them (cross-tenant leak). Browser-only caching
+    // of identical omni-search URLs mirrors the apps/app search route.
+    const response = manifestSuccessResponse({ groups, total, page, limit });
+    response.headers.set(
+      "Cache-Control",
+      "private, max-age=30, stale-while-revalidate=300"
+    );
+    return response;
   } catch (error) {
     captureException(error);
     log.error("Search error:", error);
