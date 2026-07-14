@@ -127,8 +127,14 @@ export async function POST(request: NextRequest) {
     );
 
     if (rules.length === 0) {
-      // Reset all lead scores to 0 via governed Manifest runtime + direct Prisma
-      // for score/scoreBreakdown (non-IR derived fields)
+      // Reset all lead scores to 0. The governed Lead.update emits the
+      // LeadUpdated event/audit; the separate updateMany persists
+      // score/scoreBreakdown because the Lead.update command
+      // (manifest/source/sales/lead-rules.manifest) omits those fields from its
+      // params/mutate — they ARE Lead stored properties (:20,:35) AND Prisma
+      // columns, just not writable via the update command. TODO(db-perf #13): a
+      // dedicated governed setScore command makes this atomic + governed and
+      // halves the per-lead round-trips (2N→N).
       const zeroLeads = await database.lead.findMany({
         where: { tenantId, deletedAt: null },
         select: { id: true },
@@ -186,8 +192,11 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Governed update via Manifest runtime + direct Prisma for score/scoreBreakdown
-      // (non-IR derived fields not modeled in Lead manifest entity)
+      // Governed Lead.update emits LeadUpdated; updateMany persists the
+      // per-lead score/scoreBreakdown (NOT writable via Lead.update — its
+      // command signature omits them; they ARE Lead properties + Prisma
+      // columns, see lead-rules.manifest). TODO(db-perf #13): a dedicated
+      // governed setScore command makes this atomic + halves the round-trips.
       await runManifestCommand({
         entity: "Lead",
         command: "update",
