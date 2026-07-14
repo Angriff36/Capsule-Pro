@@ -56,9 +56,22 @@ const StaffTrainingPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
+  // ponytail: select only the 9 scalar fields the row map consumes (+ the
+  // _count relations, folded from include→select). Drops 11 unused business
+  // columns/code, contentUrl, passThresholdPercent, maxAttempts, requiredRole,
+  // status, version, publishedAt, archivedAt, notes, createdBy) per row.
   const moduleRecords = await database.trainingModule.findMany({
     where: { tenantId, deletedAt: null },
-    include: {
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      contentType: true,
+      durationMinutes: true,
+      category: true,
+      isRequired: true,
+      isActive: true,
+      createdAt: true,
       _count: {
         select: {
           assignments: { where: { deletedAt: null } },

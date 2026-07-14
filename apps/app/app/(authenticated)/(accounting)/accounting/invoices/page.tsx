@@ -22,10 +22,24 @@ export default async function InvoicesPage() {
     redirect("/");
   }
 
+  // ponytail: select only the 8 fields the row map consumes — drops the heavy
+  // `notes`/`internalNotes` (@db.Text) + `lineItems`/`metadata` (Json) blobs +
+  // ~21 unused scalars per row. `select` is a column projection (never removes
+  // rows), so take:50 + the serialized shape are byte-identical.
   const invoices = await database.invoice.findMany({
     where: { tenantId },
     orderBy: { createdAt: "desc" },
     take: 50,
+    select: {
+      id: true,
+      invoiceNumber: true,
+      invoiceType: true,
+      status: true,
+      total: true,
+      amountDue: true,
+      dueDate: true,
+      createdAt: true,
+    },
   });
 
   const serialized = invoices.map((inv) => ({

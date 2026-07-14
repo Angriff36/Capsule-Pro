@@ -20,10 +20,30 @@ export default async function RevenueRecognitionPage() {
   }
 
   const [schedules, invoices, clients] = await Promise.all([
+    // ponytail: select only the 15 fields the row map consumes — drops the
+    // heavy `notes` (@db.Text) + `metadata` (Json) blobs + unused scalars per
+    // row. Column projection, so take:100 + the serialized shape are unchanged.
     database.revenueRecognitionSchedule.findMany({
       where: { tenantId, deletedAt: null },
       orderBy: { createdAt: "desc" },
       take: 100,
+      select: {
+        id: true,
+        invoiceId: true,
+        clientId: true,
+        method: true,
+        status: true,
+        totalAmount: true,
+        recognizedAmount: true,
+        remainingAmount: true,
+        startDate: true,
+        endDate: true,
+        description: true,
+        recognitionPeriod: true,
+        totalMilestones: true,
+        completedMilestones: true,
+        createdAt: true,
+      },
     }),
     database.invoice.findMany({
       where: { tenantId, deletedAt: null },

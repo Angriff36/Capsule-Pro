@@ -64,10 +64,23 @@ export default async function SchedulingRequestsPage() {
   let loadError: string | null = null;
 
   try {
+    // ponytail: select only the 8 fields the row map consumes — drops
+    // reviewedBy/reviewedAt/rejectionReason/balanceSnapshot/balanceUnit +
+    // housekeeping per row. Column projection; take:50 + shape unchanged.
     const rows = await database.timeOffRequest.findMany({
       where: { tenantId, deletedAt: null },
       orderBy: { submittedAt: "desc" },
       take: 50,
+      select: {
+        id: true,
+        employeeId: true,
+        requestType: true,
+        startDate: true,
+        endDate: true,
+        reason: true,
+        status: true,
+        submittedAt: true,
+      },
     });
     const employees = await database.user.findMany({
       where: {
@@ -102,10 +115,20 @@ export default async function SchedulingRequestsPage() {
   }
 
   try {
+    // ponytail: select only the 5 fields the row map consumes — drops
+    // timeEntryId/requestedClockIn/requestedClockOut/requestedBreakMinutes +
+    // housekeeping per row. Column projection; take:50 + shape unchanged.
     const rows = await database.timecardEditRequest.findMany({
       where: { tenantId },
       orderBy: { createdAt: "desc" },
       take: 50,
+      select: {
+        id: true,
+        employeeId: true,
+        reason: true,
+        status: true,
+        createdAt: true,
+      },
     });
     const employees = await database.user.findMany({
       where: {
