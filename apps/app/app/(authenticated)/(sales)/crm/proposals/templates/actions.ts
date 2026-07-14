@@ -158,12 +158,28 @@ export async function getProposalTemplates(
     });
   }
 
+  // Select ONLY the fields the two consumers read (templates/page.tsx list +
+  // proposal-form.tsx dropdown): id, name, description, eventType, isActive,
+  // isDefault, defaultLineItems (the last only for a `.length` badge). Drops 12
+  // unused columns incl. the heavy `defaultTerms` @db.Text + 4 branding strings.
+  // No cast to ProposalTemplate[]: serializeDecimals<T> preserves T, so the
+  // inferred subset return type makes a future consumer reading a dropped field
+  // a compile error instead of a silent undefined.
   const templates = await database.proposalTemplate.findMany({
     where: whereClause,
     orderBy: [{ isDefault: "desc" }, { name: "asc" }],
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      eventType: true,
+      isActive: true,
+      isDefault: true,
+      defaultLineItems: true,
+    },
   });
 
-  return templates.map(serializeDecimals) as ProposalTemplate[];
+  return templates.map(serializeDecimals);
 }
 
 /**
