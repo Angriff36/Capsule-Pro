@@ -28,11 +28,13 @@ export async function GET(
     const tenantId = await getTenantIdForOrg(orgId);
     const { searchParams } = new URL(request.url);
 
-    // Validate event exists
+    // Validate event exists (pure existence check — `event` is only read in the
+    // `!event` 404 guard below; select { id } avoids materializing all columns).
     const event = await database.event.findFirst({
       where: {
         AND: [{ tenantId }, { id: eventId }, { deletedAt: null }],
       },
+      select: { id: true },
     });
 
     if (!event) {

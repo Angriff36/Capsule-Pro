@@ -39,11 +39,13 @@ export async function GET(
     const limit = clampLimit(searchParams.get("limit"));
     const offset = clampOffset(searchParams.get("offset"));
 
-    // Verify client exists
+    // Verify client exists (pure existence check — `client` is only read in the
+    // `!client` 404 guard below; select { id } avoids materializing all columns).
     const client = await database.client.findFirst({
       where: {
         AND: [{ tenantId }, { id }, { deletedAt: null }],
       },
+      select: { id: true },
     });
 
     if (!client) {

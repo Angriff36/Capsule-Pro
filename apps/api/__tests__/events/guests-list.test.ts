@@ -116,6 +116,12 @@ describe("GET /api/events/[eventId]/guests (list)", () => {
       offset: 10,
       total: 25,
     });
+
+    // Existence-read projection guard: findFirst is a pure existence check (only
+    // the `!event` 404 guard reads it) → MUST select only `id`.
+    expect(database.event.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ select: { id: true } })
+    );
   });
 
   it("rejects unauthenticated requests with 401 before any DB read", async () => {

@@ -49,7 +49,9 @@ describe("GET /api/crm/clients/[id]/interactions (list)", () => {
     vi.clearAllMocks();
     vi.mocked(auth).mockResolvedValue({ orgId: "org_test" } as never);
     vi.mocked(getTenantIdForOrg).mockResolvedValue("tenant_test");
-    vi.mocked(database.client.findFirst).mockResolvedValue({ id: "c1" } as never);
+    vi.mocked(database.client.findFirst).mockResolvedValue({
+      id: "c1",
+    } as never);
   });
 
   it("runs findMany + count concurrently, not serially", async () => {
@@ -95,6 +97,12 @@ describe("GET /api/crm/clients/[id]/interactions (list)", () => {
     expect(res.status).toBe(200);
     expect(body.data).toHaveLength(1);
     expect(body.pagination).toEqual({ limit: 10, offset: 20, total: 5 });
+
+    // Existence-read projection guard: findFirst is a pure existence check (only
+    // the `!client` 404 guard reads it) → MUST select only `id`.
+    expect(database.client.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ select: { id: true } })
+    );
   });
 
   it("rejects unauthenticated requests with 401 before any DB read", async () => {
