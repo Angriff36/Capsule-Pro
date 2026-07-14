@@ -98,20 +98,32 @@ async function processEditRequests(
     reason: string;
   }>
 ) {
-  for (const editRequest of editRequests) {
-    const timeEntry = await tx.timeEntry.findUnique({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: editRequest.timeEntryId,
-        },
-      },
-      select: {
-        employeeId: true,
-      },
-    });
+  if (editRequests.length === 0) {
+    return;
+  }
 
-    if (!timeEntry) {
+  // Batch the per-entry employeeId lookups into one query instead of N
+  // findUnique calls. TimeEntry is never written in this loop, so the snapshot
+  // is stable across iterations (no read-after-write hazard). findUnique does
+  // not filter deletedAt, so neither does this — matching prior semantics (the
+  // entries were already validated as non-deleted upstream).
+  const employeeByEntry = new Map(
+    (
+      await tx.timeEntry.findMany({
+        where: {
+          tenantId,
+          id: { in: editRequests.map((r) => r.timeEntryId) },
+        },
+        select: { id: true, employeeId: true },
+      })
+    ).map((e) => [e.id, e.employeeId] as const)
+  );
+
+  for (const editRequest of editRequests) {
+    const employeeId = employeeByEntry.get(editRequest.timeEntryId);
+
+    // Entry missing → skip (matches findUnique → null → continue).
+    if (employeeId === undefined) {
       continue;
     }
 
@@ -143,7 +155,7 @@ async function processEditRequests(
         data: {
           tenantId,
           timeEntryId: editRequest.timeEntryId,
-          employeeId: timeEntry.employeeId,
+          employeeId,
           requestedClockIn: editRequest.requestedClockIn
             ? new Date(editRequest.requestedClockIn)
             : null,
@@ -168,31 +180,60 @@ async function processExceptionFlags(
     notes: string;
   }>
 ) {
-  for (const flag of flagExceptions) {
-    const timeEntry = await tx.timeEntry.findUnique({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: flag.timeEntryId,
-        },
-      },
-      select: {
-        notes: true,
-      },
-    });
+  if (flagExceptions.length === 0) {
+    return;
+  }
 
-    if (!timeEntry) {
+  // Group flags by timeEntryId so each entry's notes are read once and written
+  // once. The original loop appended each flag's note sequentially via a per-row
+  // updateMany; grouping yields a byte-identical final notes string in a single
+  // write per entry, preserving original array order within an entry (so the
+  // accumulation order — and thus the final string — is unchanged even when a
+  // body contains multiple flags for the same timeEntryId).
+  const flagsByEntry = new Map<string, typeof flagExceptions>();
+  for (const flag of flagExceptions) {
+    const list = flagsByEntry.get(flag.timeEntryId);
+    if (list) {
+      list.push(flag);
+    } else {
+      flagsByEntry.set(flag.timeEntryId, [flag]);
+    }
+  }
+
+  const notesById = new Map(
+    (
+      await tx.timeEntry.findMany({
+        where: {
+          tenantId,
+          id: { in: [...flagsByEntry.keys()] },
+        },
+        select: { id: true, notes: true },
+      })
+    ).map((e) => [e.id, e.notes] as const)
+  );
+
+  for (const [timeEntryId, flags] of flagsByEntry) {
+    const baseNotes = notesById.get(timeEntryId);
+    // Entry missing → skip (matches findUnique → null → continue). Entry exists
+    // but soft-deleted → notes read, but updateMany filters deletedAt: null so
+    // it no-ops, same as the original.
+    if (baseNotes === undefined) {
       continue;
     }
+
+    const combinedNotes = flags.reduce(
+      (acc, flag) => `${acc} [EXCEPTION: ${flag.exceptionType}] ${flag.notes}`,
+      baseNotes ?? ""
+    );
 
     await tx.timeEntry.updateMany({
       where: {
         tenantId,
-        id: flag.timeEntryId,
+        id: timeEntryId,
         deletedAt: null,
       },
       data: {
-        notes: `${timeEntry.notes ?? ""} [EXCEPTION: ${flag.exceptionType}] ${flag.notes}`,
+        notes: combinedNotes,
       },
     });
   }
