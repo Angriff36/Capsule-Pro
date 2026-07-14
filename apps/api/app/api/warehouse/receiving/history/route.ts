@@ -114,7 +114,19 @@ export async function GET(request: Request) {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: [{ receivedAt: "desc" }, { createdAt: "desc" }],
-        include: {
+        // ponytail: column projection — narrow to exactly the 6 scalars the
+        // response mapping reads + the items relation (was returning all 22
+        // PurchaseOrder columns; drops 16 incl. 4 Decimal money fields/row).
+        // `orderBy` on the non-selected `createdAt` is fine (independent of
+        // select). A dropped consumed field is a Prisma compile error; select
+        // never removes rows, so counts/completion math are byte-identical.
+        select: {
+          id: true,
+          poNumber: true,
+          vendorId: true,
+          status: true,
+          receivedAt: true,
+          receivedBy: true,
           items: {
             where: { deletedAt: null },
             select: {

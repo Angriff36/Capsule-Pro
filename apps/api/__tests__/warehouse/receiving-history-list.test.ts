@@ -92,6 +92,26 @@ describe("GET /api/warehouse/receiving/history (list)", () => {
       total: 35,
       totalPages: 4,
     });
+
+    // Column-projection guard (#17 over-fetch): findMany MUST select exactly the
+    // 6 consumed scalars + the items relation (folded out of `include`). Re-adding
+    // a dropped column OR reverting to `include` (no parent select) fails loudly.
+    expect(database.purchaseOrder.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: {
+          id: true,
+          poNumber: true,
+          vendorId: true,
+          status: true,
+          receivedAt: true,
+          receivedBy: true,
+          items: {
+            where: { deletedAt: null },
+            select: { quantityOrdered: true, quantityReceived: true },
+          },
+        },
+      })
+    );
   });
 
   it("rejects unauthenticated requests with 401 before any DB read", async () => {
