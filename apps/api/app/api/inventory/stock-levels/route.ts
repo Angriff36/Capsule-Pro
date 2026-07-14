@@ -530,6 +530,22 @@ async function executeStockLevelQueries(
     skip: (page - 1) * limit,
     take: limit,
     orderBy: [{ category: "asc" }, { name: "asc" }],
+    // Only the fields consumed downstream (createStockLevel + processStockLevels
+    // + the itemIds map). Drops tags (String[]), description, unitOfMeasure,
+    // parLevel (derived from reorder_level, not read), supplierId, quantityReserved,
+    // and the fsa_* columns — ~11 unused columns × page size (up to 100 rows).
+    select: {
+      id: true,
+      tenantId: true,
+      item_number: true,
+      name: true,
+      category: true,
+      quantityOnHand: true,
+      reorder_level: true,
+      unitCost: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
 
   const itemIds = items.map((item) => item.id);
@@ -539,6 +555,14 @@ async function executeStockLevelQueries(
       tenantId,
       itemId: { in: itemIds },
       ...(locationFilter && { storageLocationId: locationFilter }),
+    },
+    // groupStockByItemAndLocation reads only these 4 fields; shed id, tenantId,
+    // unitId, createdAt, updatedAt.
+    select: {
+      itemId: true,
+      storageLocationId: true,
+      quantityOnHand: true,
+      lastCountedAt: true,
     },
   });
 
