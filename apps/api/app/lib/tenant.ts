@@ -1,11 +1,11 @@
 import "server-only";
 
-import { cache } from "react";
 import { auth, currentUser } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException, captureMessage } from "@sentry/nextjs";
 import { headers } from "next/headers";
+import { cache } from "react";
 import { getRequiredScope } from "@/lib/scope-guard";
 import { authenticateApiKey, hasScope } from "@/middleware/api-key-auth";
 import { invariant } from "./invariant";
@@ -34,13 +34,27 @@ export const getTenantIdForOrg = async (orgId: string): Promise<string> => {
   });
 
   if (!account) {
-    // Create new account if it doesn't exist
-    account = await database.account.create({
-      data: {
-        name: orgId,
-        slug: orgId,
-      },
-    });
+    // Create new account if it doesn't exist. `slug` is @unique (infra.prisma),
+    // so two concurrent first-org-provisioning requests can race past the
+    // findFirst: both see no account, both try to create, one wins and the other
+    // throws P2002. Re-fetch the winner instead of surfacing a 500 — same shape
+    // as the user-provisioning race handled in resolveClerkUser below.
+    try {
+      account = await database.account.create({
+        data: {
+          name: orgId,
+          slug: orgId,
+        },
+      });
+    } catch (createErr) {
+      account = await database.account.findFirst({
+        where: { slug: orgId, deletedAt: null },
+      });
+      // No winning row either → the create failed for a different reason; surface it.
+      if (!account) {
+        throw createErr;
+      }
+    }
   }
 
   // Cache only on success — a thrown findFirst/create never reaches here, so a

@@ -98,4 +98,31 @@ describe("getTenantIdForOrg — per-process org→tenant cache", () => {
     expect(b).toBe("id-org-b");
     expect(findFirst()).toHaveBeenCalledTimes(2);
   });
+
+  it("recovers from a concurrent create race by re-fetching the winner", async () => {
+    // `slug` is @unique, so two concurrent first-org-provisioning requests can
+    // both see no account and both try to create; the loser throws P2002. It must
+    // re-fetch the row the winner created instead of surfacing a 500.
+    findFirst()
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: "tenant-winner" } as never);
+    create().mockRejectedValue(new Error("Unique constraint failed") as never);
+
+    const id = await getTenantIdForOrg("org-race");
+
+    expect(id).toBe("tenant-winner");
+    expect(create()).toHaveBeenCalledTimes(1);
+    expect(findFirst()).toHaveBeenCalledTimes(2); // initial miss + race re-fetch
+  });
+
+  it("re-throws when create fails and no winning row exists", async () => {
+    // A non-race create failure must surface the original error — the race
+    // recovery must not swallow it via the re-find.
+    findFirst().mockResolvedValue(null);
+    create().mockRejectedValue(new Error("db down") as never);
+
+    await expect(getTenantIdForOrg("org-fail")).rejects.toThrow("db down");
+    expect(findFirst()).toHaveBeenCalledTimes(2); // miss + re-fetch (also null)
+    expect(create()).toHaveBeenCalledTimes(1);
+  });
 });
