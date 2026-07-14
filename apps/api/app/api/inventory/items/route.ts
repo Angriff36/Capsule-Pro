@@ -292,16 +292,20 @@ export async function GET(request: Request) {
       });
     }
 
-    // Get total count for pagination
-    const total = await database.inventoryItem.count({ where });
-
-    // Get items with pagination
-    const items = await database.inventoryItem.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: [{ category: "asc" }, { name: "asc" }],
-    });
+    // Total count + page of items are fully data-independent (both keyed only on
+    // the shared `where`), so run them in one concurrent round instead of two
+    // serial round-trips. The stock_status branch above resolves its own
+    // count/IDs via SQL and is intentionally separate. Array order mirrors the
+    // prior serial call order (count-first).
+    const [total, items] = await Promise.all([
+      database.inventoryItem.count({ where }),
+      database.inventoryItem.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: [{ category: "asc" }, { name: "asc" }],
+      }),
+    ]);
 
     // Calculate stock status and total value for each item
     const data = items.map(mapInventoryItemWithStatus);
