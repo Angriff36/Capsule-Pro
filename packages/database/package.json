@@ -30,19 +30,17 @@
     }
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.1.0",
-    "@prisma/adapter-neon": "7.8.0",
     "@prisma/adapter-pg": "7.8.0",
     "@prisma/client": "7.8.0",
     "@prisma/client-runtime-utils": "^7.8.0",
     "@t3-oss/env-nextjs": "^0.13.11",
     "pg": "^8.21.0",
     "server-only": "^0.0.1",
-    "undici": "^8.4.1",
-    "ws": "^8.21.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@neondatabase/serverless": "^1.1.0",
+    "@prisma/adapter-neon": "7.8.0",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "25.9.1",
     "@types/pg": "^8.20.0",
@@ -51,7 +49,9 @@
     "dotenv": "^17.4.2",
     "prisma": "7.8.0",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.9"
+    "undici": "^8.4.1",
+    "vitest": "^4.1.9",
+    "ws": "^8.21.0"
   },
   "scripts": {
     "build": "prisma generate --no-hints --schema=./prisma/schema",

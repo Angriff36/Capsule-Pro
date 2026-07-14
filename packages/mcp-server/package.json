@@ -21,8 +21,6 @@
   "dependencies": {
     "@angriff36/manifest": "3.4.25",
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@neondatabase/serverless": "^1.1.0",
-    "@prisma/adapter-neon": "7.8.0",
     "@repo/database": "workspace:*",
     "@repo/manifest-runtime": "workspace:*",
     "@sentry/node": "^10.57.0",
@@ -31,6 +29,8 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@neondatabase/serverless": "^1.1.0",
+    "@prisma/adapter-neon": "7.8.0",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "25.9.1",
     "tsx": "^4.22.4",
