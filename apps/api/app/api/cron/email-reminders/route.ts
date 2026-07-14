@@ -155,7 +155,10 @@ async function processTaskReminders() {
   const now = new Date();
   const twentyFourHoursFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-  // Find active task reminder workflows
+  // Find active task reminder workflows. Only `tenantId` is consumed below
+  // (to derive the per-tenant work list) — `triggerConfig` was previously
+  // selected but never read, so a cross-tenant sweep fetched a Json column
+  // for nothing. Mirrors the shift_reminder / contract_expiration sweeps.
   const workflows = await database.emailWorkflow.findMany({
     where: {
       triggerType: "task_reminder",
@@ -164,7 +167,6 @@ async function processTaskReminders() {
     },
     select: {
       tenantId: true,
-      triggerConfig: true,
     },
   });
 
@@ -341,9 +343,15 @@ async function processShiftReminders() {
         continue;
       }
 
-      // Get unique employee IDs and location IDs
+      // Get unique employee IDs and location IDs. `locationId` is nullable
+      // (ScheduleShift.locationId is String?) — drop nulls so the `in:` below
+      // stays `string[]` (a null in the IN list can never match anyway).
       const employeeIds = [...new Set(shifts.map((s) => s.employeeId))];
-      const locationIds = [...new Set(shifts.map((s) => s.locationId))];
+      const locationIds = [
+        ...new Set(
+          shifts.map((s) => s.locationId).filter((id): id is string => id !== null)
+        ),
+      ];
 
       // Fetch employees and locations separately
       const employees = await database.user.findMany({
@@ -378,7 +386,9 @@ async function processShiftReminders() {
         result.processed++;
 
         const employee = employeeMap.get(shift.employeeId);
-        const location = locationMap.get(shift.locationId);
+        const location = shift.locationId
+          ? locationMap.get(shift.locationId)
+          : undefined;
 
         if (!employee?.email) {
           continue;
