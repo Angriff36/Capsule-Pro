@@ -104,6 +104,21 @@ export async function GET(request: NextRequest) {
         status: "draft",
       },
       orderBy: { createdAt: "asc" },
+      // ponytail: column projection — narrow to exactly the fields the response
+      // mapping + supplier grouping read (no @db.Text/Json blob on this model;
+      // ~20 other scalar columns dropped per row). A dropped consumed field is a
+      // compile error (Prisma narrows the return type).
+      select: {
+        id: true,
+        requisitionNumber: true,
+        sourceType: true,
+        supplierId: true,
+        status: true,
+        itemCount: true,
+        subtotal: true,
+        estimatedTotal: true,
+        notes: true,
+      },
     });
     const draftIds = drafts.map((d) => d.id);
     const draftItems = draftIds.length
@@ -114,6 +129,18 @@ export async function GET(request: NextRequest) {
             requisitionId: { in: draftIds },
           },
           orderBy: { itemName: "asc" },
+          select: {
+            id: true,
+            requisitionId: true, // read by the in-memory join below
+            itemId: true,
+            itemName: true,
+            quantityRequested: true,
+            estimatedUnitCost: true,
+            estimatedTotalCost: true,
+            specifications: true,
+            notes: true,
+            sourcePrepListIds: true,
+          },
         })
       : [];
 
