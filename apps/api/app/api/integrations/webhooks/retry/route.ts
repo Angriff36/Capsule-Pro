@@ -92,16 +92,21 @@ export async function POST(request: NextRequest) {
       finalStatus: DeliveryStatus;
     }> = [];
 
+    // Preload the distinct outbound webhooks in one query — collapses a
+    // per-delivery outboundWebhook.findFirst N+1 into 1 findMany + Map lookup
+    // (same read-preload shape as cron/webhook-retry, #8c). All deliveries
+    // share the resolved tenantId, so the preload keys on (tenantId, id IN).
+    const distinctWebhookIds = [...new Set(deliveries.map((d) => d.webhookId))];
+    const webhookRows = await database.outboundWebhook.findMany({
+      where: { tenantId, id: { in: distinctWebhookIds }, deletedAt: null },
+    });
+    const webhooksById = new Map<string, (typeof webhookRows)[number]>(
+      webhookRows.map((w) => [w.id, w])
+    );
+
     // Process each delivery
     for (const delivery of deliveries) {
-      // Get the webhook
-      const webhook = await database.outboundWebhook.findFirst({
-        where: {
-          tenantId,
-          id: delivery.webhookId,
-          deletedAt: null,
-        },
-      });
+      const webhook = webhooksById.get(delivery.webhookId);
 
       if (!webhook) {
         // Webhook was deleted, mark delivery as failed
@@ -246,6 +251,17 @@ export async function POST(request: NextRequest) {
           },
         },
         data: updates,
+      });
+
+      // Feed the updated stats back into the Map so a later delivery to the
+      // SAME webhook observes the new consecutiveFailures (and a tripped
+      // auto-disable) — the prior per-delivery findFirst re-read the just-
+      // updated row. Only these two fields affect cross-delivery behavior;
+      // url/secret/retryCount/etc. are immutable webhook config.
+      webhooksById.set(webhook.id, {
+        ...webhook,
+        consecutiveFailures: updates.consecutiveFailures,
+        ...(updates.status ? { status: updates.status } : {}),
       });
 
       results.push({
