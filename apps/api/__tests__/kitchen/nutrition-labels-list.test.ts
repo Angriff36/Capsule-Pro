@@ -31,6 +31,7 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { GET } from "@/app/api/kitchen/nutrition-labels/list/route";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { expectTotalDbCalls } from "../db-query-tracker";
 
 describe("GET /api/kitchen/nutrition-labels/list", () => {
   beforeEach(() => {
@@ -69,6 +70,10 @@ describe("GET /api/kitchen/nutrition-labels/list", () => {
     // Per-row N+1 methods NEVER called (regression guard).
     expect(database.recipeVersion.findFirst).not.toHaveBeenCalled();
     expect(database.recipeIngredient.count).not.toHaveBeenCalled();
+    // Cross-model total (#28): a read on ANY other model (e.g. a re-added
+    // per-recipe findMany) trips this even though each batched method is still
+    // called once — the per-method assertions above cannot catch that.
+    expectTotalDbCalls(database, 3);
 
     expect(body).toEqual({
       success: true,

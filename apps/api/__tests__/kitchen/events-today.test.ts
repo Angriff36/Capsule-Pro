@@ -36,6 +36,7 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { GET } from "@/app/api/kitchen/events/today/route";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { expectNoDbWrites, expectTotalDbCalls } from "../db-query-tracker";
 
 const eventFindMany = database.event.findMany as ReturnType<typeof vi.fn>;
 const kitchenTaskFindMany = database.kitchenTask.findMany as ReturnType<
@@ -144,6 +145,12 @@ describe("GET /api/kitchen/events/today", () => {
     const body = await res.json();
 
     expect(res.status).toBe(200);
+    // Regression guard (#28): the happy path issues exactly the 5 documented
+    // reads (events, kitchenTasks, prepLists, claims, prepListItems) — an added
+    // call on any of them (an N+1 reintroduction) trips this.
+    expectTotalDbCalls(database, 5);
+    // And it is a read-only GET — no writes (#2/#16 read-only-on-GET invariant).
+    expectNoDbWrites(database);
     expect(body.events).toHaveLength(1);
     expect(body.events[0]).toMatchObject({
       id: "e1",
