@@ -685,25 +685,45 @@ export async function saveForecastToDatabase(
     throw new Error(`Inventory item with SKU ${forecast.sku} not found`);
   }
 
-  // Save each forecast point
-  for (const point of forecast.forecast) {
-    const existing = await database.inventoryForecast.findFirst({
+  // Preload ALL existing forecast rows for this SKU+dates in ONE query
+  // (was one findFirst PER point — N sequential reads). Forecast points
+  // carry unique dates (one per day-offset in getProjectedUsage), so each
+  // date maps to at most one row; first-wins mirrors findFirst's "first
+  // match" when duplicate-date rows exist (there is no unique constraint on
+  // tenantId+sku+date).
+  const points = forecast.forecast;
+  const existingByDate = new Map<number, { id: string }>();
+  if (points.length > 0) {
+    const existingRows = await database.inventoryForecast.findMany({
       where: {
         tenantId,
         sku: forecast.sku,
-        date: point.date,
+        date: { in: points.map((p) => p.date) },
       },
+      select: { id: true, date: true },
     });
-
-    const forecastValue = point.projectedStock;
-    let confidenceValue: number;
-    if (forecast.confidence === "high") {
-      confidenceValue = 0.9;
-    } else if (forecast.confidence === "medium") {
-      confidenceValue = 0.6;
-    } else {
-      confidenceValue = 0.3;
+    for (const row of existingRows) {
+      const key = row.date.getTime();
+      if (!existingByDate.has(key)) {
+        existingByDate.set(key, { id: row.id });
+      }
     }
+  }
+
+  // confidence is constant across all points for this forecast
+  const confidenceValue =
+    forecast.confidence === "high"
+      ? 0.9
+      : forecast.confidence === "medium"
+        ? 0.6
+        : 0.3;
+
+  // Save each forecast point. Writes stay per-point — each carries a
+  // distinct projectedQuantity, so the updates cannot be collapsed into one
+  // call.
+  for (const point of points) {
+    const forecastValue = point.projectedStock;
+    const existing = existingByDate.get(point.date.getTime());
 
     if (existing) {
       await database.inventoryForecast.update({

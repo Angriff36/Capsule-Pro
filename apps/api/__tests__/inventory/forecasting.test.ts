@@ -664,8 +664,8 @@ describe("Inventory Forecasting Service", () => {
       vi.mocked(database.inventoryItem.findFirst).mockResolvedValue({
         id: "item-1",
       } as any);
-      // Mock findFirst to return null (no existing record — will create)
-      vi.mocked(database.inventoryForecast.findFirst).mockResolvedValue(null);
+      // No existing forecast rows — the preload returns [] → every point is created
+      vi.mocked(database.inventoryForecast.findMany).mockResolvedValue([]);
 
       vi.mocked(database.inventoryForecast.create).mockResolvedValue({
         id: "forecast-1",
@@ -695,8 +695,10 @@ describe("Inventory Forecasting Service", () => {
         ],
       };
       await saveForecastToDatabase(TEST_TENANT_ID, forecast);
-      // The implementation calls findFirst first for each forecast point
-      expect(database.inventoryForecast.findFirst).toHaveBeenCalled();
+      // Preloads existing rows in ONE findMany (was N findFirst) — see the
+      // N+1-collapse test below. findFirst is no longer used on the read path.
+      expect(database.inventoryForecast.findMany).toHaveBeenCalledTimes(1);
+      expect(database.inventoryForecast.findFirst).not.toHaveBeenCalled();
       // Then calls create since no existing record
       expect(database.inventoryForecast.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -706,6 +708,95 @@ describe("Inventory Forecasting Service", () => {
           }),
         })
       );
+    });
+
+    it("collapses the per-point findFirst N+1 into ONE findMany regardless of point count", async () => {
+      vi.mocked(database.inventoryItem.findFirst).mockResolvedValue({
+        id: "item-1",
+      } as any);
+      // 30 forecast points — must NOT produce 30 sequential reads
+      const today = new Date();
+      const forecast = {
+        sku: TEST_SKU,
+        currentStock: 100,
+        depletionDate: new Date(today.getTime() + 20 * 86_400_000),
+        daysUntilDepletion: 20,
+        confidence: "high" as const,
+        forecast: Array.from({ length: 30 }, (_, i) => ({
+          date: new Date(today.getTime() + i * 86_400_000),
+          projectedStock: 100 - i,
+          usage: 5,
+        })),
+      };
+      vi.mocked(database.inventoryForecast.findMany).mockResolvedValue([]);
+      vi.mocked(database.inventoryForecast.create).mockResolvedValue({
+        id: "forecast-1",
+      } as any);
+
+      await saveForecastToDatabase(TEST_TENANT_ID, forecast);
+
+      // ONE preload read regardless of N points (was 30 findFirst)
+      expect(database.inventoryForecast.findMany).toHaveBeenCalledTimes(1);
+      expect(database.inventoryForecast.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            tenantId: TEST_TENANT_ID,
+            sku: TEST_SKU,
+            date: { in: expect.any(Array) },
+          }),
+          select: { id: true, date: true },
+        })
+      );
+      // findFirst is no longer used on the read path
+      expect(database.inventoryForecast.findFirst).not.toHaveBeenCalled();
+      // All 30 points created (no existing rows)
+      expect(database.inventoryForecast.create).toHaveBeenCalledTimes(30);
+    });
+
+    it("updates existing rows and creates missing ones from the preloaded map", async () => {
+      vi.mocked(database.inventoryItem.findFirst).mockResolvedValue({
+        id: "item-1",
+      } as any);
+      const today = new Date();
+      const existingDate = new Date(today.getTime() + 86_400_000); // day 1 already saved
+      vi.mocked(database.inventoryForecast.findMany).mockResolvedValue([
+        { id: "existing-1", date: existingDate } as any,
+      ]);
+      vi.mocked(database.inventoryForecast.update).mockResolvedValue({
+        id: "existing-1",
+      } as any);
+      vi.mocked(database.inventoryForecast.create).mockResolvedValue({
+        id: "new-2",
+      } as any);
+
+      const forecast = {
+        sku: TEST_SKU,
+        currentStock: 100,
+        depletionDate: new Date(today.getTime() + 20 * 86_400_000),
+        daysUntilDepletion: 20,
+        confidence: "high" as const,
+        forecast: [
+          { date: existingDate, projectedStock: 90, usage: 5 }, // exists → update
+          {
+            date: new Date(today.getTime() + 2 * 86_400_000),
+            projectedStock: 85,
+            usage: 5,
+          }, // new → create
+        ],
+      };
+
+      await saveForecastToDatabase(TEST_TENANT_ID, forecast);
+
+      expect(database.inventoryForecast.findMany).toHaveBeenCalledTimes(1);
+      expect(database.inventoryForecast.update).toHaveBeenCalledTimes(1);
+      expect(database.inventoryForecast.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            tenantId_id: { tenantId: TEST_TENANT_ID, id: "existing-1" },
+          },
+        })
+      );
+      expect(database.inventoryForecast.create).toHaveBeenCalledTimes(1);
     });
   });
 
