@@ -86,19 +86,20 @@ export async function GET(request: Request) {
       months = 12;
     }
 
-    // Fetch all necessary data in parallel queries
-    const [events, profitabilityData] = await Promise.all([
+    // Fetch all necessary data in parallel queries. The top-dishes read is keyed
+    // only on tenantId (independent of the event/profitability window), so it
+    // joins the initial batch instead of awaiting its own round after the JS
+    // aggregation below — collapsing 3 serial rounds to 2 (the clients read is
+    // the only one that depends on a prior result: the events' clientIds).
+    const [events, profitabilityData, topDishes] = await Promise.all([
       analyticsDatabase.$queryRawUnsafe<
         Array<{
           id: string;
           event_type: string;
           event_date: Date;
           guest_count: number;
-          title: string;
           client_id: string | null;
-          venue_id: string | null;
           venue_name: string | null;
-          location_id: string | null;
         }>
       >(
         `
@@ -107,11 +108,8 @@ export async function GET(request: Request) {
           event_type,
           event_date,
           guest_count,
-          title,
           client_id,
-          venue_id,
-          venue_name,
-          location_id
+          venue_name
         FROM tenant_events.events
         WHERE tenant_id = $1
           AND deleted_at IS NULL
@@ -144,6 +142,36 @@ export async function GET(request: Request) {
         `,
         tenantId,
         months
+      ),
+      // No direct event-dish relationship; dish popularity (menu_count) is the
+      // proxy. Bounded with LIMIT 20.
+      analyticsDatabase.$queryRawUnsafe<
+        Array<{
+          dish_id: string;
+          dish_name: string;
+          category: string | null;
+          menu_count: number;
+          avg_price: string;
+        }>
+      >(
+        `
+        SELECT
+          d.id as dish_id,
+          d.name as dish_name,
+          d.category,
+          COUNT(DISTINCT md.menu_id) as menu_count,
+          COALESCE(AVG(d.price_per_person), 0) as avg_price
+        FROM tenant_kitchen.dishes d
+        LEFT JOIN tenant_kitchen.menu_dishes md ON d.tenant_id = md.tenant_id AND d.id = md.dish_id
+        LEFT JOIN tenant_kitchen.menus m ON md.tenant_id = m.tenant_id AND md.menu_id = m.id
+        WHERE d.tenant_id = $1
+          AND d.deleted_at IS NULL
+          AND (m.deleted_at IS NULL OR m.id IS NULL)
+        GROUP BY d.id, d.name, d.category
+        ORDER BY menu_count DESC, avg_price DESC
+        LIMIT 20
+        `,
+        tenantId
       ),
     ]);
 
@@ -373,38 +401,8 @@ export async function GET(request: Request) {
       .sort((a, b) => b.totalRevenue - a.totalRevenue)
       .slice(0, 10);
 
-    // For menu items, we need to query dishes and their usage
-    // Since we don't have direct event-dish relationship, we'll use venue/dish popularity as proxy
-    const topDishes = await analyticsDatabase.$queryRawUnsafe<
-      Array<{
-        dish_id: string;
-        dish_name: string;
-        category: string | null;
-        menu_count: number;
-        avg_price: string;
-      }>
-    >(
-      `
-      SELECT
-        d.id as dish_id,
-        d.name as dish_name,
-        d.category,
-        COUNT(DISTINCT md.menu_id) as menu_count,
-        COALESCE(AVG(d.price_per_person), 0) as avg_price
-      FROM tenant_kitchen.dishes d
-      LEFT JOIN tenant_kitchen.menu_dishes md ON d.tenant_id = md.tenant_id AND d.id = md.dish_id
-      LEFT JOIN tenant_kitchen.menus m ON md.tenant_id = m.tenant_id AND md.menu_id = m.id
-      WHERE d.tenant_id = $1
-        AND d.deleted_at IS NULL
-        AND (m.deleted_at IS NULL OR m.id IS NULL)
-      GROUP BY d.id, d.name, d.category
-      ORDER BY menu_count DESC, avg_price DESC
-      LIMIT 20
-      `,
-      tenantId
-    );
-
-    // Estimate margin per event based on average margin
+    // topDishes was preloaded in the initial parallel batch above; estimate
+    // margin per event based on the average margin.
     const topMenuItems = topDishes.map((dish) => ({
       dishId: dish.dish_id,
       dishName: dish.dish_name,

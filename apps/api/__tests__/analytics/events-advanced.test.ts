@@ -170,4 +170,70 @@ describe("GET /api/analytics/events/advanced — #16 shared-resolver dedupe", ()
     expect(getTenantIdForOrg).not.toHaveBeenCalled();
     expect(analyticsDatabase.$queryRawUnsafe).not.toHaveBeenCalled();
   });
+
+  it("fires the top-dishes read in the initial parallel batch, not serially after the JS aggregation", async () => {
+    // The top-dishes query depends only on tenantId, so it must join the
+    // events+profitability Promise.all. Hold the events query pending: if
+    // topDishes is batched (the fix) it is invoked in the same tick — before
+    // events resolves. A reverted serial layout (topDishes awaited after the
+    // events JS aggregation) would never invoke it while events is pending.
+    let releaseEvents!: () => void;
+    const eventsGate = new Promise<void>((resolve) => {
+      releaseEvents = resolve;
+    });
+    let dishesFiredWhileEventsPending = false;
+
+    vi.mocked(analyticsDatabase.$queryRawUnsafe).mockImplementation(((
+      sql: string
+    ) => {
+      if (sql.includes("FROM tenant_events.events")) {
+        return new Promise((resolve) => {
+          eventsGate.then(() =>
+            resolve([
+              {
+                id: "e1",
+                event_type: "wedding",
+                event_date: new Date("2026-06-15T00:00:00Z"),
+                guest_count: 100,
+                client_id: "c1",
+                venue_name: "Main Hall",
+              },
+            ])
+          );
+        });
+      }
+      if (sql.includes("FROM tenant_kitchen.dishes")) {
+        dishesFiredWhileEventsPending = true;
+        return Promise.resolve([
+          {
+            dish_id: "d1",
+            dish_name: "Pasta",
+            category: "main",
+            menu_count: BigInt(2),
+            avg_price: "10",
+          },
+        ]);
+      }
+      if (sql.includes("FROM tenant_events.event_profitability")) {
+        return Promise.resolve([
+          {
+            event_id: "e1",
+            actual_revenue: "1000",
+            actual_gross_margin: "200",
+            actual_gross_margin_pct: "20",
+            calculated_at: new Date("2026-06-16T00:00:00Z"),
+          },
+        ]);
+      }
+      return Promise.resolve([]);
+    }) as never);
+
+    const requestPromise = getAdvanced(makeRequest());
+    await vi.waitFor(() => {
+      expect(dishesFiredWhileEventsPending).toBe(true);
+    });
+    releaseEvents();
+    const res = await requestPromise;
+    expect(res.status).toBe(200);
+  });
 });
