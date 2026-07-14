@@ -97,8 +97,8 @@ export async function GET(request: Request) {
 
     // Fetch contracts + total count in parallel (count is data-independent, same
     // where) — collapses 2 serial round-trips into 1 concurrent batch (#23).
-    // The downstream groupBy/event/client queries still depend on findMany results
-    // and remain serial after.
+    // The downstream groupBy/event/client enrichment reads depend only on ids
+    // from this page (not on each other) and run in one further batch below (#7).
     const [contracts, totalCount] = await Promise.all([
       database.eventContract.findMany({
         where: whereClause,
@@ -109,24 +109,9 @@ export async function GET(request: Request) {
       database.eventContract.count({ where: whereClause }),
     ]);
 
-    // Get signature counts for each contract
+    // Collect ids from the page — all three enrichment reads below depend only
+    // on these, not on each other.
     const contractIds = contracts.map((c) => c.id);
-    const signatureCounts = await database.contractSignature.groupBy({
-      by: ["contractId"],
-      where: {
-        contractId: { in: contractIds },
-        deletedAt: null,
-      },
-      _count: {
-        id: true,
-      },
-    });
-
-    const signatureCountMap = new Map(
-      signatureCounts.map((sc) => [sc.contractId, sc._count.id])
-    );
-
-    // Collect all event and client IDs for batch query
     const eventIds = contracts
       .map((c) => c.eventId)
       .filter((id): id is string => id !== null);
@@ -134,33 +119,49 @@ export async function GET(request: Request) {
       .map((c) => c.clientId)
       .filter((id): id is string => id !== null);
 
-    // Batch fetch events and clients
-    const events = await database.event.findMany({
-      where: {
-        AND: [{ tenantId }, { id: { in: eventIds } }, { deletedAt: null }],
-      },
-      select: {
-        id: true,
-        title: true,
-        eventDate: true,
-      },
-    });
-
-    const clients = await database.client.findMany({
-      where: {
-        AND: [{ tenantId }, { id: { in: clientIds } }, { deletedAt: null }],
-      },
-      select: {
-        id: true,
-        companyName: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phone: true,
-      },
-    });
+    // Enrich the page in one concurrent batch: signature counts + events +
+    // clients each depend only on ids derived from the contracts page, so the
+    // three serial round-trips collapse into one (#7 detail-waterfall fix).
+    const [signatureCounts, events, clients] = await Promise.all([
+      database.contractSignature.groupBy({
+        by: ["contractId"],
+        where: {
+          contractId: { in: contractIds },
+          deletedAt: null,
+        },
+        _count: {
+          id: true,
+        },
+      }),
+      database.event.findMany({
+        where: {
+          AND: [{ tenantId }, { id: { in: eventIds } }, { deletedAt: null }],
+        },
+        select: {
+          id: true,
+          title: true,
+          eventDate: true,
+        },
+      }),
+      database.client.findMany({
+        where: {
+          AND: [{ tenantId }, { id: { in: clientIds } }, { deletedAt: null }],
+        },
+        select: {
+          id: true,
+          companyName: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          phone: true,
+        },
+      }),
+    ]);
 
     // Create lookup maps
+    const signatureCountMap = new Map(
+      signatureCounts.map((sc) => [sc.contractId, sc._count.id])
+    );
     const eventMap = new Map(events.map((e) => [e.id, e]));
     const clientMap = new Map(clients.map((c) => [c.id, c]));
 

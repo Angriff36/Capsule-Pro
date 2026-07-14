@@ -2,8 +2,9 @@
  * GET /api/events/contracts/expiring (list) — parallelization + pagination guard.
  *
  * Pins item #23: the route's first `findMany` + `count` run CONCURRENTLY in one
- * `Promise.all` (2 serial round-trips → 1 batch). The downstream groupBy and
- * event/client lookups depend on findMany results and stay serial after.
+ * `Promise.all` (2 serial round-trips → 1 batch). Pins item #7: the downstream
+ * groupBy + event + client enrichment reads ALSO run in one `Promise.all`
+ * (3 serial round-trips → 1 batch).
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -101,6 +102,49 @@ describe("GET /api/events/contracts/expiring (list)", () => {
       total: 25,
       totalPages: 3,
     });
+  });
+
+  it("runs groupBy + event + client enrichment concurrently, not serially", async () => {
+    vi.mocked(database.eventContract.findMany).mockResolvedValue([
+      {
+        id: "c1",
+        eventId: "e1",
+        clientId: "cl1",
+        contractNumber: "C001",
+        title: "Contract 1",
+        status: "sent",
+        documentType: null,
+        expiresAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ] as never);
+    vi.mocked(database.eventContract.count).mockResolvedValue(1);
+
+    // Hold groupBy pending — event.findMany + client.findMany must still fire in
+    // the same synchronous burst (fails if the three reads are awaited serially).
+    let resolveGroupBy!: (v: unknown) => void;
+    vi.mocked(database.contractSignature.groupBy).mockReturnValue(
+      new Promise((r) => {
+        resolveGroupBy = r;
+      }) as never
+    );
+    vi.mocked(database.event.findMany).mockResolvedValue([]);
+    vi.mocked(database.client.findMany).mockResolvedValue([]);
+
+    const p = GET(
+      new Request("http://x/api/events/contracts/expiring?days=30")
+    );
+
+    await vi.waitFor(() => {
+      expect(database.contractSignature.groupBy).toHaveBeenCalledTimes(1);
+      expect(database.event.findMany).toHaveBeenCalledTimes(1);
+      expect(database.client.findMany).toHaveBeenCalledTimes(1);
+    });
+
+    resolveGroupBy([]);
+    const res = await p;
+    expect(res.status).toBe(200);
   });
 
   it("rejects unauthenticated requests with 401 before any DB read", async () => {
