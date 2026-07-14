@@ -244,4 +244,83 @@ describe("GET /api/cron/webhook-retry — N+1 batch preload", () => {
     expect(res.status).toBe(503);
     expect(mockDeliveryFindMany).not.toHaveBeenCalled();
   });
+
+  it("accumulates consecutiveFailures across same-webhook failures (Map feed-back)", async () => {
+    // 2 failing deliveries to wh-1 (starts cf=2). With feed-back:
+    //   del-1 reads cf=2 → writes 3 → Map updated to cf=3
+    //   del-2 reads cf=3 → writes 4
+    // A frozen-snapshot impl (no set-after-update) writes 3 for BOTH → [3,3].
+    mockSendWebhook.mockResolvedValue({
+      success: false,
+      httpStatus: 500,
+      responseBody: "",
+      errorMessage: "boom",
+    });
+    mockDetermineNextStatus.mockReturnValue({
+      status: "retrying",
+      nextRetryAt: new Date(),
+    });
+    mockShouldAutoDisable.mockReturnValue(false);
+    mockDeliveryFindMany.mockResolvedValue([
+      delivery({ id: "del-1", webhookId: "wh-1" }),
+      delivery({ id: "del-2", webhookId: "wh-1" }),
+    ]);
+    mockWebhookFindMany.mockResolvedValue([
+      webhook({ id: "wh-1", consecutiveFailures: 2 }),
+    ]);
+
+    await GET(authedRequest());
+
+    expect(mockWebhookUpdate).toHaveBeenCalledTimes(2);
+    const cfs = mockWebhookUpdate.mock.calls.map(
+      (c) =>
+        (c[0] as { data: { consecutiveFailures: number } }).data
+          .consecutiveFailures
+    );
+    expect(cfs).toEqual([3, 4]); // frozen snapshot would be [3, 3]
+  });
+
+  it("propagates an auto-disable to later same-webhook deliveries (skips sending)", async () => {
+    // del-1 fails + trips auto-disable → status:"disabled". With feed-back,
+    // del-2 reads status:"disabled" from the Map and short-circuits on the
+    // inactive guard WITHOUT sending. A frozen impl reads status:"active" and
+    // sends a 2nd time to the just-disabled endpoint.
+    mockSendWebhook.mockResolvedValue({
+      success: false,
+      httpStatus: 500,
+      responseBody: "",
+      errorMessage: "boom",
+    });
+    mockDetermineNextStatus.mockReturnValue({
+      status: "retrying",
+      nextRetryAt: new Date(),
+    });
+    mockShouldAutoDisable.mockReturnValue(true);
+    mockDeliveryFindMany.mockResolvedValue([
+      delivery({ id: "del-1", webhookId: "wh-1" }),
+      delivery({ id: "del-2", webhookId: "wh-1" }),
+    ]);
+    mockWebhookFindMany.mockResolvedValue([
+      webhook({ id: "wh-1", consecutiveFailures: 2 }),
+    ]);
+
+    await GET(authedRequest());
+
+    // del-1 sent; del-2 skipped by the inactive guard (status propagated).
+    expect(mockSendWebhook).toHaveBeenCalledTimes(1);
+    // Only del-1 reaches outboundWebhook.update (del-2 short-circuits before it).
+    expect(mockWebhookUpdate).toHaveBeenCalledTimes(1);
+    expect(mockWebhookUpdate).toHaveBeenCalledWith({
+      where: { tenantId_id: { tenantId: TENANT_A, id: "wh-1" } },
+      data: expect.objectContaining({ status: "disabled" }),
+    });
+    // del-2 failed via the inactive-guard "Webhook is disabled" path.
+    expect(mockDeliveryUpdate).toHaveBeenCalledWith({
+      where: { tenantId_id: { tenantId: TENANT_A, id: "del-2" } },
+      data: expect.objectContaining({
+        status: "failed",
+        errorMessage: "Webhook is disabled",
+      }),
+    });
+  });
 });

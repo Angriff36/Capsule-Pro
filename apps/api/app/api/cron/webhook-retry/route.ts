@@ -245,6 +245,21 @@ export async function GET(request: Request): Promise<NextResponse> {
           },
           data: updates,
         });
+
+        // Feed the updated stats back into the Map so a later delivery to the
+        // SAME webhook observes the new consecutiveFailures (and a tripped
+        // auto-disable). The prior per-delivery findFirst re-read the just-
+        // updated row; the #8c read-preload froze both at the stale snapshot
+        // — a burst of failures to one webhook under-counted (auto-disable
+        // never tripped) and kept sending to a just-disabled endpoint. Only
+        // these two fields affect cross-delivery behavior; url/secret/
+        // retryCount/etc. are immutable webhook config. Keyed by
+        // `${tenantId}|${id}` to match the multi-tenant preload.
+        webhookByKey.set(`${delivery.tenantId}|${webhook.id}`, {
+          ...webhook,
+          consecutiveFailures: updates.consecutiveFailures,
+          ...(updates.status ? { status: updates.status } : {}),
+        });
       } catch (deliveryError) {
         log.error(`[webhook-retry] Failed to process delivery ${delivery.id}`, {
           error: deliveryError,
