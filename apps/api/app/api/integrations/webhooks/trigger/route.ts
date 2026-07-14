@@ -101,111 +101,115 @@ export async function POST(request: NextRequest) {
       tenantId
     );
 
-    const results: Array<{
-      webhookId: string;
-      webhookName: string;
-      success: boolean;
-      deliveryLogId: string;
-    }> = [];
-
-    // Send webhooks and log results
-    for (const webhook of triggeredWebhooks) {
-      // Create delivery log
-      const deliveryLog = await database.webhookDeliveryLog.create({
-        data: {
-          tenantId,
-          webhookId: webhook.id,
-          eventType: body.eventType as "created" | "updated" | "deleted",
-          entityType: body.entityType,
-          entityId: body.entityId,
-          payload: toJson(payload),
-          status: "pending",
-          attemptNumber: 1,
-        },
-      });
-
-      const deliveryLogId = deliveryLog.id;
-
-      // Send webhook
-      const result = await sendWebhook(
-        {
-          url: webhook.url,
-          secret: webhook.secret,
-          apiKey: webhook.apiKey,
-          timeoutMs: webhook.timeoutMs,
-          customHeaders: webhook.customHeaders as Record<string, string> | null,
-        },
-        payload
-      );
-
-      // Determine next status
-      const { status, nextRetryAt } = determineNextStatus(
-        1,
-        webhook.retryCount,
-        result
-      );
-
-      // Update delivery log
-      await database.webhookDeliveryLog.update({
-        where: {
-          tenantId_id: {
+    // Send webhooks concurrently. Each webhook's delivery is data-independent —
+    // its own deliveryLog (own id), its own HTTP endpoint, and its own stats
+    // update keyed by its own webhook.id (webhooks are distinct rows, so no two
+    // iterations contend on the same outboundWebhook row) — so the N serial
+    // outbound HTTP sends + DB writes collapse to one wave. Same infra-write
+    // shape as webhooks/retry (#25d) and PO-complete; not governed runtime
+    // writes, so the manifest-runtime concurrency limit does not apply.
+    const results = await Promise.all(
+      triggeredWebhooks.map(async (webhook) => {
+        // Create delivery log
+        const deliveryLog = await database.webhookDeliveryLog.create({
+          data: {
             tenantId,
-            id: deliveryLogId,
+            webhookId: webhook.id,
+            eventType: body.eventType as "created" | "updated" | "deleted",
+            entityType: body.entityType,
+            entityId: body.entityId,
+            payload: toJson(payload),
+            status: "pending",
+            attemptNumber: 1,
           },
-        },
-        data: {
-          status,
-          httpResponseStatus: result.httpStatus,
-          responseBody: result.responseBody,
-          errorMessage: result.errorMessage,
-          nextRetryAt,
-          deliveredAt: status === "success" ? new Date() : null,
-          failedAt: status === "failed" ? new Date() : null,
-        },
-      });
+        });
 
-      // Update webhook stats
-      const updates: {
-        lastTriggeredAt: Date;
-        lastSuccessAt?: Date;
-        lastFailureAt?: Date;
-        consecutiveFailures: number;
-        status?: typeof webhook.status;
-      } = {
-        lastTriggeredAt: new Date(),
-        consecutiveFailures: result.success
-          ? 0
-          : webhook.consecutiveFailures + 1,
-      };
+        const deliveryLogId = deliveryLog.id;
 
-      if (result.success) {
-        updates.lastSuccessAt = new Date();
-      } else {
-        updates.lastFailureAt = new Date();
+        // Send webhook
+        const result = await sendWebhook(
+          {
+            url: webhook.url,
+            secret: webhook.secret,
+            apiKey: webhook.apiKey,
+            timeoutMs: webhook.timeoutMs,
+            customHeaders: webhook.customHeaders as Record<
+              string,
+              string
+            > | null,
+          },
+          payload
+        );
 
-        // Auto-disable if too many consecutive failures
-        if (shouldAutoDisable(updates.consecutiveFailures)) {
-          updates.status = "disabled";
+        // Determine next status
+        const { status, nextRetryAt } = determineNextStatus(
+          1,
+          webhook.retryCount,
+          result
+        );
+
+        // Update delivery log
+        await database.webhookDeliveryLog.update({
+          where: {
+            tenantId_id: {
+              tenantId,
+              id: deliveryLogId,
+            },
+          },
+          data: {
+            status,
+            httpResponseStatus: result.httpStatus,
+            responseBody: result.responseBody,
+            errorMessage: result.errorMessage,
+            nextRetryAt,
+            deliveredAt: status === "success" ? new Date() : null,
+            failedAt: status === "failed" ? new Date() : null,
+          },
+        });
+
+        // Update webhook stats
+        const updates: {
+          lastTriggeredAt: Date;
+          lastSuccessAt?: Date;
+          lastFailureAt?: Date;
+          consecutiveFailures: number;
+          status?: typeof webhook.status;
+        } = {
+          lastTriggeredAt: new Date(),
+          consecutiveFailures: result.success
+            ? 0
+            : webhook.consecutiveFailures + 1,
+        };
+
+        if (result.success) {
+          updates.lastSuccessAt = new Date();
+        } else {
+          updates.lastFailureAt = new Date();
+
+          // Auto-disable if too many consecutive failures
+          if (shouldAutoDisable(updates.consecutiveFailures)) {
+            updates.status = "disabled";
+          }
         }
-      }
 
-      await database.outboundWebhook.update({
-        where: {
-          tenantId_id: {
-            tenantId,
-            id: webhook.id,
+        await database.outboundWebhook.update({
+          where: {
+            tenantId_id: {
+              tenantId,
+              id: webhook.id,
+            },
           },
-        },
-        data: updates,
-      });
+          data: updates,
+        });
 
-      results.push({
-        webhookId: webhook.id,
-        webhookName: webhook.name,
-        success: result.success,
-        deliveryLogId,
-      });
-    }
+        return {
+          webhookId: webhook.id,
+          webhookName: webhook.name,
+          success: result.success,
+          deliveryLogId,
+        };
+      })
+    );
 
     return NextResponse.json({
       triggered: triggeredWebhooks.length,
