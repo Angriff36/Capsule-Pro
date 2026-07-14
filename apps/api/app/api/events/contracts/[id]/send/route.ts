@@ -104,6 +104,7 @@ export async function POST(
     const signingToken = randomUUID();
 
     // --- 3. Send email notification (best-effort) ---
+    // Only `title` is consumed below (email subject/template) — narrow the read.
     const contract = await database.eventContract.findUnique({
       where: {
         tenantId_id: {
@@ -111,6 +112,7 @@ export async function POST(
           id: contractId,
         },
       },
+      select: { title: true },
     });
 
     let clientEmail: string | null = null;

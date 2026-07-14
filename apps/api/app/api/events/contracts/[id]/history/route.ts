@@ -61,7 +61,7 @@ export async function GET(
   const tenantId = await getTenantIdForOrg(orgId);
 
   try {
-    // Verify contract exists and belongs to tenant
+    // Verify contract exists and belongs to tenant (existence guard — only `id` is needed)
     const contract = await database.eventContract.findUnique({
       where: {
         tenantId_id: {
@@ -69,6 +69,7 @@ export async function GET(
           id: contractId,
         },
       },
+      select: { id: true },
     });
 
     if (!contract) {

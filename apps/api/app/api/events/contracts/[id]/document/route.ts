@@ -9,7 +9,7 @@
 
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
-import { deleteFile, uploadFile } from "@repo/storage"
+import { deleteFile, uploadFile } from "@repo/storage";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { resolveCurrentUser } from "@/app/lib/tenant";
@@ -69,13 +69,21 @@ export async function POST(
       );
     }
 
-    // Read — bypasses Manifest per constitution §10
+    // Read — bypasses Manifest per constitution §10.
+    // Only documentUrl (old-file cleanup) + title/notes/expiresAt (echoed into the
+    // governed update body below) are consumed — narrow the read.
     const contract = await database.eventContract.findUnique({
       where: {
         tenantId_id: {
           tenantId: user.tenantId,
           id: contractId,
         },
+      },
+      select: {
+        documentUrl: true,
+        title: true,
+        notes: true,
+        expiresAt: true,
       },
     });
 
