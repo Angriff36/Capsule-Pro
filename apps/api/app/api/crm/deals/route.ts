@@ -54,12 +54,30 @@ export async function listDeals(
   limit: number,
   offset: number
 ) {
+  // Narrow projection: the deal map below consumes only these 12 scalar
+  // columns (+ the client/lead relations). A top-level `select` drops the
+  // other ~19 Proposal columns/row — incl. potentially-large `notes` +
+  // `termsAndConditions` text and 4 Decimal money fields — on every CRM
+  // pipeline load. `select` is a column projection (never removes rows), so
+  // the response shape is byte-identical.
   const proposals = await database.proposal.findMany({
     where: {
       tenantId,
       deletedAt: null,
     },
-    include: {
+    select: {
+      id: true,
+      proposalNumber: true,
+      title: true,
+      status: true,
+      eventId: true,
+      total: true,
+      eventDate: true,
+      guestCount: true,
+      clientId: true,
+      leadId: true,
+      createdAt: true,
+      updatedAt: true,
       client: {
         select: {
           id: true,
