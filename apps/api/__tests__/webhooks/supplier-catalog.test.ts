@@ -16,8 +16,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockSupplierFindFirst = vi.fn();
 const mockUserFindFirst = vi.fn();
-// route uses vendorCatalog.findFirst (not findUnique) to allow multi-field where filters
+// route preloads existing rows via vendorCatalog.findMany (one query per push);
+// findFirst is kept in the mock to assert the per-product N+1 is gone.
 const mockVendorCatalogFindFirst = vi.fn();
+const mockVendorCatalogFindMany = vi.fn();
 
 vi.mock("@repo/database", () => ({
   database: {
@@ -29,6 +31,7 @@ vi.mock("@repo/database", () => ({
     },
     vendorCatalog: {
       findFirst: (...args: unknown[]) => mockVendorCatalogFindFirst(...args),
+      findMany: (...args: unknown[]) => mockVendorCatalogFindMany(...args),
     },
   },
 }));
@@ -42,6 +45,7 @@ vi.mock("@/lib/database", () => ({
     },
     vendorCatalog: {
       findFirst: (...args: unknown[]) => mockVendorCatalogFindFirst(...args),
+      findMany: (...args: unknown[]) => mockVendorCatalogFindMany(...args),
     },
   },
 }));
@@ -163,7 +167,7 @@ function setupSupplierAndUser() {
     tenantId: TENANT_ID,
   });
   mockUserFindFirst.mockResolvedValue({ id: "admin-user", role: "admin" });
-  mockVendorCatalogFindFirst.mockResolvedValue(null); // no existing catalog entry → create
+  mockVendorCatalogFindMany.mockResolvedValue([]); // no existing catalog entries → all create
   vi.mocked(runManifestCommand).mockResolvedValue(
     new Response(JSON.stringify({ success: true }), {
       status: 200,
@@ -382,7 +386,9 @@ describe("Supplier Catalog Webhook", () => {
 
     it("calls runManifestCommand update for existing catalog entries", async () => {
       setupSupplierAndUser();
-      mockVendorCatalogFindFirst.mockResolvedValue({ id: "catalog-001" });
+      mockVendorCatalogFindMany.mockResolvedValue([
+        { id: "catalog-001", itemNumber: "SKU-001" },
+      ]);
       const request = createPostRequest(createValidPayload());
       await POST(request);
 
@@ -396,6 +402,101 @@ describe("Supplier Catalog Webhook", () => {
           }),
         })
       );
+    });
+
+    it("preloads existing rows in ONE findMany keyed on the SKU IN-list (no per-product findFirst N+1)", async () => {
+      setupSupplierAndUser();
+      mockVendorCatalogFindMany.mockResolvedValue([
+        { id: "catalog-002", itemNumber: "SKU-002" },
+      ]);
+      const payload = createValidPayload({
+        products: ["SKU-001", "SKU-002", "SKU-003"].map((sku) => ({
+          externalId: `ext-${sku}`,
+          sku,
+          name: `Product ${sku}`,
+          unitCost: 1,
+          currency: "USD",
+          unitOfMeasure: "each",
+          available: true,
+        })),
+      });
+      const request = createPostRequest(payload);
+      const response = await POST(request);
+
+      expect(response.status).toBe(200);
+      // ONE preload query, keyed on the batched SKU IN-list.
+      expect(mockVendorCatalogFindMany).toHaveBeenCalledTimes(1);
+      expect(mockVendorCatalogFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            tenantId: TENANT_ID,
+            supplierId: SUPPLIER_ID,
+            itemNumber: { in: ["SKU-001", "SKU-002", "SKU-003"] },
+          }),
+          select: { id: true, itemNumber: true },
+        })
+      );
+      // The per-product findFirst N+1 is gone.
+      expect(mockVendorCatalogFindFirst).not.toHaveBeenCalled();
+      // SKU-002 updates the existing row; SKU-001 + SKU-003 create.
+      const calls = vi.mocked(runManifestCommand).mock.calls;
+      const commands = calls.map((c) => c[0].command);
+      expect(commands).toEqual(["create", "update", "create"]);
+      const updateBody = calls.at(1)?.[0]?.body;
+      expect(updateBody?.id).toBe("catalog-002");
+    });
+
+    it("feeds a created id back so a within-payload duplicate SKU updates, not creates a 2nd row", async () => {
+      setupSupplierAndUser();
+      // No existing rows → a naive snapshot would make BOTH dups create. The 2nd
+      // must UPDATE the row the 1st just created (the prior per-product findFirst
+      // re-read the just-created row on each iteration).
+      mockVendorCatalogFindMany.mockResolvedValue([]);
+      // Fresh success Responses each carrying the created id, so .json() reads work.
+      const createdResponse = (id: string) =>
+        new Response(JSON.stringify({ success: true, result: { id } }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      vi.mocked(runManifestCommand)
+        .mockResolvedValueOnce(createdResponse("vc-new-1"))
+        .mockResolvedValueOnce(createdResponse("vc-new-2"));
+
+      const payload = createValidPayload({
+        products: [
+          {
+            externalId: "ext-a",
+            sku: "SKU-DUP",
+            name: "Dup First",
+            unitCost: 5,
+            currency: "USD",
+            unitOfMeasure: "each",
+            available: true,
+          },
+          {
+            externalId: "ext-b",
+            sku: "SKU-DUP",
+            name: "Dup Second",
+            unitCost: 9,
+            currency: "USD",
+            unitOfMeasure: "each",
+            available: false,
+          },
+        ],
+      });
+      const request = createPostRequest(payload);
+      const response = await POST(request);
+
+      expect(response.status).toBe(200);
+      const calls = vi.mocked(runManifestCommand).mock.calls;
+      // 1st dup: no existing → create; 2nd dup: feed-back hit → update the row.
+      expect(calls.at(0)?.[0]?.command).toBe("create");
+      const second = calls.at(1)?.[0];
+      expect(second?.command).toBe("update");
+      expect(second?.body?.id).toBe("vc-new-1");
+      expect(second?.body?.itemName).toBe("Dup Second"); // last-value-wins
+      const body = await response.json();
+      expect(body.productsProcessed).toBe(2); // both succeed (create + update)
     });
 
     it("counts partial upsert errors but still returns 200", async () => {

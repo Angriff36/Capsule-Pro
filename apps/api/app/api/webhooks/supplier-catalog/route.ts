@@ -213,6 +213,28 @@ export async function POST(request: Request) {
   let upserted = 0;
   let errors = 0;
 
+  // Preload every existing catalog row for the SKUs in this push in ONE query
+  // (read bypasses Manifest per §10) instead of one findFirst per product.
+  // (tenantId, supplierId, itemNumber) is NOT a unique key, so first-row-per-SKU
+  // wins (matches the prior per-product findFirst's "one id"). Created ids are
+  // fed back into the Map below so a within-payload duplicate SKU updates the
+  // just-created row instead of creating a second one — the prior per-product
+  // findFirst re-read the just-created row on each iteration.
+  const existingBySku = new Map<string, string>();
+  const existingRows = await database.vendorCatalog.findMany({
+    where: {
+      tenantId: supplier.tenantId,
+      supplierId: payload.supplierId,
+      itemNumber: { in: payload.products.map((product) => product.sku) },
+    },
+    select: { id: true, itemNumber: true },
+  });
+  for (const row of existingRows) {
+    if (!existingBySku.has(row.itemNumber)) {
+      existingBySku.set(row.itemNumber, row.id);
+    }
+  }
+
   for (const product of payload.products) {
     try {
       const catalogProduct: SupplierProduct = {
@@ -238,16 +260,9 @@ export async function POST(request: Request) {
         tags: product.tags,
       };
 
-      // Check if catalog entry already exists (read bypasses Manifest per §10)
-      // (tenantId, supplierId, itemNumber) is no longer a unique key — findFirst.
-      const existing = await database.vendorCatalog.findFirst({
-        where: {
-          tenantId: supplier.tenantId,
-          supplierId: payload.supplierId,
-          itemNumber: catalogProduct.sku,
-        },
-        select: { id: true },
-      });
+      // Look up the preloaded existing catalog row for this SKU (read bypasses
+      // Manifest per §10). (tenantId, supplierId, itemNumber) is not a unique key.
+      const existingId = existingBySku.get(catalogProduct.sku);
 
       const baseBody = {
         tenantId: supplier.tenantId,
@@ -271,13 +286,13 @@ export async function POST(request: Request) {
         tags: catalogProduct.tags ?? [],
       };
 
-      if (existing) {
+      if (existingId) {
         // Update existing catalog entry via Manifest
         const result = await runManifestCommand({
           entity: "VendorCatalog",
           command: "update",
           body: {
-            id: existing.id,
+            id: existingId,
             ...baseBody,
             isActive: catalogProduct.available ?? true,
             lastCostUpdate: Date.now(),
@@ -299,6 +314,16 @@ export async function POST(request: Request) {
         if (!result.ok) {
           const errorText = await result.text();
           throw new Error(`Manifest create failed: ${errorText}`);
+        }
+        // Feed the created id back so a later within-payload duplicate SKU
+        // updates this row instead of creating a second one (mirrors the prior
+        // per-product findFirst re-reading the just-created row).
+        const created = (await result.json().catch(() => null)) as {
+          result?: { id?: unknown };
+        } | null;
+        const createdId = created?.result?.id;
+        if (typeof createdId === "string") {
+          existingBySku.set(catalogProduct.sku, createdId);
         }
       }
 
