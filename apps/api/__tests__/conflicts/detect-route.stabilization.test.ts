@@ -929,4 +929,65 @@ describe("Conflict Detection API Route Stabilization", () => {
       expect(entity).toHaveProperty("name");
     });
   });
+
+  describe("Detector parallelization", () => {
+    beforeEach(() => {
+      mockAuth.mockResolvedValue({ orgId: validOrgId, userId: "user_123" });
+      mockGetTenantIdForOrg.mockResolvedValue(validTenantId);
+    });
+
+    it("runs detectors concurrently, not serially", async () => {
+      // Hold the scheduling detector's query pending. In a serial layout no
+      // other detector's DB call could fire until it resolves; under the
+      // concurrent Promise.all the other detectors fire immediately.
+      let releaseScheduling: () => void = () => {};
+      const pendingScheduling = new Promise<unknown[]>((resolve) => {
+        releaseScheduling = () => resolve([]);
+      });
+      mockQueryRaw.mockImplementationOnce((() => pendingScheduling) as never);
+      mockQueryRaw.mockResolvedValue([]);
+      mockPrepTaskFindMany.mockResolvedValue([]);
+      mockInventoryAlertFindMany.mockResolvedValue([]);
+      mockInventoryItemFindMany.mockResolvedValue([]);
+
+      const request = new Request("http://localhost/api/conflicts/detect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+
+      const responsePromise = POST(request);
+
+      // timeline (prepTask) + the other $queryRaw detectors must fire WHILE
+      // scheduling is still pending — impossible if detectors ran serially.
+      await vi.waitFor(() => {
+        expect(mockPrepTaskFindMany).toHaveBeenCalled();
+        expect(mockQueryRaw.mock.calls.length).toBeGreaterThan(1);
+      });
+
+      releaseScheduling();
+      const response = await responsePromise;
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as Record<string, any>;
+      expect(Array.isArray(body.conflicts)).toBe(true);
+    });
+
+    it("preserves the entityTypes filter when parallelizing", async () => {
+      mockQueryRaw.mockResolvedValue([]);
+      mockPrepTaskFindMany.mockResolvedValue([]);
+
+      const request = new Request("http://localhost/api/conflicts/detect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entityTypes: ["timeline"] }),
+      });
+
+      const response = await POST(request);
+      expect(response.status).toBe(200);
+
+      // Only the timeline detector (prepTask) runs; no $queryRaw detector fires.
+      expect(mockPrepTaskFindMany).toHaveBeenCalled();
+      expect(mockQueryRaw).not.toHaveBeenCalled();
+    });
+  });
 });

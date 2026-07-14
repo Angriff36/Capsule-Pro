@@ -1005,75 +1005,63 @@ export async function POST(request: Request) {
   const warnings: DetectorWarning[] = [];
   const conflicts: Conflict[] = [];
 
-  // Run each detector with error resilience
-  // Each detector failure returns empty array and adds a warning
+  // Select the detectors to run (honoring the entityTypes filter), then run
+  // them concurrently. Each detector is independent (keyed only on tenantId +
+  // timeRange) and read-only; safeDetect isolates per-detector failures
+  // (try/catch → [] + warning, never rejects), so Promise.all cannot
+  // short-circuit on one failure. This collapses N serial DB rounds into one
+  // concurrent round. Results are re-sorted by severity below, so completion
+  // order does not affect the response.
+  const detectors: Array<[ConflictType, () => Promise<Conflict[]>]> = [];
   if (!entityTypes || entityTypes.includes("scheduling")) {
-    const result = await safeDetect(
+    detectors.push([
       "scheduling",
       () => detectSchedulingConflicts(validatedTenantId, timeRange),
-      warnings,
-      correlationId
-    );
-    conflicts.push(...result);
+    ]);
   }
-
   if (!entityTypes || entityTypes.includes("staff")) {
-    const result = await safeDetect(
+    detectors.push([
       "staff",
       () => detectStaffConflicts(validatedTenantId, timeRange),
-      warnings,
-      correlationId
-    );
-    conflicts.push(...result);
+    ]);
   }
-
   if (!entityTypes || entityTypes.includes("inventory")) {
-    const result = await safeDetect(
+    detectors.push([
       "inventory",
       () => detectInventoryConflicts(validatedTenantId, timeRange),
-      warnings,
-      correlationId
-    );
-    conflicts.push(...result);
+    ]);
   }
-
   if (!entityTypes || entityTypes.includes("equipment")) {
-    const result = await safeDetect(
+    detectors.push([
       "equipment",
       () => detectEquipmentConflicts(validatedTenantId, timeRange),
-      warnings,
-      correlationId
-    );
-    conflicts.push(...result);
+    ]);
   }
-
   if (!entityTypes || entityTypes.includes("timeline")) {
-    const result = await safeDetect(
+    detectors.push([
       "timeline",
       () => detectTimelineConflicts(validatedTenantId, timeRange),
-      warnings,
-      correlationId
-    );
-    conflicts.push(...result);
+    ]);
   }
-
   if (!entityTypes || entityTypes.includes("venue")) {
-    const result = await safeDetect(
+    detectors.push([
       "venue",
       () => detectVenueConflicts(validatedTenantId, timeRange),
-      warnings,
-      correlationId
-    );
-    conflicts.push(...result);
+    ]);
   }
-
   if (!entityTypes || entityTypes.includes("financial")) {
-    const result = await safeDetect(
+    detectors.push([
       "financial",
       () => detectFinancialConflicts(validatedTenantId, timeRange),
-      warnings,
-      correlationId
-    );
+    ]);
+  }
+
+  const detectorResults = await Promise.all(
+    detectors.map(([type, detector]) =>
+      safeDetect(type, detector, warnings, correlationId)
+    )
+  );
+  for (const result of detectorResults) {
     conflicts.push(...result);
   }
 
