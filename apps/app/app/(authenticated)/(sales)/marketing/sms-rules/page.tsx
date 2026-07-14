@@ -35,11 +35,22 @@ export default async function SmsRulesPage() {
 
   const [rules, activeCount] = await Promise.all([
     database.smsAutomationRule.findMany({
-      where: { tenantId: tenantId, deletedAt: null },
+      where: { tenantId, deletedAt: null },
       orderBy: [{ priority: "asc" }, { createdAt: "desc" }],
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        triggerType: true,
+        recipientType: true,
+        customMessage: true,
+        isActive: true,
+        priority: true,
+        createdAt: true,
+      },
     }),
     database.smsAutomationRule.count({
-      where: { tenantId: tenantId, deletedAt: null, isActive: true },
+      where: { tenantId, deletedAt: null, isActive: true },
     }),
   ]);
 

@@ -34,16 +34,42 @@ const QualityAssurancePage = async () => {
         where: { tenantId, deletedAt: null },
         orderBy: { createdAt: "desc" },
         take: 20,
+        select: {
+          id: true,
+          checkType: true,
+          location: true,
+          inspector: true,
+          result: true,
+          status: true,
+          notes: true,
+          completedAt: true,
+        },
       }),
       database.temperatureLog.findMany({
         where: { tenantId, deletedAt: null },
         orderBy: { loggedAt: "desc" },
         take: 10,
+        select: {
+          id: true,
+          logType: true,
+          temperature: true,
+          unit: true,
+          withinRange: true,
+          itemName: true,
+          loggedAt: true,
+        },
       }),
       database.correctiveAction.findMany({
         where: { tenantId, deletedAt: null },
         orderBy: { createdAt: "desc" },
         take: 10,
+        select: {
+          id: true,
+          title: true,
+          status: true,
+          severity: true,
+          dueDate: true,
+        },
       }),
     ]);
 

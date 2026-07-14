@@ -16,6 +16,22 @@ async function getBoardData(tenantId: string) {
     database.adminTask.findMany({
       where: { tenantId, deletedAt: null },
       orderBy: [{ position: "asc" }, { createdAt: "desc" }],
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        status: true,
+        priority: true,
+        category: true,
+        position: true,
+        labels: true,
+        estimatedHours: true,
+        dueDate: true,
+        assignedTo: true,
+        createdBy: true,
+        sourceType: true,
+        sourceId: true,
+      },
     }),
     database.boardConfig.findFirst({
       where: { tenantId, deletedAt: null },
@@ -59,7 +75,9 @@ async function getBoardData(tenantId: string) {
         columns:
           (configRow.columns as unknown as BoardConfigData["columns"]) ??
           DEFAULT_COLUMNS,
-        settings: (configRow.settings as BoardConfigData["settings"]) ?? DEFAULT_SETTINGS,
+        settings:
+          (configRow.settings as BoardConfigData["settings"]) ??
+          DEFAULT_SETTINGS,
       }
     : {
         id: "",
@@ -87,9 +105,9 @@ const AdministrativeKanbanPage = async () => {
 
   return (
     <KanbanBoardClient
-      initialTasks={kanbanTasks}
       boardConfig={boardConfig}
       employees={employeeList}
+      initialTasks={kanbanTasks}
     />
   );
 };

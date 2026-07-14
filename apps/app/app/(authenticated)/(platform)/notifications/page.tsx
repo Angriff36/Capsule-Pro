@@ -30,6 +30,19 @@ export default async function NotificationsPage() {
     where: { tenantId },
     orderBy: { createdAt: "desc" },
     take: 100,
+    select: {
+      id: true,
+      tenantId: true,
+      recipientEmployeeId: true,
+      notificationType: true,
+      title: true,
+      body: true,
+      actionUrl: true,
+      isRead: true,
+      readAt: true,
+      createdAt: true,
+      correlationId: true,
+    },
   });
 
   const notifications = rawNotifications.map((n) => ({

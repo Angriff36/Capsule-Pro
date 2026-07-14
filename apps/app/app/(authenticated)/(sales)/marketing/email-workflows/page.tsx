@@ -38,7 +38,13 @@ export default async function EmailWorkflowsPage() {
   const [workflows, activeCount] = await Promise.all([
     database.emailWorkflow.findMany({
       where: { tenantId, deletedAt: null },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        triggerType: true,
+        isActive: true,
+        lastTriggeredAt: true,
+        createdAt: true,
         template: {
           select: { id: true, name: true, deletedAt: true },
         },

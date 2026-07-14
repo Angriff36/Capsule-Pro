@@ -112,6 +112,16 @@ const CrmCommunicationsPage = async () => {
     where: { tenantId, deletedAt: null },
     orderBy: { interactionDate: "desc" },
     take: 50,
+    select: {
+      id: true,
+      clientId: true,
+      interactionType: true,
+      subject: true,
+      description: true,
+      interactionDate: true,
+      followUpDate: true,
+      followUpCompleted: true,
+    },
   });
   const clients = await database.client.findMany({
     where: {
@@ -155,9 +165,8 @@ const CrmCommunicationsPage = async () => {
           <MonoLabel tone="dark">Operations / CRM</MonoLabel>
           <DisplayHeading size="md">Communications Timeline</DisplayHeading>
           <CommandBandLede>
-            A read-only feed of logged client interactions. Log new
-            interactions from a client&apos;s detail page under the
-            Communications tab.
+            A read-only feed of logged client interactions. Log new interactions
+            from a client&apos;s detail page under the Communications tab.
           </CommandBandLede>
         </CommandBandHeader>
       </CommandBand>
@@ -169,8 +178,8 @@ const CrmCommunicationsPage = async () => {
             {interactions.length === 0 ? (
               <div className="space-y-3">
                 <p className="text-muted-foreground text-sm">
-                  No communications recorded yet. Interactions are logged from
-                  a client&apos;s detail page (Communications tab).
+                  No communications recorded yet. Interactions are logged from a
+                  client&apos;s detail page (Communications tab).
                 </p>
                 <Button asChild size="sm" variant="outline">
                   <Link href="/crm/clients">Go to clients</Link>
