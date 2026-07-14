@@ -55,12 +55,29 @@ const getDateTime = (formData: FormData, key: string): Date | undefined => {
 // ============================================================================
 
 /**
+ * Kitchen task fields consumed by the tasks list page
+ * (`kitchen/tasks/page.tsx`: id/status/priority/title/summary/dueDate/createdAt
+ * + `tasks.length` / `.filter().length` counts, which a column-only `select`
+ * preserves). Narrowing the read drops complexity / tags (String[]) / assignedTo
+ * / completedAt / updatedAt per row.
+ */
+interface KitchenTaskListRow {
+  createdAt: Date;
+  dueDate: Date | null;
+  id: string;
+  priority: number;
+  status: KitchenTaskStatus;
+  summary: string;
+  title: string;
+}
+
+/**
  * List all kitchen tasks with optional filters
  */
 export const getKitchenTasks = async (filters?: {
   status?: KitchenTaskStatus;
   priority?: number;
-}): Promise<KitchenTask[]> => {
+}): Promise<KitchenTaskListRow[]> => {
   const tenantId = await requireTenantId();
 
   return database.kitchenTask.findMany({
@@ -71,6 +88,15 @@ export const getKitchenTasks = async (filters?: {
       ...(filters?.priority && { priority: filters.priority }),
     },
     orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      status: true,
+      priority: true,
+      title: true,
+      summary: true,
+      dueDate: true,
+      createdAt: true,
+    },
   });
 };
 
@@ -92,7 +118,7 @@ export const getKitchenTaskById = async (
  */
 export const getKitchenTasksByStatus = async (
   status: KitchenTaskStatus
-): Promise<KitchenTask[]> => getKitchenTasks({ status });
+): Promise<KitchenTaskListRow[]> => getKitchenTasks({ status });
 
 /**
  * Get urgent priority tasks that are open or in progress
