@@ -105,6 +105,24 @@ export async function GET(request: Request) {
         orderBy: [{ expiresAt: "asc" }],
         take: limit,
         skip: offset,
+        // ponytail: column projection — narrow to exactly the 10 fields the
+        // response mapping + id-collection reads consume (was returning all 19
+        // EventContract columns; drops 9/row incl. signingToken/documentUrl/
+        // notes/sentAt/viewedAt/signedAt). A dropped consumed field is a Prisma
+        // compile error; select never removes rows, so pagination/counts are
+        // byte-identical.
+        select: {
+          id: true,
+          eventId: true,
+          clientId: true,
+          contractNumber: true,
+          title: true,
+          status: true,
+          documentType: true,
+          expiresAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       }),
       database.eventContract.count({ where: whereClause }),
     ]);

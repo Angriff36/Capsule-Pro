@@ -102,6 +102,26 @@ describe("GET /api/events/contracts/expiring (list)", () => {
       total: 25,
       totalPages: 3,
     });
+
+    // Column-projection guard (#17 over-fetch): findMany MUST select exactly the
+    // 10 consumed fields (the response mapping + id-collection reads). Re-adding
+    // a dropped column OR dropping the select fails loudly.
+    expect(database.eventContract.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: {
+          id: true,
+          eventId: true,
+          clientId: true,
+          contractNumber: true,
+          title: true,
+          status: true,
+          documentType: true,
+          expiresAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      })
+    );
   });
 
   it("runs groupBy + event + client enrichment concurrently, not serially", async () => {
