@@ -52,8 +52,26 @@ export default async function MyTrainingPage() {
       OR: [{ employeeId }, { assignedToAll: true }],
       module: { deletedAt: null },
     },
-    include: {
-      module: true,
+    // Project only the fields the row-map consumes: 4 assignment scalars +
+    // 8 module scalars (drops ~25 unused assignment + ~15 unused module
+    // columns per row). `module` stays a relation filter in `where`.
+    select: {
+      id: true,
+      status: true,
+      dueDate: true,
+      assignedAt: true,
+      module: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          contentType: true,
+          durationMinutes: true,
+          category: true,
+          isRequired: true,
+          contentUrl: true,
+        },
+      },
     },
   });
 
@@ -62,6 +80,13 @@ export default async function MyTrainingPage() {
       tenantId,
       employeeId,
       assignmentId: { in: assignments.map((assignment) => assignment.id) },
+    },
+    select: {
+      assignmentId: true,
+      startedAt: true,
+      completedAt: true,
+      score: true,
+      passed: true,
     },
   });
   const completionsByAssignmentId = new Map<

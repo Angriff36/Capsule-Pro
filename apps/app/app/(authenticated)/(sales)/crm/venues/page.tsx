@@ -42,6 +42,22 @@ export default async function CrmVenuesPage() {
       deletedAt: null,
     },
     orderBy: [{ name: "asc" }],
+    // Project only the fields the card list consumes (11 of 21 columns) —
+    // drops tenantId/deletedAt/address*/postalCode/countryCode/accessNotes/
+    // cateringNotes/layoutImageUrl/createdAt/updatedAt per row.
+    select: {
+      id: true,
+      name: true,
+      venueType: true,
+      isActive: true,
+      city: true,
+      stateProvince: true,
+      capacity: true,
+      contactName: true,
+      contactEmail: true,
+      contactPhone: true,
+      tags: true,
+    },
   });
 
   const activeCount = venues.filter((v) => v.isActive).length;
