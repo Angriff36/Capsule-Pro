@@ -63,10 +63,34 @@ export async function GET(
 
     // Read path (constitution §10): magicToken is globally unique; all
     // follow-up operations are scoped by the row's tenantId.
+    // Narrow projection: the public GET response + the conditional recordView
+    // write consume only these fields. Dropping the rest removes the heavy
+    // `htmlContent` @db.Text blob (rendered proposal HTML) + ~13 unused columns
+    // per cold public link open. `select` is a column projection → byte-identical.
     const proposal = await database.proposalDraft.findFirst({
       where: {
         magicToken: token,
         deletedAt: null,
+      },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        version: true,
+        clientName: true,
+        eventSummary: true,
+        menuSections: true,
+        servicePlan: true,
+        pricingBreakdown: true,
+        timeline: true,
+        upgradeOptions: true,
+        visionSummary: true,
+        notes: true,
+        nextSteps: true,
+        createdAt: true,
+        magicTokenExpiresAt: true,
+        viewedAt: true,
+        tenantId: true,
       },
     });
 
@@ -165,7 +189,7 @@ export async function POST(
       notes?: string;
     };
 
-    if (!action || !["approve", "request_changes"].includes(action)) {
+    if (!(action && ["approve", "request_changes"].includes(action))) {
       return NextResponse.json(
         { message: "Invalid action. Must be 'approve' or 'request_changes'" },
         { status: 400 }
@@ -180,11 +204,20 @@ export async function POST(
       );
     }
 
-    // Read path: find proposal by magic token
+    // Read path: find proposal by magic token.
+    // Existence guard + status/expiry pre-validation only — select the 4 fields
+    // the handler reads, dropping the heavy `htmlContent`/`visionSummary`
+    // @db.Text blobs + all JSON payloads + ~20 unused columns per public respond.
     const proposal = await database.proposalDraft.findFirst({
       where: {
         magicToken: token,
         deletedAt: null,
+      },
+      select: {
+        id: true,
+        status: true,
+        magicTokenExpiresAt: true,
+        tenantId: true,
       },
     });
 
