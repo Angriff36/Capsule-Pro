@@ -71,10 +71,36 @@ export async function GET(request: Request, context: RouteContext) {
       where.status = status;
     }
 
-    // Get variance reports
+    // Get variance reports. Strict projection of the 21 fields the response
+    // map consumes; drops the 7 unused variance-resolution/rejection columns
+    // (rejectedAt/rejectedBy/rejectionReason/rootCause/resolutionNotes/
+    // resolvedById/resolvedAt) that are never serialized to the client.
     const reports = await database.varianceReport.findMany({
       where,
       orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        tenantId: true,
+        sessionId: true,
+        reportType: true,
+        itemId: true,
+        itemNumber: true,
+        itemName: true,
+        expectedQuantity: true,
+        countedQuantity: true,
+        variance: true,
+        variancePct: true,
+        accuracyScore: true,
+        status: true,
+        adjustmentType: true,
+        adjustmentDate: true,
+        adjustmentAmount: true,
+        notes: true,
+        generatedAt: true,
+        createdAt: true,
+        updatedAt: true,
+        deletedAt: true,
+      },
     });
 
     const mappedReports = reports.map((report) => ({
