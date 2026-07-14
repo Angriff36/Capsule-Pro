@@ -439,7 +439,7 @@ describe("Procurement Vendors API", () => {
       expect(call?.skip).toBe(42);
     });
 
-    it("orders by name asc and includes the soft-delete-aware count selects", async () => {
+    it("orders by name asc and selects only consumed columns + soft-delete-aware counts", async () => {
       authOk();
       vi.mocked(database.inventorySupplier.findMany).mockResolvedValue(
         [] as never
@@ -451,17 +451,46 @@ describe("Procurement Vendors API", () => {
       const call = vi.mocked(database.inventorySupplier.findMany).mock
         .calls[0]?.[0];
       expect(call?.orderBy).toEqual({ name: "asc" });
-      // Route uses the Prisma relation names: contacts / catalogs
-      expect(call?.include).toEqual({
-        _count: {
-          select: {
-            contacts: { where: { deletedAt: null } },
-            catalogs: {
-              where: { deletedAt: null, isActive: true },
-            },
+      // Over-fetch fix: only the 20 response-consumed scalars + the folded _count
+      // are projected. Re-adding a dropped column OR reverting the select fails here.
+      expect(Object.keys(call?.select ?? {}).sort()).toEqual(
+        [
+          "addressLine1",
+          "addressLine2",
+          "city",
+          "contactPerson",
+          "country",
+          "createdAt",
+          "email",
+          "id",
+          "name",
+          "notes",
+          "paymentTerms",
+          "performanceRating",
+          "phone",
+          "postalCode",
+          "supplierNumber",
+          "state",
+          "tags",
+          "taxId",
+          "updatedAt",
+          "website",
+          "_count",
+        ].sort()
+      );
+      // _count folded into the focused select; contacts/catalogs keep their
+      // soft-delete + active-catalog filters.
+      expect(call?.select?._count).toEqual({
+        select: {
+          contacts: { where: { deletedAt: null } },
+          catalogs: {
+            where: { deletedAt: null, isActive: true },
           },
         },
       });
+      // Proven-unused business columns are NOT projected.
+      expect(call?.select).not.toHaveProperty("isActive");
+      expect(call?.select).not.toHaveProperty("openPOCount");
     });
 
     it("captures Sentry and returns 500 on database error", async () => {

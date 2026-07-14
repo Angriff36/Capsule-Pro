@@ -42,8 +42,26 @@ export async function GET(request: NextRequest) {
       ...(assetType ? { assetType } : {}),
       ...(areaId ? { areaId } : {}),
     };
+    // ponytail: select only the 14 response-consumed scalars. Drops
+    // facilityId/currentValue/lastMaintenanceAt/nextMaintenanceAt/tenantId/deletedAt per row.
     const assetRecords = await database.facilityAsset.findMany({
       where: assetWhere,
+      select: {
+        id: true,
+        name: true,
+        assetType: true,
+        serialNumber: true,
+        manufacturer: true,
+        model: true,
+        purchaseDate: true,
+        purchaseCost: true,
+        warrantyExpiry: true,
+        status: true,
+        areaId: true,
+        notes: true,
+        createdAt: true,
+        updatedAt: true,
+      },
       orderBy: { name: "asc" },
       take: limit,
       skip: offset,

@@ -52,9 +52,33 @@ export async function GET(request: NextRequest) {
         : {}),
     };
 
+    // ponytail: select only the 20 response-consumed scalars + the folded _count.
+    // Drops 12 unused columns/row (isActive, openPOCount, approvedAt/By,
+    // suspended*, blacklisted*, qualificationStatus, vendorId, tenantId, deletedAt).
+    // select is a column projection — row counts and the .map() output are unchanged.
     const vendors = await database.inventorySupplier.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        supplierNumber: true,
+        name: true,
+        contactPerson: true,
+        email: true,
+        phone: true,
+        paymentTerms: true,
+        addressLine1: true,
+        addressLine2: true,
+        city: true,
+        state: true,
+        postalCode: true,
+        country: true,
+        taxId: true,
+        website: true,
+        performanceRating: true,
+        notes: true,
+        tags: true,
+        createdAt: true,
+        updatedAt: true,
         _count: {
           select: {
             contacts: { where: { deletedAt: null } },

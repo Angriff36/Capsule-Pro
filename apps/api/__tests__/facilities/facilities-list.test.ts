@@ -343,6 +343,42 @@ describe("Facilities List API", () => {
       expect(body.assets[0].area_code).toBe("PA-001");
     });
 
+    it("selects only the consumed asset columns (over-fetch fix)", async () => {
+      vi.mocked(database.facilityAsset.findMany).mockResolvedValue([]);
+      vi.mocked(database.facilityArea.findMany).mockResolvedValue([]);
+
+      const request = new NextRequest(
+        "http://localhost/api/facilities/assets/list"
+      );
+      await listAssets(request);
+
+      const call = vi.mocked(database.facilityAsset.findMany).mock
+        .calls[0]?.[0];
+      // Exactly the 14 response-consumed scalars; re-adding a dropped column or
+      // reverting the select fails here.
+      expect(Object.keys(call?.select ?? {}).sort()).toEqual(
+        [
+          "areaId",
+          "assetType",
+          "createdAt",
+          "id",
+          "manufacturer",
+          "model",
+          "name",
+          "notes",
+          "purchaseCost",
+          "purchaseDate",
+          "serialNumber",
+          "status",
+          "updatedAt",
+          "warrantyExpiry",
+        ].sort()
+      );
+      // Proven-unused columns are NOT projected.
+      expect(call?.select).not.toHaveProperty("currentValue");
+      expect(call?.select).not.toHaveProperty("facilityId");
+    });
+
     it("should pass limit and offset from query params", async () => {
       vi.mocked(database.facilityAsset.findMany).mockResolvedValue([]);
       vi.mocked(database.facilityArea.findMany).mockResolvedValue([]);
