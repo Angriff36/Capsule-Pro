@@ -7,7 +7,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import type { Event, Venue } from "@repo/database";
+import type { Venue } from "@repo/database";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
@@ -205,14 +205,26 @@ export async function getVenueEvents(
     (whereClause.AND as Record<string, unknown>[]).push({ status });
   }
 
+  // ponytail: column-only projection of the 5 fields the venue-detail event
+  // table renders (id/title/eventDate/status/guestCount). Drops the heavy
+  // `tags`/`accessibilityOptions` String[] + ~20 unused scalars per row. The
+  // return type is inferred from this select so a future consumer reading a
+  // dropped field is a compile error (tsc is the shape gate).
   const events = await database.event.findMany({
     where: whereClause,
     orderBy: [{ eventDate: "desc" }],
     take: limit,
     skip: offset,
+    select: {
+      id: true,
+      title: true,
+      eventDate: true,
+      status: true,
+      guestCount: true,
+    },
   });
 
-  return events as Event[];
+  return events;
 }
 
 /**
