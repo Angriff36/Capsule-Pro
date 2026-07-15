@@ -198,8 +198,13 @@ export async function getLaborBudgetById(tenantId: string, budgetId: string) {
     return null;
   }
 
-  // Get current utilization
-  const utilization = await calculateBudgetUtilization(tenantId, budgetId);
+  // Get current utilization — reuse the budget row fetched above so
+  // calculateBudgetUtilization doesn't re-read the same row (1 fewer RT).
+  const utilization = await calculateBudgetUtilization(
+    tenantId,
+    budgetId,
+    budget[0]
+  );
 
   return {
     ...budget[0],
@@ -362,45 +367,82 @@ export async function deleteLaborBudget(tenantId: string, budgetId: string) {
  */
 export async function calculateBudgetUtilization(
   tenantId: string,
-  budgetId: string
+  budgetId: string,
+  // Caller-supplied budget row; when present, skip the redundant SELECT
+  // (getLaborBudgetById already fetched this row). The query below filters
+  // status='active', so mirror that gate on the passed row.
+  prefetchedBudget?: {
+    id: string;
+    name: string;
+    budget_type: string;
+    budget_target: number;
+    budget_unit: string;
+    period_start: Date | null;
+    period_end: Date | null;
+    location_id: string | null;
+    event_id: string | null;
+    status: string;
+  }
 ): Promise<BudgetUtilization | null> {
-  const budget = await database.$queryRaw<
-    Array<{
-      id: string;
-      name: string;
-      budget_type: string;
-      budget_target: number;
-      budget_unit: string;
-      period_start: Date | null;
-      period_end: Date | null;
-      location_id: string | null;
-      event_id: string | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        id,
-        name,
-        budget_type,
-        budget_target,
-        budget_unit,
-        period_start,
-        period_end,
-        location_id,
-        event_id
-      FROM tenant_staff.labor_budgets
-      WHERE tenant_id = ${tenantId}
-        AND id = ${budgetId}
-        AND deleted_at IS NULL
-        AND status = 'active'
-    `
-  );
+  let budgetData:
+    | {
+        id: string;
+        name: string;
+        budget_type: string;
+        budget_target: number;
+        budget_unit: string;
+        period_start: Date | null;
+        period_end: Date | null;
+        location_id: string | null;
+        event_id: string | null;
+      }
+    | undefined;
 
-  if (!budget || budget.length === 0) {
-    return null;
+  if (prefetchedBudget) {
+    if (prefetchedBudget.status !== "active") {
+      return null;
+    }
+    budgetData = prefetchedBudget;
+  } else {
+    const budget = await database.$queryRaw<
+      Array<{
+        id: string;
+        name: string;
+        budget_type: string;
+        budget_target: number;
+        budget_unit: string;
+        period_start: Date | null;
+        period_end: Date | null;
+        location_id: string | null;
+        event_id: string | null;
+      }>
+    >(
+      Prisma.sql`
+        SELECT
+          id,
+          name,
+          budget_type,
+          budget_target,
+          budget_unit,
+          period_start,
+          period_end,
+          location_id,
+          event_id
+        FROM tenant_staff.labor_budgets
+        WHERE tenant_id = ${tenantId}
+          AND id = ${budgetId}
+          AND deleted_at IS NULL
+          AND status = 'active'
+      `
+    );
+
+    if (!budget || budget.length === 0) {
+      return null;
+    }
+
+    budgetData = budget[0];
   }
 
-  const budgetData = budget[0];
   if (!budgetData) {
     return null;
   }
