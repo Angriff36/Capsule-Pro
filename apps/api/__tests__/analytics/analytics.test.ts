@@ -379,6 +379,17 @@ describe("Analytics API", () => {
         "Budget overrun detected"
       );
       expect(body.financeAlerts[0].severity).toBe("High");
+
+      // Regression guard: findMany must project ONLY the 3 consumed cols
+      // (a reverted select OR a re-added column fails this exact-key check).
+      const lastFindManyArg = vi.mocked(database.budgetAlert.findMany).mock.calls.at(
+        -1
+      )?.[0] as { select?: Record<string, unknown> } | undefined;
+      expect(lastFindManyArg?.select).toEqual({
+        message: true,
+        alertType: true,
+        utilization: true,
+      });
     });
   });
 

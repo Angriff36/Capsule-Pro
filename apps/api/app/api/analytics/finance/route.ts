@@ -253,6 +253,13 @@ async function fetchBudgetAlerts(tenantId: string) {
     },
     take: 10,
     orderBy: { createdAt: "desc" },
+    // Only message/alertType/utilization are consumed (buildFinanceAlerts emits
+    // {message, severity}); drops 11 unused cols incl. uuids/booleans/timestamps.
+    select: {
+      message: true,
+      alertType: true,
+      utilization: true,
+    },
   });
 }
 
