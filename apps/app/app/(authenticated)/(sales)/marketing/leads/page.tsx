@@ -72,6 +72,24 @@ export default async function MarketingLeadsPage() {
       where: { tenantId, deletedAt: null },
       orderBy: { createdAt: "desc" },
       take: 200,
+      // db-performance plan #7 — focused select. The list client + the
+      // duplicate-detection path consume only these 10 fields; the prior
+      // unbounded read materialized the full row per lead, including the
+      // `scoreBreakdown` Json blob (not on the Lead view-model, never read)
+      // + `notes`/scalar columns, across up to 200 rows. select projects
+      // columns, never rows, so counts/serialized shape are byte-identical.
+      select: {
+        id: true,
+        status: true,
+        contactName: true,
+        companyName: true,
+        contactEmail: true,
+        eventType: true,
+        source: true,
+        eventDate: true,
+        estimatedGuests: true,
+        estimatedValue: true,
+      },
     }),
     database.lead.groupBy({
       by: ["status"],

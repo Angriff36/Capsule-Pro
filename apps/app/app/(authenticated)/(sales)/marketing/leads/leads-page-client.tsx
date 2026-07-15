@@ -26,7 +26,6 @@ import { MoreHorizontal, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { SampleDataImportButton } from "../../../components/sample-data-import-button";
 import { BulkActionBar, useBulkSelection } from "@/app/components/bulk-actions";
 import {
   archiveLead,
@@ -36,17 +35,18 @@ import {
   formatDate,
   getStatusColor,
   getStatusLabel,
-  type Lead,
+  type LeadListRow,
   type LeadStatus,
   type LeadSummary,
 } from "@/app/lib/leads";
+import { SampleDataImportButton } from "../../../components/sample-data-import-button";
 
 // ---------------------------------------------------------------------------
 // Props
 // ---------------------------------------------------------------------------
 
 interface LeadsPageClientProps {
-  leads: Lead[];
+  leads: LeadListRow[];
   summary: LeadSummary;
 }
 

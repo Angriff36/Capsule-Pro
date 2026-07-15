@@ -63,6 +63,28 @@ export interface Lead {
   updatedAt: DateOrString;
 }
 
+/**
+ * Narrowed row for the leads LIST view — the strict subset of `Lead` fields the
+ * leads-page-client consumes (search filters + table columns + the
+ * `possibleDuplicate` annotation). The marketing/leads RSC page selects exactly
+ * these from `lead.findMany` and types its serialized rows as `LeadListRow[]`,
+ * so dropping a field the client still reads is a compile error, not a silent
+ * `undefined` (the type-honest select-narrowing pattern; cf KitchenTaskListRow).
+ */
+export interface LeadListRow {
+  companyName: string | null;
+  contactEmail: string | null;
+  contactName: string;
+  estimatedGuests: number | null;
+  estimatedValue: number | null;
+  eventDate: DateOrString | null;
+  eventType: string | null;
+  id: string;
+  possibleDuplicate?: boolean;
+  source: string | null;
+  status: string;
+}
+
 export interface LeadSummary {
   contactedCount: number;
   convertedCount: number;
