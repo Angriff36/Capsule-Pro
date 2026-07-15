@@ -52,8 +52,43 @@ export async function GET(request: Request) {
   const [assignments, totalCount] = await Promise.all([
     database.trainingAssignment.findMany({
       where,
-      include: {
-        module: true,
+      // Narrow projection: fold the bare `include: { module: true }` into a
+      // top-level `select`. The response map consumes 11 assignment scalars +
+      // 11 module fields (the response's `module.id`/`module.tenant_id` come
+      // from the assignment's own moduleId/tenantId, NOT the relation). A
+      // `select` drops the other ~17 assignment columns (waiver/attempt/
+      // score-review cluster) + ~11 module columns (incl. `notes` text, `code`,
+      // publish/archive timestamps) per row on every training-assignments load.
+      // `select` is a column projection (never removes rows) → response shape
+      // byte-identical; Prisma narrows the return type so a dropped consumed
+      // field is a compile error.
+      select: {
+        id: true,
+        tenantId: true,
+        moduleId: true,
+        employeeId: true,
+        assignedToAll: true,
+        assignedBy: true,
+        dueDate: true,
+        status: true,
+        assignedAt: true,
+        createdAt: true,
+        updatedAt: true,
+        module: {
+          select: {
+            title: true,
+            contentType: true,
+            description: true,
+            contentUrl: true,
+            durationMinutes: true,
+            category: true,
+            isRequired: true,
+            isActive: true,
+            createdBy: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
       take: limit,
