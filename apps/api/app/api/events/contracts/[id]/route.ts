@@ -38,30 +38,32 @@ export async function GET(_request: Request, { params }: { params: Params }) {
       );
     }
 
-    // Fetch event details
-    const event = await database.event.findFirst({
-      where: {
-        AND: [{ tenantId }, { id: contract.eventId }, { deletedAt: null }],
-      },
-      select: {
-        id: true,
-        title: true,
-        eventDate: true,
-      },
-    });
-
-    // Fetch client details
-    const client = await database.client.findFirst({
-      where: {
-        AND: [{ tenantId }, { id: contract.clientId }, { deletedAt: null }],
-      },
-      select: {
-        id: true,
-        companyName: true,
-        firstName: true,
-        lastName: true,
-      },
-    });
+    // ponytail: event + client are independent (each keys off a contract field,
+    // never the other read's result) — fire both, then await together
+    // (2 serial round-trips -> 1).
+    const [event, client] = await Promise.all([
+      database.event.findFirst({
+        where: {
+          AND: [{ tenantId }, { id: contract.eventId }, { deletedAt: null }],
+        },
+        select: {
+          id: true,
+          title: true,
+          eventDate: true,
+        },
+      }),
+      database.client.findFirst({
+        where: {
+          AND: [{ tenantId }, { id: contract.clientId }, { deletedAt: null }],
+        },
+        select: {
+          id: true,
+          companyName: true,
+          firstName: true,
+          lastName: true,
+        },
+      }),
+    ]);
 
     // Preserve snake_case response contract while reading camelCase fields
     const clientResponse = client

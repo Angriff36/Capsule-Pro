@@ -27,29 +27,33 @@ export async function GET(
 
     const { id } = await params;
 
-    const vendor = await database.inventorySupplier.findFirst({
-      where: { tenantId, id, deletedAt: null },
-      include: {
-        contacts: {
-          where: { deletedAt: null },
-          orderBy: [{ isPrimary: "desc" }, { contactName: "asc" }],
+    // ponytail: vendor + catalog count are independent (count keys off route
+    // id/tenantId, never the vendor row) — fire both, then await together and
+    // check the existence guard after (2 serial round-trips -> 1; the 404 edge
+    // case runs the count needlessly — accepted tradeoff, matches sibling routes).
+    const [vendor, catalogItemCount] = await Promise.all([
+      database.inventorySupplier.findFirst({
+        where: { tenantId, id, deletedAt: null },
+        include: {
+          contacts: {
+            where: { deletedAt: null },
+            orderBy: [{ isPrimary: "desc" }, { contactName: "asc" }],
+          },
+          ratings: {
+            where: { deletedAt: null },
+            orderBy: { createdAt: "desc" },
+            take: 20,
+          },
         },
-        ratings: {
-          where: { deletedAt: null },
-          orderBy: { createdAt: "desc" },
-          take: 20,
-        },
-      },
-    });
+      }),
+      database.vendorCatalog.count({
+        where: { tenantId, supplierId: id, deletedAt: null, isActive: true },
+      }),
+    ]);
 
     if (!vendor) {
       return manifestErrorResponse("Vendor not found", 404);
     }
-
-    // Count active catalog items (separate query — no relation on InventorySupplier)
-    const catalogItemCount = await database.vendorCatalog.count({
-      where: { tenantId, supplierId: id, deletedAt: null, isActive: true },
-    });
 
     return manifestSuccessResponse({
       vendor,

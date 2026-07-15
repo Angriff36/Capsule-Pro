@@ -104,4 +104,38 @@ describe("GET /api/events/contracts/[id]/history", () => {
     expect(body.history[0]).toMatchObject({ type: "signature", id: "s1" });
     expect(body.history[1]).toMatchObject({ type: "audit", id: "a1" });
   });
+
+  it("fires audit + signatures together after the guard (not serial)", async () => {
+    vi.mocked(database.eventContract.findUnique).mockResolvedValue({
+      id: "contract_1",
+    } as never);
+    // Hold the audit $queryRaw pending; the signatures findMany must still fire.
+    // (DB-perf detail-route parallelization: audit + signatures are independent —
+    // both key off route contractId/tenantId — so they collapse into one
+    // Promise.all. The existence guard stays serial, preserving the 404-skip
+    // invariant pinned above.)
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    vi.mocked(database.$queryRaw).mockImplementation((() =>
+      gate.then(() => [])) as never);
+    const sigSpy = vi.mocked(database.contractSignature.findMany);
+    sigSpy.mockResolvedValue([] as never);
+
+    const responsePromise = GET(
+      new NextRequest("http://x/api/events/contracts/contract_1/history"),
+      { params: Promise.resolve({ id: "contract_1" }) }
+    );
+
+    await vi.waitFor(
+      () => {
+        expect(sigSpy).toHaveBeenCalledTimes(1);
+      },
+      { timeout: 500 }
+    );
+    release();
+    const res = await responsePromise;
+    expect(res.status).toBe(200);
+  });
 });

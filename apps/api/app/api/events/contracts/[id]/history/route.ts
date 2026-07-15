@@ -79,8 +79,11 @@ export async function GET(
       );
     }
 
-    // Fetch audit log entries for this contract
-    const auditEntries = await database.$queryRaw<HistoryEntry[]>`
+    // ponytail: audit log + signatures are independent (each keys off route
+    // contractId/tenantId, never the other read's result) — fire both, then await
+    // together (2 serial round-trips -> 1). The existence guard stays serial so a
+    // 404 still skips these reads.
+    const auditPromise = database.$queryRaw<HistoryEntry[]>`
       SELECT
         al.id,
         al.action,
@@ -99,8 +102,7 @@ export async function GET(
       LIMIT 50
     `;
 
-    // Fetch signatures for this contract
-    const signatures = await database.contractSignature.findMany({
+    const signaturesPromise = database.contractSignature.findMany({
       where: {
         contractId,
       },
@@ -114,6 +116,11 @@ export async function GET(
         signedAt: true,
       },
     });
+
+    const [auditEntries, signatures] = await Promise.all([
+      auditPromise,
+      signaturesPromise,
+    ]);
 
     // Combine audit entries and signatures into a unified history
     const history: CombinedHistoryEntry[] = [

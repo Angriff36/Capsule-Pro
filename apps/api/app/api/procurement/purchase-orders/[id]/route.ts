@@ -35,19 +35,21 @@ export async function GET(
       return manifestErrorResponse("PO not found", 404);
     }
 
-    // Fetch vendor name (no relation on PurchaseOrder → InventorySupplier)
-    const vendor = order.vendorId
-      ? await database.inventorySupplier.findFirst({
-          where: { tenantId, id: order.vendorId, deletedAt: null },
-          select: { name: true },
-        })
-      : null;
-
-    // Fetch items with item names (no relation on PurchaseOrderItem → InventoryItem)
-    const items = await database.purchaseOrderItem.findMany({
-      where: { tenantId, purchaseOrderId: id, deletedAt: null },
-      orderBy: { createdAt: "asc" },
-    });
+    // ponytail: vendor (needs order.vendorId) and items (needs only route id) are
+    // independent of each other — fire both, then await together (inventoryItems
+    // stays serial below since it depends on items). 3 serial round-trips -> 2.
+    const [vendor, items] = await Promise.all([
+      order.vendorId
+        ? database.inventorySupplier.findFirst({
+            where: { tenantId, id: order.vendorId, deletedAt: null },
+            select: { name: true },
+          })
+        : Promise.resolve(null),
+      database.purchaseOrderItem.findMany({
+        where: { tenantId, purchaseOrderId: id, deletedAt: null },
+        orderBy: { createdAt: "asc" },
+      }),
+    ]);
 
     // Resolve item names for display
     const itemIds = items.map((i) => i.itemId);
