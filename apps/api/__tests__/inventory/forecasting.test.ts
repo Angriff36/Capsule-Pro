@@ -882,6 +882,50 @@ describe("Inventory Forecasting Service", () => {
       );
       expect(database.inventoryForecast.create).toHaveBeenCalledTimes(1);
     });
+
+    it("dispatches all point writes in one concurrent wave, not serially", async () => {
+      vi.mocked(database.inventoryItem.findFirst).mockResolvedValue({
+        id: "item-1",
+      } as any);
+      const today = new Date();
+      const forecast = {
+        sku: TEST_SKU,
+        currentStock: 100,
+        depletionDate: new Date(today.getTime() + 20 * 86_400_000),
+        daysUntilDepletion: 20,
+        confidence: "high" as const,
+        forecast: Array.from({ length: 30 }, (_, i) => ({
+          date: new Date(today.getTime() + i * 86_400_000),
+          projectedStock: 100 - i,
+          usage: 5,
+        })),
+      };
+      vi.mocked(database.inventoryForecast.findMany).mockResolvedValue([]);
+
+      // Hold the first create pending; the remaining 29 resolve immediately.
+      // In the Promise.all layout .map() invokes all 30 create calls
+      // synchronously before any await, so all 30 are recorded while the
+      // first is still pending. A serial loop would await the first create
+      // and never reach the other 29 → vi.waitFor times out (the proof the
+      // wave is real).
+      let releaseFirst!: () => void;
+      vi.mocked(database.inventoryForecast.create)
+        .mockReturnValueOnce(
+          new Promise((resolve) => {
+            releaseFirst = () => resolve({ id: "forecast-1" } as any);
+          }) as any
+        )
+        .mockResolvedValue({ id: "forecast-2" } as any);
+
+      const promise = saveForecastToDatabase(TEST_TENANT_ID, forecast);
+
+      await vi.waitFor(() => {
+        expect(database.inventoryForecast.create).toHaveBeenCalledTimes(30);
+      });
+
+      releaseFirst();
+      await promise;
+    });
   });
 
   describe("saveReorderSuggestionToDatabase", () => {

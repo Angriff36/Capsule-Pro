@@ -825,29 +825,35 @@ export async function saveForecastToDatabase(
         ? 0.6
         : 0.3;
 
-  // Save each forecast point. Writes stay per-point — each carries a
-  // distinct projectedQuantity, so the updates cannot be collapsed into one
-  // call.
-  for (const point of points) {
-    const forecastValue = point.projectedStock;
-    const existing = existingByDate.get(point.date.getTime());
+  // Save each forecast point. Each carries a distinct projectedQuantity, so
+  // the writes cannot collapse into one updateMany/createMany — but every
+  // point is an independent row (distinct id for updates, distinct date for
+  // creates), so they fire in ONE concurrent wave instead of N serial
+  // round-trips (~30 points/SKU → 1 wave). Raw Prisma (not governed) →
+  // concurrent-safe; there is no $transaction here, so the partial-on-failure
+  // semantics are unchanged by parallelizing.
+  await Promise.all(
+    points.map((point) => {
+      const forecastValue = point.projectedStock;
+      const existing = existingByDate.get(point.date.getTime());
 
-    if (existing) {
-      await database.inventoryForecast.update({
-        where: {
-          tenantId_id: {
-            tenantId,
-            id: existing.id,
+      if (existing) {
+        return database.inventoryForecast.update({
+          where: {
+            tenantId_id: {
+              tenantId,
+              id: existing.id,
+            },
           },
-        },
-        data: {
-          forecastDate: point.date,
-          projectedQuantity: forecastValue,
-          confidence: confidenceValue,
-        },
-      });
-    } else {
-      await database.inventoryForecast.create({
+          data: {
+            forecastDate: point.date,
+            projectedQuantity: forecastValue,
+            confidence: confidenceValue,
+          },
+        });
+      }
+
+      return database.inventoryForecast.create({
         data: {
           tenantId,
           sku: forecast.sku,
@@ -858,8 +864,8 @@ export async function saveForecastToDatabase(
           confidence: confidenceValue,
         },
       });
-    }
-  }
+    })
+  );
 }
 
 /**
