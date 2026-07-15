@@ -597,33 +597,27 @@ describe("Inventory Forecasting Service", () => {
 
   describe("batchCalculateForecasts", () => {
     it("should calculate forecasts for multiple SKUs", async () => {
-      // Use mockImplementation with proper type casting for Prisma compatibility
-      // Note: Implementation queries by item_number, not sku
-      vi.mocked(database.inventoryItem.findFirst).mockImplementation(
-        (async (args: { where?: { item_number?: string } }) => {
-          const itemNumber = args?.where?.item_number;
-          if (itemNumber === "SKU-001") {
-            return createMockInventoryItem({
-              item_number: "SKU-001",
-              quantityOnHand: 100,
-            });
-          }
-          if (itemNumber === "SKU-002") {
-            return createMockInventoryItem({
-              item_number: "SKU-002",
-              quantityOnHand: 50,
-            });
-          }
-          return null;
-        }) as unknown as typeof database.inventoryItem.findFirst
-      );
+      // Batched: ONE findMany resolves every SKU at once (was one findFirst PER
+      // SKU). Note: implementation queries by item_number, not sku.
+      vi.mocked(database.inventoryItem.findMany).mockResolvedValue([
+        createMockInventoryItem({
+          item_number: "SKU-001",
+          quantityOnHand: 100,
+        }),
+        createMockInventoryItem({
+          item_number: "SKU-002",
+          quantityOnHand: 50,
+        }),
+      ]);
 
       vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(
         Array.from({ length: 15 }, (_, i) =>
           createMockTransaction({
             quantity: 3,
-            type: "use",
-            createdAt: new Date(Date.now() - (i + 1) * 24 * 60 * 60 * 1000),
+            transactionType: "use",
+            transactionDate: new Date(
+              Date.now() - (i + 1) * 24 * 60 * 60 * 1000
+            ),
           })
         )
       );
@@ -642,8 +636,53 @@ describe("Inventory Forecasting Service", () => {
       expect(results.get("SKU-002")?.currentStock).toBe(50);
     });
 
+    it("collapses the per-SKU N+1 into ONE items + ONE transactions + ONE events read (4N→3)", async () => {
+      vi.mocked(database.inventoryItem.findMany).mockResolvedValue([
+        createMockInventoryItem({ item_number: "SKU-A", quantityOnHand: 100 }),
+        createMockInventoryItem({ item_number: "SKU-B", quantityOnHand: 100 }),
+        createMockInventoryItem({ item_number: "SKU-C", quantityOnHand: 100 }),
+      ]);
+      vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue([]);
+      vi.mocked(database.event.findMany).mockResolvedValue([]);
+
+      await batchCalculateForecasts(
+        TEST_TENANT_ID,
+        ["SKU-A", "SKU-B", "SKU-C"],
+        30
+      );
+
+      // Was: 1 findFirst PER SKU + 2 transaction + 1 event read PER SKU.
+      // Now: ONE findMany (items) + ONE findMany (transactions) + ONE findMany
+      // (events) regardless of SKU count.
+      expect(database.inventoryItem.findMany).toHaveBeenCalledTimes(1);
+      expect(database.inventoryItem.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            item_number: { in: ["SKU-A", "SKU-B", "SKU-C"] },
+            deletedAt: null,
+          }),
+          select: {
+            id: true,
+            item_number: true,
+            quantityOnHand: true,
+          },
+        })
+      );
+      expect(database.inventoryTransaction.findMany).toHaveBeenCalledTimes(1);
+      expect(database.inventoryTransaction.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            itemId: { in: expect.any(Array) },
+          }),
+        })
+      );
+      expect(database.event.findMany).toHaveBeenCalledTimes(1);
+      // The per-SKU findFirst path is gone entirely.
+      expect(database.inventoryItem.findFirst).not.toHaveBeenCalled();
+    });
+
     it("should handle missing SKUs gracefully", async () => {
-      vi.mocked(database.inventoryItem.findFirst).mockResolvedValue(null);
+      vi.mocked(database.inventoryItem.findMany).mockResolvedValue([]);
       vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue([]);
       vi.mocked(database.event.findMany).mockResolvedValue([]);
 
@@ -1017,26 +1056,23 @@ describe("Forecast Integration Tests", () => {
     expect(result2.daysUntilDepletion).toBeGreaterThan(0);
   });
 
-  it("should process large batch forecasts with error isolation", async () => {
+  it("should process large batch forecasts with missing-SKU graceful degradation", async () => {
     const skus = Array.from({ length: 50 }, (_, i) => `SKU-BATCH-${i}`);
 
-    // Even-indexed SKUs return valid items, odd-indexed SKUs throw DB errors
-    vi.mocked(database.inventoryItem.findFirst).mockImplementation(
-      (async (args: { where?: { item_number?: string } }) => {
-        const sku = args?.where?.item_number;
-        if (!sku) {
-          return null;
-        }
-        const index = skus.indexOf(sku);
-        if (index === -1 || index % 2 !== 0) {
-          throw new Error(`Item not found: ${sku}`);
-        }
-        return createMockInventoryItem({
-          item_number: sku,
-          quantityOnHand: 100,
-          reorder_level: 20,
-        });
-      }) as unknown as typeof database.inventoryItem.findFirst
+    // Batched findMany returns ONLY even-indexed items; odd-indexed SKUs are
+    // "not found" and degrade to zero-stock forecasts. A single batched read
+    // cannot throw per-item, so missing items surface as Map misses (the
+    // batched equivalent of the prior per-SKU findFirst isolation).
+    vi.mocked(database.inventoryItem.findMany).mockResolvedValue(
+      skus
+        .filter((_, i) => i % 2 === 0)
+        .map((sku) =>
+          createMockInventoryItem({
+            item_number: sku,
+            quantityOnHand: 100,
+            reorder_level: 20,
+          })
+        )
     );
 
     const today = new Date();
@@ -1054,24 +1090,21 @@ describe("Forecast Integration Tests", () => {
     );
     vi.mocked(database.event.findMany).mockResolvedValue([]);
 
-    // calculateDepletionForecast catches internal DB errors and returns a
-    // zero-stock forecast instead of throwing, so batchCalculateForecasts
-    // never sees the error. All 50 SKUs produce results.
     const results = await batchCalculateForecasts(TEST_TENANT_ID, skus, 30);
 
     expect(results).toBeInstanceOf(Map);
-    // All 50 SKUs should be present (errors are caught internally)
+    // All 50 SKUs present (missing ones degrade to zero-stock, not dropped)
     expect(results.size).toBe(50);
 
-    // Even-indexed SKUs should have high-confidence forecasts with real data
     for (const [sku, forecast] of results) {
       expect(forecast).toBeDefined();
       const index = skus.indexOf(sku);
       if (index % 2 === 0) {
+        // Even-indexed SKUs resolved from the batched stock read
         expect(forecast.currentStock).toBe(100);
         expect(forecast.confidence).toBe("high");
       } else {
-        // Odd-indexed SKUs hit DB error path → zero-stock fallback
+        // Odd-indexed SKUs not in the batched result → zero-stock fallback
         expect(forecast.currentStock).toBe(0);
         expect(forecast.confidence).toBe("low");
       }

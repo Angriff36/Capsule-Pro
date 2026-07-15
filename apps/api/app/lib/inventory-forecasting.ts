@@ -49,6 +49,195 @@ export interface ReorderSuggestionResult {
   urgency: "critical" | "warning" | "info";
 }
 
+interface EventUsage {
+  eventId: string;
+  eventName: string;
+  startDate: Date;
+  usage: number;
+}
+
+interface HistoricalUsage {
+  dailyAverage: number;
+  dataPoints: number;
+  variability: number;
+}
+
+interface ProjectedUsagePoint {
+  date: Date;
+  eventId?: string;
+  eventName?: string;
+  usage: number;
+}
+
+/**
+ * Structural stand-in for DecimalLike — the generated client returns Decimal
+ * for numeric columns (quantityOnHand, quantity, reorder_level). Kept structural
+ * (toNumber + toString, both of which DecimalLike implements) so this module
+ * need not import the Prisma namespace purely for a type annotation. `Number()`
+ * accepts it.
+ */
+interface DecimalLike {
+  toNumber(): number;
+  toString(): string;
+}
+
+/**
+ * Pure fold over per-day transaction usage: sum |quantity| per ISO day,
+ * dailyAverage = total / lookback window, stddev variability. Extracted from
+ * the prior per-query getHistoricalUsage so the batch path can run it over
+ * pre-fetched rows instead of one query per item. Byte-identical math.
+ */
+function computeHistoricalUsage(
+  transactions: readonly {
+    quantity: DecimalLike;
+    transactionDate: Date;
+  }[],
+  daysToLookBack: number
+): HistoricalUsage {
+  if (transactions.length === 0) {
+    return { dailyAverage: 0, dataPoints: 0, variability: 0 };
+  }
+
+  // Group by day and calculate daily usage
+  const dailyUsage = new Map<string, number>();
+  for (const t of transactions) {
+    const dateKey = t.transactionDate.toISOString().split("T")[0];
+    if (!dateKey) {
+      continue;
+    }
+    const currentUsage = dailyUsage.get(dateKey) ?? 0;
+    dailyUsage.set(dateKey, currentUsage + Math.abs(Number(t.quantity)));
+  }
+
+  const dailyValues = Array.from(dailyUsage.values());
+  const dataPoints = dailyValues.length;
+  const totalUsage = dailyValues.reduce((sum, val) => sum + val, 0);
+  const dailyAverage = totalUsage / daysToLookBack;
+
+  // Calculate variability (standard deviation)
+  let variability = 0;
+  if (dataPoints > 1) {
+    const mean = totalUsage / dataPoints;
+    const variance =
+      dailyValues.reduce((sum, val) => sum + (val - mean) ** 2, 0) / dataPoints;
+    variability = Math.sqrt(variance);
+  }
+
+  return { dailyAverage, dataPoints, variability };
+}
+
+/**
+ * Pure projection: for each day in the horizon, baseline historical daily
+ * average + event-driven usage. Identical to the prior getProjectedUsage loop.
+ * When dailyAverage is 0 this equals the old events-only path, so the no-item
+ * case is preserved without a separate branch.
+ */
+function buildProjectedUsage(
+  historicalData: HistoricalUsage,
+  events: readonly EventUsage[],
+  horizonDays: number
+): ProjectedUsagePoint[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const projection: ProjectedUsagePoint[] = [];
+
+  for (let day = 0; day <= horizonDays; day++) {
+    const forecastDate = new Date(today);
+    forecastDate.setDate(forecastDate.getDate() + day);
+
+    // Find events on this day
+    const dayEvents = events.filter((event) => {
+      const eventDate = new Date(event.startDate);
+      eventDate.setHours(0, 0, 0, 0);
+      return eventDate.getTime() === forecastDate.getTime();
+    });
+
+    // Baseline usage from historical data
+    let dailyUsage = historicalData.dailyAverage;
+
+    // Add event-based usage
+    const eventUsage = dayEvents.reduce((sum, e) => sum + (e.usage || 0), 0);
+    dailyUsage += eventUsage;
+
+    projection.push({
+      date: forecastDate,
+      usage: Math.round(dailyUsage * 100) / 100, // Round to 2 decimal places
+      eventId: dayEvents[0]?.eventId,
+      eventName: dayEvents[0]?.eventName,
+    });
+  }
+
+  return projection;
+}
+
+/**
+ * Walk a projection subtracting daily usage from stock; the first day
+ * projected stock drops to <= 0 is the depletion date. Builds the per-day
+ * forecast point array (projectedStock clamped to >= 0). Byte-identical to
+ * the prior inline loop; shared by the single-SKU and batch paths.
+ */
+function buildForecastPoints(
+  currentStock: number,
+  projectedUsage: readonly ProjectedUsagePoint[]
+): {
+  forecast: ForecastResult["forecast"];
+  depletionDate: Date | null;
+  daysUntilDepletion: number | null;
+} {
+  const currentDate = new Date();
+  currentDate.setHours(0, 0, 0, 0);
+
+  const forecast: ForecastResult["forecast"] = [];
+  let projectedStock = currentStock;
+  let depletionDate: Date | null = null;
+  let daysUntilDepletion: number | null = null;
+
+  for (const projection of projectedUsage) {
+    projectedStock -= projection.usage;
+
+    forecast.push({
+      date: projection.date,
+      projectedStock: Math.max(0, projectedStock),
+      usage: projection.usage,
+      eventId: projection.eventId,
+      eventName: projection.eventName,
+    });
+
+    // Check if depleted
+    if (depletionDate === null && projectedStock <= 0) {
+      depletionDate = projection.date;
+      const timeDiff = projection.date.getTime() - currentDate.getTime();
+      daysUntilDepletion = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+      projectedStock = 0; // Don't go negative
+    }
+  }
+
+  return { forecast, depletionDate, daysUntilDepletion };
+}
+
+/**
+ * Pure confidence classification from historical usage stats. Identical to the
+ * prior calculateConfidenceLevel thresholds.
+ */
+function computeConfidence(
+  historicalData: HistoricalUsage
+): "high" | "medium" | "low" {
+  const { dataPoints, variability, dailyAverage } = historicalData;
+
+  // Calculate coefficient of variation (CV)
+  const cv = dailyAverage > 0 ? variability / dailyAverage : 1;
+
+  // Confidence criteria based on data quality
+  if (dataPoints >= 20 && cv < 0.3) {
+    return "high";
+  }
+  if (dataPoints >= 10 || cv < 0.5) {
+    return "medium";
+  }
+  return "low";
+}
+
 /**
  * Calculate depletion forecast for an inventory item
  */
@@ -61,7 +250,10 @@ export async function calculateDepletionForecast(
 
   // Get current stock level from InventoryItem
   // Note: SKU maps to item_number in the database
-  let stockLevel;
+  let stockLevel: {
+    id: string;
+    quantityOnHand: DecimalLike | null;
+  } | null;
   try {
     stockLevel = await database.inventoryItem.findFirst({
       where: {
@@ -69,6 +261,7 @@ export async function calculateDepletionForecast(
         item_number: sku,
         deletedAt: null,
       },
+      select: { id: true, quantityOnHand: true },
     });
   } catch (dbError) {
     log.error(`[calculateDepletionForecast] DB error looking up SKU ${sku}`, {
@@ -92,12 +285,32 @@ export async function calculateDepletionForecast(
   // Get the inventory item ID for historical queries
   const itemId = stockLevel?.id ?? "";
 
-  // Get projected usage combining historical data and upcoming events
-  let projectedUsage;
+  // Fetch historical usage (once) + tenant-wide events (once) in parallel.
+  // The original fetched historical usage twice — once inside getProjectedUsage
+  // and again inside calculateConfidenceLevel with identical args. Computing it
+  // once and reusing for both projection and confidence halves the per-SKU read
+  // cost; the pure helpers keep the math byte-identical.
+  let historicalData: HistoricalUsage = {
+    dailyAverage: 0,
+    dataPoints: 0,
+    variability: 0,
+  };
+  let events: EventUsage[] = [];
   try {
-    projectedUsage = itemId
-      ? await getProjectedUsage(tenantId, itemId, horizonDays)
-      : await getProjectedUsageFromEventsOnly(tenantId, sku, horizonDays);
+    const upcomingEvents = getUpcomingEventsUsingInventory(
+      tenantId,
+      horizonDays
+    );
+    if (itemId) {
+      [historicalData, events] = await Promise.all([
+        getHistoricalUsage(tenantId, itemId, 30),
+        upcomingEvents,
+      ]);
+    } else {
+      // No resolved item: dailyAverage stays 0, so buildProjectedUsage produces
+      // the events-only projection the original returned for unknown SKUs.
+      events = await upcomingEvents;
+    }
   } catch (usageError) {
     log.error(
       `[calculateDepletionForecast] Error getting projected usage for SKU ${sku}`,
@@ -114,52 +327,19 @@ export async function calculateDepletionForecast(
     };
   }
 
-  // Generate forecast points
-  const forecast: Array<{
-    date: Date;
-    projectedStock: number;
-    usage: number;
-    eventId?: string;
-    eventName?: string;
-  }> = [];
-
-  let projectedStock = currentStock;
-  const currentDate = new Date();
-  currentDate.setHours(0, 0, 0, 0);
-
-  // Calculate depletion date
-  let depletionDate: Date | null = null;
-  let daysUntilDepletion: number | null = null;
-
-  // Build forecast from projected usage data
-  for (const projection of projectedUsage) {
-    const dayUsage = projection.usage;
-    projectedStock -= dayUsage;
-
-    forecast.push({
-      date: projection.date,
-      projectedStock: Math.max(0, projectedStock),
-      usage: dayUsage,
-      eventId: projection.eventId,
-      eventName: projection.eventName,
-    });
-
-    // Check if depleted
-    if (depletionDate === null && projectedStock <= 0) {
-      depletionDate = projection.date;
-      const timeDiff = projection.date.getTime() - currentDate.getTime();
-      daysUntilDepletion = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-      projectedStock = 0; // Don't go negative
-    }
-  }
-
-  // Determine confidence level based on data availability
-  const confidence = await calculateConfidenceLevel(
-    tenantId,
-    itemId,
+  const projectedUsage = buildProjectedUsage(
+    historicalData,
+    events,
+    horizonDays
+  );
+  const { forecast, depletionDate, daysUntilDepletion } = buildForecastPoints(
     currentStock,
     projectedUsage
   );
+
+  // Determine confidence level based on data availability (pure — reuses the
+  // already-fetched historical data, no second read)
+  const confidence = computeConfidence(historicalData);
 
   return {
     sku,
@@ -252,7 +432,7 @@ async function getHistoricalUsage(
   tenantId: string,
   itemId: string,
   daysToLookBack: number
-): Promise<{ dailyAverage: number; dataPoints: number; variability: number }> {
+): Promise<HistoricalUsage> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -282,36 +462,7 @@ async function getHistoricalUsage(
     },
   });
 
-  if (transactions.length === 0) {
-    return { dailyAverage: 0, dataPoints: 0, variability: 0 };
-  }
-
-  // Group by day and calculate daily usage
-  const dailyUsage = new Map<string, number>();
-  for (const t of transactions) {
-    const dateKey = t.transactionDate.toISOString().split("T")[0];
-    if (!dateKey) {
-      continue;
-    }
-    const currentUsage = dailyUsage.get(dateKey) ?? 0;
-    dailyUsage.set(dateKey, currentUsage + Math.abs(Number(t.quantity)));
-  }
-
-  const dailyValues = Array.from(dailyUsage.values());
-  const dataPoints = dailyValues.length;
-  const totalUsage = dailyValues.reduce((sum, val) => sum + val, 0);
-  const dailyAverage = totalUsage / daysToLookBack;
-
-  // Calculate variability (standard deviation)
-  let variability = 0;
-  if (dataPoints > 1) {
-    const mean = totalUsage / dataPoints;
-    const variance =
-      dailyValues.reduce((sum, val) => sum + (val - mean) ** 2, 0) / dataPoints;
-    variability = Math.sqrt(variance);
-  }
-
-  return { dailyAverage, dataPoints, variability };
+  return computeHistoricalUsage(transactions, daysToLookBack);
 }
 
 /**
@@ -319,11 +470,8 @@ async function getHistoricalUsage(
  */
 async function getUpcomingEventsUsingInventory(
   tenantId: string,
-  _sku: string,
   horizonDays: number
-): Promise<
-  Array<{ eventId: string; eventName: string; startDate: Date; usage: number }>
-> {
+): Promise<EventUsage[]> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -371,153 +519,6 @@ async function getUpcomingEventsUsingInventory(
 }
 
 /**
- * Helper: Get projected usage combining historical data and upcoming events
- */
-async function getProjectedUsage(
-  tenantId: string,
-  itemId: string,
-  horizonDays: number
-): Promise<
-  Array<{ date: Date; usage: number; eventId?: string; eventName?: string }>
-> {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  // Get historical daily average usage
-  const historicalData = await getHistoricalUsage(
-    tenantId,
-    itemId,
-    30 // Look back 30 days for historical pattern
-  );
-
-  // Get upcoming events
-  const events = await getUpcomingEventsUsingInventory(
-    tenantId,
-    "",
-    horizonDays
-  );
-
-  // Build projection: baseline historical usage + event-based spikes
-  const projection: Array<{
-    date: Date;
-    usage: number;
-    eventId?: string;
-    eventName?: string;
-  }> = [];
-
-  for (let day = 0; day <= horizonDays; day++) {
-    const forecastDate = new Date(today);
-    forecastDate.setDate(forecastDate.getDate() + day);
-
-    // Find events on this day
-    const dayEvents = events.filter((event) => {
-      const eventDate = new Date(event.startDate);
-      eventDate.setHours(0, 0, 0, 0);
-      return eventDate.getTime() === forecastDate.getTime();
-    });
-
-    // Baseline usage from historical data
-    let dailyUsage = historicalData.dailyAverage;
-
-    // Add event-based usage
-    const eventUsage = dayEvents.reduce((sum, e) => sum + (e.usage || 0), 0);
-    dailyUsage += eventUsage;
-
-    projection.push({
-      date: forecastDate,
-      usage: Math.round(dailyUsage * 100) / 100, // Round to 2 decimal places
-      eventId: dayEvents[0]?.eventId,
-      eventName: dayEvents[0]?.eventName,
-    });
-  }
-
-  return projection;
-}
-
-/**
- * Helper: Get projected usage from events only (fallback when no itemId)
- */
-async function getProjectedUsageFromEventsOnly(
-  tenantId: string,
-  sku: string,
-  horizonDays: number
-): Promise<
-  Array<{ date: Date; usage: number; eventId?: string; eventName?: string }>
-> {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  // Get upcoming events
-  const events = await getUpcomingEventsUsingInventory(
-    tenantId,
-    sku,
-    horizonDays
-  );
-
-  // Build projection from events only
-  const projection: Array<{
-    date: Date;
-    usage: number;
-    eventId?: string;
-    eventName?: string;
-  }> = [];
-
-  for (let day = 0; day <= horizonDays; day++) {
-    const forecastDate = new Date(today);
-    forecastDate.setDate(forecastDate.getDate() + day);
-
-    // Find events on this day
-    const dayEvents = events.filter((event) => {
-      const eventDate = new Date(event.startDate);
-      eventDate.setHours(0, 0, 0, 0);
-      return eventDate.getTime() === forecastDate.getTime();
-    });
-
-    const dayUsage = dayEvents.reduce((sum, e) => sum + (e.usage || 0), 0);
-
-    projection.push({
-      date: forecastDate,
-      usage: dayUsage,
-      eventId: dayEvents[0]?.eventId,
-      eventName: dayEvents[0]?.eventName,
-    });
-  }
-
-  return projection;
-}
-
-/**
- * Helper: Calculate confidence level for forecast based on historical data
- */
-async function calculateConfidenceLevel(
-  tenantId: string,
-  itemId: string,
-  _currentStock: number,
-  _projectedUsage: Array<{ usage: number }>
-): Promise<"high" | "medium" | "low"> {
-  // Get historical data for confidence calculation
-  const historicalData = await getHistoricalUsage(tenantId, itemId, 30);
-
-  // High confidence: lots of historical data points and low variability
-  // Medium confidence: some data or moderate variability
-  // Low confidence: little data or high variability
-
-  const { dataPoints, variability, dailyAverage } = historicalData;
-
-  // Calculate coefficient of variation (CV)
-  const cv = dailyAverage > 0 ? variability / dailyAverage : 1;
-
-  // Confidence criteria based on data quality
-  if (dataPoints >= 20 && cv < 0.3) {
-    return "high";
-  }
-  if (dataPoints >= 10 || cv < 0.5) {
-    return "medium";
-  }
-  return "low";
-}
-
-/**
  * Helper: Calculate reorder suggestion for a specific SKU
  */
 async function calculateReorderSuggestion(
@@ -532,7 +533,10 @@ async function calculateReorderSuggestion(
 
   // Get current stock and item info from InventoryItem
   // Note: SKU maps to item_number
-  let stockLevel;
+  let stockLevel: {
+    quantityOnHand: DecimalLike | null;
+    reorder_level: DecimalLike | null;
+  } | null;
   try {
     stockLevel = await database.inventoryItem.findFirst({
       where: {
@@ -556,7 +560,7 @@ async function calculateReorderSuggestion(
   const reorderLevel = Number(stockLevel.reorder_level || 0);
 
   // Get forecast to determine depletion
-  let forecast;
+  let forecast: ForecastResult;
   try {
     forecast = await calculateDepletionForecast({
       tenantId,
@@ -637,26 +641,130 @@ export async function batchCalculateForecasts(
     return new Map();
   }
 
-  const results = new Map<string, ForecastResult>();
+  // Skip empties (mirrors the prior per-SKU guard) and de-dupe the lookup keys.
+  const skusToForecast = skus.filter((sku) => sku && sku.trim().length > 0);
+  if (skusToForecast.length === 0) {
+    return new Map();
+  }
+  if (skusToForecast.length < skus.length) {
+    log.warn("[batchCalculateForecasts] Skipping empty SKU(s)");
+  }
+  const lookupSkus = [...new Set(skusToForecast.map((sku) => sku.trim()))];
 
-  for (const sku of skus) {
-    // Skip empty/null SKUs
-    if (!sku || sku.trim().length === 0) {
-      log.warn("[batchCalculateForecasts] Skipping empty SKU");
-      continue;
-    }
-
-    try {
-      const forecast = await calculateDepletionForecast({
-        tenantId,
-        sku: sku.trim(),
-        horizonDays,
+  // BATCH READ 1 — stock levels for EVERY requested SKU in ONE query (was one
+  // findFirst PER SKU). first-wins mirrors findFirst's "first match" if an
+  // item_number ever duplicates within a tenant.
+  const items = await database.inventoryItem.findMany({
+    where: {
+      tenantId,
+      item_number: { in: lookupSkus },
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      item_number: true,
+      quantityOnHand: true,
+    },
+  });
+  const stockBySku = new Map<
+    string,
+    { id: string; quantityOnHand: DecimalLike | null }
+  >();
+  for (const item of items) {
+    if (item.item_number && !stockBySku.has(item.item_number)) {
+      stockBySku.set(item.item_number, {
+        id: item.id,
+        quantityOnHand: item.quantityOnHand,
       });
-      results.set(sku, forecast);
-    } catch (error) {
-      log.error(`Failed to calculate forecast for SKU ${sku}`, { error });
-      // Continue with other SKUs — don't let one failure crash the batch
     }
+  }
+
+  // BATCH READ 2 — tenant-wide upcoming events. Identical for every SKU (the
+  // prior per-SKU loop re-fetched the exact same set N times; the SKU param was
+  // unused).
+  const events = await getUpcomingEventsUsingInventory(tenantId, horizonDays);
+
+  // BATCH READ 3 — historical transactions for ALL resolved items in ONE query
+  // (was 2 queries PER SKU — once for projection, once for confidence, with
+  // identical args). Grouped by itemId for the pure per-SKU fold.
+  const itemIds = [...new Set([...stockBySku.values()].map((v) => v.id))];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - 30);
+
+  const transactionsByItem = new Map<
+    string,
+    { quantity: DecimalLike; transactionDate: Date }[]
+  >();
+  if (itemIds.length > 0) {
+    const transactions = await database.inventoryTransaction.findMany({
+      where: {
+        tenantId,
+        itemId: { in: itemIds },
+        transactionType: { in: ["use", "waste", "adjust"] },
+        transactionDate: {
+          gte: startDate,
+          lte: today,
+        },
+      },
+      select: {
+        quantity: true,
+        transactionDate: true,
+        itemId: true,
+      },
+    });
+    for (const t of transactions) {
+      const rows = transactionsByItem.get(t.itemId);
+      if (rows) {
+        rows.push({ quantity: t.quantity, transactionDate: t.transactionDate });
+      } else {
+        transactionsByItem.set(t.itemId, [
+          { quantity: t.quantity, transactionDate: t.transactionDate },
+        ]);
+      }
+    }
+  }
+
+  // Per-SKU pure computation over the shared Maps — NO further DB reads.
+  // 1 + 4N reads collapse to 3 (items + events + transactions), independent of
+  // SKU count; the per-SKU math is byte-identical to calculateDepletionForecast.
+  const results = new Map<string, ForecastResult>();
+  for (const sku of skusToForecast) {
+    const trimmedSku = sku.trim();
+    const stock = stockBySku.get(trimmedSku);
+    const currentStock = stock?.quantityOnHand
+      ? Number(stock.quantityOnHand)
+      : 0;
+    const itemId = stock?.id ?? "";
+
+    // No resolved item ⇒ dailyAverage 0 ⇒ buildProjectedUsage yields the
+    // events-only projection calculateDepletionForecast returned for unknown SKUs.
+    const historicalData = itemId
+      ? computeHistoricalUsage(transactionsByItem.get(itemId) ?? [], 30)
+      : { dailyAverage: 0, dataPoints: 0, variability: 0 };
+
+    const projectedUsage = buildProjectedUsage(
+      historicalData,
+      events,
+      horizonDays
+    );
+    const { forecast, depletionDate, daysUntilDepletion } = buildForecastPoints(
+      currentStock,
+      projectedUsage
+    );
+    const confidence = computeConfidence(historicalData);
+
+    // Key by the original (untrimmed) SKU to match the prior per-SKU loop; the
+    // forecast.sku field carries the trimmed value calculateDepletionForecast used.
+    results.set(sku, {
+      sku: trimmedSku,
+      currentStock,
+      depletionDate,
+      daysUntilDepletion,
+      confidence,
+      forecast,
+    });
   }
 
   return results;
