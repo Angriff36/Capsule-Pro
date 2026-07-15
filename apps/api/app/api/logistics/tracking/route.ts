@@ -27,6 +27,32 @@ export async function GET(_request: NextRequest) {
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
 
+    // Narrow projection: the delivery map below consumes only these 16 scalar
+    // columns. A top-level `select` drops the other ~12 Shipment columns/row —
+    // most importantly `signatureData` (a base64 signature blob that can run to
+    // kilobytes/row), plus `internalNotes`, `reference`, two Decimal money
+    // fields, and audit timestamps — across up to 70 rows (50 active + 20
+    // delivered) on every tracking-board load. `select` is a column projection
+    // (never removes rows), so the response shape is byte-identical.
+    const shipmentSelect = {
+      id: true,
+      shipmentNumber: true,
+      status: true,
+      eventId: true,
+      supplierId: true,
+      locationId: true,
+      scheduledDate: true,
+      shippedDate: true,
+      estimatedDeliveryDate: true,
+      actualDeliveryDate: true,
+      totalItems: true,
+      trackingNumber: true,
+      carrier: true,
+      shippingMethod: true,
+      notes: true,
+      createdAt: true,
+    } as const;
+
     // Fetch active shipments (scheduled, preparing, in_transit) from today/yesterday
     const activeShipments = await database.shipment.findMany({
       where: {
@@ -40,6 +66,7 @@ export async function GET(_request: NextRequest) {
       },
       orderBy: { scheduledDate: "desc" },
       take: 50,
+      select: shipmentSelect,
     });
 
     // Fetch today's completed shipments
@@ -52,6 +79,7 @@ export async function GET(_request: NextRequest) {
       },
       orderBy: { actualDeliveryDate: "desc" },
       take: 20,
+      select: shipmentSelect,
     });
 
     const allShipments = [...activeShipments, ...completedShipments];
@@ -103,7 +131,10 @@ export async function GET(_request: NextRequest) {
       supplierMap = Object.fromEntries(suppliers.map((s) => [s.id, s.name]));
     }
 
-    // Fetch active delivery routes with driver/vehicle info
+    // Fetch active delivery routes with driver/vehicle info.
+    // Narrow projection: only eventId (the route↔shipment match below), driverId,
+    // and vehicleId are read — the rest (description, name, routeNumber,
+    // totalDistance/totalDuration, timestamps) is unused here.
     const routes = await database.deliveryRoute.findMany({
       where: {
         tenantId,
@@ -111,6 +142,7 @@ export async function GET(_request: NextRequest) {
         status: { in: ["optimized", "in_progress"] },
       },
       take: 20,
+      select: { eventId: true, driverId: true, vehicleId: true },
     });
 
     // Get driver and vehicle info for routes
