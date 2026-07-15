@@ -91,13 +91,27 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
   const tenantId = await getTenantIdForOrg(orgId);
   const { id } = await params;
 
-  const moduleRecord = await database.trainingModule.findFirst({
-    where: {
-      tenantId,
-      id,
-      deletedAt: null,
-    },
-  });
+  // Wave 1: the module read and the assignments read both key only off the
+  // route id/tenant, so fetch them concurrently. The notFound gate runs after,
+  // trading one wasted assignments read on a 404 (rare) for one fewer
+  // round-trip on every valid page load.
+  const [moduleRecord, assignmentRecords] = await Promise.all([
+    database.trainingModule.findFirst({
+      where: {
+        tenantId,
+        id,
+        deletedAt: null,
+      },
+    }),
+    database.trainingAssignment.findMany({
+      where: {
+        tenantId,
+        moduleId: id,
+        deletedAt: null,
+      },
+      orderBy: { assignedAt: "desc" },
+    }),
+  ]);
 
   if (!moduleRecord) {
     notFound();
@@ -116,40 +130,23 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
     created_at: moduleRecord.createdAt,
   };
 
-  const assignmentRecords = await database.trainingAssignment.findMany({
-    where: {
-      tenantId,
-      moduleId: id,
-      deletedAt: null,
-    },
-    orderBy: { assignedAt: "desc" },
-  });
-
-  const completionRecords = await database.trainingCompletion.findMany({
-    where: {
-      tenantId,
-      assignmentId: {
-        in: assignmentRecords.map((assignment) => assignment.id),
-      },
-    },
-  });
-  const completionsByAssignmentId = new Map<
-    string,
-    (typeof completionRecords)[number]
-  >();
-  for (const completion of completionRecords) {
-    if (!completionsByAssignmentId.has(completion.assignmentId)) {
-      completionsByAssignmentId.set(completion.assignmentId, completion);
-    }
-  }
-
+  const assignmentIds = assignmentRecords.map((assignment) => assignment.id);
   const employeeIds = assignmentRecords
     .map((assignment) => assignment.employeeId)
     .filter((employeeId): employeeId is string => Boolean(employeeId));
 
-  const employees =
+  // Wave 2: completions + employees both depend on the assignment rows but not
+  // on each other, so batch them. The empty-employeeIds short-circuit is kept
+  // (a resolved [] instead of a query) so the no-assignments path is unchanged.
+  const [completionRecords, employees] = await Promise.all([
+    database.trainingCompletion.findMany({
+      where: {
+        tenantId,
+        assignmentId: { in: assignmentIds },
+      },
+    }),
     employeeIds.length > 0
-      ? await database.user.findMany({
+      ? database.user.findMany({
           where: {
             tenantId,
             id: { in: employeeIds },
@@ -162,7 +159,19 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
             email: true,
           },
         })
-      : [];
+      : Promise.resolve([]),
+  ]);
+
+  const completionsByAssignmentId = new Map<
+    string,
+    (typeof completionRecords)[number]
+  >();
+  for (const completion of completionRecords) {
+    if (!completionsByAssignmentId.has(completion.assignmentId)) {
+      completionsByAssignmentId.set(completion.assignmentId, completion);
+    }
+  }
+
   const employeesById = new Map(
     employees.map((employee) => [employee.id, employee])
   );
@@ -228,7 +237,6 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
       eyebrow="Staff / Training"
       title={module.title}
     >
-
       {/* Module Stats */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card tone="soft-stone">
