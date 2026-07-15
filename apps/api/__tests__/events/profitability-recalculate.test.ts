@@ -160,4 +160,37 @@ describe("POST /api/events/profitability/commands/recalculate — #17 select gua
     expect(database.cateringOrder.findMany).not.toHaveBeenCalled();
     expect(runManifestCommand).not.toHaveBeenCalled();
   });
+
+  it("runs the budget + actual reads concurrently after the gate (waterfall collapse)", async () => {
+    vi.mocked(database.eventProfitability.findFirst).mockResolvedValue({
+      eventId: EVENT_ID,
+    } as never);
+    vi.mocked(database.event.findUnique).mockResolvedValue({
+      budget: 0,
+    } as never);
+    vi.mocked(database.cateringOrder.findMany).mockResolvedValue([] as never);
+
+    // Hold eventBudget pending. In a serial layout event.findUnique and
+    // cateringOrder.findMany cannot fire until eventBudget resolves; under the
+    // Promise.all they dispatch in the same wave while it is still pending.
+    let releaseEventBudget: (() => void) | undefined;
+    vi.mocked(database.eventBudget.findFirst).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          releaseEventBudget = () => resolve({ lineItems: [] } as never);
+        }) as never
+    );
+
+    const postPromise = POST(makeRequest());
+
+    // Both independent reads fire WHILE eventBudget is still pending.
+    await vi.waitFor(() => {
+      expect(database.event.findUnique).toHaveBeenCalled();
+      expect(database.cateringOrder.findMany).toHaveBeenCalled();
+    });
+
+    releaseEventBudget?.();
+    const res = await postPromise;
+    expect(res.status).toBe(200);
+  });
 });

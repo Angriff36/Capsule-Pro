@@ -29,23 +29,27 @@ async function calculateBudgetTotals(
   budgetedLaborCost: number;
   budgetedOverhead: number;
 }> {
-  const eventBudget = await database.eventBudget.findFirst({
-    where: { tenantId, eventId, deletedAt: null },
-    // db-perf #17: include→select fold. No parent EventBudget column is read
-    // (only lineItems), and per line item only budgetedAmount + category —
-    // drops all parent cols + ~12 lineItem cols incl. 2 Decimal money fields.
-    select: {
-      lineItems: {
-        where: { deletedAt: null },
-        select: { budgetedAmount: true, category: true },
+  // db-perf #17: the budget-line-items read and the event-budget read are
+  // independent (both keyed only on tenantId+eventId) → fire them concurrently
+  // instead of serially.
+  const [eventBudget, event] = await Promise.all([
+    database.eventBudget.findFirst({
+      where: { tenantId, eventId, deletedAt: null },
+      // db-perf #17: include→select fold. No parent EventBudget column is read
+      // (only lineItems), and per line item only budgetedAmount + category —
+      // drops all parent cols + ~12 lineItem cols incl. 2 Decimal money fields.
+      select: {
+        lineItems: {
+          where: { deletedAt: null },
+          select: { budgetedAmount: true, category: true },
+        },
       },
-    },
-  });
-
-  const event = await database.event.findUnique({
-    where: { tenantId_id: { tenantId, id: eventId } },
-    select: { budget: true },
-  });
+    }),
+    database.event.findUnique({
+      where: { tenantId_id: { tenantId, id: eventId } },
+      select: { budget: true },
+    }),
+  ]);
 
   const budgetedRevenue = event?.budget ? Number(event.budget) : 0;
 
@@ -168,15 +172,13 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("EventProfitability not found", 404);
     }
 
-    // Compute fresh budgeted and actual values (reads, not governed writes)
-    const budget = await calculateBudgetTotals(
-      user.tenantId,
-      profitability.eventId
-    );
-    const actuals = await calculateActualTotals(
-      user.tenantId,
-      profitability.eventId
-    );
+    // db-perf #17: budget + actual reads are independent (both keyed only on
+    // tenantId+eventId) → run concurrently. Collapses ~4 serial DB rounds → 2
+    // (existence gate, then one parallel wave of eventBudget/event/cateringOrder).
+    const [budget, actuals] = await Promise.all([
+      calculateBudgetTotals(user.tenantId, profitability.eventId),
+      calculateActualTotals(user.tenantId, profitability.eventId),
+    ]);
 
     // Dispatch governed write through Manifest runtime
     return runManifestCommand({
