@@ -418,13 +418,12 @@ describe("Inventory Forecasting Service", () => {
         vi.mocked(database.inventoryItem.findMany).mockResolvedValue([
           criticalItem,
         ]);
-        // Also mock findFirst for calculateReorderSuggestion
-        vi.mocked(database.inventoryItem.findFirst).mockResolvedValue(
-          criticalItem
-        );
+        // Transactions keyed by the item's id — the batched forecast path groups
+        // by itemId (the per-SKU findFirst path that ignored the where is gone).
         vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(
           Array.from({ length: 15 }, (_, i) =>
             createMockTransaction({
+              itemId: "critical-item-1",
               quantity: 1,
               transactionDate: new Date(
                 Date.now() - (i + 1) * 24 * 60 * 60 * 1000
@@ -459,14 +458,13 @@ describe("Inventory Forecasting Service", () => {
         vi.mocked(database.inventoryItem.findMany).mockResolvedValue([
           warningItem,
         ]);
-        // Also mock findFirst for calculateReorderSuggestion
-        vi.mocked(database.inventoryItem.findFirst).mockResolvedValue(
-          warningItem
-        );
+        // Transactions keyed by the item's id — the batched forecast path groups
+        // by itemId (the per-SKU findFirst path that ignored the where is gone).
         // Use 2 units per transaction to get daily avg of 1 (30 total / 30 days)
         vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(
           Array.from({ length: 15 }, (_, i) =>
             createMockTransaction({
+              itemId: "warning-item-1",
               quantity: 2,
               transactionDate: new Date(
                 Date.now() - (i + 1) * 24 * 60 * 60 * 1000
@@ -592,6 +590,53 @@ describe("Inventory Forecasting Service", () => {
 
         expect(results).toEqual([]);
       });
+    });
+
+    it("collapses the per-SKU forecast N+1 into ONE batched forecast read (constant regardless of SKU count)", async () => {
+      // 5 low-stock SKUs — previously up to ~4 reads PER SKU (the per-SKU item
+      // lookup + forecast's item lookup + historical usage + tenant events).
+      // Now ONE candidate findMany + batchCalculateForecasts' 3 constant reads.
+      const skus = ["A", "B", "C", "D", "E"];
+      vi.mocked(database.inventoryItem.findMany).mockResolvedValue(
+        skus.map((s) =>
+          createMockInventoryItem({
+            id: `item-${s}`,
+            item_number: `SKU-${s}`,
+            quantityOnHand: 1,
+            reorder_level: 20,
+          })
+        )
+      );
+      // Transactions keyed by each item's id so the batch grouping associates
+      // them (the batch path groups by transaction.itemId, not by sku).
+      vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(
+        skus.flatMap((s) =>
+          Array.from({ length: 5 }, (_, i) =>
+            createMockTransaction({
+              itemId: `item-${s}`,
+              quantity: 1,
+              transactionDate: new Date(Date.now() - (i + 1) * 86_400_000),
+            })
+          )
+        )
+      );
+      vi.mocked(database.event.findMany).mockResolvedValue([]);
+
+      const results = await generateReorderSuggestions({
+        tenantId: TEST_TENANT_ID,
+        leadTimeDays: 7,
+        safetyStockDays: 3,
+      });
+
+      // ONE candidate findMany (generateReorderSuggestions) + ONE items findMany
+      // (batchCalculateForecasts) — independent of the 5 SKUs.
+      expect(database.inventoryItem.findMany).toHaveBeenCalledTimes(2);
+      expect(database.inventoryTransaction.findMany).toHaveBeenCalledTimes(1);
+      expect(database.event.findMany).toHaveBeenCalledTimes(1);
+      // The per-SKU findFirst path is gone entirely.
+      expect(database.inventoryItem.findFirst).not.toHaveBeenCalled();
+      // All 5 low-stock SKUs produced suggestions.
+      expect(results).toHaveLength(5);
     });
   });
 
@@ -952,13 +997,47 @@ describe("Inventory Forecasting Service", () => {
 
   describe("getAccuracySummary", () => {
     it("should return accuracy summary for all SKUs", async () => {
-      vi.mocked(database.inventoryForecast.findMany).mockResolvedValue([
-        createMockForecast({ sku: "SKU-001", confidence: "high" }),
-        createMockForecast({ sku: "SKU-002", confidence: "medium" }),
-        createMockForecast({ sku: "SKU-003", confidence: "low" }),
-      ]);
+      vi.mocked(database.inventoryForecast.groupBy).mockResolvedValue([
+        { sku: "SKU-001", _count: { _all: 5 } },
+        { sku: "SKU-002", _count: { _all: 3 } },
+        { sku: "SKU-003", _count: { _all: 1 } },
+      ] as any);
       const summary = await getAccuracySummary(TEST_TENANT_ID);
       expect(Array.isArray(summary)).toBe(true);
+      expect(summary).toHaveLength(3);
+      expect(summary[0]).toMatchObject({
+        sku: "SKU-001",
+        totalForecasts: 5,
+        trackedForecasts: 0,
+        averageErrorDays: 0,
+      });
+    });
+
+    it("collapses the per-SKU count N+1 into ONE groupBy regardless of SKU count", async () => {
+      // Accuracy-tracking columns don't exist in the schema, so every SKU's
+      // metrics are zero except totalForecasts (the per-SKU row count). ONE
+      // groupBy replaces the prior distinct-sku findMany + one count PER SKU.
+      vi.mocked(database.inventoryForecast.groupBy).mockResolvedValue([
+        { sku: "SKU-A", _count: { _all: 2 } },
+        { sku: "SKU-B", _count: { _all: 4 } },
+        { sku: "SKU-C", _count: { _all: 1 } },
+      ] as any);
+
+      const summary = await getAccuracySummary(TEST_TENANT_ID);
+
+      expect(database.inventoryForecast.groupBy).toHaveBeenCalledTimes(1);
+      expect(database.inventoryForecast.groupBy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          by: ["sku"],
+          where: { tenantId: TEST_TENANT_ID },
+          _count: { _all: true },
+        })
+      );
+      // The prior per-SKU count loop + distinct-sku findMany are gone.
+      expect(database.inventoryForecast.count).not.toHaveBeenCalled();
+      expect(database.inventoryForecast.findMany).not.toHaveBeenCalled();
+      expect(summary).toHaveLength(3);
+      expect(summary.map((m) => m.totalForecasts).sort()).toEqual([1, 2, 4]);
     });
   });
 });

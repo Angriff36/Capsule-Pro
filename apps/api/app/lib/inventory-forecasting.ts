@@ -353,72 +353,104 @@ export async function calculateDepletionForecast(
 
 /**
  * Generate reorder suggestions for inventory items
+ *
+ * Batches the forecast for every candidate SKU in ONE pass via
+ * `batchCalculateForecasts` (3 constant reads) instead of forecasting each SKU
+ * separately. The per-SKU reorder math is pure (`computeReorderSuggestion`) and
+ * runs over the batched forecasts plus a single candidate findMany, so the whole
+ * call is constant in DB rounds regardless of how many items are below reorder.
  */
 export async function generateReorderSuggestions(
   request: ReorderSuggestionRequest
 ): Promise<ReorderSuggestionResult[]> {
   const { tenantId, sku, leadTimeDays = 7, safetyStockDays = 3 } = request;
 
-  const suggestions: ReorderSuggestionResult[] = [];
-
-  // Get items to check (specific SKU or all low-stock items)
-  let skusToCheck: string[] = [];
-
-  if (sku) {
-    if (!sku.trim()) {
-      return suggestions;
-    }
-    skusToCheck = [sku.trim()];
-  } else {
-    try {
-      // Get all items below reorder point
-      // Note: SKU maps to item_number, reorderLevel maps to reorder_level
-      const lowStockItems = await database.inventoryItem.findMany({
-        where: {
-          tenantId,
-          deletedAt: null,
-        },
-        select: {
-          item_number: true,
-          quantityOnHand: true,
-          reorder_level: true,
-        },
-      });
-
-      skusToCheck = lowStockItems
-        .filter(
-          (item) =>
-            item.item_number &&
-            item.item_number.trim().length > 0 &&
-            Number(item.quantityOnHand) <= Number(item.reorder_level)
-        )
-        .map((item) => item.item_number);
-    } catch (error) {
-      log.error(
-        "[generateReorderSuggestions] Failed to query inventory items",
-        { error }
-      );
-      return suggestions;
-    }
+  if (sku && !sku.trim()) {
+    return [];
   }
 
-  for (const itemSku of skusToCheck) {
-    try {
-      const suggestion = await calculateReorderSuggestion({
+  // Resolve candidate items + their stock/reorder level in ONE findMany. The
+  // prior per-SKU path re-fetched each item inside `calculateReorderSuggestion`
+  // (and a third time inside `calculateDepletionForecast`) — redundant once the
+  // forecast is batched.
+  let items: Array<{
+    item_number: string | null;
+    quantityOnHand: DecimalLike | null;
+    reorder_level: DecimalLike | null;
+  }>;
+  try {
+    items = await database.inventoryItem.findMany({
+      where: {
         tenantId,
-        sku: itemSku,
-        leadTimeDays,
-        safetyStockDays,
-      });
+        ...(sku ? { item_number: sku.trim() } : {}),
+        deletedAt: null,
+      },
+      select: {
+        item_number: true,
+        quantityOnHand: true,
+        reorder_level: true,
+      },
+    });
+  } catch (error) {
+    log.error("[generateReorderSuggestions] Failed to query inventory items", {
+      error,
+    });
+    return [];
+  }
 
-      if (suggestion) {
-        suggestions.push(suggestion);
-      }
-    } catch (error) {
-      log.error(`[generateReorderSuggestions] Failed for SKU ${itemSku}`, {
-        error,
-      });
-      // Continue with other SKUs
+  // No-SKU mode pre-filters to low-stock items (as before) to keep the forecast
+  // batch small; single-SKU mode checks the one requested item. First-wins per
+  // item_number mirrors findFirst's "first match" if an item_number duplicates.
+  const stockBySku = new Map<
+    string,
+    { quantityOnHand: DecimalLike | null; reorder_level: DecimalLike | null }
+  >();
+  const skusToCheck: string[] = [];
+  for (const item of items) {
+    const itemSku = item.item_number;
+    if (!itemSku || itemSku.trim().length === 0 || stockBySku.has(itemSku)) {
+      continue;
+    }
+    if (!sku && Number(item.quantityOnHand) > Number(item.reorder_level)) {
+      continue;
+    }
+    stockBySku.set(itemSku, {
+      quantityOnHand: item.quantityOnHand,
+      reorder_level: item.reorder_level,
+    });
+    skusToCheck.push(itemSku);
+  }
+
+  if (skusToCheck.length === 0) {
+    return [];
+  }
+
+  // Batch the forecast for ALL candidates in 3 constant reads (was up to ~4
+  // reads PER SKU: per-SKU item lookup + forecast's item lookup + the
+  // historical-usage read + the tenant-wide events read).
+  const forecasts = await batchCalculateForecasts(
+    tenantId,
+    skusToCheck,
+    leadTimeDays + safetyStockDays
+  );
+
+  const suggestions: ReorderSuggestionResult[] = [];
+  for (const itemSku of skusToCheck) {
+    const stock = stockBySku.get(itemSku);
+    const forecast = forecasts.get(itemSku);
+    if (!(stock && forecast)) {
+      continue;
+    }
+    const suggestion = computeReorderSuggestion({
+      sku: itemSku,
+      currentStock: Number(stock.quantityOnHand),
+      reorderLevel: Number(stock.reorder_level || 0),
+      forecast,
+      leadTimeDays,
+      safetyStockDays,
+    });
+    if (suggestion) {
+      suggestions.push(suggestion);
     }
   }
 
@@ -519,61 +551,28 @@ async function getUpcomingEventsUsingInventory(
 }
 
 /**
- * Helper: Calculate reorder suggestion for a specific SKU
+ * Pure reorder-suggestion math from a pre-fetched forecast + stock level.
+ * Extracted from the prior per-SKU `calculateReorderSuggestion` (which did its
+ * own findFirst + forecast fetch) so the batched `generateReorderSuggestions`
+ * path can reuse it without a per-SKU DB read. Thresholds + justifications are
+ * byte-identical to the original.
  */
-async function calculateReorderSuggestion(
-  request: ReorderSuggestionRequest
-): Promise<ReorderSuggestionResult | null> {
-  const { tenantId, sku, leadTimeDays = 7, safetyStockDays = 3 } = request;
-
-  // Validate required SKU
-  if (!sku) {
-    return null;
-  }
-
-  // Get current stock and item info from InventoryItem
-  // Note: SKU maps to item_number
-  let stockLevel: {
-    quantityOnHand: DecimalLike | null;
-    reorder_level: DecimalLike | null;
-  } | null;
-  try {
-    stockLevel = await database.inventoryItem.findFirst({
-      where: {
-        tenantId,
-        item_number: sku,
-        deletedAt: null,
-      },
-    });
-  } catch (dbError) {
-    log.error(`[calculateReorderSuggestion] DB error looking up SKU ${sku}`, {
-      error: dbError,
-    });
-    return null;
-  }
-
-  if (!stockLevel) {
-    return null;
-  }
-
-  const currentStock = Number(stockLevel.quantityOnHand);
-  const reorderLevel = Number(stockLevel.reorder_level || 0);
-
-  // Get forecast to determine depletion
-  let forecast: ForecastResult;
-  try {
-    forecast = await calculateDepletionForecast({
-      tenantId,
-      sku,
-      horizonDays: leadTimeDays + safetyStockDays,
-    });
-  } catch (forecastError) {
-    log.error(`[calculateReorderSuggestion] Forecast failed for SKU ${sku}`, {
-      error: forecastError,
-    });
-    // Return null — we can't make a suggestion without forecast data
-    return null;
-  }
+function computeReorderSuggestion(args: {
+  sku: string;
+  currentStock: number;
+  reorderLevel: number;
+  forecast: ForecastResult;
+  leadTimeDays: number;
+  safetyStockDays: number;
+}): ReorderSuggestionResult | null {
+  const {
+    sku,
+    currentStock,
+    reorderLevel,
+    forecast,
+    leadTimeDays,
+    safetyStockDays,
+  } = args;
 
   // Calculate recommended order quantity
   const daysUntilDepletion = forecast.daysUntilDepletion ?? 999;
@@ -1109,25 +1108,30 @@ export async function updateConfidenceCalculation(
 export async function getAccuracySummary(
   tenantId: string
 ): Promise<ForecastAccuracyMetrics[]> {
-  // Get all SKUs with forecasts
-  const skus = await database.inventoryForecast.findMany({
-    where: {
-      tenantId,
-    },
-    select: {
-      sku: true,
-    },
-    distinct: ["sku"],
+  // The accuracy-tracking columns (accuracy_tracked / error_days) do not exist
+  // in the truthful schema (see trackForecastAccuracy / getForecastAccuracyMetrics),
+  // so every SKU's accuracy metrics are zero — only totalForecasts (the per-SKU
+  // row count) and sku vary. ONE groupBy replaces the prior N+1 (a distinct-sku
+  // findMany + one count PER SKU via getForecastAccuracyMetrics).
+  const groups = await database.inventoryForecast.groupBy({
+    by: ["sku"],
+    where: { tenantId },
+    _count: { _all: true },
   });
 
-  const metrics: ForecastAccuracyMetrics[] = [];
+  const metrics: ForecastAccuracyMetrics[] = groups.map((group) => ({
+    sku: group.sku,
+    totalForecasts: group._count._all,
+    trackedForecasts: 0,
+    averageErrorDays: 0,
+    meanAbsolutePercentageError: 0,
+    confidenceHighAccuracy: 0,
+    confidenceMediumAccuracy: 0,
+    confidenceLowAccuracy: 0,
+  }));
 
-  for (const { sku } of skus) {
-    const skuMetrics = await getForecastAccuracyMetrics(tenantId, sku);
-    metrics.push(skuMetrics);
-  }
-
-  // Sort by tracked forecasts descending, then by error ascending
+  // Preserve the prior sort (trackedForecasts desc, then averageErrorDays asc).
+  // All trackedForecasts/averageErrorDays are 0, so this is order-stable.
   metrics.sort((a, b) => {
     if (a.trackedForecasts !== b.trackedForecasts) {
       return b.trackedForecasts - a.trackedForecasts;
