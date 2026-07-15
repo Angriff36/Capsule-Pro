@@ -27,12 +27,12 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { formatDate } from "../../../../lib/format";
+import { getTenantIdForOrg } from "../../../../lib/tenant";
+import { Header } from "../../../components/header";
 import {
   OperationalPageShell,
   OperationalSection,
 } from "../../../components/operational-page-shell";
-import { getTenantIdForOrg } from "../../../../lib/tenant";
-import { Header } from "../../../components/header";
 
 const statusVariantMap = {
   draft: "secondary",
@@ -57,13 +57,23 @@ const EventReportsPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  // Fetch reports
+  // Fetch reports — narrow to the 5 columns this list consumes (drops the heavy
+  // Json columns checklistData/parsedEventData/reportConfig + 12 more scalars
+  // per row on this unbounded read). orderBy on createdAt is allowed independent
+  // of select.
   const reports = await database.eventReport.findMany({
     where: {
       tenantId,
       deletedAt: null,
     },
     orderBy: [{ createdAt: "desc" }],
+    select: {
+      id: true,
+      eventId: true,
+      status: true,
+      completion: true,
+      autoFillScore: true,
+    },
   });
 
   // Fetch events for reports
