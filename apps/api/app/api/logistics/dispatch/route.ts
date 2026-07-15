@@ -41,8 +41,22 @@ export async function GET(_request: NextRequest) {
           },
         ],
       },
-      include: {
+      // Project only the fields the dispatch-board response consumes — drops
+      // description/eventId/timestamps from each route and address/city/notes/
+      // arrival-times/timestamps from each stop (up to 5 stops × N routes).
+      // select projects columns, never rows, so stopCount + stats stay correct.
+      select: {
+        id: true,
+        routeNumber: true,
+        name: true,
+        status: true,
+        scheduledDate: true,
+        totalDistance: true,
+        totalDuration: true,
+        driverId: true,
+        vehicleId: true,
         routeStops: {
+          select: { id: true, stopNumber: true, name: true, status: true },
           orderBy: { stopNumber: "asc" },
           take: 5, // Just show first 5 stops for preview
         },
