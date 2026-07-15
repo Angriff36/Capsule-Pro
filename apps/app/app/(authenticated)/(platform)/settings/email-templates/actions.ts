@@ -86,11 +86,24 @@ export async function getEmailTemplates(
 
   const offset = (page - 1) * limit;
 
+  // List projection only — the settings list table renders name/type/subject/
+  // default/status (+ id for the row link). `body` (@db.Text, full HTML email
+  // body) and `mergeFields` (Json) are heavy and unused on the list view (they
+  // are read only on the [id] detail via getEmailTemplateById), so projecting
+  // them out avoids materializing up to 50 HTML bodies per list load.
   const templates = await database.emailTemplate.findMany({
     where: whereClause,
     orderBy: [{ createdAt: "desc" }],
     take: limit,
     skip: offset,
+    select: {
+      id: true,
+      name: true,
+      templateType: true,
+      subject: true,
+      isDefault: true,
+      isActive: true,
+    },
   });
 
   const totalCount = await database.emailTemplate.count({
