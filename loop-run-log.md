@@ -48,7 +48,7 @@ Append one entry per run. Prune entries older than 30 days.
   "pattern": "db-perf-increment",
   "item": "inventory-forecasting alerts N+1 batch (1+4N→3) + single-SKU history dedup",
   "actions_taken": 1,
-  "outcome": "fix-shipped (committed pending commit, not pushed — push user-controlled)",
+  "outcome": "fix-shipped (committed 6f81e7e5f, not pushed — push user-controlled)",
   "summary": "Collapsed batchCalculateForecasts (apps/api/app/lib/inventory-forecasting.ts) from 1+4N sequential reads to 3 constant reads — ONE inventoryItem.findMany+select→Map, ONE hoisted tenant-wide event.findMany (was re-fetched N× with unused _sku param), ONE inventoryTransaction.findMany grouped into per-item Map. Also deduped single-SKU calculateDepletionForecast (historical usage 2×→1×, 4→3 reads/SKU). Extracted pure helpers (computeHistoricalUsage/buildProjectedUsage/buildForecastPoints/computeConfidence); byte-identical math; removed 3 dead helpers; used DecimalLike structural interface. forecasting.test.ts 32/32 (31 prior + 1 new N+1 guard); inventory dir 261/261; tsc 14=baseline 0 new; code-only.",
   "open_after": "reorder-suggestions batch (3N), getAccuracySummary groupBy, shipments signatureData select"
 }
