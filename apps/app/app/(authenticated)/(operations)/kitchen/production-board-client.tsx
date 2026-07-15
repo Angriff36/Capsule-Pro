@@ -43,18 +43,31 @@ import { TeamActivityFeed } from "./components/team-activity-feed";
 import { useSuggestions } from "./lib/use-suggestions";
 import { TaskCard } from "./task-card";
 
-type UserSelect = Pick<
+type BoardUser = Pick<
   DbUser,
   "id" | "firstName" | "lastName" | "email" | "avatarUrl"
 >;
 
-type TaskWithRelations = KitchenTask & {
-  claims: Array<KitchenTaskClaim & { user: UserSelect | null }>;
+type BoardClaim = Pick<
+  KitchenTaskClaim,
+  "taskId" | "employeeId" | "releasedAt"
+> & {
+  user: BoardUser | null;
+};
+
+// Narrowed projection of KitchenTask consumed by the production board — drops
+// tenantId/deletedAt/complexity/assignedTo/completedAt/createdAt/updatedAt
+// (read by no board consumer). Mirrors the select in kitchen/page.tsx.
+type BoardTask = Pick<
+  KitchenTask,
+  "id" | "title" | "summary" | "status" | "priority" | "dueDate" | "tags"
+> & {
+  claims: BoardClaim[];
 };
 
 interface ProductionBoardClientProps {
   currentUserId?: string | null;
-  initialTasks: TaskWithRelations[];
+  initialTasks: BoardTask[];
   tenantId?: string;
 }
 
@@ -268,7 +281,7 @@ function TaskColumn({
   iconColor,
 }: {
   title: string;
-  tasks: TaskWithRelations[];
+  tasks: BoardTask[];
   currentUserId?: string | null;
   icon: React.ElementType;
   count: number;
@@ -365,7 +378,6 @@ export function ProductionBoardClient({
   const handleCreateTask = useCallback(() => {
     router.push("/kitchen/tasks/new");
   }, [router]);
-
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-canvas">

@@ -32,19 +32,31 @@ import {
   kitchenTaskStart,
 } from "@/app/lib/manifest-client.generated";
 
-type UserSelect = Pick<
+type BoardUser = Pick<
   DbUser,
   "id" | "firstName" | "lastName" | "email" | "avatarUrl"
 >;
 
-type TaskWithRelations = KitchenTask & {
-  claims: Array<KitchenTaskClaim & { user: UserSelect | null }>;
+type BoardClaim = Pick<
+  KitchenTaskClaim,
+  "taskId" | "employeeId" | "releasedAt"
+> & {
+  user: BoardUser | null;
+};
+
+// Narrowed projection of KitchenTask consumed by TaskCard — see the matching
+// select in kitchen/page.tsx (full rows are no longer fetched).
+type BoardTask = Pick<
+  KitchenTask,
+  "id" | "title" | "summary" | "status" | "priority" | "dueDate" | "tags"
+> & {
+  claims: BoardClaim[];
 };
 
 interface TaskCardProps {
   compact?: boolean;
   currentUserId?: string | null;
-  task: TaskWithRelations;
+  task: BoardTask;
 }
 
 const priorityConfig = {
@@ -155,7 +167,7 @@ function getAvatarColor(name: string): string {
 }
 
 function getAssignedUserLabel(
-  assignedUsers: Array<{ user: UserSelect | null }>
+  assignedUsers: Array<{ user: BoardUser | null }>
 ): string {
   if (assignedUsers.length === 1) {
     const user = assignedUsers[0]?.user;

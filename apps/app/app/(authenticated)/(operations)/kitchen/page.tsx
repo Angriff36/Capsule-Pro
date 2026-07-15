@@ -17,21 +17,34 @@ const KitchenPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  // Find current user in database using Clerk ID
+  // Find current user in database using Clerk ID (only `id` is consumed below)
   const dbUser = clerkId
     ? await database.user.findFirst({
         where: {
           tenantId,
           authUserId: clerkId,
         },
+        select: { id: true },
       })
     : null;
 
-  // Fetch all kitchen tasks for the tenant
+  // Fetch all kitchen tasks for the tenant. Project only the fields the
+  // production board + TaskCard render — drops complexity/assignedTo/
+  // completedAt + the audit/tenant scalars across every task. select projects
+  // columns, never rows, so the board shape is byte-identical.
   const tasks = await database.kitchenTask.findMany({
     where: {
       tenantId,
       deletedAt: null,
+    },
+    select: {
+      id: true,
+      title: true,
+      summary: true,
+      status: true,
+      priority: true,
+      dueDate: true,
+      tags: true,
     },
     orderBy: [
       { priority: "asc" }, // priority 1-10, so ascending = highest first
@@ -39,11 +52,13 @@ const KitchenPage = async () => {
     ],
   });
 
-  // Fetch claims separately
+  // Fetch claims separately. Project only the fields the board's claim grouping
+  // + assignee/release logic consume.
   const claims = await database.kitchenTaskClaim.findMany({
     where: {
       AND: [{ tenantId }, { releasedAt: null }],
     },
+    select: { taskId: true, employeeId: true, releasedAt: true },
   });
 
   // Fetch users for claims
