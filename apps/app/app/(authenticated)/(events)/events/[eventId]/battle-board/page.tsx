@@ -26,23 +26,26 @@ const BattleBoardPage = async ({ params }: BattleBoardPageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const event = await database.event.findFirst({
-    where: {
-      tenantId,
-      id: eventId,
-      deletedAt: null,
-    },
-  });
-
-  if (!event) {
-    notFound();
-  }
-
-  const [tasks, staff, canonicalBattleBoardHref] = await Promise.all([
+  // ponytail: event is fetched only for the notFound() guard + title/eventDate
+  // rendering; the timeline/staff/href reads key off route params, so all four
+  // run concurrently. (404 path runs the 3 reads needlessly — accepted tradeoff,
+  // same as the sibling contracts/guests pages.)
+  const [event, tasks, staff, canonicalBattleBoardHref] = await Promise.all([
+    database.event.findFirst({
+      where: {
+        tenantId,
+        id: eventId,
+        deletedAt: null,
+      },
+    }),
     getTimelineTasks(eventId),
     getEventStaff(eventId),
     resolveEventBattleBoardHref(database, tenantId, eventId),
   ]);
+
+  if (!event) {
+    notFound();
+  }
 
   return (
     <>

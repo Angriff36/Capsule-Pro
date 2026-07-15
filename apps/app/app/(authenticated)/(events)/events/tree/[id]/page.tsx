@@ -31,24 +31,19 @@ const BoardDetailPage = async ({ params }: PageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const board = await database.commandBoard.findFirst({
-    where: { tenantId, id, deletedAt: null },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      status: true,
-      isTemplate: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
-
-  if (!board) {
-    notFound();
-  }
-
-  const [cards, connections, groups] = await Promise.all([
+  const [board, cards, connections, groups] = await Promise.all([
+    database.commandBoard.findFirst({
+      where: { tenantId, id, deletedAt: null },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        status: true,
+        isTemplate: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    }),
     database.commandBoardCard.findMany({
       where: { tenantId, boardId: id, deletedAt: null },
       select: {
@@ -89,6 +84,10 @@ const BoardDetailPage = async ({ params }: PageProps) => {
       },
     }),
   ]);
+
+  if (!board) {
+    notFound();
+  }
 
   return (
     <PageCanvas>

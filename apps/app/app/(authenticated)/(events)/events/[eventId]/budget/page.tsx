@@ -87,33 +87,37 @@ const EventBudgetPage = async ({ params }: EventBudgetPageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const event = await database.event.findUnique({
-    where: { tenantId_id: { tenantId, id: eventId } },
-    select: {
-      id: true,
-      title: true,
-      eventNumber: true,
-      eventDate: true,
-      status: true,
-      budget: true,
-    },
-  });
+  // ponytail: budget keys off route params (tenantId/eventId), not event; fetch
+  // concurrently and guard after. (404 path fetches budget needlessly — accepted,
+  // same pattern as the sibling events detail pages.)
+  const [event, budget] = await Promise.all([
+    database.event.findUnique({
+      where: { tenantId_id: { tenantId, id: eventId } },
+      select: {
+        id: true,
+        title: true,
+        eventNumber: true,
+        eventDate: true,
+        status: true,
+        budget: true,
+      },
+    }),
+    // Most-recent non-deleted budget version for this event.
+    database.eventBudget.findFirst({
+      where: { tenantId, eventId, deletedAt: null },
+      orderBy: [{ version: "desc" }, { createdAt: "desc" }],
+      include: {
+        lineItems: {
+          where: { deletedAt: null },
+          orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+        },
+      },
+    }),
+  ]);
 
   if (!event) {
     notFound();
   }
-
-  // Most-recent non-deleted budget version for this event.
-  const budget = await database.eventBudget.findFirst({
-    where: { tenantId, eventId, deletedAt: null },
-    orderBy: [{ version: "desc" }, { createdAt: "desc" }],
-    include: {
-      lineItems: {
-        where: { deletedAt: null },
-        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-      },
-    },
-  });
 
   const eventLabel = event.eventNumber
     ? `${event.eventNumber} — ${event.title}`

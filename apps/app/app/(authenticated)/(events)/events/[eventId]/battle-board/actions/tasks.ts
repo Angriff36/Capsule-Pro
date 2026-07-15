@@ -44,18 +44,17 @@ export async function getTimelineTasks(eventId: string) {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const event = await database.event.findFirst({
+  const eventPromise = database.event.findFirst({
     where: {
       tenantId,
       id: eventId,
     },
   });
 
-  if (!event) {
-    throw new Error("Event not found");
-  }
-
-  const tasks = await database.$queryRawUnsafe<
+  // ponytail: tasks key off route params (tenantId/eventId), not event; fire
+  // both then await together. event is the existence guard (checked after both
+  // resolve).
+  const tasksPromise = database.$queryRawUnsafe<
     Array<{
       id: string;
       event_id: string;
@@ -105,6 +104,12 @@ export async function getTimelineTasks(eventId: string) {
     tenantId,
     eventId
   );
+
+  const [event, tasks] = await Promise.all([eventPromise, tasksPromise]);
+
+  if (!event) {
+    throw new Error("Event not found");
+  }
 
   return tasks.map((task) => ({
     id: task.id,
@@ -352,7 +357,10 @@ export async function getEventStaff(eventId: string) {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const staff = await database.$queryRawUnsafe<
+  // ponytail: staff + assignments key off route params (tenantId[/eventId]),
+  // not each other — fire both, then await together (merged in JS via the
+  // assignmentMap after both resolve).
+  const staffPromise = database.$queryRawUnsafe<
     Array<{
       id: string;
       first_name: string;
@@ -362,7 +370,7 @@ export async function getEventStaff(eventId: string) {
       is_active: boolean;
     }>
   >(
-    `SELECT 
+    `SELECT
         u.id,
         u.first_name,
         u.last_name,
@@ -377,7 +385,7 @@ export async function getEventStaff(eventId: string) {
     tenantId
   );
 
-  const assignments = await database.$queryRawUnsafe<
+  const assignmentsPromise = database.$queryRawUnsafe<
     Array<{
       employeeId: string;
       task_count: bigint;
@@ -395,6 +403,11 @@ export async function getEventStaff(eventId: string) {
     tenantId,
     eventId
   );
+
+  const [staff, assignments] = await Promise.all([
+    staffPromise,
+    assignmentsPromise,
+  ]);
 
   const assignmentMap = new Map(
     assignments.map((a) => [a.employeeId, Number(a.task_count)])

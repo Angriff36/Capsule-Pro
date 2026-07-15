@@ -58,84 +58,87 @@ const EventStaffPage = async ({ params }: EventStaffPageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const event = await database.event.findUnique({
-    where: { tenantId_id: { tenantId, id: eventId } },
-    select: {
-      id: true,
-      title: true,
-      eventNumber: true,
-      eventDate: true,
-      status: true,
-    },
-  });
+  // ponytail: assignments + available key off route params (tenantId/eventId),
+  // not event; fetch all three concurrently and guard after. (404 path runs the
+  // two staff reads needlessly — accepted, same pattern as sibling events pages.)
+  const [event, assignments, available] = await Promise.all([
+    database.event.findUnique({
+      where: { tenantId_id: { tenantId, id: eventId } },
+      select: {
+        id: true,
+        title: true,
+        eventNumber: true,
+        eventDate: true,
+        status: true,
+      },
+    }),
+    // Fetch staff assignments with employee names via raw SQL since there's
+    // no Prisma relation between EventStaff and User.
+    database.$queryRawUnsafe<
+      Array<{
+        id: string;
+        staffMemberId: string;
+        first_name: string;
+        last_name: string;
+        role: string;
+        shiftStart: Date | null;
+        shiftEnd: Date | null;
+        notes: string | null;
+      }>
+    >(
+      `SELECT
+          esa.id,
+          esa."staffMemberId",
+          e.first_name,
+          e.last_name,
+          esa.role,
+          esa."shiftStart",
+          esa."shiftEnd",
+          esa.notes
+        FROM tenant_events.event_staff esa
+        LEFT JOIN tenant_staff.employees e
+          ON e.tenant_id::text = esa."tenantId" AND e.id::text = esa."staffMemberId"
+        WHERE esa."tenantId" = $1
+          AND esa."eventId" = $2
+          AND esa."deletedAt" IS NULL
+        ORDER BY esa.role ASC, e.first_name ASC`,
+      tenantId,
+      eventId
+    ),
+    // Fetch available (unassigned) employees
+    database.$queryRawUnsafe<
+      Array<{
+        id: string;
+        first_name: string;
+        last_name: string;
+        role: string;
+      }>
+    >(
+      `SELECT
+          e.id,
+          e.first_name,
+          e.last_name,
+          e.role
+        FROM tenant_staff.employees e
+        WHERE e.tenant_id = $1
+          AND e.deleted_at IS NULL
+          AND e.is_active = true
+          AND NOT EXISTS (
+            SELECT 1 FROM tenant_events.event_staff esa
+            WHERE esa."tenantId" = e.tenant_id::text
+              AND esa."staffMemberId" = e.id::text
+              AND esa."eventId" = $2
+              AND esa."deletedAt" IS NULL
+          )
+        ORDER BY e.first_name, e.last_name`,
+      tenantId,
+      eventId
+    ),
+  ]);
 
   if (!event) {
     notFound();
   }
-
-  // Fetch staff assignments with employee names via raw SQL since there's
-  // no Prisma relation between EventStaff and User.
-  const assignments = await database.$queryRawUnsafe<
-    Array<{
-      id: string;
-      staffMemberId: string;
-      first_name: string;
-      last_name: string;
-      role: string;
-      shiftStart: Date | null;
-      shiftEnd: Date | null;
-      notes: string | null;
-    }>
-  >(
-    `SELECT
-        esa.id,
-        esa."staffMemberId",
-        e.first_name,
-        e.last_name,
-        esa.role,
-        esa."shiftStart",
-        esa."shiftEnd",
-        esa.notes
-      FROM tenant_events.event_staff esa
-      LEFT JOIN tenant_staff.employees e
-        ON e.tenant_id::text = esa."tenantId" AND e.id::text = esa."staffMemberId"
-      WHERE esa."tenantId" = $1
-        AND esa."eventId" = $2
-        AND esa."deletedAt" IS NULL
-      ORDER BY esa.role ASC, e.first_name ASC`,
-    tenantId,
-    eventId
-  );
-
-  // Fetch available (unassigned) employees
-  const available = await database.$queryRawUnsafe<
-    Array<{
-      id: string;
-      first_name: string;
-      last_name: string;
-      role: string;
-    }>
-  >(
-    `SELECT
-        e.id,
-        e.first_name,
-        e.last_name,
-        e.role
-      FROM tenant_staff.employees e
-      WHERE e.tenant_id = $1
-        AND e.deleted_at IS NULL
-        AND e.is_active = true
-        AND NOT EXISTS (
-          SELECT 1 FROM tenant_events.event_staff esa
-          WHERE esa."tenantId" = e.tenant_id::text
-            AND esa."staffMemberId" = e.id::text
-            AND esa."eventId" = $2
-            AND esa."deletedAt" IS NULL
-        )
-      ORDER BY e.first_name, e.last_name`,
-    tenantId,
-    eventId
-  );
 
   const eventLabel = event.eventNumber
     ? `${event.eventNumber} — ${event.title}`
