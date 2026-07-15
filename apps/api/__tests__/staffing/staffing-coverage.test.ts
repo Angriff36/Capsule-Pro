@@ -199,4 +199,33 @@ describe("GET /api/staffing/coverage", () => {
       unfilled: 1,
     });
   });
+
+  it("dispatches all five aggregates in one concurrent wave, not serially", async () => {
+    // Hold the first query (daily) pending; the other four resolve immediately.
+    // In the Promise.all layout every $queryRaw fires synchronously before any
+    // await, so all 5 are recorded while daily is still pending. A serial
+    // revert would block on the first await and never reach the remaining four
+    // → vi.waitFor times out (the proof the collapse is real).
+    let releaseDaily!: () => void;
+    vi.mocked(database.$queryRaw)
+      .mockReturnValueOnce(
+        new Promise<unknown[]>((resolve) => {
+          releaseDaily = () => resolve([]);
+        }) as never
+      )
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([]);
+
+    const promise = getCoverage(makeRequest("?period=week") as never);
+
+    await vi.waitFor(() => {
+      expect(database.$queryRaw).toHaveBeenCalledTimes(5);
+    });
+
+    releaseDaily();
+    const res = await promise;
+    expect(res.status).toBe(200);
+  });
 });

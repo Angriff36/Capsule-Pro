@@ -98,7 +98,18 @@ export async function GET(request: NextRequest) {
 
     const { start, end } = getPeriodRange(period);
 
-    const dailyRows = await database.$queryRaw<DailyRow[]>`
+    // The today/weekly windows derive from the clock, not from any query result,
+    // so all five coverage aggregates are independent and can dispatch in one
+    // concurrent wave (5 serial round-trips → 1). Hoisted above the queries so
+    // every $queryRaw can fire without awaiting a neighbor; array order matches
+    // the prior serial call order so the row sets destructure identically.
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+    const weeklyStart = new Date(Date.now() - 56 * 24 * 60 * 60 * 1000);
+
+    const dailyQuery = database.$queryRaw<DailyRow[]>`
       SELECT
         DATE(ss.shift_start) AS date,
         COUNT(*) AS total_shifts,
@@ -116,7 +127,7 @@ export async function GET(request: NextRequest) {
       ORDER BY date ASC
     `;
 
-    const locationRows = await database.$queryRaw<LocationRow[]>`
+    const locationQuery = database.$queryRaw<LocationRow[]>`
       SELECT
         l.id AS location_id,
         l.name AS location_name,
@@ -134,13 +145,7 @@ export async function GET(request: NextRequest) {
       ORDER BY l.name ASC
     `;
 
-    // Get today-specific data for overview
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const todayEnd = new Date();
-    todayEnd.setHours(23, 59, 59, 999);
-
-    const todayRows = await database.$queryRaw<TodayRow[]>`
+    const todayQuery = database.$queryRaw<TodayRow[]>`
       SELECT
         COUNT(*) AS total_shifts,
         COUNT(CASE WHEN ss.employee_id IS NOT NULL THEN 1 END) AS filled_shifts,
@@ -155,8 +160,7 @@ export async function GET(request: NextRequest) {
         AND (${locationId}::uuid IS NULL OR ss.location_id = ${locationId}::uuid)
     `;
 
-    // Today by location
-    const todayLocations = await database.$queryRaw<LocationRow[]>`
+    const todayLocationsQuery = database.$queryRaw<LocationRow[]>`
       SELECT
         l.id AS location_id,
         l.name AS location_name,
@@ -174,9 +178,7 @@ export async function GET(request: NextRequest) {
       ORDER BY l.name ASC
     `;
 
-    // Get weekly summaries for overview trend
-    const weeklyStart = new Date(Date.now() - 56 * 24 * 60 * 60 * 1000);
-    const weeklyRows = await database.$queryRaw<WeeklyRow[]>`
+    const weeklyQuery = database.$queryRaw<WeeklyRow[]>`
       SELECT
         DATE_TRUNC('week', ss.shift_start)::date AS week_start,
         (DATE_TRUNC('week', ss.shift_start)::date + 6)::date AS week_end,
@@ -194,6 +196,14 @@ export async function GET(request: NextRequest) {
       ORDER BY week_start DESC
       LIMIT 8
     `;
+
+    const [dailyRows, locationRows, todayRows, todayLocations, weeklyRows] = await Promise.all([
+      dailyQuery,
+      locationQuery,
+      todayQuery,
+      todayLocationsQuery,
+      weeklyQuery,
+    ]);
 
     // Build daily array
     const daily = dailyRows.map((row) => ({
