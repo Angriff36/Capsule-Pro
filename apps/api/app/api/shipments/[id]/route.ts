@@ -39,11 +39,62 @@ export async function GET(
         id,
         deletedAt: null,
       },
-      include: {
+      // `select` (not `include`) so the heavy `signatureData` base64 blob is
+      // never fetched: it can run tens-of-KB→MB/row, the response exposes
+      // `signature` from `signatureText` (the typed name) — `signatureData` is
+      // never mapped to the response. It is written on delivery and read only
+      // by the already-narrowed list + tracking routes. Projecting every other
+      // Shipment column keeps the response byte-identical (tsc verifies each
+      // `shipment.*` read below resolves). `items.item` narrows from the full
+      // InventoryItem row to the 3 fields the mapper consumes.
+      select: {
+        id: true,
+        tenantId: true,
+        deletedAt: true,
+        shipmentNumber: true,
+        status: true,
+        eventId: true,
+        supplierId: true,
+        locationId: true,
+        scheduledDate: true,
+        shippedDate: true,
+        estimatedDeliveryDate: true,
+        actualDeliveryDate: true,
+        totalItems: true,
+        shippingCost: true,
+        totalValue: true,
+        trackingNumber: true,
+        carrier: true,
+        shippingMethod: true,
+        deliveredBy: true,
+        receivedBy: true,
+        signatureText: true,
+        notes: true,
+        internalNotes: true,
+        reference: true,
+        createdAt: true,
+        updatedAt: true,
         items: {
           where: { deletedAt: null },
-          include: {
-            item: true,
+          select: {
+            id: true,
+            tenantId: true,
+            deletedAt: true,
+            shipmentId: true,
+            itemId: true,
+            quantityShipped: true,
+            quantityReceived: true,
+            quantityDamaged: true,
+            unitId: true,
+            unitCost: true,
+            totalCost: true,
+            condition: true,
+            conditionNotes: true,
+            lotNumber: true,
+            expirationDate: true,
+            createdAt: true,
+            updatedAt: true,
+            item: { select: { id: true, name: true, item_number: true } },
           },
         },
       },
