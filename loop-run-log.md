@@ -53,3 +53,14 @@ Append one entry per run. Prune entries older than 30 days.
   "open_after": "reorder-suggestions batch (3N), getAccuracySummary groupBy, shipments signatureData select"
 }
 ```
+```json
+{
+  "run_id": "2026-07-14-dbperf-16",
+  "pattern": "db-perf-increment",
+  "item": "reorder-suggestions N+1 batch + getAccuracySummary groupBy + shipments signatureData select (run #15 open tail)",
+  "actions_taken": 2,
+  "outcome": "fix-shipped (committed eec98d255 + 85cfff5bf, not pushed — push user-controlled)",
+  "summary": "Cleared all three of run #15's teed-up open_after items, code-only/read-side, no governed writes: (1) generateReorderSuggestions now batches the per-SKU forecast via the existing batchCalculateForecasts (3 constant reads) instead of ~4 reads/SKU; extracted pure computeReorderSuggestion, deleted dead calculateReorderSuggestion; (2) getAccuracySummary replaced distinct-sku findMany + per-SKU count loop with ONE inventoryForecast.groupBy (accuracy cols don't exist → metrics stay zeroed); (3) shipments/route.ts list findMany now uses a top-level select dropping the signatureData base64 blob + reference (mirrors logistics/tracking shipmentSelect). forecasting.test.ts 34/34 (+2 N+1 guards); new shipments-list-select guard 2/2; apps/api tsc 14=baseline 0 new; biome clean (24 pre-existing warnings untouched on #15 funcs). 8th falsification of 'select surface mined out'. No git tag (repo convention: v0.12.X = manifest-release only).",
+  "open_after": "#2(b/d/f), #6, #9, #22(measurement-gated), #25(runtime-blocked); #17/#19 read-side select+N+1 vein keeps producing (fresh probe needed for next targets); spec #5 latency pass needs seeded DB+servers"
+}
+```
