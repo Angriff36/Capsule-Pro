@@ -659,7 +659,8 @@ export async function getSchedules(params?: {
           orderBy: { scheduleDate: "desc" },
           take: 50,
         });
-  const [scheduleLocations, shiftCounts] = await Promise.all([
+  const scheduleIds = scheduleRecords.map((schedule) => schedule.id);
+  const [scheduleLocations, shiftCountRows] = await Promise.all([
     database.location.findMany({
       where: {
         tenantId,
@@ -671,18 +672,23 @@ export async function getSchedules(params?: {
       },
       select: { id: true, name: true },
     }),
-    Promise.all(
-      scheduleRecords.map((schedule) =>
-        database.scheduleShift.count({
-          where: { tenantId, scheduleId: schedule.id, deletedAt: null },
+    // One GROUP BY replaces a per-schedule scheduleShift.count() fan-out
+    // (N count queries → 1, regardless of how many schedules the page loads).
+    scheduleIds.length > 0
+      ? database.scheduleShift.groupBy({
+          by: ["scheduleId"],
+          where: { tenantId, scheduleId: { in: scheduleIds }, deletedAt: null },
+          _count: { scheduleId: true },
         })
-      )
-    ),
+      : Promise.resolve([]),
   ]);
   const scheduleLocationsById = new Map(
     scheduleLocations.map((location) => [location.id, location])
   );
-  const schedules = scheduleRecords.map((schedule, index) => ({
+  const shiftCountBySchedule = new Map(
+    shiftCountRows.map((row) => [row.scheduleId, row._count.scheduleId])
+  );
+  const schedules = scheduleRecords.map((schedule) => ({
     id: schedule.id,
     scheduleDate: schedule.scheduleDate,
     status: schedule.status,
@@ -690,7 +696,7 @@ export async function getSchedules(params?: {
     location_name: schedule.locationId
       ? (scheduleLocationsById.get(schedule.locationId)?.name ?? "")
       : "",
-    shift_count: BigInt(shiftCounts[index] ?? 0),
+    shift_count: BigInt(shiftCountBySchedule.get(schedule.id) ?? 0),
   }));
 
   return { schedules };
