@@ -61,9 +61,29 @@ export async function listAdminTasks(): Promise<KanbanTask[]> {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
+  // Project only the fields the return map below consumes — drops tenantId,
+  // deletedAt (already filtered), createdAt (orderBy-only), updatedAt. No
+  // `take`: a kanban board must render every task across all columns, so
+  // bounding would silently hide cards (the #8 truncation-trap).
   const tasks = await database.adminTask.findMany({
     where: { tenantId, deletedAt: null },
     orderBy: [{ position: "asc" }, { createdAt: "desc" }],
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      status: true,
+      priority: true,
+      category: true,
+      position: true,
+      labels: true,
+      estimatedHours: true,
+      dueDate: true,
+      assignedTo: true,
+      createdBy: true,
+      sourceType: true,
+      sourceId: true,
+    },
   });
 
   const employeeIds = Array.from(
