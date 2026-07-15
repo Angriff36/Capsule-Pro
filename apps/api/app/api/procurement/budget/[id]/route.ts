@@ -39,9 +39,12 @@ export async function GET(
     const pStart = budget.periodStart;
     const pEnd = budget.periodEnd;
 
-    // Calculate actual spend from POs matching this budget's category and period
-    // Uses $queryRaw tagged template for safe parameterized aggregation across 3-table join
-    const spendResult = await database.$queryRaw<
+    // ponytail: spend / committed / alerts / monthlyBreakdown are independent
+    // (each keys off budget.category/period or the route id, never another read's
+    // result) — fire all four, then await together (4 serial round-trips -> 1).
+    // Actual spend from POs matching this budget's category and period.
+    // $queryRaw tagged template = safe parameterized aggregation across 3-table join.
+    const spendPromise = database.$queryRaw<
       Array<{ total_spent: bigint; po_count: bigint }>
     >`
       SELECT
@@ -57,12 +60,8 @@ export async function GET(
         AND (${pEnd}::date IS NULL OR po.order_date <= ${pEnd})
     `;
 
-    const spend = spendResult[0] || { total_spent: 0n, po_count: 0n };
-
     // Committed spend (POs in draft/submitted/approved status)
-    const committedResult = await database.$queryRaw<
-      Array<{ committed: bigint }>
-    >`
+    const committedPromise = database.$queryRaw<Array<{ committed: bigint }>>`
       SELECT
         COALESCE(SUM(po.total), 0)::decimal(12,2) as committed
       FROM tenant_inventory.purchase_orders po
@@ -75,17 +74,15 @@ export async function GET(
         AND (${pEnd}::date IS NULL OR po.order_date <= ${pEnd})
     `;
 
-    const committed = Number(committedResult[0]?.committed ?? 0n);
-
     // Alerts — Prisma ORM
-    const alerts = await database.procurementBudgetAlert.findMany({
+    const alertsPromise = database.procurementBudgetAlert.findMany({
       where: { tenantId, budgetId: id, deletedAt: null },
       orderBy: { createdAt: "desc" },
       take: 50,
     });
 
     // Monthly spend breakdown
-    const monthlyBreakdown = await database.$queryRaw<
+    const monthlyBreakdownPromise = database.$queryRaw<
       Array<{ month: string; amount: number; po_count: bigint }>
     >`
       SELECT
@@ -103,6 +100,17 @@ export async function GET(
       GROUP BY TO_CHAR(po.order_date, 'YYYY-MM')
       ORDER BY month
     `;
+
+    const [spendResult, committedResult, alerts, monthlyBreakdown] =
+      await Promise.all([
+        spendPromise,
+        committedPromise,
+        alertsPromise,
+        monthlyBreakdownPromise,
+      ]);
+
+    const spend = spendResult[0] || { total_spent: 0n, po_count: 0n };
+    const committed = Number(committedResult[0]?.committed ?? 0n);
 
     const totalSpent = Number(spend.total_spent);
     const budgetAmount = Number(budget.budgetAmount);
