@@ -106,6 +106,39 @@ export async function GET(request: Request) {
         where.scheduledDate.lte = new Date(filters.date_to);
       }
     }
+    // Narrow projection: the mapping below consumes only these scalar columns.
+    // A top-level `select` drops the rest — most importantly `signatureData`
+    // (a base64 signature blob that can run to kilobytes/row) and `reference` —
+    // across every page of the shipments list. `select` is a column projection
+    // (never removes rows), so the response shape is byte-identical.
+    const shipmentListSelect = {
+      id: true,
+      tenantId: true,
+      shipmentNumber: true,
+      status: true,
+      eventId: true,
+      supplierId: true,
+      locationId: true,
+      scheduledDate: true,
+      shippedDate: true,
+      estimatedDeliveryDate: true,
+      actualDeliveryDate: true,
+      totalItems: true,
+      shippingCost: true,
+      totalValue: true,
+      trackingNumber: true,
+      carrier: true,
+      shippingMethod: true,
+      deliveredBy: true,
+      receivedBy: true,
+      signatureText: true,
+      notes: true,
+      internalNotes: true,
+      createdAt: true,
+      updatedAt: true,
+      deletedAt: true,
+    } as const;
+
     // Fetch count + page in parallel (independent reads, same where) —
     // collapses 2 serial round-trips into 1 batch (#23).
     const [total, shipments] = await Promise.all([
@@ -115,6 +148,7 @@ export async function GET(request: Request) {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: [{ createdAt: "desc" }],
+        select: shipmentListSelect,
       }),
     ]);
     const mappedShipments = shipments.map((s) => ({
