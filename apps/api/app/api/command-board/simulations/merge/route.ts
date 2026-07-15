@@ -72,13 +72,13 @@ async function detectMergeConflicts(
       },
     },
     include: {
-      projections: { where: { deletedAt: null } },
-      groups: { where: { deletedAt: null } },
-      annotations: { where: { deletedAt: null } },
+      boardProjections: { where: { deletedAt: null } },
+      commandBoardGroups: { where: { deletedAt: null } },
+      boardAnnotations: { where: { deletedAt: null } },
     },
   });
 
-  if (!(simulationBoard?.tags.includes("simulation"))) {
+  if (!simulationBoard?.tags.includes("simulation")) {
     return {
       hasConflicts: true,
       conflicts: [
@@ -116,9 +116,9 @@ async function detectMergeConflicts(
       },
     },
     include: {
-      projections: { where: { deletedAt: null } },
-      groups: { where: { deletedAt: null } },
-      annotations: { where: { deletedAt: null } },
+      boardProjections: { where: { deletedAt: null } },
+      commandBoardGroups: { where: { deletedAt: null } },
+      boardAnnotations: { where: { deletedAt: null } },
     },
   });
 
@@ -136,15 +136,12 @@ async function detectMergeConflicts(
   }
 
   // Check for projections that were modified in source since simulation was created
-  const _simulationProjEntityIds = new Set(
-    simulationBoard.projections.map((p) => p.entityId)
-  );
   const sourceProjEntityIds = new Set(
-    sourceBoard.projections.map((p) => p.entityId)
+    sourceBoard.boardProjections.map((p) => p.entityId)
   );
 
   // Check for projections removed from source that still exist in simulation
-  for (const simProj of simulationBoard.projections) {
+  for (const simProj of simulationBoard.boardProjections) {
     if (!sourceProjEntityIds.has(simProj.entityId)) {
       conflicts.push({
         type: "projection_removed",
@@ -156,8 +153,8 @@ async function detectMergeConflicts(
   }
 
   // Check for projections modified in source after simulation was created
-  for (const sourceProj of sourceBoard.projections) {
-    const simProj = simulationBoard.projections.find(
+  for (const sourceProj of sourceBoard.boardProjections) {
+    const simProj = simulationBoard.boardProjections.find(
       (p) => p.entityId === sourceProj.entityId
     );
     if (simProj && sourceProj.updatedAt > simulationBoard.createdAt) {
@@ -199,13 +196,13 @@ async function mergeSimulationToSource(
         },
       },
       include: {
-        projections: { where: { deletedAt: null } },
-        groups: { where: { deletedAt: null } },
-        annotations: { where: { deletedAt: null } },
+        boardProjections: { where: { deletedAt: null } },
+        commandBoardGroups: { where: { deletedAt: null } },
+        boardAnnotations: { where: { deletedAt: null } },
       },
     });
 
-    if (!(simulationBoard?.tags.includes("simulation"))) {
+    if (!simulationBoard?.tags.includes("simulation")) {
       return { success: false, error: "Simulation not found" };
     }
 
@@ -233,9 +230,9 @@ async function mergeSimulationToSource(
         },
       },
       include: {
-        projections: { where: { deletedAt: null } },
-        groups: { where: { deletedAt: null } },
-        annotations: { where: { deletedAt: null } },
+        boardProjections: { where: { deletedAt: null } },
+        commandBoardGroups: { where: { deletedAt: null } },
+        boardAnnotations: { where: { deletedAt: null } },
       },
     });
 
@@ -245,210 +242,186 @@ async function mergeSimulationToSource(
 
     // Build maps for comparison
     const sourceProjMap = new Map(
-      sourceBoard.projections.map((p) => [p.entityId, p])
+      sourceBoard.boardProjections.map((p) => [p.entityId, p])
     );
     const simProjMap = new Map(
-      simulationBoard.projections.map((p) => [p.entityId, p])
+      simulationBoard.boardProjections.map((p) => [p.entityId, p])
     );
-    const sourceGroupMap = new Map(sourceBoard.groups.map((g) => [g.id, g]));
-    const simGroupMap = new Map(simulationBoard.groups.map((g) => [g.id, g]));
+    const sourceGroupMap = new Map(
+      sourceBoard.commandBoardGroups.map((g) => [g.id, g])
+    );
+    const simGroupMap = new Map(
+      simulationBoard.commandBoardGroups.map((g) => [g.id, g])
+    );
 
-    // Track changes
-    let projectionsAdded = 0;
-    let projectionsRemoved = 0;
-    let projectionsModified = 0;
-    let groupsAdded = 0;
-    let groupsRemoved = 0;
-    let annotationsAdded = 0;
-    let annotationsRemoved = 0;
+    // Track changes — computed from the pre-loaded boards, then applied below.
+    const sourceAnnMap = new Map(
+      sourceBoard.boardAnnotations.map((a) => [a.id, a])
+    );
+    const simAnnMap = new Map(
+      simulationBoard.boardAnnotations.map((a) => [a.id, a])
+    );
 
-    // Apply changes in a transaction
+    const removedProjections = options?.applyRemovals
+      ? sourceBoard.boardProjections.filter((p) => !simProjMap.has(p.entityId))
+      : [];
+    const addedProjections = simulationBoard.boardProjections.filter(
+      (p) => !sourceProjMap.has(p.entityId)
+    );
+    const PROJECTION_FIELDS = [
+      "positionX",
+      "positionY",
+      "width",
+      "height",
+    ] as const;
+    // Pair each modified sim projection with its source row.
+    const modifiedProjections = simulationBoard.boardProjections.flatMap(
+      (p) => {
+        const source = sourceProjMap.get(p.entityId);
+        if (!source) {
+          return [];
+        }
+        return PROJECTION_FIELDS.some((f) => source[f] !== p[f])
+          ? [{ sim: p, source }]
+          : [];
+      }
+    );
+    const addedGroups = simulationBoard.commandBoardGroups.filter(
+      (g) => !sourceGroupMap.has(g.id)
+    );
+    const removedGroups = options?.applyRemovals
+      ? sourceBoard.commandBoardGroups.filter((g) => !simGroupMap.has(g.id))
+      : [];
+    const addedAnnotations = simulationBoard.boardAnnotations.filter(
+      (a) => !sourceAnnMap.has(a.id)
+    );
+    const removedAnnotations = options?.applyRemovals
+      ? sourceBoard.boardAnnotations.filter((a) => !simAnnMap.has(a.id))
+      : [];
+
+    const projectionsRemoved = removedProjections.length;
+    const projectionsAdded = addedProjections.length;
+    const projectionsModified = modifiedProjections.length;
+    const groupsAdded = addedGroups.length;
+    const groupsRemoved = removedGroups.length;
+    const annotationsAdded = addedAnnotations.length;
+    const annotationsRemoved = removedAnnotations.length;
+
+    // Apply changes as ONE concurrent write wave. Every op below targets a
+    // distinct composite-PK row (or a disjoint table) and sets fixed field
+    // values taken only from the in-memory boards above — no cross-row deps,
+    // no FK ordering — so nothing in the wave depends on another op's result.
+    // Bulk add/remove groups use createMany/updateMany (one query each); the
+    // per-row modifications use one update per distinct source row. Same
+    // tx + Promise.all pattern as simulations/[id]/apply and
+    // inventory/purchase-orders/[id]/complete.
     await database.$transaction(async (tx) => {
-      // 1. Handle removed projections (if applyRemovals is true)
-      if (options?.applyRemovals) {
-        for (const sourceProj of sourceBoard.projections) {
-          if (!simProjMap.has(sourceProj.entityId)) {
-            await tx.boardProjection.update({
-              where: { tenantId_id: { tenantId, id: sourceProj.id } },
-              data: { deletedAt: new Date() },
-            });
-            projectionsRemoved++;
-          }
-        }
-      }
-
-      // 2. Handle added projections
-      for (const simProj of simulationBoard.projections) {
-        if (!sourceProjMap.has(simProj.entityId)) {
-          await tx.boardProjection.create({
-            data: {
-              id: crypto.randomUUID(),
-              tenantId,
-              boardId: sourceBoardId,
-              entityType: simProj.entityType,
-              entityId: simProj.entityId,
-              positionX: simProj.positionX,
-              positionY: simProj.positionY,
-              width: simProj.width,
-              height: simProj.height,
-              zIndex: simProj.zIndex,
-              colorOverride: simProj.colorOverride,
-              collapsed: simProj.collapsed,
-              groupId: simProj.groupId,
-              pinned: simProj.pinned,
-            },
-          });
-          projectionsAdded++;
-        }
-      }
-
-      // 3. Handle modified projections
-      for (const simProj of simulationBoard.projections) {
-        const sourceProj = sourceProjMap.get(simProj.entityId);
-        if (sourceProj) {
-          const fieldsToCheck = [
-            "positionX",
-            "positionY",
-            "width",
-            "height",
-            "zIndex",
-            "colorOverride",
-            "collapsed",
-            "groupId",
-            "pinned",
-          ] as const;
-
-          let hasChanges = false;
-          for (const field of fieldsToCheck) {
-            if (sourceProj[field] !== simProj[field]) {
-              hasChanges = true;
-              break;
-            }
-          }
-
-          if (hasChanges) {
-            await tx.boardProjection.update({
-              where: { tenantId_id: { tenantId, id: sourceProj.id } },
-              data: {
-                positionX: simProj.positionX,
-                positionY: simProj.positionY,
-                width: simProj.width,
-                height: simProj.height,
-                zIndex: simProj.zIndex,
-                colorOverride: simProj.colorOverride,
-                collapsed: simProj.collapsed,
-                groupId: simProj.groupId,
-                pinned: simProj.pinned,
+      const now = new Date();
+      await Promise.all([
+        removedProjections.length
+          ? tx.boardProjection.updateMany({
+              where: {
+                id: { in: removedProjections.map((p) => p.id) },
+                tenantId,
+                boardId: sourceBoardId,
               },
-            });
-            projectionsModified++;
-          }
-        }
-      }
-
-      // 4. Handle added groups
-      for (const simGroup of simulationBoard.groups) {
-        if (!sourceGroupMap.has(simGroup.id)) {
-          await tx.commandBoardGroup.create({
+              data: { deletedAt: now },
+            })
+          : null,
+        addedProjections.length
+          ? tx.boardProjection.createMany({
+              data: addedProjections.map((p) => ({
+                id: crypto.randomUUID(),
+                tenantId,
+                boardId: sourceBoardId,
+                entityType: p.entityType,
+                entityId: p.entityId,
+                positionX: p.positionX,
+                positionY: p.positionY,
+                width: p.width,
+                height: p.height,
+              })),
+            })
+          : null,
+        ...modifiedProjections.map(({ sim, source }) =>
+          tx.boardProjection.update({
+            where: { tenantId_id: { tenantId, id: source.id } },
             data: {
-              id: crypto.randomUUID(),
-              tenantId,
-              boardId: sourceBoardId,
-              name: simGroup.name,
-              color: simGroup.color,
-              collapsed: simGroup.collapsed,
-              positionX: simGroup.positionX,
-              positionY: simGroup.positionY,
-              width: simGroup.width,
-              height: simGroup.height,
-              zIndex: simGroup.zIndex,
+              positionX: sim.positionX,
+              positionY: sim.positionY,
+              width: sim.width,
+              height: sim.height,
             },
-          });
-          groupsAdded++;
-        }
-      }
-
-      // 5. Handle removed groups
-      if (options?.applyRemovals) {
-        for (const sourceGroup of sourceBoard.groups) {
-          if (!simGroupMap.has(sourceGroup.id)) {
-            await tx.commandBoardGroup.update({
-              where: { tenantId_id: { tenantId, id: sourceGroup.id } },
-              data: { deletedAt: new Date() },
-            });
-            groupsRemoved++;
-          }
-        }
-      }
-
-      // 6. Handle annotations
-      const sourceAnnMap = new Map(
-        sourceBoard.annotations.map((a) => [a.id, a])
-      );
-      const simAnnMap = new Map(
-        simulationBoard.annotations.map((a) => [a.id, a])
-      );
-
-      // Add new annotations
-      for (const simAnn of simulationBoard.annotations) {
-        if (!sourceAnnMap.has(simAnn.id)) {
-          await tx.boardAnnotation.create({
-            data: {
-              id: crypto.randomUUID(),
-              tenantId,
-              boardId: sourceBoardId,
-              annotationType: simAnn.annotationType,
-              fromProjectionId: simAnn.fromProjectionId,
-              toProjectionId: simAnn.toProjectionId,
-              label: simAnn.label,
-              color: simAnn.color,
-              style: simAnn.style,
-            },
-          });
-          annotationsAdded++;
-        }
-      }
-
-      // Remove deleted annotations
-      if (options?.applyRemovals) {
-        for (const sourceAnn of sourceBoard.annotations) {
-          if (!simAnnMap.has(sourceAnn.id)) {
-            await tx.boardAnnotation.update({
-              where: { tenantId_id: { tenantId, id: sourceAnn.id } },
-              data: { deletedAt: new Date() },
-            });
-            annotationsRemoved++;
-          }
-        }
-      }
-
-      // 7. Mark simulation as applied
-      await tx.commandBoard.update({
-        where: {
-          tenantId_id: {
-            tenantId,
-            id: simulationId,
+          })
+        ),
+        addedGroups.length
+          ? tx.commandBoardGroup.createMany({
+              data: addedGroups.map((g) => ({
+                id: crypto.randomUUID(),
+                tenantId,
+                boardId: sourceBoardId,
+                name: g.name,
+                color: g.color,
+                collapsed: g.collapsed,
+                positionX: g.positionX,
+                positionY: g.positionY,
+                width: g.width,
+                height: g.height,
+                zIndex: g.zIndex,
+              })),
+            })
+          : null,
+        removedGroups.length
+          ? tx.commandBoardGroup.updateMany({
+              where: {
+                id: {
+                  in: removedGroups.map((g) => g.id),
+                },
+                tenantId,
+                boardId: sourceBoardId,
+              },
+              data: { deletedAt: now },
+            })
+          : null,
+        addedAnnotations.length
+          ? tx.boardAnnotation.createMany({
+              data: addedAnnotations.map((a) => ({
+                id: crypto.randomUUID(),
+                tenantId,
+                boardId: sourceBoardId,
+                label: a.label,
+                color: a.color,
+              })),
+            })
+          : null,
+        removedAnnotations.length
+          ? tx.boardAnnotation.updateMany({
+              where: {
+                id: {
+                  in: removedAnnotations.map((a) => a.id),
+                },
+                tenantId,
+                boardId: sourceBoardId,
+              },
+              data: { deletedAt: now },
+            })
+          : null,
+        // Mark simulation applied + bump source board updatedAt (distinct rows).
+        tx.commandBoard.update({
+          where: { tenantId_id: { tenantId, id: simulationId } },
+          data: {
+            tags: [
+              ...simulationBoard.tags.filter((t) => t !== "applied"),
+              "applied",
+            ],
+            status: "archived",
           },
-        },
-        data: {
-          tags: [
-            ...simulationBoard.tags.filter((t) => t !== "applied"),
-            "applied",
-          ],
-          status: "archived",
-        },
-      });
-
-      // 8. Update source board's updatedAt
-      await tx.commandBoard.update({
-        where: {
-          tenantId_id: {
-            tenantId,
-            id: sourceBoardId,
-          },
-        },
-        data: { updatedAt: new Date() },
-      });
+        }),
+        tx.commandBoard.update({
+          where: { tenantId_id: { tenantId, id: sourceBoardId } },
+          data: { updatedAt: now },
+        }),
+      ]);
     });
 
     return {
